@@ -12,7 +12,7 @@ TraderVue and TraderSync are great and very powerful trading journals. However, 
 
 By creating and sharing TradeNote as an open source project, I hope to help other days traders like myself store, discover and recollect trade patterns so they can become and remain consistent and profitable traders.
 
-###Note
+### Note
 This project arose from a personal need and as such is currently only used (and tested) for intraday trades and using TradeZero Broker. Please refer to "Contribute" for more information
 
 # Benefits
