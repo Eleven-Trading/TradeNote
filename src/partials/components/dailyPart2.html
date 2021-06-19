@@ -1,0 +1,32 @@
+<div class="col-12 table-responsive">
+    <a v-on:click="moreLess(index)">More/Less</a>
+    <table v-bind:id="'table'+index" class="table d-none">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Symbol</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">P&L(g)</th>
+                <th scope="col">Fees</th>
+                <th scope="col">P&L(n)</th>
+                <th scope="col">Wins</th>
+                <th scope="col">Losses</th>
+                <th scope="col">Trades</th>
+                <th scope="col">Executions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="blot in daily.blotter">
+
+                <td>{{blot.symbol}}</td>
+                <td>{{blot.buyQuantity+blot.sellQuantity}}</td>
+                <td v-bind:class="[blot.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.grossProceeds).toFixed(2)}}</td>
+                <td>{{(blot.fees).toFixed(2)}}</td>
+                <td v-bind:class="[blot.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.netProceeds).toFixed(2)}}</td>
+                <td>{{blot.grossWinsCount}}</td>
+                <td>{{blot.grossLossCount}}</td>
+                <td>{{blot.trades}}</td>
+                <td>{{blot.executions}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

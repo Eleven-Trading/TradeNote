@@ -1,0 +1,171 @@
+<div class="mt-2 mb-2">
+    <div v-show="loadingSpinner" class="overlay">
+        <div class="d-flex justify-content-center">
+            <button class="btn btn-primary" type="button" disabled>
+                <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{loadingSpinnerText}}</button>
+        </div>
+    </div>
+    <div v-if="showDashboard">
+        <div class="row">
+            <div class="text-center overlay" v-if="renderingCharts">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-blue" role="status"></div>
+                </div>
+            </div>
+            @@include('components/noData.html')
+            <div class="col-12 col-xl-8" v-bind:key="renderData">
+                <div v-for="(daily, index) in filteredTrades" class="row mt-2" v-if="daily.videoPoster">
+                    <div class="col-12">
+                        <div class="dailyCard">
+                            <div class="row">
+                                @@include('components/dailyPart1.html', {
+                                    "firstColumns": "videos"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ CALENDAR ============ -->
+            <div v-show="calendarData" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+                <div class="dailyCard calCard">
+                    <div class="row">
+                        @@include('components/calendar.html', {
+                            "type": "short"
+                        })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MORE VIDEOS ============ -->
+    <div v-if="showMoreVideos">
+        <div class="row">
+            <div class="col-auto">
+                                            @@include('components/back.html')
+                                        </div>
+            <div class="col-auto row">
+                <div class="col-auto">Buffer:</div>
+                <div class="col-auto">
+                    <select v-on:input="videoBuffer = Number($event.target.value)" class="form-select">
+                        <option v-for="item in videoBufferArray" v-bind:value="item" v-bind:selected="item == videoBuffer">{{item}}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-auto row">
+                <div class="col-auto">Scroll speed</div>
+                <div class="col-auto">
+                    <select v-on:input="forwBackSpeed = Number($event.target.value)" class="form-select">
+                        <option v-for="item in forwBackSpeedArray" v-bind:value="item" v-bind:selected="item == forwBackSpeed">{{item}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3" >
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Video</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Time(i)</th>
+                        <th scope="col">Time(o)</th>
+                        <th scope="col">Price(i)</th>
+                        <th scope="col">Price(o)</th>
+                        <th scope="col">P&L/Share(g)</th>
+                        <th scope="col">P&L/Share(n)</th>
+                        <th scope="col">P&L(g)</th>
+                        <th scope="col">P&L(n)</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                    <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
+
+                    <tr v-for="(trade, index) in tradeToShow[0].trades">
+                        <td id="videoTd">
+                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videoToPlay" class="modal-content"> -->
+                            <span v-if="trade.videoStart&&trade.videoEnd"><i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="videoToPlay = index" class="pointerClass fab fa-youtube"></i></span>
+                        </td>
+                        <td>{{trade.symbol}}</td>
+                        <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
+                        <td>{{timeFormat(trade.entryTime)}}</td>
+                        <td>{{timeFormat(trade.exitTime)}}</td>
+                        <td>{{(trade.entryPrice).toFixed(2)}}</td>
+                        <td>{{(trade.exitPrice).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.netSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.netSharePL).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossProceeds).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ============ VIDEO MODAL ============ -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div v-if="videoToPlay != null" class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div v-if="videoToPlay != null">
+                    <div v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&tradeToShow[0].trades[videoToPlay].videoStart&&tradeToShow[0].trades[videoToPlay].videoEnd">
+                        <span id="videoBig">
+                            <video v-bind:id="'video'+videoToPlay" controls controlslist width="100%" v-bind:key="videoBlob+'#t='+tradeToShow[0].trades[videoToPlay].videoStart+','+tradeToShow[0].trades[videoToPlay].videoEnd" @playing="videoPlaying(videoToPlay)">
+                                <source v-bind:src="videoBlob+'#t='+(tradeToShow[0].trades[videoToPlay].videoStart-videoBuffer)+','+(tradeToShow[0].trades[videoToPlay].videoEnd+videoBuffer)"></video>
+                        </span>
+                    </div>
+                    <div>
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Symbol</th>
+                                    <th scope="col">Qty</th>
+                                    <th scope="col">Time(i)</th>
+                                    <th scope="col">Time(o)</th>
+                                    <th scope="col">Price(i)</th>
+                                    <th scope="col">Price(o)</th>
+                                    <th scope="col">∆ Price</th>
+                                    <th scope="col">P/L(g)</th>
+                                    <th scope="col">P/L(n)</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                                <tr>
+                                    <td>{{tradeToShow[0].trades[videoToPlay].symbol}}</td>
+                                    <td>{{tradeToShow[0].trades[videoToPlay].quantity}}</td>
+                                    <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].entryTime)}}</td>
+                                    <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].exitTime)}}</td>
+                                    <td>{{(tradeToShow[0].trades[videoToPlay].entryPrice).toFixed(2)}}</td>
+                                    <td>{{(tradeToShow[0].trades[videoToPlay].exitPrice).toFixed(2)}}</td>
+                                    <td v-bind:class="[(tradeToShow[0].trades[videoToPlay].exitPrice - tradeToShow[0].trades[videoToPlay].entryPrice)>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].exitPrice - tradeToShow[0].trades[videoToPlay].entryPrice).toFixed(2)}}</td>
+                                    <td v-bind:class="[tradeToShow[0].trades[videoToPlay].grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].grossProceeds).toFixed(2)}}</td>
+                                    <td v-bind:class="[tradeToShow[0].trades[videoToPlay].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].netProceeds).toFixed(2)}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex">
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" v-on:click="videoToPlay = videoToPlay-1">
+                                <i class="fa fa-chevron-left me-2"></i>Previous</button>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-outline-primary btn-sm" v-on:click="videoToPlay = videoToPlay+1">Next<i class="fa fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

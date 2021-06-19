@@ -1,0 +1,141 @@
+<div v-show="loadingSpinner" class="overlay">
+    <div class="d-flex justify-content-center">
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{loadingSpinnerText}}</button>
+    </div>
+</div>
+<div>
+    <!-- ============ ADD VIDEO ============ -->
+
+    <div v-show="!loadingSpinner">
+        <!-- Stepper - Steps -->
+        <div id="addStepper" class="bs-stepper">
+            <div class="bs-stepper-header">
+                <div class="step" data-target="#step1">
+                    <button type="button" class="btn step-trigger">
+                        <span class="bs-stepper-circle">1</span>
+                        <span class="bs-stepper-label">Trades</span>
+                    </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#step2">
+                    <button type="button" class="btn step-trigger">
+                        <span class="bs-stepper-circle">2</span>
+                        <span class="bs-stepper-label">Video(s)</span>
+                    </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#step3">
+                    <button type="button" class="btn step-trigger">
+                        <span class="bs-stepper-circle">4</span>
+                        <span class="bs-stepper-label">Validate</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stepper - Content -->
+            <div class="bs-stepper-content">
+
+                <!-- STEP 1 - Trades -->
+                <div id="step1" class="content">
+                    <span v-show="executions != null">@@include('components/stepperNext.html')</span>
+                                    @@include('components/cancelAdd.html')
+                                    <div class="mt-3 input-group mb-3">
+                        <input id="tradesInput" type="file" v-on:change="createTables($event)"/>
+                    </div>
+                    <div v-if="blotter != null" v-for="(execution, index) in executions">
+                        <h3 class="ml-2 mt-2 text-blue">{{dateFormat(index)}}</h3>
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Symbol</th>
+                                    <th scope="col">Tot Qty</th>
+                                    <th scope="col">P/L gross</th>
+                                    <th scope="col">Comm</th>
+                                    <th scope="col">Tot Fees</th>
+                                    <th scope="col">P/L net</th>
+                                    <th scope="col">wins(g)</th>
+                                    <th scope="col">wins(n)</th>
+                                    <th scope="col">loss(g)</th>
+                                    <th scope="col">loss(n)</th>
+                                    <th scope="col">trades</th>
+                                    <th scope="col">executions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="blot in blotter[index]">
+
+                                    <td>{{blot.symbol}}</td>
+                                    <td>{{blot.buyQuantity + blot.sellQuantity}}</td>
+                                    <td v-bind:class="[blot.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.grossProceeds).toFixed(2)}}</td>
+                                    <td>{{(blot.commission).toFixed(2)}}</td>
+                                    <td>{{(blot.fees).toFixed(2)}}</td>
+                                    <td v-bind:class="[blot.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.netProceeds).toFixed(2)}}</td>
+                                    <td>{{blot.grossWinsCount}}</td>
+                                    <td>{{blot.netWinsCount}}</td>
+                                    <td>{{blot.grossLossCount}}</td>
+                                    <td>{{blot.netLossCount}}</td>
+                                    <td>{{blot.trades}}</td>
+                                    <td>{{blot.executions}}</td>
+                                </tr>
+                                <tr class="sumRow">
+                                    <td>All</td>
+                                    <td>{{pAndL[index].buyQuantity + pAndL[index].sellQuantity}}</td>
+                                    <td v-bind:class="[pAndL[index].grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(pAndL[index].grossProceeds).toFixed(2)}}</td>
+                                    <td>{{(pAndL[index].commission).toFixed(2)}}</td>
+                                    <td>{{(pAndL[index].fees).toFixed(2)}}</td>
+                                    <td v-bind:class="[pAndL[index].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(pAndL[index].netProceeds).toFixed(2)}}</td>
+                                    <td>{{pAndL[index].grossWinsCount}}</td>
+                                    <td>{{pAndL[index].netWinsCount}}</td>
+                                    <td>{{pAndL[index].grossLossCount}}</td>
+                                    <td>{{pAndL[index].netLossCount}}</td>
+                                    <td>{{pAndL[index].trades}}</td>
+                                    <td>{{pAndL[index].executions}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- STEP 2 - Video & DATE -->
+                <div id="step2" class="content">
+                                    @@include('components/stepperPrevious.html')
+                                    @@include('components/stepperNext.html')
+                                    <!--<span v-show="videoUrl">@@include('components/stepperNext.html')</span>-->
+                                    @@include('components/cancelAdd.html')
+                                    <div v-for="(execution, index) in executions">
+                        {{dateFormat(index)}}
+                        <div class="mt-3 mb-3">
+                            <input v-bind:id="'videoInput'+index" type="file" @change="videoInput($event, index)"/>
+                        </div>
+                        <div v-if="inputToShow.includes(index)" class="mb-3">
+                            <video v-bind:id="'videoPreview'+index" v-bind:key="videos[index].videoUrl" width="100%" crossorigin="use-credentials" @loadeddata="getPoster(index)">
+                                <source v-bind:src="videos[index].videoUrl"></video>
+                        </div>
+                        <!--<div v-show="videoUrlStorage" class="mb-3">
+                                            <video id="" v-bind:key="videoUrlStorage" controls width="100%" crossorigin="use-credentials">
+                                                <source v-bind:src="videoUrlStorage"></video>
+                                        </div>-->
+                        <canvas v-bind:id="'videoPreviewCanvas'+index" class="d-none"></canvas>
+
+                        <div v-if="inputToShow.includes(index)" class="mt-3 input-group mb-3">
+                            <input type="datetime-local" class="form-control" step="1" v-on:input="videoStartTime($event.target.value, index)"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3 - Validate -->
+                <div id="step3" class="content">
+                    <!-- Button -->
+                    <div class="mt-3">
+                        <button type="button" v-on:click="uploadTrades" class="btn btn-success btn-lg">Submit</button>
+                    </div>
+                    <div class="mt-3">
+                                        @@include('components/stepperPrevious.html')
+                                        @@include('components/cancelAdd.html')
+                                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

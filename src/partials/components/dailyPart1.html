@@ -1,0 +1,58 @@
+<!-- Line 1 : Date and P&L -->
+<div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
+    <div class="col-auto">{{createdDateFormat(daily.date.iso)}}</div>
+    <div class="col-auto ms-auto">P&L(n): <span v-bind:class="[daily.pAndL.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(daily.pAndL.netProceeds).toFixed(2)}}$</span></div>
+</div>
+
+<!-- Line 2 : Charts and total data -->
+<div class="col-12 d-flex align-items-center text-center">
+    @@if(firstColumns == "daily"){
+        <!--  -> Win Loss Chart -->
+    <div class="col-2">
+        <div v-bind:id="'pieChart'+daily.dateUnix" class="chartIdDailyClass"></div>
+    </div>
+    <!--  -> Win Loss evolution Chart -->
+    <div class="col-4 chartCard">
+        <div v-bind:id="'doubleLineChart'+daily.dateUnix" class="chartIdDailyClass"></div>
+    </div>
+    }
+    @@if(firstColumns == "videos"){
+        <div class='col-6'><img v-on:click='showMore(daily.dateUnix, index)' v-bind:src='daily.videoPoster.url' class='img-fluid pointerClass'/></div>
+    }
+    
+    <!--  -> Tot trades and total executions -->
+    <div class="col row">
+        <div>
+            <label>Executions</labels>
+            <p>{{daily.pAndL.executions}}</p>
+        </div>
+        <div>
+            <label>Trades</labels>
+            <p>{{daily.pAndL.trades}}</p>
+        </div>
+    </div>
+
+    <!--  -> Tot Wins and losses -->
+    <div class="col row">
+        <div>
+            <label>Wins</labels>
+            <p>{{daily.pAndL.grossWinsCount}}</p>
+        </div>
+        <div>
+            <label>Losses</labels>
+            <p>{{daily.pAndL.grossLossCount}}</p>
+        </div>
+    </div>
+
+    <!--  -> Tot commission and gross p&l -->
+    <div class="col row">
+        <div>
+            <label>Fees</labels>
+            <p>{{(daily.pAndL.fees).toFixed(2)}}$</p>
+        </div>
+        <div>
+            <label>P&L(g)</labels>
+            <p>{{(daily.pAndL.grossProceeds).toFixed(2)}}$</p>
+        </div>
+    </div>
+</div>

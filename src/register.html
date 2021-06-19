@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" class="h-100">
+@@include('components/head.html', {
+    "title": "login"
+})
+    <body class="h-100">
+        <div id="vapp" class="d-flex flex-column h-100">
+            <header class="text-center">
+                <!-- Fixed navbar -->
+                <img class="navLogo"/>
+            </header>
+@@include('components/mainLoginSignup.html', {
+    "title": "Please Register",
+    "emailPlaceholder": "Email Adresse",
+    "password": "Password",
+    "form": "registerForm",
+    "button": "Register",
+    "action": "register()"
+})
+            
+            @@include('components/footer.html')
+        </div>
+        <!-- end vapp -->
+
+        @@include('components/scripts.html')
+    </body>
+</html >

@@ -1,0 +1,38 @@
+<div class="col-2 logoDiv d-flex align-items-center justify-content-center">
+    <p class="">TradeNote</p>
+</div>
+
+<div class="sideMenuDiv">
+    <div class="sideMenuDivContent">
+        <label class="fw-lighter">MEASURE</label>
+        <a v-bind:class="[currentPage.id === 'dashboard' ? 'activeNavCss' : '', 'nav-link']" href="/dashboard">
+            <i class="uil uil-apps me-2"></i>Dashboard</a>
+        <a v-bind:class="[currentPage.id === 'calendar' ? 'activeNavCss' : '', 'nav-link']" href="/calendar">
+            <i class="uil uil-calendar-alt me-2"></i>Calendar</a>
+        <a v-bind:class="[currentPage.id === 'daily' ? 'activeNavCss' : '', 'nav-link']" href="/daily">
+            <i class="uil uil-signal-alt-3 me-2"></i>Daily
+                </a>
+    </div>
+</div>
+<div class="sideMenuDiv">
+    <div class="sideMenuDivContent">
+        <label class="fw-lighter mt-3">Learn</label>
+        <a v-bind:class="[currentPage.id === 'screenshots' ? 'activeNavCss' : '', 'nav-link']" href="/screenshots">
+            <i class="uil uil-image-v me-2"></i>Screenshots
+                </a>
+        <a v-bind:class="[currentPage.id === 'videos' ? 'activeNavCss' : '', 'nav-link']" href="/videos">
+            <i class="uil uil-clapper-board me-2"></i>Videos
+                </a>
+    </div>
+</div>
+<div class="sideMenuDiv">
+    <div class="sideMenuDivContent">
+        <label class="fw-lighter mt-3">Reflect</label>
+        <a v-bind:class="[currentPage.id === 'notes' ? 'activeNavCss' : '', 'nav-link']" href="/notes">
+            <i class="uil uil-edit me-2"></i>Notes
+                </a>
+        <a v-bind:class="[currentPage.id === 'playbook' ? 'activeNavCss' : '', 'nav-link']" href="/playbook">
+            <i class="uil uil-compass me-2"></i>Playbook
+            </a>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="row mt-2 mb-2">
+
+    <!-- ============ DASHBOARD ============ -->
+    <div class="text-center overlay" v-show="renderingCharts">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-blue" role="status"></div>
+        </div>
+    </div>
+    @@include('components/noData.html')
+    
+    <div class="col-12 col-xl-8" v-bind:key="renderData">
+        <div v-for="(daily, index) in filteredTrades" class="row mt-2">
+            <div class="col-12">
+                <div class="dailyCard">
+                    <div class="row">
+                        <!-- Part 1 -->
+                        @@include('components/dailyPart1.html', {
+                            "firstColumns": "daily"
+                        })
+
+                        <!-- Part 2 : table -->
+                        @@include('components/dailyPart2.html')
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end dashboard-->
+
+    <!-- ============ CALENDAR ============ -->
+    <div v-show="calendarData" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+        <div class="dailyCard calCard">
+            <div class="row">
+                @@include('components/calendar.html', {
+                    "type": "short"
+                })
+            </div>
+        </div>
+    </div>
+
+</div>

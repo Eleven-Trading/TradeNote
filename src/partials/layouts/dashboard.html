@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+@@include('components/head.html', {
+    "title": "TradeNote | @@pageName"
+})
+    <body>
+        <div id="vapp">
+            <div class="container-fluid g-0">
+                <div class="row g-0">
+                    <div class="col-2 sideMenu d-none d-lg-block min-vh-100">
+                        @@include('components/sideMenu.html')
+                    </div>
+                    <div class="col-10">
+                        @@include('components/nav.html')
+                        <main id="@@pageId">
+                            <div v-show="loadingSpinner" class="overlay">
+                                <div class="d-flex justify-content-center">
+                                    <button class="btn btn-primary" type="button" disabled>
+                                        <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{loadingSpinnerText}}</button>
+                                </div>
+                            </div>
+                            @@include('pages/@@pageId.html')
+                        </main>
+                    </div>
+                    @@include('components/footer.html')
+                </div>
+            </div>
+        </div>
+        <!-- end vapp -->
+        @@include('components/scripts.html')
+    </body>
+</html >

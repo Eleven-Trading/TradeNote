@@ -1,0 +1,42 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white d-flex justify-content-center align-items-center">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="nav justify-content-center">
+            <li class="nav-item">
+                <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}
+            </li>
+        </ul>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Add</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li>
+                        <a class="dropdown-item" href="addTrades">Trades</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="addScreenshot">Screenshot</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="addNote">Note</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li>
+                        <a class="dropdown-item" v-on:click="getTradesFromDb()">
+                            <i class="uil uil-sync me-2"></i>Refresh Data</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" v-on:click="logout()">
+                            <i class="uil uil-signout me-2"></i>Logout</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
