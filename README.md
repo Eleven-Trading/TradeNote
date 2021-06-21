@@ -77,7 +77,7 @@ Please have a running [Parse](https://parseplatform.org/ "Parse") server and mon
 ## Running Locally
 - Install dependencies (npm)
 - Run "gulp" in terminal with the following arguments
-  - PARSE_INIT : your app id
+  - PARSE_INIT : your parse app id
   - PARSE_URL : your parse server url
   - API_BASE_URL : base url to your server where your function is running (exemple : http://localhost:3000)
   - API_END_POINT : end point of the function running on your server (example: /example_backblaze_function.php)
