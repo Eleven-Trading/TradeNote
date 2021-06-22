@@ -12,6 +12,9 @@ TraderVue and TraderSync are great and very powerful trading journals. However, 
 
 By creating and sharing TradeNote as an open source project, I hope to help other days traders like myself store, discover and recollect trade patterns so they can become and remain consistent and profitable traders.
 
+### Note
+This project arose from a personal need and as such is currently only used (and tested) for intraday trades and using TradeZero Broker. Please refer to the "Contribute" section for more information
+
 # Benefits
 ## Measure
 TradeNote offers a dashboard, daily view and calendar view so you can measure your progress. You can easily filter your trades by month or date range.
@@ -74,7 +77,7 @@ Please have a running [Parse](https://parseplatform.org/ "Parse") server and mon
 ## Running Locally
 - Install dependencies (npm)
 - Run "gulp" in terminal with the following arguments
-  - PARSE_INIT : your app id
+  - PARSE_INIT : your parse app id
   - PARSE_URL : your parse server url
   - API_BASE_URL : base url to your server where your function is running (exemple : http://localhost:3000)
   - API_END_POINT : end point of the function running on your server (example: /example_backblaze_function.php)
