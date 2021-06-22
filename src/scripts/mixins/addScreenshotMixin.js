@@ -128,7 +128,7 @@ const addScreenshotMixin = {
                                 console.log(" -> Upload status " + response.status)
                                 var publicBaseUrl = this.publicBaseUrlB2
                                 var publicUrl = publicBaseUrl + "" + Parse.User.current().id + "/screenshots/" + fileName
-                                console.log("public url " + publicUrl)
+                                //console.log("public url " + publicUrl)
                                 if (param.version == "original") {
                                     this.screenshot.originalUrl = publicUrl
                                     console.log("url or " + this.screenshot.originalUrl + " annot " + this.screenshot.annotatedUrl)
@@ -136,7 +136,7 @@ const addScreenshotMixin = {
                                 }
                                 if (param.version == "annotated") {
                                     this.screenshot.annotatedUrl = publicUrl
-                                    console.log("url or " + this.screenshot.originalUrl + " annot " + this.screenshot.annotatedUrl)
+                                    //console.log("url or " + this.screenshot.originalUrl + " annot " + this.screenshot.annotatedUrl)
                                 }
                                 //console.log(" -> Public url " + this.playbookImgB2Url)
                                 this.loadingSpinnerText = "Screenshot " + param.version + " saved"
