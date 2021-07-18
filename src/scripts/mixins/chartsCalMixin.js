@@ -156,16 +156,18 @@ const chartsCalMixin = {
                         },
                         xAxis: {
                             data: param4,
+                            name: '0',
+                            nameLocation: 'start',
                         },
                         yAxis: {
                             type: 'value',
-                            scale: true,
+                            /*scale: true,
                             max: function(value) {
                                 return value.max;
                             },
                             min: function(value) {
                                 return value.min;
-                            },
+                            },*/
                             axisLabel: {
                                 show: false,
                                 formatter: function(params) {
@@ -174,7 +176,7 @@ const chartsCalMixin = {
                             },
                             splitLine: {
                                 show: false
-                             },
+                            },
                         },
                         series: [{
                                 data: param2,
@@ -218,10 +220,10 @@ const chartsCalMixin = {
                 var chartBarData = []
                 var chartXAxis = []
                 this.filteredTrades.forEach(element => {
-                    if(!this.showEstimations){
+                    if (!this.showEstimations) {
                         var proceeds = element.pAndL.netProceeds
-                    }else{
-                        var proceeds = (element.pAndL.grossSharePL * this.estimations.quantity) - (element.pAndL.trades * 2 * this.estimations.quantity * this.estimations.fees) 
+                    } else {
+                        var proceeds = (element.pAndL.grossSharePL * this.estimations.quantity) - (element.pAndL.trades * 2 * this.estimations.quantity * this.estimations.fees)
                     }
                     if (this.filteredTrades.length <= this.maxChartValues) {
                         var temp = {}
