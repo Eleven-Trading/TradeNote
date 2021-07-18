@@ -39,7 +39,14 @@
                             <h6 class="titleWithDesc"><span v-if="!showEstimations">{{thousandFormat(totals.grossProceeds)}}</span><span v-else>{{thousandFormat(totals.grossProceedsEstimations)}}</span>$</h6>
                             <span class="dashInfoTitle">Cumulated P&L(g)</span>
                         </div>
-
+                        <div class="col-6">
+                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{totals.trades}}</span><span v-else>{{totals.tradesEstimations}}</span></h6>
+                            <span class="dashInfoTitle">Trades</span>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{totals.executions}}</span><span v-else>{{(totals.executionsEstimations)}}</span></h6>
+                            <span class="dashInfoTitle">Executions</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -83,15 +90,15 @@
                     </div>
                     <div v-else class="row">
                         <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc">{{(totals.riskReward).toFixed(2)}}</h4>
+                            <h4 class="titleWithDesc">{{((totals.grossSharePLWins/totals.grossWinsCount)/-(totals.grossSharePLLoss/totals.grossLossCount)).toFixed(2)}}</h4>
                             <span class="dashInfoTitle">Risk&Reward Ratio(g)</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.grossSharePLWins).toFixed(2)}}$</h6>
+                            <h6 class="titleWithDesc">{{(totals.grossSharePLWins/totals.grossWinsCount).toFixed(2)}}$</h6>
                             <span class="dashInfoTitle">Average Win Per Share</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.grossSharePLLoss).toFixed(2)}}$</h6>
+                            <h6 class="titleWithDesc">{{-(totals.grossSharePLLoss/totals.grossLossCount).toFixed(2)}}$</h6>
                             <span class="dashInfoTitle">Average Loss Per Share</span>
                         </div>
                         <div class="col-6">
@@ -99,7 +106,7 @@
                             <span class="dashInfoTitle">Highest Win Per Share</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.highGrossSharePLLoss).toFixed(2)}}$</h6>
+                            <h6 class="titleWithDesc">{{-(totals.highGrossSharePLLoss).toFixed(2)}}$</h6>
                             <span class="dashInfoTitle">Highest Loss Per Share</span>
                         </div>
                     </div>

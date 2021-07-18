@@ -45,7 +45,7 @@ const tradesMixin = {
                 await (this.renderData += 1)
                 await (this.totalPAndLChartMounted = false)
                 await this.createTotals()
-                await this.pieChart("pieChart1", this.totals.probGrossWins, this.totals.probGrossLoss) //chart ID, winShare, lossShare
+                await this.pieChart("pieChart1", this.totals.probNetWins, this.totals.probNetLoss, this.currentPage.id) //chart ID, winShare, lossShare
                 await this.lineBarChart()
                 await this.barChart("barChart1")
                 await this.barChart("barChart2")
@@ -207,101 +207,101 @@ const tradesMixin = {
             /*******************
              * Info
              *******************/
-            temp.quantity = totalQuantity
+             temp.quantity = totalQuantity
 
-            /*******************
-             * Commissions and fees
-             *******************/
-            temp.commission = totalCommission
-            temp.otherCommission = totalOtherCommission
-            temp.fees = totalFees
-            temp.feesEstimations = (totalTrades * 2 * this.estimations.quantity * this.estimations.fees)
-
-            /*******************
-             * Gross proceeds and P&L
-             *******************/
-            temp.grossProceeds = totalGrossProceeds
-            temp.grossWins = totalGrossWins
-            temp.grossLoss = totalGrossLoss
-            temp.grossSharePL = totalGrossSharePL
-                /*totalGrossWinsQuantity == 0 ? temp.grossSharePLWins = 0 : temp.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
-                totalGrossLossQuantity == 0 ? temp.grossSharePLLoss = 0 : temp.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
-            temp.grossSharePLWins = totalGrossSharePLWins
-            temp.grossSharePLLoss = totalGrossSharePLLoss
-            temp.highGrossSharePLWin = highGrossSharePLWin
-            temp.highGrossSharePLLoss = highGrossSharePLLoss
-            temp.grossProceedsEstimations = totalGrossSharePL * this.estimations.quantity
-            temp.grossWinsEstimations = totalGrossSharePLWins * this.estimations.quantity
-            temp.grossLossEstimations = totalGrossSharePLLoss * this.estimations.quantity
-
-            /*******************
-             * Net proceeds and P&L
-             *******************/
-            temp.netProceeds = totalNetProceeds
-            temp.netWins = totalNetWins
-            temp.netLoss = totalNetLoss
-            temp.netSharePL = totalNetSharePL
-                /*totalNetWinsQuantity == 0 ? temp.netSharePLWins = 0 : temp.netSharePLWins = totalNetWins / totalNetWinsQuantity
-                totalNetLossQuantity == 0 ? temp.netSharePLLoss = 0 : temp.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
-            temp.netSharePLWins = totalNetSharePLWins
-            temp.netSharePLLoss = totalNetSharePLLoss
-            temp.highNetSharePLWin = highNetSharePLWin
-            temp.highNetSharePLLoss = highNetSharePLLoss
-            temp.netProceedsEstimations = temp.grossProceedsEstimations - temp.feesEstimations
-            temp.netWinsEstimations = temp.grossWinsEstimations - temp.feesEstimations
-            temp.netLossEstimations = temp.grossLossEstimations - temp.feesEstimations
-
-
-            /*******************
-             * Counts
-             *******************/
-            temp.executions = totalExecutions
-            temp.trades = totalTrades
-
-            temp.grossWinsQuantity = totalGrossWinsQuantity
-            temp.grossLossQuantity = totalGrossLossQuantity
-            temp.grossWinsCount = totalGrossWinsCount
-            temp.grossLossCount = totalGrossLossCount
-
-            temp.netWinsQuantity = totalNetWinsQuantity
-            temp.netLossQuantity = totalNetLossQuantity
-            temp.netWinsCount = totalNetWinsCount
-            temp.netLossCount = totalNetLossCount
-
-            //temp.netSharePLWins = totalNetSharePLWins
-            //temp.netSharePLLoss = totalNetSharePLLoss
-
-
-
-
-            //Needed for Dashboard
-            var numPL = this.filteredTrades.length
-            temp.probGrossWins = (totalGrossWinsCount / totalTrades)
-            temp.probGrossLoss = (totalGrossLossCount / totalTrades)
-            temp.probNetWins = (totalNetWinsCount / totalTrades)
-            temp.probNetLoss = (totalNetLossCount / totalTrades)
-                //console.log("prob gross win "+temp.probGrossWin+" and loss "+temp.probGrossLoss)
-
-            temp.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
-            temp.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
-            temp.avgNetWins = (totalNetWins / totalNetWinsCount)
-            temp.avgNetLoss = -(totalNetLoss / totalNetLossCount)
-            temp.avgNetWinsEstimations = (temp.netWinsEstimations / totalGrossWinsCount)
-            temp.avgNetLossEstimations = -(temp.netLossEstimations / totalGrossLossCount)
-
-            /*Average P&L per stock
-            temp.grossSharePLWins = (totalGrossSharePLWins / numPL) // here we do an average of P&L per share so it's not divided by the count, as in blotter, but by the number of P&L shares in the array (the number of numbers in the array)
-            temp.grossSharePLLoss = (totalGrossSharePLLoss / numPL)*/
-            temp.riskReward = temp.grossSharePLWins / (-temp.grossSharePLLoss)
-
-
-            /*listGrossMargins.sort(function(a, b) {
-                    return a - b
-                })
-                //console.log("list "+listGrossMargins)
-            temp.listGrossMargins = listGrossMargins*/
-            this.totals = temp
-            //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+             /*******************
+              * Commissions and fees
+              *******************/
+             temp.commission = totalCommission
+             temp.otherCommission = totalOtherCommission
+             temp.fees = totalFees
+             temp.feesEstimations = (totalTrades * 2 * this.estimations.quantity * this.estimations.fees)
+ 
+             /*******************
+              * Gross proceeds and P&L
+              *******************/
+             temp.grossProceeds = totalGrossProceeds
+             temp.grossWins = totalGrossWins
+             temp.grossLoss = totalGrossLoss
+             temp.grossSharePL = totalGrossSharePL
+                 /*totalGrossWinsQuantity == 0 ? temp.grossSharePLWins = 0 : temp.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
+                 totalGrossLossQuantity == 0 ? temp.grossSharePLLoss = 0 : temp.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
+             temp.grossSharePLWins = totalGrossSharePLWins
+             temp.grossSharePLLoss = totalGrossSharePLLoss
+             temp.highGrossSharePLWin = highGrossSharePLWin
+             temp.highGrossSharePLLoss = highGrossSharePLLoss
+             temp.grossProceedsEstimations = totalGrossSharePL * this.estimations.quantity
+             temp.grossWinsEstimations = totalGrossSharePLWins * this.estimations.quantity
+             temp.grossLossEstimations = totalGrossSharePLLoss * this.estimations.quantity
+ 
+             /*******************
+              * Net proceeds and P&L
+              *******************/
+             temp.netProceeds = totalNetProceeds
+             temp.netWins = totalNetWins
+             temp.netLoss = totalNetLoss
+             temp.netSharePL = totalNetSharePL
+                 /*totalNetWinsQuantity == 0 ? temp.netSharePLWins = 0 : temp.netSharePLWins = totalNetWins / totalNetWinsQuantity
+                 totalNetLossQuantity == 0 ? temp.netSharePLLoss = 0 : temp.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
+             temp.netSharePLWins = totalNetSharePLWins
+             temp.netSharePLLoss = totalNetSharePLLoss
+             temp.highNetSharePLWin = highNetSharePLWin
+             temp.highNetSharePLLoss = highNetSharePLLoss
+             temp.netProceedsEstimations = temp.grossProceedsEstimations - temp.feesEstimations
+             temp.netWinsEstimations = temp.grossWinsEstimations - temp.feesEstimations
+             temp.netLossEstimations = temp.grossLossEstimations - temp.feesEstimations
+ 
+ 
+             /*******************
+              * Counts
+              *******************/
+             temp.executions = totalExecutions
+             temp.trades = totalTrades
+ 
+             temp.grossWinsQuantity = totalGrossWinsQuantity
+             temp.grossLossQuantity = totalGrossLossQuantity
+             temp.grossWinsCount = totalGrossWinsCount
+             temp.grossLossCount = totalGrossLossCount
+ 
+             temp.netWinsQuantity = totalNetWinsQuantity
+             temp.netLossQuantity = totalNetLossQuantity
+             temp.netWinsCount = totalNetWinsCount
+             temp.netLossCount = totalNetLossCount
+ 
+             //temp.netSharePLWins = totalNetSharePLWins
+             //temp.netSharePLLoss = totalNetSharePLLoss
+ 
+ 
+ 
+ 
+             //Needed for Dashboard
+             var numPL = this.filteredTrades.length
+             temp.probGrossWins = (totalGrossWinsCount / totalTrades)
+             temp.probGrossLoss = (totalGrossLossCount / totalTrades)
+             temp.probNetWins = (totalNetWinsCount / totalTrades)
+             temp.probNetLoss = (totalNetLossCount / totalTrades)
+             //console.log("prob net win "+temp.probNetWins+" and loss "+temp.probNetLoss)
+ 
+             temp.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
+             temp.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
+             temp.avgNetWins = (totalNetWins / totalNetWinsCount)
+             temp.avgNetLoss = -(totalNetLoss / totalNetLossCount)
+             temp.avgNetWinsEstimations = (temp.netWinsEstimations / totalGrossWinsCount)
+             temp.avgNetLossEstimations = -(temp.netLossEstimations / totalGrossLossCount)
+ 
+             /*Average P&L per stock
+             temp.grossSharePLWins = (totalGrossSharePLWins / numPL) // here we do an average of P&L per share so it's not divided by the count, as in blotter, but by the number of P&L shares in the array (the number of numbers in the array)
+             temp.grossSharePLLoss = (totalGrossSharePLLoss / numPL)*/
+             //temp.riskReward = temp.grossSharePLWins / (-temp.grossSharePLLoss)
+ 
+ 
+             /*listGrossMargins.sort(function(a, b) {
+                     return a - b
+                 })
+                 //console.log("list "+listGrossMargins)
+             temp.listGrossMargins = listGrossMargins*/
+             this.totals = temp
+             //console.log(" -> TOTALS " + JSON.stringify(this.totals))
         },
 
         getTradesFromDb: async function() {

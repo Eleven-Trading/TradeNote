@@ -116,8 +116,11 @@ const chartsCalMixin = {
                 await this.filteredTrades.forEach(el => {
                     var chartId = "pieChart" + el.dateUnix
                     var probGrossWins = (el.pAndL.grossWinsCount / el.pAndL.trades)
-                    var probLossWins = (el.pAndL.grossLossCount / el.pAndL.trades)
-                    this.pieChart(chartId, probGrossWins, probLossWins)
+                    var probGrossLoss = (el.pAndL.grossLossCount / el.pAndL.trades)
+                    var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
+                    var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
+                    console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
+                    this.pieChart(chartId, probGrossWins, probGrossLoss, this.currentPage.id)
                 })
             }
 
@@ -319,7 +322,7 @@ const chartsCalMixin = {
             })
         },
 
-        pieChart(param1, param2, param3) { //chart ID, winShare, lossShare
+        pieChart(param1, param2, param3, param4) { //chart ID, winShare, lossShare, page
             return new Promise((resolve, reject) => {
                 //console.log("params " + param1 + ", " + param2 + ", " + param3)
                 var myChart = echarts.init(document.getElementById(param1));
@@ -348,7 +351,12 @@ const chartsCalMixin = {
                                 show: true,
                                 position: 'center',
                                 formatter: function(params) {
-                                    return (winShare * 100).toFixed(1) + "%"
+                                    if (param4 == "dashboard") {
+                                        return (winShare * 100).toFixed(1) + "%\nWin rate(n)"
+                                    }
+                                    if (param4 == "daily") {
+                                        return (winShare * 100).toFixed(1) + "%"
+                                    }
                                 }
                             }
                         },
