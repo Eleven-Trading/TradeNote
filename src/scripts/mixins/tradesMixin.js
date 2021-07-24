@@ -388,11 +388,11 @@ const tradesMixin = {
                             floorPrice = 30
                         }
                     
-                    console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
+                    //console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
 
                     return floorPrice
                 })
-        console.log("e "+JSON.stringify(e))
+        //console.log("e "+JSON.stringify(e))
 
     },
 
