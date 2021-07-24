@@ -76,7 +76,8 @@ Please have a running [Parse](https://parseplatform.org/ "Parse") server and mon
   - PARSE_INIT : your parse app id
   - PARSE_URL : your parse server url
   - API_BASE_URL : base url to your server where your function is running (exemple : http://localhost:3000)
-  - API_END_POINT : end point of the function running on your server (example: /example_backblaze_function.php)
+  - API_END_POINT_TEMP_URL : end point of the function generating temporary backblaze url(s) running on your server (example: /example_backblaze_function.php)
+  - API_END_POINT_FINVIZ : end point of the function scrapping Finviz running on your server
   - PUBLIC_BASE_URL_B2 : base url of the folder where your images and videos are stored in Backblaze
 
 ## Deployment

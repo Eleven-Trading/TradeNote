@@ -39,8 +39,15 @@
                 <!-- STEP 1 - Trades -->
                 <div id="step1" class="content">
                     <span v-show="executions != null">@@include('components/stepperNext.html')</span>
-                                    @@include('components/cancelAdd.html')
-                                    <div class="mt-3 input-group mb-3">
+                    @@include('components/cancelAdd.html')    
+                    
+                    <label>Include Finviz Data</label>
+                    <label class="switch">
+                        <input type="checkbox" v-model="includeFinviz" v-on:click="includeFinviz = !includeFinviz">
+                        <span class="slider round"></span>
+                    </label>
+
+                    <div class="mt-3 input-group mb-3">
                         <input id="tradesInput" type="file" v-on:change="createTables($event)"/>
                     </div>
                     <div v-if="blotter != null" v-for="(execution, index) in executions">
@@ -109,7 +116,7 @@
                             <input v-bind:id="'videoInput'+index" type="file" @change="videoInput($event, index)"/>
                         </div>
                         <div v-if="inputToShow.includes(index)" class="mb-3">
-                            <video v-bind:id="'videoPreview'+index" v-bind:key="videos[index].videoUrl" width="100%" crossorigin="use-credentials" @loadeddata="getPoster(index)">
+                            <video v-bind:id="'videoPreview'+index" v-bind:key="videos[index].videoUrl" width="100%" crossorigin="use-credentials">
                                 <source v-bind:src="videos[index].videoUrl"></video>
                         </div>
                         <!--<div v-show="videoUrlStorage" class="mb-3">
@@ -119,7 +126,7 @@
                         <canvas v-bind:id="'videoPreviewCanvas'+index" class="d-none"></canvas>
 
                         <div v-if="inputToShow.includes(index)" class="mt-3 input-group mb-3">
-                            <input type="datetime-local" class="form-control" step="1" v-on:input="videoStartTime($event.target.value, index)"/>
+                            <input type="datetime-local" class="form-control" v-bind:value="videos[index].startTime" v-on:input="videoStartTime($event.target.value, index)"/>
                         </div>
                     </div>
                 </div>

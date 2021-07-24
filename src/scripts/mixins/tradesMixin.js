@@ -154,10 +154,15 @@ const tradesMixin = {
 
 
 
-            //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
-
-            this.filteredTrades.forEach(element => {
+            //console.log("filtered trades "+JSON.stringify(this.filteredTrades[0].trades))
+            var temp1 = []
+            this.filteredTrades.forEach((element, index) => {
                 //console.log("element "+JSON.stringify(element))
+                //console.log("entry time " + element.trades[0].entryTime + " and formated " + dayjs.unix(element.trades[0].entryTime).format("HH:mm"))
+                element.trades.forEach(el => {
+                    temp1.push(el)
+                })
+
                 totalQuantity += element.pAndL.buyQuantity + element.pAndL.sellQuantity
 
                 totalCommission += element.pAndL.commission
@@ -194,7 +199,9 @@ const tradesMixin = {
                 totalNetWinsCount += element.pAndL.netWinsCount //Total number/count of net winning trades
                 totalNetLossCount += element.pAndL.netLossCount //Total number/count of net losing trades
 
+
             })
+
             temp = {}
 
             /*******************
@@ -202,124 +209,209 @@ const tradesMixin = {
              *******************/
             var grossWinsQuantityEstimations = this.estimations.quantity * (totalGrossWinsQuantity / (totalGrossWinsQuantity + totalGrossLossQuantity))
             var grossLossQuantityEstimations = this.estimations.quantity - grossWinsQuantityEstimations
-            //console.log(" wins " + grossWinsQuantityEstimations + " and loss " + grossLossQuantityEstimations)
+                //console.log(" wins " + grossWinsQuantityEstimations + " and loss " + grossLossQuantityEstimations)
 
             /*******************
              * Info
              *******************/
-             temp.quantity = totalQuantity
+            temp.quantity = totalQuantity
 
-             /*******************
-              * Commissions and fees
-              *******************/
-             temp.commission = totalCommission
-             temp.otherCommission = totalOtherCommission
-             temp.fees = totalFees
-             temp.feesEstimations = (totalTrades * 2 * this.estimations.quantity * this.estimations.fees)
- 
-             /*******************
-              * Gross proceeds and P&L
-              *******************/
-             temp.grossProceeds = totalGrossProceeds
-             temp.grossWins = totalGrossWins
-             temp.grossLoss = totalGrossLoss
-             temp.grossSharePL = totalGrossSharePL
-                 /*totalGrossWinsQuantity == 0 ? temp.grossSharePLWins = 0 : temp.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
-                 totalGrossLossQuantity == 0 ? temp.grossSharePLLoss = 0 : temp.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
-             temp.grossSharePLWins = totalGrossSharePLWins
-             temp.grossSharePLLoss = totalGrossSharePLLoss
-             temp.highGrossSharePLWin = highGrossSharePLWin
-             temp.highGrossSharePLLoss = highGrossSharePLLoss
-             temp.grossProceedsEstimations = totalGrossSharePL * this.estimations.quantity
-             temp.grossWinsEstimations = totalGrossSharePLWins * this.estimations.quantity
-             temp.grossLossEstimations = totalGrossSharePLLoss * this.estimations.quantity
- 
-             /*******************
-              * Net proceeds and P&L
-              *******************/
-             temp.netProceeds = totalNetProceeds
-             temp.netWins = totalNetWins
-             temp.netLoss = totalNetLoss
-             temp.netSharePL = totalNetSharePL
-                 /*totalNetWinsQuantity == 0 ? temp.netSharePLWins = 0 : temp.netSharePLWins = totalNetWins / totalNetWinsQuantity
-                 totalNetLossQuantity == 0 ? temp.netSharePLLoss = 0 : temp.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
-             temp.netSharePLWins = totalNetSharePLWins
-             temp.netSharePLLoss = totalNetSharePLLoss
-             temp.highNetSharePLWin = highNetSharePLWin
-             temp.highNetSharePLLoss = highNetSharePLLoss
-             temp.netProceedsEstimations = temp.grossProceedsEstimations - temp.feesEstimations
-             temp.netWinsEstimations = temp.grossWinsEstimations - temp.feesEstimations
-             temp.netLossEstimations = temp.grossLossEstimations - temp.feesEstimations
- 
- 
-             /*******************
-              * Counts
-              *******************/
-             temp.executions = totalExecutions
-             temp.trades = totalTrades
- 
-             temp.grossWinsQuantity = totalGrossWinsQuantity
-             temp.grossLossQuantity = totalGrossLossQuantity
-             temp.grossWinsCount = totalGrossWinsCount
-             temp.grossLossCount = totalGrossLossCount
- 
-             temp.netWinsQuantity = totalNetWinsQuantity
-             temp.netLossQuantity = totalNetLossQuantity
-             temp.netWinsCount = totalNetWinsCount
-             temp.netLossCount = totalNetLossCount
- 
-             //temp.netSharePLWins = totalNetSharePLWins
-             //temp.netSharePLLoss = totalNetSharePLLoss
- 
- 
- 
- 
-             //Needed for Dashboard
-             var numPL = this.filteredTrades.length
-             temp.probGrossWins = (totalGrossWinsCount / totalTrades)
-             temp.probGrossLoss = (totalGrossLossCount / totalTrades)
-             temp.probNetWins = (totalNetWinsCount / totalTrades)
-             temp.probNetLoss = (totalNetLossCount / totalTrades)
-             //console.log("prob net win "+temp.probNetWins+" and loss "+temp.probNetLoss)
- 
-             temp.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
-             temp.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
-             temp.avgNetWins = (totalNetWins / totalNetWinsCount)
-             temp.avgNetLoss = -(totalNetLoss / totalNetLossCount)
-             temp.avgNetWinsEstimations = (temp.netWinsEstimations / totalGrossWinsCount)
-             temp.avgNetLossEstimations = -(temp.netLossEstimations / totalGrossLossCount)
- 
-             /*Average P&L per stock
-             temp.grossSharePLWins = (totalGrossSharePLWins / numPL) // here we do an average of P&L per share so it's not divided by the count, as in blotter, but by the number of P&L shares in the array (the number of numbers in the array)
-             temp.grossSharePLLoss = (totalGrossSharePLLoss / numPL)*/
-             //temp.riskReward = temp.grossSharePLWins / (-temp.grossSharePLLoss)
- 
- 
-             /*listGrossMargins.sort(function(a, b) {
-                     return a - b
-                 })
-                 //console.log("list "+listGrossMargins)
-             temp.listGrossMargins = listGrossMargins*/
-             this.totals = temp
-             //console.log(" -> TOTALS " + JSON.stringify(this.totals))
-        },
+            /*******************
+             * Commissions and fees
+             *******************/
+            temp.commission = totalCommission
+            temp.otherCommission = totalOtherCommission
+            temp.fees = totalFees
+            temp.feesEstimations = (totalTrades * 2 * this.estimations.quantity * this.estimations.fees)
 
-        getTradesFromDb: async function() {
-            return new Promise((resolve, reject) => {
-                (async() => {
-                    const Object = Parse.Object.extend("trades");
-                    const query = new Parse.Query(Object);
-                    query.equalTo("user", Parse.User.current());
-                    query.ascending("dateUnix");
-                    query.limit(1000000); // limit to at most 10 results
-                    const results = await query.find();
-                    this.allTrades = JSON.parse(JSON.stringify(results))
-                        //console.log("all trades before "+JSON.stringify(this.allTrades))
-                    await this.saveAllTradesToIndexedDb()
-                    resolve()
-                })()
-            })
-        }
+            /*******************
+             * Gross proceeds and P&L
+             *******************/
+            temp.grossProceeds = totalGrossProceeds
+            temp.grossWins = totalGrossWins
+            temp.grossLoss = totalGrossLoss
+            temp.grossSharePL = totalGrossSharePL
+                /*totalGrossWinsQuantity == 0 ? temp.grossSharePLWins = 0 : temp.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
+                totalGrossLossQuantity == 0 ? temp.grossSharePLLoss = 0 : temp.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
+            temp.grossSharePLWins = totalGrossSharePLWins
+            temp.grossSharePLLoss = totalGrossSharePLLoss
+            temp.highGrossSharePLWin = highGrossSharePLWin
+            temp.highGrossSharePLLoss = highGrossSharePLLoss
+            temp.grossProceedsEstimations = totalGrossSharePL * this.estimations.quantity
+            temp.grossWinsEstimations = totalGrossSharePLWins * this.estimations.quantity
+            temp.grossLossEstimations = totalGrossSharePLLoss * this.estimations.quantity
 
+            /*******************
+             * Net proceeds and P&L
+             *******************/
+            temp.netProceeds = totalNetProceeds
+            temp.netWins = totalNetWins
+            temp.netLoss = totalNetLoss
+            temp.netSharePL = totalNetSharePL
+                /*totalNetWinsQuantity == 0 ? temp.netSharePLWins = 0 : temp.netSharePLWins = totalNetWins / totalNetWinsQuantity
+                totalNetLossQuantity == 0 ? temp.netSharePLLoss = 0 : temp.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
+            temp.netSharePLWins = totalNetSharePLWins
+            temp.netSharePLLoss = totalNetSharePLLoss
+            temp.highNetSharePLWin = highNetSharePLWin
+            temp.highNetSharePLLoss = highNetSharePLLoss
+            temp.netProceedsEstimations = temp.grossProceedsEstimations - temp.feesEstimations
+            temp.netWinsEstimations = temp.grossWinsEstimations - temp.feesEstimations
+            temp.netLossEstimations = temp.grossLossEstimations - temp.feesEstimations
+
+
+            /*******************
+             * Counts
+             *******************/
+            temp.executions = totalExecutions
+            temp.trades = totalTrades
+
+            temp.grossWinsQuantity = totalGrossWinsQuantity
+            temp.grossLossQuantity = totalGrossLossQuantity
+            temp.grossWinsCount = totalGrossWinsCount
+            temp.grossLossCount = totalGrossLossCount
+
+            temp.netWinsQuantity = totalNetWinsQuantity
+            temp.netLossQuantity = totalNetLossQuantity
+            temp.netWinsCount = totalNetWinsCount
+            temp.netLossCount = totalNetLossCount
+
+            //temp.netSharePLWins = totalNetSharePLWins
+            //temp.netSharePLLoss = totalNetSharePLLoss
+
+
+
+
+            //Needed for Dashboard
+            var numPL = this.filteredTrades.length
+            temp.probGrossWins = (totalGrossWinsCount / totalTrades)
+            temp.probGrossLoss = (totalGrossLossCount / totalTrades)
+            temp.probNetWins = (totalNetWinsCount / totalTrades)
+            temp.probNetLoss = (totalNetLossCount / totalTrades)
+                //console.log("prob net win "+temp.probNetWins+" and loss "+temp.probNetLoss)
+
+            temp.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
+            temp.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
+            temp.avgNetWins = (totalNetWins / totalNetWinsCount)
+            temp.avgNetLoss = -(totalNetLoss / totalNetLossCount)
+            temp.avgNetWinsEstimations = (temp.netWinsEstimations / totalGrossWinsCount)
+            temp.avgNetLossEstimations = -(temp.netLossEstimations / totalGrossLossCount)
+
+            /*Average P&L per stock
+            temp.grossSharePLWins = (totalGrossSharePLWins / numPL) // here we do an average of P&L per share so it's not divided by the count, as in blotter, but by the number of P&L shares in the array (the number of numbers in the array)
+            temp.grossSharePLLoss = (totalGrossSharePLLoss / numPL)*/
+            //temp.riskReward = temp.grossSharePLWins / (-temp.grossSharePLLoss)
+
+
+            /*listGrossMargins.sort(function(a, b) {
+                    return a - b
+                })
+                //console.log("list "+listGrossMargins)
+            temp.listGrossMargins = listGrossMargins*/
+            this.totals = temp
+                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+
+
+            /*******************
+             * GROUP BY
+             *******************/
+
+            /*** Group by day of week ***/
+            var a = _
+                .groupBy(temp1, t => dayjs.unix(t.entryTime).day()); //temp1 is json array with trades and is created during totals
+            //console.log("a "+JSON.stringify(a))
+
+            /*** Group by month of year ***/
+            var b = _
+                .groupBy(temp1, t => dayjs.unix(t.entryTime).month());
+            //console.log("b "+JSON.stringify(b))
+
+            /*** Group by entry time by xxx second timeframe ***/
+            var c = _
+                .groupBy(temp1, t => {
+                    var secondTimeFrame = 30
+                    var msTimeFrame = secondTimeFrame * 60 * 1000; /*ms*/
+                    var entryTimeTF = dayjs(Math.floor((+dayjs.unix(t.entryTime)) / msTimeFrame) * msTimeFrame);
+                    return entryTimeTF.format("hh:mm:ss")
+                })
+                //console.log("c " + JSON.stringify(c))
+
+            /*** Group by trade duration ***/
+            var d = _(temp1)
+                .orderBy(x => x.exitTime - x.entryTime)
+                .groupBy(t => {
+                    // under 1mn, 1mn-2mn, 2-5mn, 5-10mn, 10-20mn, 20-40mn, 40-60mn, above 60mn
+                    var tradeDuration = t.exitTime - t.entryTime // in seconds  
+                    var tradeDurationDiv = tradeDuration / 60
+
+                    var floorDurationSeconds
+                    if (tradeDurationDiv < 1) {
+                        floorDurationSeconds = 0 * 60 // 0-1mn
+                    }
+                    if (tradeDurationDiv >= 1 && tradeDurationDiv < 2) {
+                        floorDurationSeconds = 1 * 60 // 1-2mn
+                    }
+                    if (tradeDurationDiv >= 2 && tradeDurationDiv < 5) {
+                        floorDurationSeconds = 2 * 60 // 2-5mn
+                    }
+                    if (tradeDurationDiv >= 5 && tradeDurationDiv < 10) {
+                        floorDurationSeconds = 5 * 60 // 5-10mn
+                    }
+                    if (tradeDurationDiv >= 10 && tradeDurationDiv < 20) {
+                        floorDurationSeconds = 10 * 60 // 10-20mn
+                    }
+                    if (tradeDurationDiv >= 20 && tradeDurationDiv < 40) {
+                        floorDurationSeconds = 20 * 60 // 20-40mn
+                    }
+                    if (tradeDurationDiv >= 40 && tradeDurationDiv < 60) {
+                        floorDurationSeconds = 40 * 60 // 40-60mn
+                    }
+                    if (tradeDurationDiv >= 60) {
+                        floorDurationSeconds = 60 * 60 // >60mn
+                    }
+                    //console.log(" -> duration " + dayjs.duration(tradeDuration * 1000).format('HH:mm:ss') + " - interval in seconds " + floorDurationSeconds + " - formated interval " + dayjs.duration(floorDurationSeconds * 1000).format('HH:mm:ss'))
+
+                    return dayjs.duration(floorDurationSeconds * 1000).format('HH:mm:ss')
+                })
+                //console.log("d "+JSON.stringify(d))
+
+            /*** Group by stock price range ***/
+
+            var e = _(temp1)
+                .orderBy(x => x.entryPrice)
+                .groupBy(x => {
+                        // under 5$, 5-10$, 10-15$, 15-20$, 20-25$mn, 25-30$, above 30$
+                        if (x.entryPrice < 30) {
+                            var priceRange = 5
+                            floorPrice = (Math.floor(x.entryPrice / priceRange) * priceRange);
+                        }
+                        if (x.entryPrice > 30) {
+                            floorPrice = 30
+                        }
+                    
+                    console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
+
+                    return floorPrice
+                })
+        console.log("e "+JSON.stringify(e))
+
+    },
+
+    getTradesFromDb: async function() {
+        return new Promise((resolve, reject) => {
+            (async() => {
+                const Object = Parse.Object.extend("trades");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current());
+                query.ascending("dateUnix");
+                query.limit(1000000); // limit to at most 10 results
+                const results = await query.find();
+                this.allTrades = JSON.parse(JSON.stringify(results))
+                    //console.log("all trades before "+JSON.stringify(this.allTrades))
+                await this.saveAllTradesToIndexedDb()
+                resolve()
+            })()
+        })
     }
+
+}
 }

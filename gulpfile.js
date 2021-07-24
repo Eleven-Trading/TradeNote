@@ -78,10 +78,15 @@ function scriptsFunction() {
         API_BASE_URL = process.argv[i + 1];
     } else { API_BASE_URL = '' }
     
-    var API_END_POINT, i = process.argv.indexOf("--API_END_POINT");
+    var API_END_POINT_TEMP_URL, i = process.argv.indexOf("--API_END_POINT_TEMP_URL");
     if (i > -1) {
-        API_END_POINT = process.argv[i + 1];
-    } else { API_END_POINT = '' }
+        API_END_POINT_TEMP_URL = process.argv[i + 1];
+    } else { API_END_POINT_TEMP_URL = '' }
+
+    var API_END_POINT_FINVIZ, i = process.argv.indexOf("--API_END_POINT_FINVIZ");
+    if (i > -1) {
+        API_END_POINT_FINVIZ = process.argv[i + 1];
+    } else { API_END_POINT_FINVIZ = '' }
 
     var PUBLIC_BASE_URL_B2, i = process.argv.indexOf("--PUBLIC_BASE_URL_B2");
     if (i > -1) {
@@ -92,7 +97,8 @@ function scriptsFunction() {
         .pipe(replace('PARSE_INIT', PARSE_INIT))
         .pipe(replace('PARSE_URL', PARSE_URL))
         .pipe(replace('API_BASE_URL', API_BASE_URL))
-        .pipe(replace('API_END_POINT', API_END_POINT))
+        .pipe(replace('API_END_POINT_TEMP_URL', API_END_POINT_TEMP_URL))
+        .pipe(replace('API_END_POINT_FINVIZ', API_END_POINT_FINVIZ))
         .pipe(replace('PUBLIC_BASE_URL_B2', PUBLIC_BASE_URL_B2))
         .pipe(gulp.dest(paths.scriptsPath.dest))
         .pipe(browserSync.stream());

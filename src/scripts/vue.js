@@ -73,7 +73,7 @@ const vueApp = new Vue({
             activeNav: 1,
             dailyChartHeight: 150,
             maxChartValues: 20,
-            showEstimations : localStorage.getItem('showEstimations') ? JSON.parse(localStorage.getItem('showEstimations')) : false,
+            showEstimations: localStorage.getItem('showEstimations') ? JSON.parse(localStorage.getItem('showEstimations')) : false,
             estimations: {
                 quantity: 10000,
                 fees: 0.005
@@ -99,13 +99,13 @@ const vueApp = new Vue({
             dateRange: [{
                     value: "all",
                     label: "All",
-                    start: 0, 
+                    start: 0,
                     end: 0
                 },
                 {
                     value: "thisWeek",
                     label: "This Week",
-                    start:  dayjs().startOf('week').add(1, 'day').unix(),
+                    start: dayjs().startOf('week').add(1, 'day').unix(),
                     end: dayjs().endOf('week').add(1, 'day').unix()
                 },
                 {
@@ -220,8 +220,10 @@ const vueApp = new Vue({
 
             //ADDTRADES
             apiBaseUrl: "API_BASE_URL",
-            apiEndPoint: "API_END_POINT",
+            apiEndPointTempUrl: "API_END_POINT_TEMP_URL",
+            apiEndPointFinviz: "API_END_POINT_FINVIZ",
             publicBaseUrlB2: "PUBLIC_BASE_URL_B2",
+            includeFinviz: true,
             existingTradesArray: [],
             executions: null,
             trades: null,
@@ -250,17 +252,16 @@ const vueApp = new Vue({
             playbookImgB2Url: null,
         }
     },
-    beforeCreate: async function() {
-    },
+    beforeCreate: async function() {},
     created: async function() {
         //we create the selectedDate and Calendar range
         this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'all')[0]
-        
-        this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : {start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end}
+
+        this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
 
-            //this.currentPage = document.getElementsByTagName("main")[0].id
+        //this.currentPage = document.getElementsByTagName("main")[0].id
         this.initParse()
         this.checkCurrentUser()
 
@@ -303,10 +304,10 @@ const vueApp = new Vue({
         if (this.currentPage.id == "addScreenshot") {
             //this.getScreenshotToEdit(itemToEditId)
             this.initQuill()
-            /*if (itemToEditId) {
-                this.getScreenshotToEdit(itemToEditId)
-                    //sessionStorage.removeItem('editItemId');
-            }*/
+                /*if (itemToEditId) {
+                    this.getScreenshotToEdit(itemToEditId)
+                        //sessionStorage.removeItem('editItemId');
+                }*/
         }
         if (this.currentPage.id == "addTrades") {
             this.initStepper()
@@ -314,6 +315,25 @@ const vueApp = new Vue({
 
         this.tagArray()
         this.initWheelEvent()
+        var fullFileName = "2021_07_19-142702.mp4"
+        
+        var fileName = fullFileName.substring(0, fullFileName.lastIndexOf('.'))
+        console.log("file name " + fileName)
+        
+        
+        var fileDate = fileName.split("-")[0].split("_")
+        var fileYear = fileDate[0]
+        var fileMonth = fileDate[1]
+        var fileDay = fileDate[2]
+        //console.log("year "+fileYear + " month "+fileMonth+" day "+fileDay)
+        var fileTime = fileName.split("-")[1]
+        var fileHour = fileTime.substring(0,2)
+        var fileMinutes = fileTime.substring(2,4)
+        var fileSeconds = fileTime.substring(4,6)
+        //console.log("hour "+fileHour + " minutes "+fileMinutes+" seconds "+fileSeconds)
+        var fileDateUnix = dayjs(fileDate+" "+fileHour+":"+fileMinutes+":"+fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
+        console.log("unix "+fileDateUnix)
+        
 
     },
     watch: {
@@ -322,17 +342,21 @@ const vueApp = new Vue({
         },
         playbookImg: function() {
             //console.log("watch img "+this.playbookImg)
-        }
+        }, 
+        includeFinviz: function() {
+            //console.log("watch finviz "+this.includeFinviz)
+        }, 
+
     },
     methods: {
         // =================================================================================
         // GLOBALS
         // =================================================================================
 
-        showEstimationsToggle(){
+        showEstimationsToggle() {
             this.getAllTrades()
             currentState = JSON.parse(localStorage.getItem('showEstimations'))
-            console.log("state "+currentState)
+            console.log("state " + currentState)
             currentState == true ? localStorage.setItem('showEstimations', false) : localStorage.setItem('showEstimations', true)
         },
 

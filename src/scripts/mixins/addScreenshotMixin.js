@@ -90,7 +90,7 @@ const addScreenshotMixin = {
                 console.log(" -> Uploading to bucket")
                 this.loadingSpinnerText = "Uploading to bucket ..."
                 var urlBase = this.apiBaseUrl
-                var url = urlBase + this.apiEndPoint
+                var url = urlBase + this.apiEndPointTempUrl
                 var subFolderCat = "screenshots"
                 var subFolder = "tradenote/" + Parse.User.current().id + "/" + subFolderCat
 

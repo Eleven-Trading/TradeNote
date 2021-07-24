@@ -68,7 +68,7 @@ const playbookMixin = {
                 this.loadingSpinnerText = "Uploading to bucket ..."
 
                 var urlBase = this.apiBaseUrl
-                var url = urlBase + this.apiEndPoint
+                var url = urlBase + this.apiEndPointTempUrl
                 var fileName = Parse.User.current().id + ".svg"
                 axios
                     .post(url, {

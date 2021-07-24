@@ -14,7 +14,7 @@
             </div>
             @@include('components/noData.html')
             <div class="col-12 col-xl-8" v-bind:key="renderData">
-                <div v-for="(daily, index) in filteredTrades" class="row mt-2" v-if="daily.videoPoster">
+                <div v-for="(daily, index) in filteredTrades" class="row mt-2" v-if="daily.video">
                     <div class="col-12">
                         <div class="dailyCard">
                             <div class="row">
@@ -142,7 +142,7 @@
                                 <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
                                 <tr>
                                     <td>{{tradeToShow[0].trades[videoToPlay].symbol}}</td>
-                                    <td>{{tradeToShow[0].trades[videoToPlay].quantity}}</td>
+                                    <td>{{tradeToShow[0].trades[videoToPlay].buyQuantity+tradeToShow[0].trades[videoToPlay].sellQuantity}}</td>
                                     <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].entryTime)}}</td>
                                     <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].exitTime)}}</td>
                                     <td>{{(tradeToShow[0].trades[videoToPlay].entryPrice).toFixed(2)}}</td>
