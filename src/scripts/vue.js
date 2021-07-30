@@ -78,6 +78,9 @@ const vueApp = new Vue({
                 quantity: 10000,
                 fees: 0.005
             },
+            isNet: JSON.parse(localStorage.getItem('isNet')), //JSON parse because localstorage stores in string and not bool
+            amountCase: JSON.parse(localStorage.getItem('isNet')) == true ? 'net' : 'gross',
+            amountCapital: JSON.parse(localStorage.getItem('isNet')) == true ? 'Net' : 'Gross',
 
             //Show/Hide page
             showDashboard: true,
@@ -252,8 +255,12 @@ const vueApp = new Vue({
             playbookImgB2Url: null,
         }
     },
-    beforeCreate: async function() {},
+    beforeCreate: async function() {
+        //set default gross / net in localstorage 
+        !localStorage.getItem('isNet') ? localStorage.setItem('isNet', true) : ''
+    },
     created: async function() {
+
         //we create the selectedDate and Calendar range
         this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'all')[0]
 
@@ -300,6 +307,7 @@ const vueApp = new Vue({
         this.playbookImgChange()
     },
     mounted() {
+    
         var itemToEditId = sessionStorage.getItem('editItemId')
         if (this.currentPage.id == "addScreenshot") {
             //this.getScreenshotToEdit(itemToEditId)
@@ -353,11 +361,13 @@ const vueApp = new Vue({
         // GLOBALS
         // =================================================================================
 
-        showEstimationsToggle() {
+        grossNetToggle() {
             this.getAllTrades()
-            currentState = JSON.parse(localStorage.getItem('showEstimations'))
-            console.log("state " + currentState)
-            currentState == true ? localStorage.setItem('showEstimations', false) : localStorage.setItem('showEstimations', true)
+            currentState = JSON.parse(localStorage.getItem('isNet'))
+            //console.log("state " + currentState)
+            localStorage.setItem('isNet', !currentState)
+            !currentState == true ? this.amountCase = "net" : this.amountCase = "gross"
+            !currentState == true ? this.amountCapital = "Net" : this.amountCapital = "Gross"
         },
 
         /* ---- INITS ---- */

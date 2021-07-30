@@ -1,7 +1,7 @@
 <!-- Line 1 : Date and P&L -->
 <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
     <div class="col-auto">{{createdDateFormat(daily.date.iso)}}</div>
-    <div class="col-auto ms-auto">P&L(n): <span v-bind:class="[daily.pAndL.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(daily.pAndL.netProceeds).toFixed(2)}}$</span></div>
+    <div class="col-auto ms-auto">P&L(n): <span v-bind:class="[daily.pAndL[amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{(daily.pAndL[amountCase+'Proceeds']).toFixed(2)}}$</span></div>
 </div>
 
 <!-- Line 2 : Charts and total data -->

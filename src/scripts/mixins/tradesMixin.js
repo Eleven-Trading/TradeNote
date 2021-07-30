@@ -392,7 +392,7 @@ const tradesMixin = {
 
                     return floorPrice
                 })
-        console.log("e "+JSON.stringify(e))
+            //console.log("e "+JSON.stringify(e))
 
     },
 

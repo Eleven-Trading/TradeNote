@@ -101,7 +101,7 @@
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.netSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossProceeds).toFixed(2)}}</td>
-                        <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
+                        <td v-bind:class="[trade[amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{(trade[amountCase+'Proceeds']).toFixed(2)}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -149,7 +149,7 @@
                                     <td>{{(tradeToShow[0].trades[videoToPlay].exitPrice).toFixed(2)}}</td>
                                     <td v-bind:class="[(tradeToShow[0].trades[videoToPlay].exitPrice - tradeToShow[0].trades[videoToPlay].entryPrice)>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].exitPrice - tradeToShow[0].trades[videoToPlay].entryPrice).toFixed(2)}}</td>
                                     <td v-bind:class="[tradeToShow[0].trades[videoToPlay].grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].grossProceeds).toFixed(2)}}</td>
-                                    <td v-bind:class="[tradeToShow[0].trades[videoToPlay].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].netProceeds).toFixed(2)}}</td>
+                                    <td v-bind:class="[tradeToShow[0].trades[videoToPlay][amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay][amountCase+'Proceeds']).toFixed(2)}}</td>
                                 </tr>
                             </tbody>
                         </table>

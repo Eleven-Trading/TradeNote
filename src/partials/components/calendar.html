@@ -17,11 +17,11 @@
             <div>{{day}}</div>
             <div v-for="line in calendarData">
                 <div class="row">
-                    <div class="col" v-show="line[index] != 0" v-bind:class="{'greenTradeDiv': line[index].pAndL.netProceeds>=0, 'redTradeDiv': line[index].pAndL.netProceeds<0, 'calDivDay': currentPage.id == 'daily' || currentPage.id == 'videos', 'calDivDash': currentPage.id == 'dashboard' ||  currentPage.id == 'calendar'}">
+                    <div class="col" v-show="line[index] != 0" v-bind:class="{'greenTradeDiv': line[index].pAndL[amountCase+'Proceeds']>=0, 'redTradeDiv': line[index].pAndL[amountCase+'Proceeds']<0, 'calDivDay': currentPage.id == 'daily' || currentPage.id == 'videos', 'calDivDash': currentPage.id == 'dashboard' ||  currentPage.id == 'calendar'}">
                         <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
                     @@if(type === "full"){
                         <p v-show="line[index].pAndL.trades">{{line[index].pAndL.trades}} trades</p>
-                        <p v-show="line[index].pAndL.netProceeds">{{parseInt(line[index].pAndL.netProceeds).toFixed(2)}}$</p>
+                        <p v-show="line[index].pAndL[amountCase+'Proceeds']">{{parseInt(line[index].pAndL[amountCase+'Proceeds']).toFixed(2)}}$</p>
                     }
                 </div>
                 </div>

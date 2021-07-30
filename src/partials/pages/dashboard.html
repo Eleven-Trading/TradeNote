@@ -7,13 +7,13 @@
                     <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
                 </select>
             </div>
-            <!-- ESTIMATION SWITCH
+            <!-- GROSS NET SWITCH -->
             <div class="col-auto">
                 <label class="switch">
-                    <input type="checkbox" v-model="showEstimations" v-on:change="showEstimationsToggle">
+                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
                     <span class="slider round"></span>
                 </label>
-            </div>-->
+            </div>
         </div>
     </div>
 
@@ -28,23 +28,23 @@
                     </div>
                     <div v-else class="row">
                         <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc"><span v-if="!showEstimations">{{thousandFormat(totals.netProceeds)}}</span><span v-else>{{thousandFormat(totals.netProceedsEstimations)}}</span>$</h4>
+                            <h4 class="titleWithDesc">{{thousandFormat(totals.netProceeds)}}$</h4>
                             <span class="dashInfoTitle">Cumulated P&L(n)</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{thousandFormat(totals.fees)}}</span><span v-else>{{thousandFormat(totals.feesEstimations)}}</span>$</h6>
+                            <h6 class="titleWithDesc">{{thousandFormat(totals.fees)}}$</h6>
                             <span class="dashInfoTitle">Cumulated Fees</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{thousandFormat(totals.grossProceeds)}}</span><span v-else>{{thousandFormat(totals.grossProceedsEstimations)}}</span>$</h6>
+                            <h6 class="titleWithDesc">{{thousandFormat(totals.grossProceeds)}}$</h6>
                             <span class="dashInfoTitle">Cumulated P&L(g)</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{totals.trades}}</span><span v-else>{{totals.tradesEstimations}}</span></h6>
+                            <h6 class="titleWithDesc">{{totals.trades}}</h6>
                             <span class="dashInfoTitle">Trades</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{totals.executions}}</span><span v-else>{{(totals.executionsEstimations)}}</span></h6>
+                            <h6 class="titleWithDesc">{{totals.executions}}</h6>
                             <span class="dashInfoTitle">Executions</span>
                         </div>
                     </div>
@@ -59,23 +59,23 @@
                     </div>
                     <div v-else class="row">
                         <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc"><span v-if="!showEstimations">{{((totals.probNetWins * totals.avgNetWins) - (totals.probNetLoss * totals.avgNetLoss)).toFixed(2)}}</span><span v-else>{{((totals.probNetWins * totals.avgNetWinsEstimations) - (totals.probNetLoss * totals.avgNetLossEstimations)).toFixed(2)}}</span>$</h4>
+                            <h4 class="titleWithDesc">{{((totals['prob'+amountCapital+'Wins'] * totals['avg'+amountCapital+'Wins']) - (totals['prob'+amountCapital+'Loss'] * totals['avg'+amountCapital+'Loss'])).toFixed(2)}}$</h4>
                             <span class="dashInfoTitle">APPT(n)</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.probNetWins * 100).toFixed(2)}}%</h6>
+                            <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Wins'] * 100).toFixed(2)}}%</h6>
                             <span class="dashInfoTitle">Win Probability</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.probNetLoss * 100).toFixed(2)}}%</h6>
+                            <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Loss'] * 100).toFixed(2)}}%</h6>
                             <span class="dashInfoTitle">Loss Probability</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{(totals.avgNetWins).toFixed(2)}}</span><span v-else>{{(totals.avgNetWinsEstimations).toFixed(2)}}</span>$</h6>
+                            <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Wins']).toFixed(2)}}$</h6>
                             <span class="dashInfoTitle">Average Win</span>
                         </div>
                         <div class="col-6">
-                            <h6 class="titleWithDesc"><span v-if="!showEstimations">{{(totals.avgNetLoss).toFixed(2)}}</span><span v-else>{{(totals.avgNetLossEstimations).toFixed(2)}}</span>$</h6>
+                            <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Loss']).toFixed(2)}}$</h6>
                             <span class="dashInfoTitle">Average Loss</span>
                         </div>
                     </div>

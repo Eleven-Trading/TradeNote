@@ -95,7 +95,7 @@ const chartsCalMixin = {
                     var chartCategories = []
                     el.trades.forEach(element => {
                         var proceeds = Number((element.grossProceeds).toFixed(2))
-                        var proceedsNet = Number((element.netProceeds).toFixed(2))
+                        var proceedsNet = Number((element[this.amountCase+'Proceeds']).toFixed(2))
                         if (chartDataGross.length == 0) {
                             chartDataGross.push(proceeds)
                         } else {
@@ -221,7 +221,7 @@ const chartsCalMixin = {
                 var chartXAxis = []
                 this.filteredTrades.forEach(element => {
                     if (!this.showEstimations) {
-                        var proceeds = element.pAndL.netProceeds
+                        var proceeds = element.pAndL[this.amountCase+'Proceeds']
                     } else {
                         var proceeds = (element.pAndL.grossSharePL * this.estimations.quantity) - (element.pAndL.trades * 2 * this.estimations.quantity * this.estimations.fees)
                     }
