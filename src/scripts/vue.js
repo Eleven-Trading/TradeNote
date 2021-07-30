@@ -74,13 +74,18 @@ const vueApp = new Vue({
             dailyChartHeight: 150,
             maxChartValues: 20,
             showEstimations: localStorage.getItem('showEstimations') ? JSON.parse(localStorage.getItem('showEstimations')) : false,
+            grossNet: localStorage.getItem('grossNet') ? localStorage.getItem('grossNet') : 'net',
             estimations: {
                 quantity: 10000,
                 fees: 0.005
             },
+<<<<<<< HEAD
             isNet: JSON.parse(localStorage.getItem('isNet')), //JSON parse because localstorage stores in string and not bool
             amountCase: JSON.parse(localStorage.getItem('isNet')) == true ? 'net' : 'gross',
             amountCapital: JSON.parse(localStorage.getItem('isNet')) == true ? 'Net' : 'Gross',
+=======
+            tradeTimeZone: "America/New_York",
+>>>>>>> main
 
             //Show/Hide page
             showDashboard: true,
@@ -98,6 +103,7 @@ const vueApp = new Vue({
             totalCalendarMounted: false,
             totalPAndLChartHeight: 400,
             totals: null,
+            groups: {},
             totalWinLossChartHeight: 200,
             dateRange: [{
                     value: "all",
@@ -225,6 +231,7 @@ const vueApp = new Vue({
             apiBaseUrl: "API_BASE_URL",
             apiEndPointTempUrl: "API_END_POINT_TEMP_URL",
             apiEndPointFinviz: "API_END_POINT_FINVIZ",
+            apiEndPointTimezone: "API_END_POINT_TIMEZONE",
             publicBaseUrlB2: "PUBLIC_BASE_URL_B2",
             includeFinviz: true,
             existingTradesArray: [],
@@ -368,6 +375,13 @@ const vueApp = new Vue({
             localStorage.setItem('isNet', !currentState)
             !currentState == true ? this.amountCase = "net" : this.amountCase = "gross"
             !currentState == true ? this.amountCapital = "Net" : this.amountCapital = "Gross"
+        },
+
+        grossNetToggle() {
+            this.getAllTrades()
+            currentState = JSON.parse(localStorage.getItem('grossNet'))
+            console.log("state " + currentState)
+            currentState == 'net' ? localStorage.setItem('grossNet', 'gross') : localStorage.setItem('grossNet', 'net')
         },
 
         /* ---- INITS ---- */
@@ -552,7 +566,7 @@ const vueApp = new Vue({
             return dayjs.unix(param).format("DD MMMM YYYY")
         },
         timeFormat(param) {
-            return dayjs.unix(param).format("hh:mm:ss")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("hh:mm:ss")
         },
         hourMinuteFormat(param) {
             return dayjs.unix(param).format("hh:mm")

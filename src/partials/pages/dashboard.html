@@ -13,7 +13,18 @@
                     <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
                     <span class="slider round"></span>
                 </label>
+<<<<<<< HEAD
             </div>
+=======
+            </div>-->
+            <!-- GROSS/NET SWITCH
+            <div class="col-auto">
+                <label class="switch">
+                    <input type="checkbox" v-model="grossNet" v-on:change="grossNetToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div> -->
+>>>>>>> main
         </div>
     </div>
 
@@ -175,6 +186,106 @@
                     <div v-bind:key="renderData" id="boxPlotChart1" class="chartClass"></div>
                 </div>
             </div>
+
+            <!-- GROUP BY TIMEFRAME -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Timeframe</h6>
+                    <div v-bind:key="renderData" id="barChartNegative1" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY TIMEFRAME AND AVERAGE WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Timeframe and Average Win</h6>
+                    <div v-bind:key="renderData" id="barChartNegative2" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY TIMEFRAME AND LOSS WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Timeframe and Average Loss</h6>
+                    <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY TRADES -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Trades</h6>
+                    <div v-bind:key="renderData" id="barChartNegative4" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY TRADES AND AVERAGE WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Trades and Average Win</h6>
+                    <div v-bind:key="renderData" id="barChartNegative5" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY TRADES AND LOSS WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Trades and Average Loss</h6>
+                    <div v-bind:key="renderData" id="barChartNegative6" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY EXECUTIONS -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Executions</h6>
+                    <div v-bind:key="renderData" id="barChartNegative7" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY EXECUTIONS AND AVERAGE WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Executions and Average Win</h6>
+                    <div v-bind:key="renderData" id="barChartNegative8" class="chartClass"></div>
+                </div>
+            </div>
+
+            <!-- GROUP BY EXECUTIONS AND LOSS WIN -->
+            <div class="col-12 col-xl-4 mb-3">
+                <div class="dailyCard">
+                    <div class="text-center" v-if="!totalPAndLChartMounted">
+                        <div class="spinner-border text-blue" role="status"></div>
+                    </div>
+                    <h6>Group by Executions and Average Loss</h6>
+                    <div v-bind:key="renderData" id="barChartNegative9" class="chartClass"></div>
+                </div>
+            </div>
+
 
         </div>
     </div>

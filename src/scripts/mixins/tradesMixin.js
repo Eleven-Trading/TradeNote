@@ -49,6 +49,15 @@ const tradesMixin = {
                 await this.lineBarChart()
                 await this.barChart("barChart1")
                 await this.barChart("barChart2")
+                await this.barChartNegative("barChartNegative1")
+                await this.barChartNegative("barChartNegative2")
+                await this.barChartNegative("barChartNegative3")
+                await this.barChartNegative("barChartNegative4")
+                await this.barChartNegative("barChartNegative5")
+                await this.barChartNegative("barChartNegative6")
+                await this.barChartNegative("barChartNegative7")
+                await this.barChartNegative("barChartNegative8")
+                await this.barChartNegative("barChartNegative9")
                 await this.boxPlotChart()
                 await (this.totalPAndLChartMounted = true)
             }
@@ -156,12 +165,15 @@ const tradesMixin = {
 
             //console.log("filtered trades "+JSON.stringify(this.filteredTrades[0].trades))
             var temp1 = []
+            var temp2 = []
             this.filteredTrades.forEach((element, index) => {
                 //console.log("element "+JSON.stringify(element))
                 //console.log("entry time " + element.trades[0].entryTime + " and formated " + dayjs.unix(element.trades[0].entryTime).format("HH:mm"))
                 element.trades.forEach(el => {
                     temp1.push(el)
                 })
+
+                temp2.push(element.pAndL)
 
                 totalQuantity += element.pAndL.buyQuantity + element.pAndL.sellQuantity
 
@@ -312,30 +324,39 @@ const tradesMixin = {
 
 
             /*******************
-             * GROUP BY
+             * GROUP BY DAY OF WEEK
              *******************/
 
-            /*** Group by day of week ***/
-            var a = _
+            this.groups.day = _
                 .groupBy(temp1, t => dayjs.unix(t.entryTime).day()); //temp1 is json array with trades and is created during totals
             //console.log("a "+JSON.stringify(a))
 
-            /*** Group by month of year ***/
+            /*******************
+             * GROUP BY MONTH OF YEAR
+             *******************/
             var b = _
                 .groupBy(temp1, t => dayjs.unix(t.entryTime).month());
             //console.log("b "+JSON.stringify(b))
 
-            /*** Group by entry time by xxx second timeframe ***/
-            var c = _
-                .groupBy(temp1, t => {
+            /*******************
+             * GROUP BY ENTRY TIMEFRAME
+             *******************/
+            this.groups.timeframe = _(temp1)
+                .groupBy(x => {
                     var secondTimeFrame = 30
                     var msTimeFrame = secondTimeFrame * 60 * 1000; /*ms*/
-                    var entryTimeTF = dayjs(Math.floor((+dayjs.unix(t.entryTime)) / msTimeFrame) * msTimeFrame);
-                    return entryTimeTF.format("hh:mm:ss")
+                    //console.log("entry time " + dayjs.unix(x.entryTime).format("HH:mm"))
+                    var entryTimeTF = dayjs(Math.floor((+dayjs.unix(x.entryTime)) / msTimeFrame) * msTimeFrame);
+                    return entryTimeTF.format("HH:mm")
                 })
-                //console.log("c " + JSON.stringify(c))
+                .toPairs()
+                .sortBy(0)
+                .fromPairs()
+                .value()
 
-            /*** Group by trade duration ***/
+            //console.log("timeframe " + JSON.stringify(this.groups.timeframe))
+
+            /* ==== Group by trade duration ==== */
             var d = _(temp1)
                 .orderBy(x => x.exitTime - x.entryTime)
                 .groupBy(t => {
@@ -374,24 +395,26 @@ const tradesMixin = {
                 })
                 //console.log("d "+JSON.stringify(d))
 
-            /*** Group by stock price range ***/
-
+            /*******************
+             * GROUP BY ENTRYPRICE
+             *******************/
             var e = _(temp1)
                 .orderBy(x => x.entryPrice)
                 .groupBy(x => {
-                        // under 5$, 5-10$, 10-15$, 15-20$, 20-25$mn, 25-30$, above 30$
-                        if (x.entryPrice < 30) {
-                            var priceRange = 5
-                            floorPrice = (Math.floor(x.entryPrice / priceRange) * priceRange);
-                        }
-                        if (x.entryPrice > 30) {
-                            floorPrice = 30
-                        }
-                    
-                    console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
+                    // under 5$, 5-10$, 10-15$, 15-20$, 20-25$mn, 25-30$, above 30$
+                    if (x.entryPrice < 30) {
+                        var priceRange = 5
+                        floorPrice = (Math.floor(x.entryPrice / priceRange) * priceRange);
+                    }
+                    if (x.entryPrice > 30) {
+                        floorPrice = 30
+                    }
+
+                    //console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
 
                     return floorPrice
                 })
+<<<<<<< HEAD
             //console.log("e "+JSON.stringify(e))
 
     },
@@ -412,6 +435,58 @@ const tradesMixin = {
             })()
         })
     }
+=======
+                //console.log("e "+JSON.stringify(e))
 
-}
+            /*******************
+             * GROUP BY NUMBER OF TRADES
+             *******************/
+            this.groups.trades = _(temp2)
+                .groupBy(x => {
+                    // under 5, 6-10, 11-15, 16-20, 21-30, above 30 trades
+                    if (x.trades <= 30) {
+                        var range = 5
+                        ceilTrades = (Math.ceil(x.trades / range) * range);
+                    }
+                    if (x.trades > 30) {
+                        ceilTrades = 30
+                    }
+                    //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
+
+                    return ceilTrades
+                })
+                .value()
+
+            //console.log("trades " + JSON.stringify(this.groups.trades))
+
+            /*******************
+             * GROUP BY NUMBER OF EXECUTIONS PER TRADE
+             *******************/
+            this.groups.executions = _(temp1)
+                .groupBy('executionsCount')
+                .value()
+>>>>>>> main
+
+            //console.log("executions " + JSON.stringify(this.groups.executions))
+
+        },
+
+        getTradesFromDb: async function() {
+            return new Promise((resolve, reject) => {
+                (async() => {
+                    const Object = Parse.Object.extend("trades");
+                    const query = new Parse.Query(Object);
+                    query.equalTo("user", Parse.User.current());
+                    query.ascending("dateUnix");
+                    query.limit(1000000); // limit to at most 10 results
+                    const results = await query.find();
+                    this.allTrades = JSON.parse(JSON.stringify(results))
+                        //console.log("all trades before "+JSON.stringify(this.allTrades))
+                    await this.saveAllTradesToIndexedDb()
+                    resolve()
+                })()
+            })
+        }
+
+    }
 }
