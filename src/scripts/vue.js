@@ -73,19 +73,15 @@ const vueApp = new Vue({
             activeNav: 1,
             dailyChartHeight: 150,
             maxChartValues: 20,
-            showEstimations: localStorage.getItem('showEstimations') ? JSON.parse(localStorage.getItem('showEstimations')) : false,
-            grossNet: localStorage.getItem('grossNet') ? localStorage.getItem('grossNet') : 'net',
             estimations: {
                 quantity: 10000,
                 fees: 0.005
             },
-<<<<<<< HEAD
             isNet: JSON.parse(localStorage.getItem('isNet')), //JSON parse because localstorage stores in string and not bool
             amountCase: JSON.parse(localStorage.getItem('isNet')) == true ? 'net' : 'gross',
             amountCapital: JSON.parse(localStorage.getItem('isNet')) == true ? 'Net' : 'Gross',
-=======
+            
             tradeTimeZone: "America/New_York",
->>>>>>> main
 
             //Show/Hide page
             showDashboard: true,
@@ -375,13 +371,6 @@ const vueApp = new Vue({
             localStorage.setItem('isNet', !currentState)
             !currentState == true ? this.amountCase = "net" : this.amountCase = "gross"
             !currentState == true ? this.amountCapital = "Net" : this.amountCapital = "Gross"
-        },
-
-        grossNetToggle() {
-            this.getAllTrades()
-            currentState = JSON.parse(localStorage.getItem('grossNet'))
-            console.log("state " + currentState)
-            currentState == 'net' ? localStorage.setItem('grossNet', 'gross') : localStorage.setItem('grossNet', 'net')
         },
 
         /* ---- INITS ---- */

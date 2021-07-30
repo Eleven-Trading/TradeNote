@@ -414,28 +414,6 @@ const tradesMixin = {
 
                     return floorPrice
                 })
-<<<<<<< HEAD
-            //console.log("e "+JSON.stringify(e))
-
-    },
-
-    getTradesFromDb: async function() {
-        return new Promise((resolve, reject) => {
-            (async() => {
-                const Object = Parse.Object.extend("trades");
-                const query = new Parse.Query(Object);
-                query.equalTo("user", Parse.User.current());
-                query.ascending("dateUnix");
-                query.limit(1000000); // limit to at most 10 results
-                const results = await query.find();
-                this.allTrades = JSON.parse(JSON.stringify(results))
-                    //console.log("all trades before "+JSON.stringify(this.allTrades))
-                await this.saveAllTradesToIndexedDb()
-                resolve()
-            })()
-        })
-    }
-=======
                 //console.log("e "+JSON.stringify(e))
 
             /*******************
@@ -465,11 +443,13 @@ const tradesMixin = {
             this.groups.executions = _(temp1)
                 .groupBy('executionsCount')
                 .value()
->>>>>>> main
 
             //console.log("executions " + JSON.stringify(this.groups.executions))
 
+
+
         },
+
 
         getTradesFromDb: async function() {
             return new Promise((resolve, reject) => {
