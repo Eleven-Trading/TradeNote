@@ -51,18 +51,46 @@ const addTradesMixin = {
 
                     var lastId
                     var x
+                    var datesTimezone
                     for (const key of keys) {
                         temp[i] = {};
                         temp[i].account = parseCsvToJsonParse[key].Account;
-                        temp[i].td = dayjs(parseCsvToJsonParse[key]['T/D'], 'MM/DD/YYYY').unix();
-                        temp[i].sd = dayjs(parseCsvToJsonParse[key]['S/D'], 'MM/DD/YYYY').unix();
+
+                        await new Promise((resolve, reject) => {
+                            var urlBase = this.apiBaseUrl
+
+                            var url = urlBase + "" + this.apiEndPointTimezone
+                            axios
+                                .post(url, {
+                                    source: "import",
+                                    td: parseCsvToJsonParse[key]['T/D'],
+                                    sd: parseCsvToJsonParse[key]['S/D'],
+                                    execTime: parseCsvToJsonParse[key]['Exec Time']
+                                })
+                                .then(response => {
+                                    //console.log(" -> Result " + JSON.stringify(response.data))
+                                    datesTimezone = response.data
+
+                                    resolve()
+                                }).catch(e => {
+                                    console.log(" -> Error crawling Finviz " + e)
+                                    this.loadingSpinner = false
+                                    resolve()
+                                })
+                        })
+
+                        /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
+                        //frDate = usDate.tz("Europe/Paris")
+                        console.log("date "+usDate+" and fr ")*/
+                        temp[i].td = datesTimezone.dateTDUnix
+                        temp[i].sd = datesTimezone.dateSDUnix
                         temp[i].currency = parseCsvToJsonParse[key].Currency;
                         temp[i].type = parseCsvToJsonParse[key].Type;
                         temp[i].side = parseCsvToJsonParse[key].Side;
                         temp[i].symbol = parseCsvToJsonParse[key].Symbol;
                         temp[i].quantity = parseInt(parseCsvToJsonParse[key].Qty);
                         temp[i].price = parseFloat(parseCsvToJsonParse[key].Price);
-                        temp[i].execTime = dayjs(parseCsvToJsonParse[key]['T/D'] + ' ' + parseCsvToJsonParse[key]['Exec Time'], 'MM/DD/YYYY HH:mm:ss').unix();
+                        temp[i].execTime = datesTimezone.dateExecTimeUnix
                         tempId = "e" + temp[i].execTime + "_" + temp[i].symbol + "_" + temp[i].side;
                         // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                         if (tempId != lastId) {
@@ -287,7 +315,7 @@ const addTradesMixin = {
                                     await new Promise((resolve, reject) => {
                                         var urlBase = this.apiBaseUrl
 
-                                        var url = urlBase + "" +this.apiEndPointFinviz
+                                        var url = urlBase + "" + this.apiEndPointFinviz
                                         axios
                                             .post(url, {
                                                 symbol: tempExec.symbol,
@@ -444,7 +472,7 @@ const addTradesMixin = {
                         .groupBy("td");
                     //console.log(" -> Trades " + JSON.stringify(c))
                     this.trades = JSON.parse(JSON.stringify(c))
-                    //console.log("Trades C " + JSON.stringify(this.trades))
+                        //console.log("Trades C " + JSON.stringify(this.trades))
 
                     /* ==============================================
                 
@@ -890,7 +918,7 @@ const addTradesMixin = {
 
 
         /* ---- 2: UPLOAD VIDEO FROM INPUT ---- */
-        videoInput(event, param) { //param is td/trad unix data
+        videoInput: async function(event, param) { //param is td/trad unix data
             //console.log('video input with param ' + param)
             //this.loadingSpinner = true
             this.loadingSpinnerText = "Extracting video ..."
@@ -937,11 +965,37 @@ const addTradesMixin = {
                 console.log(" -> Date is valid")
                 var fileDateFormat = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DDTHH:mm:ss")
                 this.videos[param].startTime = fileDateFormat
-                var fileDateUnix = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").unix()
-                    //console.log("day js "+dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss")+" and unix "+fileDateUnix)
-                this.videos[param].startTimeUnix = fileDateUnix
+
+                var datesTimezone
+                await new Promise((resolve, reject) => {
+                    var urlBase = this.apiBaseUrl
+
+                    var url = urlBase + "" + this.apiEndPointTimezone
+                    axios
+                        .post(url, {
+                            source: "video",
+                            fileYear: fileYear,
+                            fileMonth: fileMonth,
+                            fileDay: fileDay,
+                            fileHour: fileHour,
+                            fileMinutes: fileMinutes,
+                            fileSeconds: fileSeconds
+                        })
+                        .then(response => {
+                            //console.log(" -> Result " + JSON.stringify(response.data))
+                            datesTimezone = response.data
+
+                            resolve()
+                        }).catch(e => {
+                            console.log(" -> Error crawling Finviz " + e)
+                            this.loadingSpinner = false
+                            resolve()
+                        })
+                })
+                this.videos[param].startTimeDate = datesTimezone.startTimeDate.date
+                this.videos[param].startTimeUnix = datesTimezone.startTimeUnix
                 this.videos[param].name = fullFileName
-                    //console.log("start time " + this.videos[param].startTime + ' and unix ' + this.videos[param].startTimeUnix)
+                console.log("start time " + this.videos[param].startTime + ' and unix ' + this.videos[param].startTimeUnix)
             }
 
 
@@ -969,16 +1023,47 @@ const addTradesMixin = {
         },*/
 
         /* ---- 3: CREATE TIME AND NAME (param1 is input date and time, param2 is td/trade unix date)---- */
-        videoStartTime(param1, param2) {
+        videoStartTime: async function(param1, param2) {
+            console.log("param "+param1)
             var startTime = param1
-            var startTimeUnix = dayjs(param1, "YYYY-MM-DD HH:mm:ss").unix()
-            this.videos[param2].startTime = startTime
-            this.videos[param2].startTimeUnix = startTimeUnix
             var fileDate = dayjs(param1).format('YYYY_MM_DD')
+            var fileYear = dayjs(param1).format('YYYY')
+            var fileMonth = dayjs(param1).format('MM')
+            var fileDay = dayjs(param1).format('DD')
             var fileHour = dayjs(param1).format('HH')
             var fileMinutes = dayjs(param1).format('mm')
             var fileSeconds = dayjs(param1).format('ss')
+            var datesTimezone
+            await new Promise((resolve, reject) => {
+                var urlBase = this.apiBaseUrl
+                var url = urlBase + "" + this.apiEndPointTimezone
+                axios
+                    .post(url, {
+                        source: "video",
+                        fileYear: fileYear,
+                        fileMonth: fileMonth,
+                        fileDay: fileDay,
+                        fileHour: fileHour,
+                        fileMinutes: fileMinutes,
+                        fileSeconds: fileSeconds
+                    })
+                    .then(response => {
+                        //console.log(" -> Result " + JSON.stringify(response.data))
+                        datesTimezone = response.data
+
+                        resolve()
+                    }).catch(e => {
+                        console.log(" -> Error crawling Finviz " + e)
+                        this.loadingSpinner = false
+                        resolve()
+                    })
+            })
+
             var fileName = fileDate + "-" + fileHour + "" + fileMinutes + "" + fileSeconds
+
+            this.videos[param2].startTime = dayjs(datesTimezone.startTimeDate.date).format("YYYY-MM-DDTHH:mm:ss")
+            this.videos[param2].startTimeDate = datesTimezone.startTimeDate.date
+            this.videos[param2].startTimeUnix = datesTimezone.startTimeUnix
             this.videos[param2].name = fileName + "." + this.videos[param2].fileExtension
             console.log("videos is " + JSON.stringify(this.videos))
 
@@ -1071,7 +1156,7 @@ const addTradesMixin = {
                 if (param2 != undefined) {
                     object.set("video", param2)
                     object.set("videoName", this.videos[param].name)
-                    object.set("videoDate", new Date(this.videos[param].startTime))
+                    object.set("videoDate", new Date(this.videos[param].startTimeDate))
                     object.set("videoDateUnix", this.videos[param].startTimeUnix)
                 }
 
@@ -1090,28 +1175,6 @@ const addTradesMixin = {
 
                         // Execute any logic that should take place after the object is saved.
                         console.log(" -> Added new trades with id " + object.id)
-                        if (param2 != undefined) {
-                            this.loadingSpinnerText = "Uploading video " + this.videos[param].name + "  to database ..."
-                            const Object = Parse.Object.extend("videos");
-                            const object = new Object();
-
-                            object.set("user", Parse.User.current())
-                            object.setACL(new Parse.ACL(Parse.User.current()));
-                            object.set("video", param2)
-                            object.set("videoName", this.videos[param].name)
-                            object.set("videoDate", new Date(this.videos[param].startTime))
-                            object.set("videoDateUnix", this.videos[param].startTimeUnix)
-                            object.set("tradeDateUnix", Number(param))
-                            object.save()
-                                .then((object) => {
-                                    console.log(" -> Added new video with id " + object.id)
-                                }, (error) => {
-                                    // Execute any logic that should take place if the save fails.
-                                    // error is a Parse.Error with an error code and message.
-                                    console.log('Failed to create new video object, with error code: ' + error.message);
-                                    this.loadingSpinner = false
-                                });
-                        }
                         i++
                         if (i == numberOfDates) {
                             //Refreshing all Trades
@@ -1185,7 +1248,7 @@ const addTradesMixin = {
             await this.getTradesFromDb()
             console.log("done")
             this.loadingSpinner = false
-                //window.location.href = "/dashboard"
+            window.location.href = "/dashboard"
                 //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
     } //End methods

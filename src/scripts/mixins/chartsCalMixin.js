@@ -46,7 +46,9 @@ const chartsCalMixin = {
                     tempData.day = element
                     tempData.dateUnix = elementDateUnix
                         //Using allTrades and not filteredTrades because we do not want calendar to be filtered
-                    var trade = this.allTrades.filter(f => f.dateUnix == elementDateUnix)
+                        // As unix here are different timezone than unix in database (localmachine vs utc in DB) we need to compare the number of days by dividing by the number of seconds in a day and then floor the value
+                    var trade = this.allTrades.filter(f => Math.floor(f.dateUnix / 60 / 60 / 24) == Math.floor(elementDateUnix / 60 / 60 / 24))
+                        //console.log("trade "+JSON.stringify(this.allTrades))
                     if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
                         tempData.pAndL = trade[0].pAndL
                             //console.log("trade "+JSON.stringify(trade[0].pAndL))
@@ -464,6 +466,148 @@ const chartsCalMixin = {
                             }
                         }
                     },
+                };
+                myChart.setOption(option);
+                resolve()
+            })
+        },
+
+        barChartNegative(param1) {
+            console.log("\nBAR CHART NEGATIVE")
+            return new Promise((resolve, reject) => {
+                var yAxis = []
+                var series = []
+                if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3") {
+                    var keyObject = this.groups.timeframe
+                }
+                if (param1 == "barChartNegative4" || param1 == "barChartNegative5" || param1 == "barChartNegative6") {
+                    var keyObject = this.groups.trades
+                }
+                if (param1 == "barChartNegative7" || param1 == "barChartNegative8" || param1 == "barChartNegative9") {
+                    var keyObject = this.groups.executions
+                }
+                const keys = Object.keys(keyObject);
+                //console.log("object " + JSON.stringify(keyObject))
+                for (const key of keys) {
+                    //console.log("key " + key)
+                    yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
+                    var netWinsCount = 0
+                    var netLossCount = 0
+                    var netWins = 0
+                    var netLoss = 0
+                    var trades = 0
+                    var numElements = keyObject[key].length
+                        //console.log("num elemnets " + numElements)
+                    keyObject[key].forEach((element, index) => {
+                        //console.log("index " + index)
+                        //console.log("element " + JSON.stringify(element))
+                        netWinsCount += element.netWinsCount
+                        netLossCount += element.netLossCount
+                        netWins += element.netWins
+                        netLoss += element.netLoss
+                        if (param1 == "barChartNegative4") {
+                            trades += element.trades
+                        } else {
+                            trades += element.tradesCount
+                        }
+                        //console.log("wins count "+element.netWinsCount+", loss count "+element.netLossCount+", wins "+element.netWins+", loss "+element.netLoss+", trades "+element.tradesCount)
+                        if (numElements == (index + 1)) {
+                            if (trades > 0) {
+                                var probNetWins = (netWinsCount / trades)
+                                var probNetLoss = (netLossCount / trades)
+                            } else {
+                                var probNetWins = 0
+                                var probNetLoss = 0
+                            }
+
+                            if (netWinsCount > 0) {
+                                var avgNetWins = (netWins / netWinsCount)
+                            } else {
+                                var avgNetWins = 0
+                            }
+
+                            if (netLossCount > 0) {
+                                var avgNetLoss = -(netLoss / netLossCount)
+                            } else {
+                                var avgNetLoss = 0
+                            }
+
+                            var appt = (probNetWins * avgNetWins) - (probNetLoss * avgNetLoss)
+                                //console.log("APPT " + appt)
+                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7") {
+                                series.unshift(appt)
+                            }
+                            if (param1 == "barChartNegative2" || param1 == "barChartNegative5" || param1 == "barChartNegative8") {
+                                series.unshift(avgNetWins)
+                            }
+                            if (param1 == "barChartNegative3" || param1 == "barChartNegative6" || param1 == "barChartNegative9") {
+                                series.unshift(avgNetLoss)
+                            }
+                        }
+                    })
+                }
+
+
+                var myChart = echarts.init(document.getElementById(param1));
+                option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        top: 80,
+                        bottom: 30
+                    },
+                    xAxis: {
+                        type: 'value',
+                        position: 'bottom',
+                        splitLine: {
+                            lineStyle: {
+                                type: 'dashed'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        axisLine: { show: false },
+                        axisLabel: { show: true },
+                        axisTick: { show: false },
+                        splitLine: { show: false },
+                        data: yAxis,
+                        axisLabel: {
+                            formatter: function(params) {
+                                if (param1 == "barChartNegative4" || param1 == "barChartNegative5" || param1 == "barChartNegative6") {
+                                    if (params <= 30) {
+                                        var range
+                                        if(params <= 5){
+                                            range = 5
+                                        }else {
+                                            range = 4
+                                        }
+                                        return (params-range)+"-"+params
+                                    }
+                                    if (params > 30) {
+                                        return "+30"
+                                    }
+                                } else {
+                                    return params
+                                }
+                            }
+                        },
+                    },
+                    series: [{
+                        type: 'bar',
+                        itemStyle: {
+                            color: '#35C4FE',
+                        },
+                        label: {
+                            show: false,
+                            formatter: '{b}'
+                        },
+                        data: series
+                    }]
                 };
                 myChart.setOption(option);
                 resolve()
