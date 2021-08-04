@@ -1,0 +1,90 @@
+<div class="row mt-2">
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</button>
+            <button class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-setups" type="button" role="tab" aria-controls="nav-setups" aria-selected="false">Setups</button>
+            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-mis" type="button" role="tab" aria-controls="nav-misc" aria-selected="false">Misc</button>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
+        <div class="tab-pane fade show active" id="nav-setups" role="tabpanel" aria-labelledby="nav-profile-tab">
+
+            <div class="row mt-3">
+
+                <!--=============== PATTERN ===============
+                <div class="row">
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">Pattern</label>
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-select" v-model="setup.patternName">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <div class="row">
+                            <div class="col-3">
+                                <label class="form-label">Description</label>
+                            </div>
+                            <div class="col-9">
+                                <input type="text" class="form-select" v-model="setup.patternDescription">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--=============== ENTRYPOINTS ===============
+                <div class="row mt-2">
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">Entrypoint</label>
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-select" v-model="setup.entrypointName">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-7">
+                        <div class="row">
+                            <div class="col-3">
+                                <label class="form-label">Description</label>
+                            </div>
+                            <div class="col-9">
+                                <input type="text" class="form-select" v-model="setup.entrypointDescription">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-1"></div>
+                </div>
+                <div class="mt-3 mb-3">
+                    <button type="button" v-on:click="uploadSetup" class="btn btn-success btn-lg">Save</button>
+                </div>-->
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Pattern</th>
+                            <th scope="col">Entrypoints</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody class="txt-small" v-for="setup in patternsEntrypoints">
+                        <tr>
+                            <td v-bind:rowspan="setup.entrypoints.length">{{setup.name}}</td>
+                            <td>{{setup.entrypoints[0].name}}</td>
+                            <td>{{setup.entrypoints[0].description}}</td>
+                        </tr>
+                        <tr v-if="setup.entrypoints.length>1" v-for="entrypoint in setup.entrypoints.slice(1,setup.entrypoints.length)">
+                            <td>{{entrypoint.name}}</td>
+                            <td>{{entrypoint.description}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-misc" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
+    </div>
+</div>

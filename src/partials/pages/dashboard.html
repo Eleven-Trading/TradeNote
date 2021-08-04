@@ -1,281 +1,308 @@
 <div class="row mt-2">
-    <!-- ============ LINE 1: DATE FILTERS ============ -->
-    <div class="col-12 mb-3 text-center align-items-center">
-        <div class="row">
-            <div class="col-auto">
-                <select v-on:input="inputDateRange($event.target.value)" class="form-select">
-                    <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
-                </select>
+    @@include('components/filters.html')
+    <nav>
+        <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
+            <button v-for="dashTab in dashTabs" v-bind:class="'nav-link ' + (selectedDashTab == dashTab.id ? 'active' : '')" v-bind:id="dashTab.id" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}</button>
+        </div>
+    </nav>
+
+    <div class="tab-content" id="nav-tabContent">
+
+        <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'overviewTab' ? 'active show' : '')" id="overviewNav" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <!-- ============ LINE 2: ID CARDS ============ -->
+            <div class="col-12">
+                <div class="row">
+                    <!-- P&L -->
+                    <div class="col-6 col-xl-3 mb-3 text-center">
+                        <div class="dailyCard">
+                            <div v-if="!totals">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <div v-else class="row">
+                                <div class="col-12 mb-3">
+                                    <h4 class="titleWithDesc">{{thousandFormat(totals.netProceeds)}}$</h4>
+                                    <span class="dashInfoTitle">Cumulated P&L(n)</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{thousandFormat(totals.fees)}}$</h6>
+                                    <span class="dashInfoTitle">Cumulated Fees</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{thousandFormat(totals.grossProceeds)}}$</h6>
+                                    <span class="dashInfoTitle">Cumulated P&L(g)</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{totals.trades}}</h6>
+                                    <span class="dashInfoTitle">Trades</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{totals.executions}}</h6>
+                                    <span class="dashInfoTitle">Executions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PERFORMANCE (APPT) -->
+                    <div class="col-6 col-xl-3 mb-3 text-center">
+                        <div class="dailyCard">
+                            <div v-if="!totals">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <div v-else class="row">
+                                <div class="col-12 mb-3">
+                                    <h4 class="titleWithDesc">{{((totals['prob'+amountCapital+'Wins'] * totals['avg'+amountCapital+'Wins']) - (totals['prob'+amountCapital+'Loss'] * totals['avg'+amountCapital+'Loss'])).toFixed(2)}}$</h4>
+                                    <span class="dashInfoTitle">APPT(n)</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Wins'] * 100).toFixed(2)}}%</h6>
+                                    <span class="dashInfoTitle">Win Probability</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Loss'] * 100).toFixed(2)}}%</h6>
+                                    <span class="dashInfoTitle">Loss Probability</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Wins']).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Average Win</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Loss']).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Average Loss</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RISK&REWARD -->
+                    <div class="col-6 col-xl-3 mb-3 text-center">
+                        <div class="dailyCard">
+                            <div v-if="!totals">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <div v-else class="row">
+                                <div class="col-12 mb-3">
+                                    <h4 class="titleWithDesc">{{((totals.grossSharePLWins/totals.grossWinsCount)/-(totals.grossSharePLLoss/totals.grossLossCount)).toFixed(2)}}</h4>
+                                    <span class="dashInfoTitle">Risk&Reward Ratio(g)</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals.grossSharePLWins/totals.grossWinsCount).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Average Win Per Share</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{-(totals.grossSharePLLoss/totals.grossLossCount).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Average Loss Per Share</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{(totals.highGrossSharePLWin).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Highest Win Per Share</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="titleWithDesc">{{-(totals.highGrossSharePLLoss).toFixed(2)}}$</h6>
+                                    <span class="dashInfoTitle">Highest Loss Per Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WIN SHARE -->
+                    <div class="col-6 col-xl-3 mb-3 text-center">
+                        <div class="dailyCard">
+                            <div v-if="!totals">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <div v-else>
+
+                                <div v-bind:key="renderData" id="pieChart1" class="chartIdCardClass"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- GROSS NET SWITCH -->
-            <div class="col-auto">
-                <label class="switch">
-                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
-                    <span class="slider round"></span>
-                </label>
+
+            <!-- ============ LINE 3 : TOTAL CHARTS ============ -->
+            <div class="col-12">
+                <div class="row">
+                    <!-- CUMULATIVE P&L -->
+                    <div class="col-12 col-xl-6 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Cumulated Net P&L</h6>
+                            <div v-bind:key="renderData" id="lineBarChart1" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- APPT CHART -->
+                    <div class="col-12 col-xl-6 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Net Average Profit Per Trade (APPT)</h6>
+                            <div v-bind:key="renderData" id="barChart1" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- WIN LOSS CHART -->
+                    <div class="col-12 col-xl-6 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Net Win Rate</h6>
+                            <div v-bind:key="renderData" id="barChart2" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- RISK REWARD CHART -->
+                    <div class="col-12 col-xl-6 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Risk & Reward</h6>
+                            <div v-bind:key="renderData" id="boxPlotChart1" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'timeTab' ? 'active show' : '')" id="timeNav" role="tabpanel" aria-labelledby="nav-time-tab">
+            <div class="col-12">
+                <div class="row">
+
+                    <!-- GROUP BY TIMEFRAME -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Timeframe</h6>
+                            <div v-bind:key="renderData" id="barChartNegative1" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- GROUP BY TIMEFRAME AND AVERAGE WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Timeframe and Average Win</h6>
+                            <div v-bind:key="renderData" id="barChartNegative2" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- GROUP BY TIMEFRAME AND LOSS WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Timeframe and Average Loss</h6>
+                            <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- ============ LINE 2: ID CARDS ============ -->
-    <div class="col-12">
-        <div class="row">
-            <!-- P&L -->
-            <div class="col-6 col-xl-3 mb-3 text-center">
-                <div class="dailyCard">
-                    <div v-if="!totals">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <div v-else class="row">
-                        <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc">{{thousandFormat(totals.netProceeds)}}$</h4>
-                            <span class="dashInfoTitle">Cumulated P&L(n)</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{thousandFormat(totals.fees)}}$</h6>
-                            <span class="dashInfoTitle">Cumulated Fees</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{thousandFormat(totals.grossProceeds)}}$</h6>
-                            <span class="dashInfoTitle">Cumulated P&L(g)</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{totals.trades}}</h6>
-                            <span class="dashInfoTitle">Trades</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{totals.executions}}</h6>
-                            <span class="dashInfoTitle">Executions</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'tradesTab' ? 'active show' : '')" id="tradesNav" role="tabpanel" aria-labelledby="nav-trades-tab">
+            <div class="col-12">
+                <div class="row">
 
-            <!-- PERFORMANCE (APPT) -->
-            <div class="col-6 col-xl-3 mb-3 text-center">
-                <div class="dailyCard">
-                    <div v-if="!totals">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <div v-else class="row">
-                        <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc">{{((totals['prob'+amountCapital+'Wins'] * totals['avg'+amountCapital+'Wins']) - (totals['prob'+amountCapital+'Loss'] * totals['avg'+amountCapital+'Loss'])).toFixed(2)}}$</h4>
-                            <span class="dashInfoTitle">APPT(n)</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Wins'] * 100).toFixed(2)}}%</h6>
-                            <span class="dashInfoTitle">Win Probability</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals['prob'+amountCapital+'Loss'] * 100).toFixed(2)}}%</h6>
-                            <span class="dashInfoTitle">Loss Probability</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Wins']).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Average Win</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals['avg'+amountCapital+'Loss']).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Average Loss</span>
+                    <!-- GROUP BY TRADES -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Trades</h6>
+                            <div v-bind:key="renderData" id="barChartNegative4" class="chartClass"></div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- RISK&REWARD -->
-            <div class="col-6 col-xl-3 mb-3 text-center">
-                <div class="dailyCard">
-                    <div v-if="!totals">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <div v-else class="row">
-                        <div class="col-12 mb-3">
-                            <h4 class="titleWithDesc">{{((totals.grossSharePLWins/totals.grossWinsCount)/-(totals.grossSharePLLoss/totals.grossLossCount)).toFixed(2)}}</h4>
-                            <span class="dashInfoTitle">Risk&Reward Ratio(g)</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.grossSharePLWins/totals.grossWinsCount).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Average Win Per Share</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{-(totals.grossSharePLLoss/totals.grossLossCount).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Average Loss Per Share</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{(totals.highGrossSharePLWin).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Highest Win Per Share</span>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="titleWithDesc">{{-(totals.highGrossSharePLLoss).toFixed(2)}}$</h6>
-                            <span class="dashInfoTitle">Highest Loss Per Share</span>
+                    <!-- GROUP BY TRADES AND AVERAGE WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Trades and Average Win</h6>
+                            <div v-bind:key="renderData" id="barChartNegative5" class="chartClass"></div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- WIN SHARE -->
-            <div class="col-6 col-xl-3 mb-3 text-center">
-                <div class="dailyCard">
-                    <div v-if="!totals">
-                        <div class="spinner-border text-blue" role="status"></div>
+                    <!-- GROUP BY TRADES AND LOSS WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Trades and Average Loss</h6>
+                            <div v-bind:key="renderData" id="barChartNegative6" class="chartClass"></div>
+                        </div>
                     </div>
-                    <div v-else>
 
-                        <div v-bind:key="renderData" id="pieChart1" class="chartIdCardClass"></div>
-
+                    <!-- GROUP BY EXECUTIONS -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Executions</h6>
+                            <div v-bind:key="renderData" id="barChartNegative7" class="chartClass"></div>
+                        </div>
                     </div>
+
+                    <!-- GROUP BY EXECUTIONS AND AVERAGE WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Executions and Average Win</h6>
+                            <div v-bind:key="renderData" id="barChartNegative8" class="chartClass"></div>
+                        </div>
+                    </div>
+
+                    <!-- GROUP BY EXECUTIONS AND LOSS WIN -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Executions and Average Loss</h6>
+                            <div v-bind:key="renderData" id="barChartNegative9" class="chartClass"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ============ LINE 3 : TOTAL CHARTS ============ -->
-    <div class="col-12">
-        <div class="row">
-            <!-- CUMULATIVE P&L -->
-            <div class="col-12 col-xl-6 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
+        <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'setupsTab' ? 'active show' : '')" id="setupsNav" role="tabpanel" aria-labelledby="nav-trades-tab">
+            <div class="col-12">
+                <div class="row">
+
+                    <!-- GROUP BY TIMEFRAME -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Pattern</h6>
+                            <div v-bind:key="renderData" id="barChartNegative10" class="chartClass"></div>
+                        </div>
                     </div>
-                    <h6>Cumulated Net P&L</h6>
-                    <div v-bind:key="renderData" id="lineBarChart1" class="chartClass"></div>
                 </div>
             </div>
-
-            <!-- APPT CHART -->
-            <div class="col-12 col-xl-6 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Net Average Profit Per Trade (APPT)</h6>
-                    <div v-bind:key="renderData" id="barChart1" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- WIN LOSS CHART -->
-            <div class="col-12 col-xl-6 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Net Win Rate</h6>
-                    <div v-bind:key="renderData" id="barChart2" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- RISK REWARD CHART -->
-            <div class="col-12 col-xl-6 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Risk & Reward</h6>
-                    <div v-bind:key="renderData" id="boxPlotChart1" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TIMEFRAME -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Timeframe</h6>
-                    <div v-bind:key="renderData" id="barChartNegative1" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TIMEFRAME AND AVERAGE WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Timeframe and Average Win</h6>
-                    <div v-bind:key="renderData" id="barChartNegative2" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TIMEFRAME AND LOSS WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Timeframe and Average Loss</h6>
-                    <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TRADES -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Trades</h6>
-                    <div v-bind:key="renderData" id="barChartNegative4" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TRADES AND AVERAGE WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Trades and Average Win</h6>
-                    <div v-bind:key="renderData" id="barChartNegative5" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY TRADES AND LOSS WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Trades and Average Loss</h6>
-                    <div v-bind:key="renderData" id="barChartNegative6" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY EXECUTIONS -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Executions</h6>
-                    <div v-bind:key="renderData" id="barChartNegative7" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY EXECUTIONS AND AVERAGE WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Executions and Average Win</h6>
-                    <div v-bind:key="renderData" id="barChartNegative8" class="chartClass"></div>
-                </div>
-            </div>
-
-            <!-- GROUP BY EXECUTIONS AND LOSS WIN -->
-            <div class="col-12 col-xl-4 mb-3">
-                <div class="dailyCard">
-                    <div class="text-center" v-if="!totalPAndLChartMounted">
-                        <div class="spinner-border text-blue" role="status"></div>
-                    </div>
-                    <h6>Group by Executions and Average Loss</h6>
-                    <div v-bind:key="renderData" id="barChartNegative9" class="chartClass"></div>
-                </div>
-            </div>
-
-
         </div>
     </div>
 </div>

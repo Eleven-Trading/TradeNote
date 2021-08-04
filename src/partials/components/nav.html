@@ -8,6 +8,18 @@
             <li class="nav-item">
                 <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}
             </li>
+            <!-- ============ LINE 1: DATE FILTERS ============ -->
+
+            <!-- GROSS NET SWITCH -->
+            <li class="nav-item ms-2">
+                <label class="switch">
+                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
+                    <span class="slider round sliderText">
+                        <span v-if="isNet" class="v-align-start">Net</span>
+                        <span v-else="isNet" class="v-align-end">Gross</span>
+                    </span>
+                </label>
+            </li>
         </ul>
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item">
@@ -27,6 +39,10 @@
             <li class="nav-item">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li>
+                        <a class="dropdown-item" href="settings">
+                            <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
+                    </li>
                     <li>
                         <a class="dropdown-item" v-on:click="getTradesFromDb()">
                             <i class="uil uil-sync me-2"></i>Refresh Data</a>

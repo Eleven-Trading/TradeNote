@@ -291,9 +291,7 @@ const addTradesMixin = {
                                 /*******************
                                  * Other
                                  *******************/
-                                temp7.setup = null
-                                temp7.entryPoint = null
-                                temp7.mistake = null
+                                temp7.setup = {}
                                 temp7.note = tempExec.note
                                 temp7.executions = []
                                 temp7

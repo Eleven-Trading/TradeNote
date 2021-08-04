@@ -81,6 +81,9 @@ const chartsCalMixin = {
                 })
                 resolve()
             })
+            if (this.currentPage.id == "videos") {
+                await this.checkVideo()
+            }
 
             // If you want await, you then need a promise. Await can only be placed inside async function
 
@@ -97,7 +100,7 @@ const chartsCalMixin = {
                     var chartCategories = []
                     el.trades.forEach(element => {
                         var proceeds = Number((element.grossProceeds).toFixed(2))
-                        var proceedsNet = Number((element[this.amountCase+'Proceeds']).toFixed(2))
+                        var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
                         if (chartDataGross.length == 0) {
                             chartDataGross.push(proceeds)
                         } else {
@@ -117,18 +120,20 @@ const chartsCalMixin = {
                 //Rendering pie chart
                 await this.filteredTrades.forEach(el => {
                     var chartId = "pieChart" + el.dateUnix
-                    var probGrossWins = (el.pAndL.grossWinsCount / el.pAndL.trades)
-                    var probGrossLoss = (el.pAndL.grossLossCount / el.pAndL.trades)
-                    var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
-                    var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
-                    console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
-                    this.pieChart(chartId, probGrossWins, probGrossLoss, this.currentPage.id)
+                    var probWins = (el.pAndL[this.amountCase + 'WinsCount'] / el.pAndL.trades)
+                    var probLoss = (el.pAndL[this.amountCase + 'LossCount'] / el.pAndL.trades)
+                        //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
+                        //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
+                        //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
+                    this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
                 })
             }
 
             await (this.renderingCharts = false)
 
         },
+
+
         doubleLineChart(param1, param2, param3, param4) { //chartID, chartDataGross, chartDataNet, chartCategories
             return new Promise((resolve, reject) => {
                 var myChart = echarts.init(document.getElementById(param1));
@@ -221,13 +226,14 @@ const chartsCalMixin = {
                 var chartData = []
                 var chartBarData = []
                 var chartXAxis = []
-                this.filteredTrades.forEach(element => {
-                    if (!this.showEstimations) {
-                        var proceeds = element.pAndL[this.amountCase+'Proceeds']
-                    } else {
-                        var proceeds = (element.pAndL.grossSharePL * this.estimations.quantity) - (element.pAndL.trades * 2 * this.estimations.quantity * this.estimations.fees)
-                    }
-                    if (this.filteredTrades.length <= this.maxChartValues) {
+                objectY = JSON.parse(JSON.stringify(this.totalsByDate))
+                const keys = Object.keys(objectY);
+                for (const key of keys) {
+                    var element = objectY[key]
+
+                    var proceeds = element[this.amountCase + 'Proceeds']
+
+                    if (keys.length <= this.maxChartValues) {
                         var temp = {}
                         temp.value = proceeds
                         temp.label = {}
@@ -251,12 +257,12 @@ const chartsCalMixin = {
                     } else {
                         chartData.push(chartData.slice(-1).pop() + proceeds)
                     }
-                    chartXAxis.push(this.chartFormat(element.dateUnix))
+                    chartXAxis.push(this.chartFormat(key))
                         //chartXAxis = _.takeRight(chartXAxis, this.maxChartValues);
                         //chartData = _.takeRight(chartData, this.maxChartValues);
                         //chartBarData = _.takeRight(chartBarData, this.maxChartValues);
 
-                })
+                }
                 option = {
                     tooltip: {
                         trigger: 'axis',
@@ -377,17 +383,22 @@ const chartsCalMixin = {
             return new Promise((resolve, reject) => {
                 var chartData = []
                 var chartXAxis = []
-                this.filteredTrades.forEach(element => {
-                    var probNetWins = (element.pAndL.netWinsCount / element.pAndL.trades)
-                    var probNetLoss = (element.pAndL.netLossCount / element.pAndL.trades)
+                    //console.log("totals " + JSON.stringify(this.totalsByDate))
+                objectY = JSON.parse(JSON.stringify(this.totalsByDate))
+                const keys = Object.keys(objectY);
+                for (const key of keys) {
+                    var element = objectY[key]
 
-                    var avgNetWins = (element.pAndL.netWins / element.pAndL.netWinsCount)
-                    var avgNetLoss = -(element.pAndL.netLoss / element.pAndL.netLossCount)
+                    var probNetWins = (element.netWinsCount / element.trades)
+                    var probNetLoss = (element.netLossCount / element.trades)
+
+                    var avgNetWins = (element.netWins / element.netWinsCount)
+                    var avgNetLoss = -(element.netLoss / element.netLossCount)
 
                     var appt = (probNetWins * avgNetWins) - (probNetLoss * avgNetLoss)
 
                     if (param1 == "barChart1") {
-                        if (this.filteredTrades.length <= this.maxChartValues) {
+                        if (keys.length <= this.maxChartValues) {
                             var temp = {}
                             temp.value = appt
                             temp.label = {}
@@ -406,7 +417,7 @@ const chartsCalMixin = {
                         }
                     }
                     if (param1 == "barChart2") {
-                        if (this.filteredTrades.length <= this.maxChartValues) {
+                        if (keys.length <= this.maxChartValues) {
                             var temp = {}
                             temp.value = probNetWins
                             temp.label = {}
@@ -422,8 +433,8 @@ const chartsCalMixin = {
 
                     }
 
-                    chartXAxis.push(this.chartFormat(element.dateUnix))
-                })
+                    chartXAxis.push(this.chartFormat(key))
+                }
                 var myChart = echarts.init(document.getElementById(param1));
                 option = {
                     xAxis: {
@@ -486,62 +497,81 @@ const chartsCalMixin = {
                 if (param1 == "barChartNegative7" || param1 == "barChartNegative8" || param1 == "barChartNegative9") {
                     var keyObject = this.groups.executions
                 }
+                if (param1 == "barChartNegative10") {
+                    const toRemove = ['null', 'undefined'];
+                    var keyObject = _.omit(this.groups.patterns, toRemove)
+                        //console.log("filtered "+JSON.stringify(filteredObj))
+                }
                 const keys = Object.keys(keyObject);
+
                 //console.log("object " + JSON.stringify(keyObject))
                 for (const key of keys) {
                     //console.log("key " + key)
-                    yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
-                    var netWinsCount = 0
-                    var netLossCount = 0
-                    var netWins = 0
-                    var netLoss = 0
+                    if (param1 == "barChartNegative10") {
+
+                        var patternEntrypoint = this.patternsEntrypoints.find(item => item.id === key)
+                        //console.log("pattern name " + JSON.stringify(patternEntrypoint.name))
+                        yAxis.push(patternEntrypoint.name) // unshift because I'm only able to sort timeframe ascending
+
+                    } else {
+                        yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
+                    }
+                    //console.log("yaxis "+JSON.stringify(yAxis))
+
+                    var winsCount = 0
+                    var lossCount = 0
+                    var wins = 0
+                    var loss = 0
                     var trades = 0
                     var numElements = keyObject[key].length
                         //console.log("num elemnets " + numElements)
                     keyObject[key].forEach((element, index) => {
                         //console.log("index " + index)
                         //console.log("element " + JSON.stringify(element))
-                        netWinsCount += element.netWinsCount
-                        netLossCount += element.netLossCount
-                        netWins += element.netWins
-                        netLoss += element.netLoss
+                        winsCount += element[this.amountCase + 'WinsCount']
+                        lossCount += element[this.amountCase + 'LossCount']
+                        wins += element[this.amountCase + 'Wins']
+                        loss += element[this.amountCase + 'Loss']
                         if (param1 == "barChartNegative4") {
                             trades += element.trades
                         } else {
                             trades += element.tradesCount
                         }
-                        //console.log("wins count "+element.netWinsCount+", loss count "+element.netLossCount+", wins "+element.netWins+", loss "+element.netLoss+", trades "+element.tradesCount)
+                        //console.log("wins count "+element.winsCount+", loss count "+element.lossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                         if (numElements == (index + 1)) {
                             if (trades > 0) {
-                                var probNetWins = (netWinsCount / trades)
-                                var probNetLoss = (netLossCount / trades)
+                                var probWins = (winsCount / trades)
+                                var probLoss = (lossCount / trades)
                             } else {
-                                var probNetWins = 0
-                                var probNetLoss = 0
+                                var probWins = 0
+                                var probLoss = 0
                             }
 
-                            if (netWinsCount > 0) {
-                                var avgNetWins = (netWins / netWinsCount)
+                            if (winsCount > 0) {
+                                var avgWins = (wins / winsCount)
                             } else {
-                                var avgNetWins = 0
+                                var avgWins = 0
                             }
 
-                            if (netLossCount > 0) {
-                                var avgNetLoss = -(netLoss / netLossCount)
+                            if (lossCount > 0) {
+                                var avgLoss = -(loss / lossCount)
                             } else {
-                                var avgNetLoss = 0
+                                var avgLoss = 0
                             }
 
-                            var appt = (probNetWins * avgNetWins) - (probNetLoss * avgNetLoss)
-                                //console.log("APPT " + appt)
+                            var appt = (probWins * avgWins) - (probLoss * avgLoss)
+                            //console.log("APPT " + appt)
                             if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7") {
                                 series.unshift(appt)
                             }
                             if (param1 == "barChartNegative2" || param1 == "barChartNegative5" || param1 == "barChartNegative8") {
-                                series.unshift(avgNetWins)
+                                series.unshift(avgWins)
                             }
                             if (param1 == "barChartNegative3" || param1 == "barChartNegative6" || param1 == "barChartNegative9") {
-                                series.unshift(avgNetLoss)
+                                series.unshift(avgLoss)
+                            }
+                            if (param1 == "barChartNegative10") {
+                                series.push(appt)
                             }
                         }
                     })
@@ -558,7 +588,8 @@ const chartsCalMixin = {
                     },
                     grid: {
                         top: 80,
-                        bottom: 30
+                        bottom: 30,
+                        containLabel: true// or else the yaxis labels are cutout
                     },
                     xAxis: {
                         type: 'value',
@@ -567,7 +598,7 @@ const chartsCalMixin = {
                             lineStyle: {
                                 type: 'dashed'
                             }
-                        }
+                        },
                     },
                     yAxis: {
                         type: 'category',
@@ -581,12 +612,12 @@ const chartsCalMixin = {
                                 if (param1 == "barChartNegative4" || param1 == "barChartNegative5" || param1 == "barChartNegative6") {
                                     if (params <= 30) {
                                         var range
-                                        if(params <= 5){
+                                        if (params <= 5) {
                                             range = 5
-                                        }else {
+                                        } else {
                                             range = 4
                                         }
-                                        return (params-range)+"-"+params
+                                        return (params - range) + "-" + params
                                     }
                                     if (params > 30) {
                                         return "+30"

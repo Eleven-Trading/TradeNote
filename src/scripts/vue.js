@@ -2,7 +2,7 @@ const vueApp = new Vue({
 
     components: {},
     el: '#vapp',
-    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, addScreenshotMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin],
+    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, addScreenshotMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin],
     data() {
         return {
             fromFirstFeature: "",
@@ -66,6 +66,11 @@ const vueApp = new Vue({
                     id: "addNote",
                     name: "Add Note",
                     icon: "uil uil-plus-circle"
+                },
+                {
+                    id: "settings",
+                    name: "Settings",
+                    icon: "uil uil-sliders-v-alt"
                 }
             ],
             currentPage: null,
@@ -80,7 +85,7 @@ const vueApp = new Vue({
             isNet: JSON.parse(localStorage.getItem('isNet')), //JSON parse because localstorage stores in string and not bool
             amountCase: JSON.parse(localStorage.getItem('isNet')) == true ? 'net' : 'gross',
             amountCapital: JSON.parse(localStorage.getItem('isNet')) == true ? 'Net' : 'Gross',
-            
+
             tradeTimeZone: "America/New_York",
 
             //Show/Hide page
@@ -99,8 +104,34 @@ const vueApp = new Vue({
             totalCalendarMounted: false,
             totalPAndLChartHeight: 400,
             totals: null,
+            totalsByDate: null,
+            filteredTotalsByDate: [],
             groups: {},
             totalWinLossChartHeight: 200,
+            selectedDashTab: localStorage.getItem('selectedDashTab'),
+            dashTabs: [{
+                    id: "overviewTab",
+                    label: "Overview",
+                    target: "#overviewNav"
+                },
+                {
+                    id: "timeTab",
+                    label: "Time&Date",
+                    target: "#timeNav"
+                },
+                {
+                    id: "tradesTab",
+                    label: "Trades&Executions",
+                    target: "#tradesNav"
+                },
+                {
+                    id: "setupsTab",
+                    label: "Setups",
+                    target: "#setupsNav"
+                }
+            ],
+
+            //Filter
             dateRange: [{
                     value: "all",
                     label: "All",
@@ -182,7 +213,22 @@ const vueApp = new Vue({
             ],
             selectedDateRange: {},
             selectedCalRange: {},
+            positions: [{
+                    value: "all",
+                    label: "All"
+                },
+                {
+                    value: "long",
+                    label: "Long"
+                },
+                {
+                    value: "short",
+                    label: "Short"
+                }
+            ],
+            selectedPosition: localStorage.getItem('selectedPosition'),
             renderData: 0, //this is for updating DOM
+            renderData1: 0, //this is for updating DOM
             renderingCharts: true, // this is for spinner
 
             //DAILY
@@ -222,6 +268,7 @@ const vueApp = new Vue({
             videoUrlStorage: null,
             tradeToShow: [],
             uploadPercentCompleted: null,
+            videosInIndexedDB: [],
 
             //ADDTRADES
             apiBaseUrl: "API_BASE_URL",
@@ -256,14 +303,34 @@ const vueApp = new Vue({
             playbookImg: null,
             testImg: null,
             playbookImgB2Url: null,
+
+            //Settings
+            tradeSetup: {
+                pattern: {
+                    id: null,
+                    name: null,
+                },
+                entrypoint: {
+                    id: null,
+                    name: null,
+                },
+                mistake: {
+                    id: null,
+                    name: null,
+                },
+            }, //setup I choose in videos
+            patternsEntrypoints: [],
+            mistakes: [],
         }
     },
     beforeCreate: async function() {
-        //set default gross / net in localstorage 
-        !localStorage.getItem('isNet') ? localStorage.setItem('isNet', true) : ''
+
+        //SET DEFAULT LOCAL STORAGE VARIABLES
+        !localStorage.getItem('isNet') ? localStorage.setItem('isNet', true) : '';
+        !localStorage.getItem('selectedPosition') ? localStorage.setItem('selectedPosition', 'all') : '';
+        !localStorage.getItem('selectedDashTab') ? localStorage.setItem('selectedDashTab', 'overviewTab') : '';
     },
     created: async function() {
-
         //we create the selectedDate and Calendar range
         this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'all')[0]
 
@@ -277,10 +344,11 @@ const vueApp = new Vue({
 
         await this.initIndexedDB()
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
-            await this.getAllTrades()
+            await this.getAllTrades(true)
+            await this.initTab()
         }
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
-            await this.getAllTrades()
+            await this.getAllTrades(true)
         }
 
         if (this.currentPage.id == "screenshots") {
@@ -308,9 +376,12 @@ const vueApp = new Vue({
             await sessionStorage.removeItem('editItemId');
         }
         this.playbookImgChange()
+
+        if (this.currentPage.id == "settings" || this.currentPage.id == "videos") {
+            await this.getPatterns()
+        }
     },
     mounted() {
-    
         var itemToEditId = sessionStorage.getItem('editItemId')
         if (this.currentPage.id == "addScreenshot") {
             //this.getScreenshotToEdit(itemToEditId)
@@ -327,24 +398,24 @@ const vueApp = new Vue({
         this.tagArray()
         this.initWheelEvent()
         var fullFileName = "2021_07_19-142702.mp4"
-        
+
         var fileName = fullFileName.substring(0, fullFileName.lastIndexOf('.'))
         console.log("file name " + fileName)
-        
-        
+
+
         var fileDate = fileName.split("-")[0].split("_")
         var fileYear = fileDate[0]
         var fileMonth = fileDate[1]
         var fileDay = fileDate[2]
-        //console.log("year "+fileYear + " month "+fileMonth+" day "+fileDay)
+            //console.log("year "+fileYear + " month "+fileMonth+" day "+fileDay)
         var fileTime = fileName.split("-")[1]
-        var fileHour = fileTime.substring(0,2)
-        var fileMinutes = fileTime.substring(2,4)
-        var fileSeconds = fileTime.substring(4,6)
-        //console.log("hour "+fileHour + " minutes "+fileMinutes+" seconds "+fileSeconds)
-        var fileDateUnix = dayjs(fileDate+" "+fileHour+":"+fileMinutes+":"+fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
-        console.log("unix "+fileDateUnix)
-        
+        var fileHour = fileTime.substring(0, 2)
+        var fileMinutes = fileTime.substring(2, 4)
+        var fileSeconds = fileTime.substring(4, 6)
+            //console.log("hour "+fileHour + " minutes "+fileMinutes+" seconds "+fileSeconds)
+        var fileDateUnix = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
+        console.log("unix " + fileDateUnix)
+
 
     },
     watch: {
@@ -353,10 +424,10 @@ const vueApp = new Vue({
         },
         playbookImg: function() {
             //console.log("watch img "+this.playbookImg)
-        }, 
+        },
         includeFinviz: function() {
             //console.log("watch finviz "+this.includeFinviz)
-        }, 
+        },
 
     },
     methods: {
@@ -365,15 +436,41 @@ const vueApp = new Vue({
         // =================================================================================
 
         grossNetToggle() {
-            this.getAllTrades()
+            this.getAllTrades(true)
             currentState = JSON.parse(localStorage.getItem('isNet'))
-            //console.log("state " + currentState)
-            localStorage.setItem('isNet', !currentState)
-            !currentState == true ? this.amountCase = "net" : this.amountCase = "gross"
+                //console.log("state " + currentState)
+            localStorage.setItem('isNet', !currentState);
+            !currentState == true ? this.amountCase = "net" : this.amountCase = "gross";
             !currentState == true ? this.amountCapital = "Net" : this.amountCapital = "Gross"
         },
 
         /* ---- INITS ---- */
+        initTab() {
+            var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
+                //console.log("list " + triggerTabList)
+            var self = this // this is needed or else could not call function inside eventlistener
+            triggerTabList.forEach(function(triggerEl) {
+                /*var tabTrigger = new bootstrap.Tab(triggerEl)
+                triggerEl.addEventListener('click', function(event) {
+                    console.log("clicking")
+                    event.preventDefault()
+                    tabTrigger.show()
+                })*/
+
+                // GET TAB ID THAT IS CLICKED
+                triggerEl.addEventListener('shown.bs.tab', (event) => {
+                    //console.log("target " + event.target.getAttribute('id')) // newly activated tab
+                    this.selectedDashTab = event.target.getAttribute('id')
+                    console.log("selected tab " + this.selectedDashTab)
+                    localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
+                    self.getAllTrades(false)
+                        //console.log("related" + event.relatedTarget) // previous active tab
+                })
+            })
+
+
+        },
+
         initParse() {
             Parse.initialize("PARSE_INIT")
             Parse.serverURL = "PARSE_URL"
@@ -555,7 +652,10 @@ const vueApp = new Vue({
             return dayjs.unix(param).format("DD MMMM YYYY")
         },
         timeFormat(param) {
-            return dayjs.unix(param).tz(this.tradeTimeZone).format("hh:mm:ss")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("HH:mm:ss")
+        },
+        timeDuration(param) {
+            return dayjs.duration(param * 1000).format("HH:mm:ss")
         },
         hourMinuteFormat(param) {
             return dayjs.unix(param).format("hh:mm")

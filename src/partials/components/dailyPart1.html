@@ -17,7 +17,15 @@
     </div>
     }
     @@if(firstColumns == "videos"){
-        <div class='col-1'><i class="uil uil-film" v-on:click='showMore(daily.dateUnix, index)' class='img-fluid pointerClass'></i></div>
+        <div class='col-1'>
+        <div class="parentIcon">
+            <i class="uil uil-film txt-xx-large img-fluid pointerClass" v-on:click='showMore(daily.dateUnix, index)'></i>
+            <div class="childIcon">
+                <i v-if="videosInIndexedDB.includes(daily.videoName)" class="uil uil-cloud-check"></i>
+                <i v-else class="uil uil-cloud-download"></i>
+            </div>
+        </div>
+    </div>
     }
     
     <!--  -> Tot trades and total executions -->

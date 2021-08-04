@@ -156,6 +156,7 @@ function browserInit() {
                 "/screenshots": "dist/screenshots.html",
                 "/videos": "dist/videos.html",
                 "/playbook": "dist/playbook.html",
+                "/settings": "dist/settings.html",
             }
         },
         open: true,

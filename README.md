@@ -69,6 +69,10 @@ Please have a running [Parse](https://parseplatform.org/ "Parse") server and mon
 - playbooks
 - screenshots
 - trades
+- setups
+- patterns
+- entrypoints
+- mistakes
 
 ## Running Locally
 - Install dependencies (npm)
@@ -78,6 +82,7 @@ Please have a running [Parse](https://parseplatform.org/ "Parse") server and mon
   - API_BASE_URL : base url to your server where your function is running (exemple : http://localhost:3000)
   - API_END_POINT_TEMP_URL : end point of the function generating temporary backblaze url(s) running on your server (example: /example_backblaze_function.php)
   - API_END_POINT_FINVIZ : end point of the function scrapping Finviz running on your server
+  - API_END_POINT_TIMEZONE: end point to create unix dates in correct timezone (example: /example_timezone_function.php)
   - PUBLIC_BASE_URL_B2 : base url of the folder where your images and videos are stored in Backblaze
 
 ## Deployment

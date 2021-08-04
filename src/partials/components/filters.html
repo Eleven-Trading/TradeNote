@@ -1,0 +1,27 @@
+<!-- ============ LINE 1: DATE FILTERS ============ -->
+    <div class="col-12 mb-3 text-center align-items-center">
+        <div class="row">
+            <div class="col-auto">
+                <select v-on:input="inputDateRange($event.target.value)" class="form-select">
+                    <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
+                </select>
+            </div>
+            
+            <div class="col-auto">
+                <select v-on:input="inputPosition($event.target.value)" class="form-select">
+                    <option v-for="item in positions" v-bind:value="item.value" v-bind:selected="item.value ==  selectedPosition">{{item.label}}</option>
+                </select>
+            </div>
+
+            <!-- GROSS NET SWITCH
+            <div class="col-auto">
+                <label class="switch">
+                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
+                    <span class="slider round sliderText">
+                        <span v-if="isNet" class="v-align-start">Net</span>
+                        <span v-else="isNet" class="v-align-end">Gross</span>
+                    </span>
+                </label>
+            </div> -->
+        </div>
+    </div>
