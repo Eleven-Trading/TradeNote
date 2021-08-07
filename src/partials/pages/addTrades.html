@@ -62,9 +62,7 @@
                                     <th scope="col">Tot Fees</th>
                                     <th scope="col">P/L net</th>
                                     <th scope="col">wins(g)</th>
-                                    <th scope="col">wins(n)</th>
                                     <th scope="col">loss(g)</th>
-                                    <th scope="col">loss(n)</th>
                                     <th scope="col">trades</th>
                                     <th scope="col">executions</th>
                                 </tr>
@@ -79,9 +77,7 @@
                                     <td>{{(blot.fees).toFixed(2)}}</td>
                                     <td v-bind:class="[blot.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.netProceeds).toFixed(2)}}</td>
                                     <td>{{blot.grossWinsCount}}</td>
-                                    <td>{{blot.netWinsCount}}</td>
                                     <td>{{blot.grossLossCount}}</td>
-                                    <td>{{blot.netLossCount}}</td>
                                     <td>{{blot.trades}}</td>
                                     <td>{{blot.executions}}</td>
                                 </tr>
@@ -93,9 +89,7 @@
                                     <td>{{(pAndL[index].fees).toFixed(2)}}</td>
                                     <td v-bind:class="[pAndL[index].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(pAndL[index].netProceeds).toFixed(2)}}</td>
                                     <td>{{pAndL[index].grossWinsCount}}</td>
-                                    <td>{{pAndL[index].netWinsCount}}</td>
                                     <td>{{pAndL[index].grossLossCount}}</td>
-                                    <td>{{pAndL[index].netLossCount}}</td>
                                     <td>{{pAndL[index].trades}}</td>
                                     <td>{{pAndL[index].executions}}</td>
                                 </tr>

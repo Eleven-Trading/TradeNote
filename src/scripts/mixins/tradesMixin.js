@@ -57,16 +57,19 @@ const tradesMixin = {
                 await this.lineBarChart()
                 await this.barChart("barChart1")
                 await this.barChart("barChart2")
-                await this.barChartNegative("barChartNegative1")
-                await this.barChartNegative("barChartNegative2")
-                await this.barChartNegative("barChartNegative3")
-                await this.barChartNegative("barChartNegative4")
-                await this.barChartNegative("barChartNegative5")
-                await this.barChartNegative("barChartNegative6")
-                await this.barChartNegative("barChartNegative7")
-                await this.barChartNegative("barChartNegative8")
-                await this.barChartNegative("barChartNegative9")
-                await this.barChartNegative("barChartNegative10")
+                await this.barChartNegative("barChartNegative1") //timeframe (appt)
+                await this.barChartNegative("barChartNegative2") //timeframe (average win)
+                await this.barChartNegative("barChartNegative3") //timeframe (average loss)
+                await this.barChartNegative("barChartNegative4") //trades (appt)
+                await this.barChartNegative("barChartNegative5") //trades (average win)
+                await this.barChartNegative("barChartNegative6") //trades (average loss)
+                await this.barChartNegative("barChartNegative7") //executions (appt)
+                await this.barChartNegative("barChartNegative8") //executions (average win)
+                await this.barChartNegative("barChartNegative9") //executions (average loss)
+                await this.barChartNegative("barChartNegative10") //patterns
+                await this.barChartNegative("barChartNegative11") //entrypoints
+                await this.barChartNegative("barChartNegative12") //share float
+                await this.barChartNegative("barChartNegative13") //entry price
                 await this.boxPlotChart()
                 await (this.totalPAndLChartMounted = true)
             }
@@ -744,7 +747,76 @@ const tradesMixin = {
             this.groups.patterns = _(temp1)
                 .groupBy('setup.pattern')
                 .value()
-            //console.log("group by patterns " + JSON.stringify(this.groups.patterns))
+                //console.log("group by patterns " + JSON.stringify(this.groups.patterns))
+
+            /*******************
+             * GROUP BY ENTRYPOINT
+             *******************/
+            this.groups.entrypoints = _(temp1)
+                .groupBy('setup.entrypoint')
+                .value()
+                //console.log("group by entrypoints " + JSON.stringify(this.groups.entrypoints))
+
+            /*******************
+             * GROUP BY SHAREFLOAT
+             *******************/
+            let path = "financials['Shs Float']";
+            this.groups.shareFloat = _(temp1)
+                .filter(object => _.has(object, path))
+                .groupBy(x => {
+                    if (shsFloat != "-") {
+                        var shsFloat = x.financials['Shs Float']
+                        var floatArray = shsFloat.split(/(?<=[0-9])(?=[a-z]+)/i)
+                        var shsFloatNumber = Number(floatArray[0])
+                        var shsFloatMult = floatArray[1];
+                        //console.log("float number "+shsFloatNumber+" and mult "+shsFloatMult)
+
+                        if (shsFloatMult == "M") {
+                            shsFloat = shsFloatNumber * 1000000;
+                        } else if (shsFloatMult == "B") {
+                            shsFloat = shsFloatNumber * 1000000000;
+                        } else if (shsFloatMult == "K") {
+                            shsFloat = shsFloatNumber * 100000;
+                        } else {
+                            console.log(" -> Unrecognized multiplier " + shsFloatMult);
+                        }
+                        //console.log("shs float " + shsFloat)
+                            // under 10M, 10-20M, 20-30, 30-50, above 50M float
+                        if (shsFloat <= 50000000) {
+                            var range = 10000000
+                            ceilTrades = (Math.ceil(shsFloat / range) * range);
+                        }
+                        if (shsFloat > 50000000) {
+                            ceilTrades = 50000000
+                        }
+                        //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
+
+                        return ceilTrades
+                    }
+                })
+                .value()
+
+            //console.log("group by share float " + JSON.stringify(this.groups.shareFloat))
+
+            /*******************
+             * GROUP BY ENTRYPRICE
+             *******************/
+             this.groups.entryPrice = _(temp1)
+             .groupBy(x => {
+                // under 5, 6-10, 11-15, 16-20, 21-30, above 30 trades
+                if (x.entryPrice <= 30) {
+                    var range = 5
+                    ceilTrades = (Math.ceil(x.entryPrice / range) * range);
+                }
+                if (x.entryPrice > 30) {
+                    ceilTrades = 30
+                }
+                //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
+
+                return ceilTrades
+            })
+            .value()
+            console.log("group by entryprice " + JSON.stringify(this.groups.entryPrice))
 
         },
 

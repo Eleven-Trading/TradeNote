@@ -497,10 +497,10 @@ const addTradesMixin = {
                     for (const key9 of keys9) {
                         temp10[key9] = {}
                         var tempExecs = objectZ[key9]
-                            //console.log("tempExecs9 " + JSON.stringify(tempExecs));
+                        //console.log("tempExecs9 " + JSON.stringify(tempExecs));
                         var z = _
                             .chain(tempExecs)
-                            .orderBy(["startTime"], ["asc"])
+                            .orderBy(["entryTime"], ["asc"])
                             .groupBy("symbol");
                         objectY = JSON.parse(JSON.stringify(z))
                         const keys10 = Object.keys(objectY);

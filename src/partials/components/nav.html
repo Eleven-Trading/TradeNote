@@ -9,9 +9,10 @@
                 <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}
             </li>
             <!-- ============ LINE 1: DATE FILTERS ============ -->
-
+        </ul>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
             <!-- GROSS NET SWITCH -->
-            <li class="nav-item ms-2">
+            <li class="nav-item me-2">
                 <label class="switch">
                     <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
                     <span class="slider round sliderText">
@@ -20,9 +21,7 @@
                     </span>
                 </label>
             </li>
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item">
+            <li class="nav-item me-2">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Add</a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>

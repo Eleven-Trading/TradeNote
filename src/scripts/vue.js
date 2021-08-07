@@ -128,6 +128,11 @@ const vueApp = new Vue({
                     id: "setupsTab",
                     label: "Setups",
                     target: "#setupsNav"
+                },
+                {
+                    id: "financialsTab",
+                    label: "Financials",
+                    target: "#financialsNav"
                 }
             ],
 
@@ -320,6 +325,7 @@ const vueApp = new Vue({
                 },
             }, //setup I choose in videos
             patternsEntrypoints: [],
+            entrypoints: [],
             mistakes: [],
         }
     },

@@ -40,18 +40,19 @@ const chartsCalMixin = {
             calendarizeData.forEach(element => {
                 calendarJson[i] = []
                 element.forEach(element => {
-                    var elementDate = year + "-" + month + "-" + element
+                    // 1- Create a calendar date from each element (calendar number)
+                    var elementDate = year + "/" + month + "/" + element
                     var elementDateUnix = dayjs(elementDate).unix()
+
+                    // 2- Create data for each calendar box
                     tempData = {}
-                    tempData.day = element
-                    tempData.dateUnix = elementDateUnix
-                        //Using allTrades and not filteredTrades because we do not want calendar to be filtered
-                        // As unix here are different timezone than unix in database (localmachine vs utc in DB) we need to compare the number of days by dividing by the number of seconds in a day and then floor the value
-                    var trade = this.allTrades.filter(f => Math.floor(f.dateUnix / 60 / 60 / 24) == Math.floor(elementDateUnix / 60 / 60 / 24))
-                        //console.log("trade "+JSON.stringify(this.allTrades))
+                    tempData.day = element // day number of the month
+                    tempData.dateUnix = elementDateUnix // date in unix
+
+                    //Using allTrades and not filteredTrades because we do not want calendar to be filtered
+                    var trade = this.allTrades.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
                     if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
                         tempData.pAndL = trade[0].pAndL
-                            //console.log("trade "+JSON.stringify(trade[0].pAndL))
                     } else {
                         tempData.pAndL = []
                     }
@@ -502,16 +503,34 @@ const chartsCalMixin = {
                     var keyObject = _.omit(this.groups.patterns, toRemove)
                         //console.log("filtered "+JSON.stringify(filteredObj))
                 }
+                if (param1 == "barChartNegative11") {
+                    const toRemove = ['null', 'undefined'];
+                    var keyObject = _.omit(this.groups.entrypoints, toRemove)
+                        //console.log("filtered "+JSON.stringify(filteredObj))
+                }
+
+                if (param1 == "barChartNegative12") {
+                    var keyObject = this.groups.shareFloat
+                }
+
+                if (param1 == "barChartNegative13") {
+                    var keyObject = this.groups.entryPrice
+                }
+
                 const keys = Object.keys(keyObject);
 
                 //console.log("object " + JSON.stringify(keyObject))
                 for (const key of keys) {
                     //console.log("key " + key)
                     if (param1 == "barChartNegative10") {
-
                         var patternEntrypoint = this.patternsEntrypoints.find(item => item.id === key)
-                        //console.log("pattern name " + JSON.stringify(patternEntrypoint.name))
+                            //console.log("pattern name " + JSON.stringify(patternEntrypoint))
                         yAxis.push(patternEntrypoint.name) // unshift because I'm only able to sort timeframe ascending
+
+                    } else if (param1 == "barChartNegative11") {
+                        var entrypoint = this.entrypoints.find(item => item.id === key)
+                            //console.log("entrypoint" + JSON.stringify(entrypoint))
+                        yAxis.push(entrypoint.name)
 
                     } else {
                         yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
@@ -560,8 +579,8 @@ const chartsCalMixin = {
                             }
 
                             var appt = (probWins * avgWins) - (probLoss * avgLoss)
-                            //console.log("APPT " + appt)
-                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7") {
+                                //console.log("APPT " + appt)
+                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13") {
                                 series.unshift(appt)
                             }
                             if (param1 == "barChartNegative2" || param1 == "barChartNegative5" || param1 == "barChartNegative8") {
@@ -570,13 +589,41 @@ const chartsCalMixin = {
                             if (param1 == "barChartNegative3" || param1 == "barChartNegative6" || param1 == "barChartNegative9") {
                                 series.unshift(avgLoss)
                             }
-                            if (param1 == "barChartNegative10") {
+                            if (param1 == "barChartNegative10" || param1 == "barChartNegative11") {
                                 series.push(appt)
                             }
                         }
                     })
                 }
+                if (param1 == "barChartNegative10" || param1 == "barChartNegative11") {
+                    //1) combine the arrays:
+                    var list = [];
+                    for (var j = 0; j < series.length; j++)
+                        list.push({ 'appt': series[j], 'name': yAxis[j] });
 
+                    //2) sort:
+                    list.sort(function(a, b) {
+                        return ((a.appt < b.appt) ? -1 : ((a.appt == b.appt) ? 0 : 1));
+                        //Sort could be modified to, for example, sort on the age 
+                        // if the name is the same.
+                    });
+
+                    //3) separate them back out:
+                    for (var k = 0; k < list.length; k++) {
+                        series[k] = list[k].appt;
+                        yAxis[k] = list[k].name;
+                    }
+
+
+                    /*var indices = Array.from(series.keys()).sort((a, b) => series[a] > series[b])
+
+                    var sortedAPPT = indices.map(i => series[i])
+                    var sortedName = indices.map(i => yAxis[i])*/
+
+
+                    //console.log("Sorted APPT " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
+
+                }
 
                 var myChart = echarts.init(document.getElementById(param1));
                 option = {
@@ -589,7 +636,7 @@ const chartsCalMixin = {
                     grid: {
                         top: 80,
                         bottom: 30,
-                        containLabel: true// or else the yaxis labels are cutout
+                        containLabel: true // or else the yaxis labels are cutout
                     },
                     xAxis: {
                         type: 'value',
@@ -621,6 +668,19 @@ const chartsCalMixin = {
                                     }
                                     if (params > 30) {
                                         return "+30"
+                                    }
+                                } else if (param1 == "barChartNegative12") {
+                                    params = params/1000000
+                                    if (params < 50) {
+                                        var range = 10
+                                        if(params <= 10){
+                                            return (params - range) + "-" + params+"M"
+                                        }else{
+                                            return (params - range) + "M-" + params+"M"
+                                        }
+                                    }
+                                    if (params >= 50) {
+                                        return "+50M"
                                     }
                                 } else {
                                     return params

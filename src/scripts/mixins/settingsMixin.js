@@ -27,6 +27,7 @@ const settingsMixin = {
                     temp2.name = elementObject.name
                     temp2.description = elementObject.description
                     temp.entrypoints.push(temp2)
+                    this.entrypoints.push(temp2)
                 });
                 this.patternsEntrypoints.push(temp)
             }
