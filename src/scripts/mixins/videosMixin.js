@@ -9,25 +9,25 @@ const videosMixin = {
     },
     methods: {
         /* ---- CHECK IF VIDEO DOWNLOADED TO INDEXEDDB ---- */
-        checkVideo: async function () {
+        checkVideo: async function() {
             console.log("CHECKING IF VIDEO EXISTS IN INDEXEDDB")
-            //console.log("param "+param)
+                //console.log("param "+param)
             let promise = new Promise((resolve, reject) => {
-            let transaction = this.indexedDB.transaction(["videos"], "readwrite");
-            this.filteredTrades.forEach(element => {
-                //console.log("element " + JSON.stringify(element))
-                if (element.hasOwnProperty('videoName')) {
-                    var objectToGet = transaction.objectStore("videos").get(element.videoName)
-                    objectToGet.onsuccess = (event) => {
-                        if (event.target.result != undefined) {
-                            console.log(" -> Video "+element.videoName+" exists in IndexedDB")
-                            this.videosInIndexedDB.push(element.videoName)
+                let transaction = this.indexedDB.transaction(["videos"], "readwrite");
+                this.filteredTrades.forEach(element => {
+                    //console.log("element " + JSON.stringify(element))
+                    if (element.hasOwnProperty('videoName')) {
+                        var objectToGet = transaction.objectStore("videos").get(element.videoName)
+                        objectToGet.onsuccess = (event) => {
+                            if (event.target.result != undefined) {
+                                console.log(" -> Video " + element.videoName + " exists in IndexedDB")
+                                this.videosInIndexedDB.push(element.videoName)
+                            }
                         }
                     }
-                }
-            });
-            resolve()
-        })
+                });
+                resolve()
+            })
         },
 
         /* ---- TOGGLE VIDEOS ---- */
@@ -235,48 +235,44 @@ const videosMixin = {
                         var objectResults = JSON.parse(JSON.stringify(results))
                         var arrayTrades = objectResults.trades
                         var tradeIndex = arrayTrades.findIndex(f => f.id == param)
+                        console.log(" -> Updating trade with id " + param)
+                        arrayTrades[tradeIndex].setup = {
+                                pattern: this.tradeSetup.pattern.id,
+                                entrypoint: this.tradeSetup.entrypoint.id,
+                                mistake: this.tradeSetup.mistake.id
+                            }
+                            //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
+                        results.set("trades", arrayTrades)
+                        results.save().then(async() => {
+                            console.log(' -> Updated trades with id ' + results.id)
+                            await this.getTradesFromDb() //update indexedDB
+                            await this.getAllTrades(true)
+                                //await this.showMore(this.videoToLoad, this.videoIndex)
+                            await (() => {
+                                var filterTrades = []
+                                this.tradeToShow = []
+                                    /* ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ---- */
+                                var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
+                                this.tradeToShow = filterTrades
+                                    //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
 
-                        if (tradeIndex) {
-                            console.log(" -> Updating trade with id " + param)
-                            arrayTrades[tradeIndex].setup = {
-                                    pattern: this.tradeSetup.pattern.id,
-                                    entrypoint: this.tradeSetup.entrypoint.id,
-                                    mistake: this.tradeSetup.mistake.id
-                                }
-                                //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
-                            results.set("trades", arrayTrades)
-                            results.save().then(async() => {
-                                console.log(' -> Updated trades with id ' + results.id)
-                                await this.getTradesFromDb() //update indexedDB
-                                await this.getAllTrades(true)
-                                    //await this.showMore(this.videoToLoad, this.videoIndex)
-                                await (() => {
-                                    var filterTrades = []
-                                    this.tradeToShow = []
-                                        /* ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ---- */
-                                    var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
-                                    this.tradeToShow = filterTrades
-                                        //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
+                                /* ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ---- */
+                                this.tradeToShow[0].trades.forEach((element, index) => {
+                                    if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
+                                        this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
+                                    } else {
+                                        this.tradeToShow[0].trades[index].videoStart = null
+                                    }
 
-                                    /* ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ---- */
-                                    this.tradeToShow[0].trades.forEach((element, index) => {
-                                        if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
-                                            this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
-                                        } else {
-                                            this.tradeToShow[0].trades[index].videoStart = null
-                                        }
-
-                                        if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
-                                            this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
-                                        } else {
-                                            this.tradeToShow[0].trades[index].videoEnd = null
-                                        }
-                                    })
-                                    console.log(" -> Updated filtered trade")
-                                })()
-                            })
-
-                        }
+                                    if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
+                                        this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
+                                    } else {
+                                        this.tradeToShow[0].trades[index].videoEnd = null
+                                    }
+                                })
+                                console.log(" -> Updated filtered trade")
+                            })()
+                        })
                     } else {
                         alert("Update query did not return any results")
                     }
