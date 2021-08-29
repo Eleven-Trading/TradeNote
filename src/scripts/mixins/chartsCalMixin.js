@@ -523,7 +523,7 @@ const chartsCalMixin = {
                 for (const key of keys) {
                     //console.log("key " + key)
                     if (param1 == "barChartNegative10") {
-                        var patternEntrypoint = this.patternsEntrypoints.find(item => item.id === key)
+                        var patternEntrypoint = this.patterns.find(item => item.id === key)
                             //console.log("pattern name " + JSON.stringify(patternEntrypoint))
                         yAxis.push(patternEntrypoint.name) // unshift because I'm only able to sort timeframe ascending
 

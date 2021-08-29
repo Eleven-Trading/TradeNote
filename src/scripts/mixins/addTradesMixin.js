@@ -163,6 +163,7 @@ const addTradesMixin = {
                     const keys2 = Object.keys(objectB);
                     //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
                     tempPrice = null
+                    var newIds = [] //array used for finding swing trades. Keep aside for later
                     var temp2 = []
 
                     var temp9 = {}
@@ -193,7 +194,8 @@ const addTradesMixin = {
                                  *******************/
                                 temp7 = {};
                                 temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.symbol + "_B" : "t" + tempExec.execTime + "_" + tempExec.symbol + "_SS"
-                                console.log("   -> ID " + temp7.id)
+                                    //console.log("   -> ID " + temp7.id)
+                                newIds.push(temp7.id)
                                 temp7.account = tempExec.account;
                                 temp7.td = tempExec.td;
                                 temp7.currency = tempExec.currency;
@@ -302,37 +304,6 @@ const addTradesMixin = {
                                     .find(x => x.id == tempExec.id)
                                     .trade = temp7
                                     .id;
-
-                                /*******************
-                                 * Financials
-                                 *******************/
-
-                                if (this.includeFinviz == false) {
-                                    temp7.financials = {}
-                                } else {
-                                    await new Promise((resolve, reject) => {
-                                        var urlBase = this.apiBaseUrl
-
-                                        var url = urlBase + "" + this.apiEndPointFinviz
-                                        axios
-                                            .post(url, {
-                                                symbol: tempExec.symbol,
-                                            })
-                                            .then(response => {
-                                                //console.log(" -> " + JSON.stringify(response.data))
-                                                //Parse does not permit to upload key containing a "." so we change key name
-                                                response.data["Oper Margin"] = response.data["Oper. Margin"];
-                                                delete response.data["Oper. Margin"];
-
-                                                temp7.financials = response.data
-                                                resolve()
-                                            }).catch(e => {
-                                                console.log(" -> Error crawling Finviz " + e)
-                                                this.loadingSpinner = false
-                                                resolve()
-                                            })
-                                    })
-                                }
 
                             } else if (newTrade == false) { //= concatenating trade
                                 //console.log(" -> Concatenating trade for symbole "+tempExec.symbol+" and strategy "+temp7.strategy)
@@ -450,6 +421,273 @@ const addTradesMixin = {
                                         //console.log("temp not null for "+key2)
 
 
+
+                                    /*******************
+                                     * Financials
+                                     *******************/
+
+                                    if (this.includeFinancials == false) {
+                                        temp7.financials = {}
+                                    } else {
+                                        await new Promise((resolve, reject) => {
+                                            var urlBase = this.apiBaseUrl
+                                            var url = urlBase + "" + this.apiEndPointFinancials
+                                            var entryTime = temp7.entryTime
+                                            var exitTime = temp7.exitTime
+                                            var symbol = tempExec.symbol
+                                            axios
+                                                .post(url, {
+                                                    symbol: tempExec.symbol,
+                                                    entryTime: entryTime
+                                                })
+                                                .then(response => {
+                                                    //console.log(" Response -> " + JSON.stringify(response.data))
+                                                    console.log(" -> Getting financials for " + dayjs.unix(response.data.marketHours.beginOfDay).format("YYYY/MM/DD"));
+                                                    var dayArray = []
+                                                    for (var i = 0; i < response.data.financials.ohlcv1.t.length; i++) {
+                                                        var tempJson = {}
+                                                        tempJson.t = response.data.financials.ohlcv1.t[i]
+                                                            //tempJson.tFormated = dayjs.unix(response.data.financials.ohlcv1.t[i]).format("MM/DD - HH:mm:ss")
+                                                        tempJson.o = response.data.financials.ohlcv1.o[i]
+                                                        tempJson.h = response.data.financials.ohlcv1.h[i]
+                                                        tempJson.l = response.data.financials.ohlcv1.l[i]
+                                                        tempJson.c = response.data.financials.ohlcv1.c[i]
+                                                        tempJson.v = response.data.financials.ohlcv1.v[i]
+                                                        dayArray.push(tempJson)
+                                                            //console.log("Result = "+JSON.stringify(tempJson))
+                                                    }
+
+                                                    //OHLCV Historical
+                                                    /*var histArray = []
+                                                    for (var i = 0; i < response.data.financials.ohlcv60.t.length; i++) {
+                                                        var tempJson = {}
+                                                        tempJson.t = response.data.financials.ohlcv60.t[i]
+                                                            //tempJson.tFormated = dayjs.unix(response.data.financials.ohlcv60.t[i]).format("MM/DD - HH:mm:ss")
+                                                        tempJson.o = response.data.financials.ohlcv60.o[i]
+                                                        tempJson.h = response.data.financials.ohlcv60.h[i]
+                                                        tempJson.l = response.data.financials.ohlcv60.l[i]
+                                                        tempJson.c = response.data.financials.ohlcv60.c[i]
+                                                        tempJson.v = response.data.financials.ohlcv60.v[i]
+                                                        histArray.push(tempJson)
+                                                    }
+                                                    //console.table(histArray)*/
+
+                                                    // DAY
+                                                    var highPriceDay = dayArray.filter(x => x.h == Math.max(...dayArray.map(x => x.h)))
+                                                        //console.log("High price Day " + highPriceDay[0].h)
+                                                    var lowPriceDay = dayArray.filter(x => x.l == Math.min(...dayArray.map(x => x.l)))
+                                                        //console.log("Low price Day " + lowPriceDay[0].l)
+                                                    var cumVolDay = dayArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolDay " + cumVolDay)
+                                                    //console.table(dayArray)
+
+                                                    // PreMarket
+                                                    bmoArray = dayArray.filter(x => x.t < response.data.marketHours.startDMH)
+                                                    var highPriceBMO = bmoArray.filter(x => x.h == Math.max(...bmoArray.map(x => x.h)))
+                                                        //console.log("High price BMO " + highPriceBMO[0].h)
+                                                    var lowPriceBMO = bmoArray.filter(x => x.l == Math.min(...bmoArray.map(x => x.l)))
+                                                        //console.log("Low price BMO " + lowPriceBMO[0].l)
+                                                    var cumVolBMO = bmoArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolBMO " + cumVolBMO)
+                                                    //console.table(bmoArray)
+
+                                                    // Market Hours
+                                                    dmhArray = dayArray.filter(x => x.t >= response.data.marketHours.startDMH && x.t < response.data.marketHours.startAMC)
+                                                    var highPriceDMH = dmhArray.filter(x => x.h == Math.max(...dmhArray.map(x => x.h)))
+                                                        //console.log("High price DMH " + highPriceDMH[0].h)
+                                                    var lowPriceDMH = dmhArray.filter(x => x.l == Math.min(...dmhArray.map(x => x.l)))
+                                                        //console.log("Low price DMH " + lowPriceDMH[0].l)
+                                                    var cumVolDMH = dmhArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolDMH " + cumVolDMH)
+                                                    //console.table(dmhArray)
+
+                                                    // PostMarket
+                                                    amcArray = dayArray.filter(x => x.t >= response.data.marketHours.startAMC)
+                                                    var highPriceAMC = amcArray.filter(x => x.h == Math.max(...amcArray.map(x => x.h)))
+                                                        //console.log("High price AMC " + highPriceAMC[0].h)
+                                                    var lowPriceAMC = amcArray.filter(x => x.l == Math.min(...amcArray.map(x => x.l)))
+                                                        //console.log("Low price AMC " + lowPriceAMC[0].l)
+                                                    var cumVolAMC = amcArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolAMC " + cumVolAMC)
+                                                    //console.table(amcArray)
+
+                                                    // EntryTime
+                                                    entryArray = dayArray.filter(x => x.t <= entryTime)
+                                                    var highPriceEntry = entryArray.filter(x => x.h == Math.max(...entryArray.map(x => x.h)))
+                                                        //console.log("High price Entry " + highPriceEntry[0].h)
+                                                    var lowPriceEntry = entryArray.filter(x => x.l == Math.min(...entryArray.map(x => x.l)))
+                                                        //console.log("Low price Entry " + lowPriceEntry[0].l)
+                                                    var cumVolEntry = entryArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolEntry " + cumVolEntry)
+                                                    //console.table(amcArray)
+
+                                                    // Between EntryTime and ExitTime
+                                                    if ((Math.floor(entryTime / 60) * 60) != (Math.floor(exitTime / 60) * 60)) { //check if entry and exit did not happen in same minute
+                                                        betweenArray = dayArray.filter(x => x.t >= entryTime && x.t <= exitTime)
+                                                            //console.log("entryTime " + entryTime + " and exit time " + exitTime)
+                                                        var highPriceBetween = betweenArray.filter(x => x.h == Math.max(...betweenArray.map(x => x.h)))
+                                                            //console.log("High price Between " + highPriceBetween[0].h)
+                                                        var lowPriceBetween = betweenArray.filter(x => x.l == Math.min(...betweenArray.map(x => x.l)))
+                                                            //console.log("Low price Between " + lowPriceBetween[0].l)
+                                                        var cumVolBetween = betweenArray.reduce(function(prev, cur) {
+                                                            return prev + cur.v;
+                                                        }, 0);
+                                                        //console.log("cumVolBetween " + cumVolBetween)
+                                                        //console.table(amcArray)
+                                                    } else {
+                                                        console.log(" -> Entry and Exit happened in same minute frame")
+                                                        betweenArray = null
+                                                        var highPriceBetween = highPriceEntry
+                                                        var lowPriceBetween = lowPriceEntry
+                                                        var cumVolBetween = cumVolEntry
+                                                    }
+
+                                                    // After ExitTime
+                                                    exitArray = dayArray.filter(x => x.t > exitTime)
+                                                    var highPriceExit = exitArray.filter(x => x.h == Math.max(...exitArray.map(x => x.h)))
+                                                        //console.log("High price After Exit " + highPriceExit[0].h)
+                                                    var lowPriceExit = exitArray.filter(x => x.l == Math.min(...exitArray.map(x => x.l)))
+                                                        //console.log("Low price After Exit " + lowPriceExit[0].l)
+                                                        //console.table(afterEntryArray)
+                                                    var cumVolExit = exitArray.reduce(function(prev, cur) {
+                                                        return prev + cur.v;
+                                                    }, 0);
+                                                    //console.log("cumVolExit " + cumVolExit)
+
+                                                    //VWAP
+                                                    var vwap = {}
+
+                                                    //At Entry
+                                                    cumTypicalPriceVolEntry = null
+                                                    for (var i = 0; i < entryArray.length; i++) {
+                                                        var typicalPrice = (entryArray[i].h + entryArray[i].l + entryArray[i].c) / 3
+                                                        var typicalPriceVol = typicalPrice * entryArray[i].v
+                                                        cumTypicalPriceVolEntry += typicalPriceVol
+                                                    }
+                                                    vwap.entry = cumTypicalPriceVolEntry / cumVolEntry
+
+                                                    //At Exit
+                                                    cumTypicalPriceVolExit = null
+                                                    for (var i = 0; i < exitArray.length; i++) {
+                                                        var typicalPrice = (exitArray[i].h + exitArray[i].l + exitArray[i].c) / 3
+                                                        var typicalPriceVol = typicalPrice * exitArray[i].v
+                                                        cumTypicalPriceVolExit += typicalPriceVol
+                                                    }
+                                                    vwap.exit = cumTypicalPriceVolExit / cumVolExit
+
+                                                    //Float
+                                                    //console.log("Public Float "+response.data.financials.publicFloat[0].floatShares)
+
+                                                    temp7.financials = {}
+                                                    temp7.financials.tradeId = temp7.id
+                                                    temp7.financials.tradeUnixDate = temp7.td
+                                                    temp7.financials.symbol = symbol
+                                                    temp7.financials.entryTime = entryTime
+
+                                                    //console.log("Company Profile "+JSON.stringify(response.data.financials.fmpProfile))
+                                                    if (Object.entries(response.data.financials.fmpProfile).length != 0) {
+                                                        temp7.financials.exchange = response.data.financials.fmpProfile.exchangeShortName
+                                                    } else {
+                                                        console.log(" --> FMP Screener is null")
+                                                        temp7.financials.exchange = null
+                                                    }
+
+                                                    temp7.financials.sector = response.data.financials.sector
+                                                    temp7.financials.industry = response.data.financials.industry
+                                                    temp7.financials.mktCap = response.data.financials.market_cap
+
+                                                    temp7.financials.publicFloat = {}
+
+                                                    //console.log("FMP data type " + typeof(response.data.financials.fmp) + " and is " + JSON.stringify(response.data.financials.fmp))
+                                                    if (Object.entries(response.data.financials.fmpFloat).length != 0) {
+                                                        console.log(" --> Getting public float from FMP")
+                                                        temp7.financials.publicFloat.fmp = response.data.financials.fmpFloat.floatShares
+                                                    } else {
+                                                        console.log(" --> FMP public float is null")
+                                                        temp7.financials.publicFloat.fmp = null
+                                                    }
+                                                    temp7.financials.publicFloat.finviz = response.data.financials.publicFloat
+                                                    temp7.financials.shortFloat = response.data.financials.shortFloat
+
+
+                                                    if (Object.entries(response.data.financials.finviz).length != 0) {
+
+                                                        if (response.data.financials.finviz['Short Ratio'] != "-") {
+                                                            temp7.financials.shortRatio = parseFloat(response.data.financials.finviz['Short Ratio'])
+                                                                //console.log("shortRatio "+temp7.financials.shortRatio)
+                                                        } else {
+                                                            console.log(" --> Getting short ratio Finviz is null")
+                                                            temp7.financials.shortRatio = null
+                                                        }
+                                                    } else {
+                                                        console.log(" --> Finviz is null")
+                                                        temp7.financials.shortRatio = null
+                                                    }
+
+                                                    temp7.financials.vwap = vwap
+
+                                                    temp7.financials.cumVolume = {}
+                                                    temp7.financials.cumVolume.entry = cumVolEntry
+                                                    temp7.financials.cumVolume.between = cumVolBetween
+                                                    temp7.financials.cumVolume.exit = cumVolExit
+                                                    temp7.financials.cumVolume.day = cumVolDay
+                                                    temp7.financials.cumVolume.bmo = cumVolBMO
+                                                    temp7.financials.cumVolume.dmh = cumVolDMH
+                                                    temp7.financials.cumVolume.amc = cumVolAMC
+
+                                                    temp7.financials.high = {}
+                                                    temp7.financials.high.entry = highPriceEntry
+                                                    temp7.financials.high.between = highPriceBetween
+                                                    temp7.financials.high.exit = highPriceExit
+                                                    temp7.financials.high.day = highPriceDay
+                                                    temp7.financials.high.bmo = highPriceBMO
+                                                    temp7.financials.high.dmh = highPriceDMH
+                                                    temp7.financials.high.amc = highPriceAMC
+
+                                                    temp7.financials.low = {}
+                                                    temp7.financials.low.entry = lowPriceEntry
+                                                    temp7.financials.low.between = lowPriceBetween
+                                                    temp7.financials.low.exit = lowPriceExit
+                                                    temp7.financials.low.day = lowPriceDay
+                                                    temp7.financials.low.bmo = lowPriceBMO
+                                                    temp7.financials.low.dmh = lowPriceDMH
+                                                    temp7.financials.low.amc = lowPriceAMC
+
+                                                    temp7.financials.ohlcv = {}
+                                                    temp7.financials.ohlcv.entry = entryArray
+                                                    temp7.financials.ohlcv.between = betweenArray
+                                                    temp7.financials.ohlcv.exit = exitArray
+                                                    temp7.financials.ohlcv.day = dayArray //OHLCV 1mn from previous day
+                                                    temp7.financials.ohlcv.bmo = bmoArray
+                                                    temp7.financials.ohlcv.dmh = dmhArray
+                                                    temp7.financials.ohlcv.amc = amcArray
+                                                    temp7.financials.ohlcv.hist = response.data.financials.ohlcv60 //OHLCV 60mn from 5 previous days
+
+                                                    temp7.financials.finviz = response.data.financials.finviz
+                                                    temp7.financials.fmpFloat = response.data.financials.fmpFloat
+                                                    temp7.financials.fmpProfile = response.data.financials.fmpProfile
+
+                                                    //console.log("Financials " + JSON.stringify(temp7.financials))
+                                                    this.financials.push(temp7.financials)
+                                                    resolve()
+                                                }).catch(e => {
+                                                    console.log(" -> Error getting financials " + e)
+                                                    this.loadingSpinner = false
+                                                    resolve()
+                                                })
+                                        })
+                                    }
+
                                     temp2.push(temp7)
                                     newTrade = true
                                         //console.log("temp2 is " + JSON.stringify(temp2))
@@ -459,7 +697,19 @@ const addTradesMixin = {
                             } else {
                                 console.log("nothing for key " + key2)
                             }
+
+                            //console.log("New trade status of symbol "+key2+" is "+newTrade+". the JSON is "+JSON.stringify(temp7))
                         }
+                        /* For later, when doing swing trades
+                        newIds.forEach(element => {
+                            swingCheck = temp2.filter(x => x.id == element)
+                            //console.log("swing check "+JSON.stringify(swingCheck))
+                            if (swingCheck.length > 0){
+                                console.log("Id "+element+" is day trade")
+                            }else{
+                                console.log("Id "+element+" is swing trade")
+                            }
+                        });*/
 
                     }
 
@@ -497,7 +747,7 @@ const addTradesMixin = {
                     for (const key9 of keys9) {
                         temp10[key9] = {}
                         var tempExecs = objectZ[key9]
-                        //console.log("tempExecs9 " + JSON.stringify(tempExecs));
+                            //console.log("tempExecs9 " + JSON.stringify(tempExecs));
                         var z = _
                             .chain(tempExecs)
                             .orderBy(["entryTime"], ["asc"])
@@ -1022,7 +1272,7 @@ const addTradesMixin = {
 
         /* ---- 3: CREATE TIME AND NAME (param1 is input date and time, param2 is td/trade unix date)---- */
         videoStartTime: async function(param1, param2) {
-            console.log("param "+param1)
+            console.log("param " + param1)
             var startTime = param1
             var fileDate = dayjs(param1).format('YYYY_MM_DD')
             var fileYear = dayjs(param1).format('YYYY')
@@ -1092,6 +1342,7 @@ const addTradesMixin = {
 
             const keys = Object.keys(this.executions)
 
+            //Function unplaod to bucket if video
             uploadToBucket = (param, param2) => {
                 var urlBase = this.apiBaseUrl
                 var url = urlBase + this.apiEndPointTempUrl
@@ -1144,7 +1395,7 @@ const addTradesMixin = {
                     })
             }
 
-
+            //Function uplaod trades to parse
             uploadToParse = async(param, param2) => {
                 console.log("in upload to parse param is " + param + " and param 2 " + param2)
                 this.loadingSpinnerText = "Uploading data from " + dayjs.unix(param).format("DD MMMM YYYY") + "  to database ..."
@@ -1175,8 +1426,12 @@ const addTradesMixin = {
                         console.log(" -> Added new trades with id " + object.id)
                         i++
                         if (i == numberOfDates) {
-                            //Refreshing all Trades
-                            this.refreshTrades()
+                            if (this.includeFinancials == true) {
+                                uploadFinancialsToParse()
+                            } else {
+                                //Refreshing all Trades
+                                this.refreshTrades()
+                            }
                         }
 
                     }, (error) => {
@@ -1192,6 +1447,51 @@ const addTradesMixin = {
                 }*/
             }
 
+            //Function uplaod financials to parse
+            uploadFinancialsToParse = async() => {
+                console.log(" -> Uploading financials to Parse")
+                this.loadingSpinnerText = "Uploading financials to database ..."
+                this.financials.forEach((element, index) => {
+                    const Object = Parse.Object.extend("financials");
+                    const object = new Object();
+                    object.set("user", Parse.User.current())
+                    object.set("tradeId", element.tradeId)
+                    object.set("symbol", element.symbol)
+                    object.set("entryTime", element.entryTime)
+                    object.set("exchange", element.exchange)
+                    object.set("sector", element.sector)
+                    object.set("industry", element.industry)
+                    object.set("mktCap", element.mktCap)
+                    object.set("publicFloat", element.publicFloat)
+                    object.set("shortFloat", element.shortFloat)
+                    object.set("shortRatio", element.shortRatio)
+                    object.set("vwap", element.vwap)
+                    object.set("cumVolume", element.cumVolume)
+                    object.set("high", element.high)
+                    object.set("low", element.low)
+                    object.set("ohlcv", element.ohlcv)
+                    object.set("finviz", element.finviz)
+                    object.setACL(new Parse.ACL(Parse.User.current()));
+
+                    object.save()
+                        .then((object) => {
+
+                            console.log(" -> Added new financials with id " + object.id)
+                            if (this.financials.length == (index + 1)) {
+                                //Refreshing all Trades
+                                this.refreshTrades()
+                            }
+
+                        }, (error) => {
+                            // Execute any logic that should take place if the save fails.
+                            // error is a Parse.Error with an error code and message.
+                            console.log('Failed to create new financials, with error code: ' + error.message);
+                            this.loadingSpinner = false
+                        });
+                });
+            }
+
+            //1- Let's check if there are videos and launch above functions
             let numberOfDates = Object.keys(this.executions).length
             console.log("num of dates " + numberOfDates)
             var i = 0
@@ -1246,7 +1546,7 @@ const addTradesMixin = {
             await this.getTradesFromDb()
             console.log("done")
             this.loadingSpinner = false
-            window.location.href = "/dashboard"
+                //window.location.href = "/dashboard"
                 //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
     } //End methods

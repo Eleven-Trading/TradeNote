@@ -166,6 +166,9 @@ input:checked+.slider:before {
     left: 60%;
   }
   
+.tradeSetup .form-select{
+    font-size: small;
+}
 
 /*=================== /END GENERAL/ ===================*/
 

@@ -274,14 +274,66 @@ const vueApp = new Vue({
             tradeToShow: [],
             uploadPercentCompleted: null,
             videosInIndexedDB: [],
+            imageUrl: null,
+            timeIntervals: [
+                {
+                    value: 1,
+                    label: '1mn',
+                },
+                {
+                    value: 5,
+                    label: '5mn',
+                },
+                {
+                    value: 15,
+                    label: '15mn',
+                },
+                {
+                    value: 30,
+                    label: '30mn',
+                },
+                {
+                    value: 60,
+                    label: '1h',
+                },
+                {
+                    value: 120,
+                    label: '2h',
+                },
+                {
+                    value:  180,
+                    label: '3h',
+                },
+                {
+                    value: 240,
+                    label: '4h',
+                },
+                {
+                    value: 1440,
+                    label: '1D',
+                },
+            ],
+            winStrategies: [
+                {
+                    value: "long",
+                    label: "Long"
+                },
+                {
+                    value: "short",
+                    label: "Short"
+                },
+            ],
+            tradeId: null,
+            hasVideo: false,
+            modalVideosOpen: false,
 
             //ADDTRADES
             apiBaseUrl: "API_BASE_URL",
             apiEndPointTempUrl: "API_END_POINT_TEMP_URL",
-            apiEndPointFinviz: "API_END_POINT_FINVIZ",
+            apiEndPointFinancials: "API_END_POINT_FINANCIALS",
             apiEndPointTimezone: "API_END_POINT_TIMEZONE",
             publicBaseUrlB2: "PUBLIC_BASE_URL_B2",
-            includeFinviz: true,
+            includeFinancials: true,
             existingTradesArray: [],
             executions: null,
             trades: null,
@@ -289,12 +341,13 @@ const vueApp = new Vue({
             pAndL: null,
             videos: {},
             inputToShow: [],
+            financials: [],
 
 
             screenshotIndex: 0,
             posterImg: null,
             videoCurrentlyPlaying: null,
-            videoToPlay: null,
+            videosArrayIndex: null,
             forwBackSpeed: 0.5,
             forwBackSpeedArray: [0.1, 0.2, 0.3, 0.5, 1, 1.5, 2, 3],
             videoBuffer: 2,
@@ -314,6 +367,8 @@ const vueApp = new Vue({
                 pattern: {
                     id: null,
                     name: null,
+                    timeInterval: null,
+                    winStrategy: null,
                 },
                 entrypoint: {
                     id: null,
@@ -324,7 +379,8 @@ const vueApp = new Vue({
                     name: null,
                 },
             }, //setup I choose in videos
-            patternsEntrypoints: [],
+            //patternsEntrypoints: [],
+            patterns: [],
             entrypoints: [],
             mistakes: [],
         }
@@ -422,7 +478,6 @@ const vueApp = new Vue({
         var fileDateUnix = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
         console.log("unix " + fileDateUnix)
 
-
     },
     watch: {
         activeNav: function() {
@@ -431,8 +486,8 @@ const vueApp = new Vue({
         playbookImg: function() {
             //console.log("watch img "+this.playbookImg)
         },
-        includeFinviz: function() {
-            //console.log("watch finviz "+this.includeFinviz)
+        includeFinancials: function() {
+            //console.log("watch finviz "+this.includeFinancials)
         },
 
     },
@@ -566,6 +621,7 @@ const vueApp = new Vue({
         },
 
         initPopover() {
+            //console.log("init popover")
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
             popoverTriggerList.map(function(popoverTriggerEl) {
                 return new bootstrap.Popover(popoverTriggerEl)
@@ -696,7 +752,7 @@ const vueApp = new Vue({
         },
         playVideo() {
             console.log("click")
-                //this.videoToPlay = param
+                //this.videosArrayIndex = param
         },
         videoSkip(param) {
             if (this.videoCurrentlyPlaying) {

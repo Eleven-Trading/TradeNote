@@ -88,9 +88,12 @@
 
                     <tr v-for="(trade, index) in tradeToShow[0].trades">
                         <td id="videoTd">
-                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videoToPlay" class="modal-content"> -->
+                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
                             <span v-if="trade.videoStart&&trade.videoEnd">
-                                <i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="viewVideo(index)" class="pointerClass fab fa-youtube"></i>
+                                <i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="viewModalVideos(true, index)" class="pointerClass fab fa-youtube"></i>
+                            </span>
+                            <span v-else>
+                                <i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="viewModalVideos(false, index)" class="pointerClass uil uil-edit-alt"></i>
                             </span>
                         </td>
                         <td>{{trade.symbol}}</td>
@@ -101,7 +104,10 @@
                         <td>{{(trade.entryPrice).toFixed(2)}}</td>
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
-                        <td><span v-if="trade.videoStart&&trade.videoEnd"><i v-if="Object.keys(trade.setup).length >0" class="uil uil-check-square"></i><i v-else class="uil uil-times-square"></i></span></td>
+                        <td>
+                            <i v-if="Object.keys(trade.setup).length >0" class="uil uil-check-square"></i>
+                            <i v-else class="uil uil-times-square"></i>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -111,20 +117,22 @@
     <!-- ============ VIDEO MODAL ============ -->
     <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
-            <div v-if="videoToPlay != null" class="modal-content">
+            <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div v-if="videoToPlay != null">
-                    <div v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&tradeToShow[0].trades[videoToPlay].videoStart&&tradeToShow[0].trades[videoToPlay].videoEnd">
-                        <span id="videoBig">
-                            <video v-bind:id="'video'+videoToPlay" controls controlslist width="100%" v-bind:key="videoBlob+'#t='+tradeToShow[0].trades[videoToPlay].videoStart+','+tradeToShow[0].trades[videoToPlay].videoEnd" @playing="videoPlaying(videoToPlay)">
-                                <source v-bind:src="videoBlob+'#t='+(tradeToShow[0].trades[videoToPlay].videoStart-videoBuffer)+','+(tradeToShow[0].trades[videoToPlay].videoEnd+videoBuffer)"></video>
-                        </span>
+                <div v-if="modalVideosOpen">
+                    <div v-if="hasVideo">
+                        <div v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&tradeToShow[0].trades[videosArrayIndex].videoStart&&tradeToShow[0].trades[videosArrayIndex].videoEnd">
+                            <span id="videoBig">
+                                <video v-bind:id="'video'+videosArrayIndex" controls controlslist width="100%" v-bind:key="videoBlob+'#t='+tradeToShow[0].trades[videosArrayIndex].videoStart+','+tradeToShow[0].trades[videosArrayIndex].videoEnd" @playing="videoPlaying(videosArrayIndex)">
+                                    <source v-bind:src="videoBlob+'#t='+(tradeToShow[0].trades[videosArrayIndex].videoStart-videoBuffer)+','+(tradeToShow[0].trades[videosArrayIndex].videoEnd+videoBuffer)"></video>
+                            </span>
+                        </div>
                     </div>
 
                     <!-- *** Table *** -->
-                    <div>
+                    <div v-bind:class="[!hasVideo ? 'mt-3' : '']">
                         <table class="table">
                             <thead class="thead-dark">
                                 <tr>
@@ -143,55 +151,93 @@
                             <tbody>
                                 <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
                                 <tr>
-                                    <td>{{tradeToShow[0].trades[videoToPlay].symbol}}</td>
-                                    <td>{{tradeToShow[0].trades[videoToPlay].buyQuantity+tradeToShow[0].trades[videoToPlay].sellQuantity}}</td>
-                                    <td>{{tradeToShow[0].trades[videoToPlay].side == 'B' ? 'Long' : 'Short'}}</td>
-                                    <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].entryTime)}}</td>
-                                    <td>{{timeFormat(tradeToShow[0].trades[videoToPlay].exitTime)}}</td>
-                                    <td>{{timeDuration(tradeToShow[0].trades[videoToPlay].exitTime - tradeToShow[0].trades[videoToPlay].entryTime)}}</td>
-                                    <td>{{(tradeToShow[0].trades[videoToPlay].entryPrice).toFixed(2)}}</td>
-                                    <td>{{(tradeToShow[0].trades[videoToPlay].exitPrice).toFixed(2)}}</td>
-                                    <td v-bind:class="[(tradeToShow[0].trades[videoToPlay].grossSharePL)>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].grossSharePL).toFixed(2)}}</td>
-                                    <td v-bind:class="[tradeToShow[0].trades[videoToPlay].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videoToPlay].netProceeds).toFixed(2)}}</td>
+                                    <td>{{tradeToShow[0].trades[videosArrayIndex].symbol}}</td>
+                                    <td>{{tradeToShow[0].trades[videosArrayIndex].buyQuantity+tradeToShow[0].trades[videosArrayIndex].sellQuantity}}</td>
+                                    <td>{{tradeToShow[0].trades[videosArrayIndex].side == 'B' ? 'Long' : 'Short'}}</td>
+                                    <td>{{timeFormat(tradeToShow[0].trades[videosArrayIndex].entryTime)}}</td>
+                                    <td>{{timeFormat(tradeToShow[0].trades[videosArrayIndex].exitTime)}}</td>
+                                    <td>{{timeDuration(tradeToShow[0].trades[videosArrayIndex].exitTime - tradeToShow[0].trades[videosArrayIndex].entryTime)}}</td>
+                                    <td>{{(tradeToShow[0].trades[videosArrayIndex].entryPrice).toFixed(2)}}</td>
+                                    <td>{{(tradeToShow[0].trades[videosArrayIndex].exitPrice).toFixed(2)}}</td>
+                                    <td v-bind:class="[(tradeToShow[0].trades[videosArrayIndex].grossSharePL)>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videosArrayIndex].grossSharePL).toFixed(2)}}</td>
+                                    <td v-bind:class="[tradeToShow[0].trades[videosArrayIndex].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(tradeToShow[0].trades[videosArrayIndex].netProceeds).toFixed(2)}}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <!-- *** Setup *** -->
-                    <div class="mt-1 mb-1 row align-items-center ms-2 me-2">
-                        <div class="col-1">Setup:
+                    <div class="mt-1 mb-2 row align-items-center ms-1 me-1 tradeSetup">
+                        <!-- Setup Labels -->
+                        <div class="col-12 mb-2">
+                            <div class="row">
+                                <div class="col-1">
+                                    <label>Setup </label>
+                                </div>
+                                <div v-show="tradeSetup.pattern.id != null" class="col-1">
+                                    <i v-show="tradeSetup.pattern.id != null" id="videoImgUrl" class="ps-2 uil uil-info-circle pointerClass" data-bs-trigger="hover focus" data-bs-toggle="popover"></i>
+                                </div>
+                                <div class="col-1">
+                                    <button class="ps-2 btn btn-outline-danger btn-sm" v-on:click="deleteSetup(tradeToShow[0].trades[videosArrayIndex].id)">Delete</button>
+                                </div>
+                                <div class="col-1">
+                                    <button class="ps-2 btn btn-outline-success btn-sm" v-on:click="updateSetup(tradeToShow[0].trades[videosArrayIndex].id)">Save</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <select v-model="tradeSetup.pattern.id" class="form-select">
-                                <option value='null' selected>Pattern</option>
-                                <option v-for="item in patternsEntrypoints" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.pattern.name != null ? tradeSetup.pattern.name : '')">{{item.name}}</option>
-                            </select>
-                        </div>
-                        <div v-show="tradeSetup.pattern.id != null" class="col-3">
-                            <select v-model="tradeSetup.entrypoint.id" class="form-select">
-                                <option v-if="Object.keys(tradeToShow[0].trades[videoToPlay].setup).length == 0" value='null' selected disabled>Entrypoint</option>
-                                <option v-for="item in filteredEntrypoints" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.entrypoint.name != null ? tradeSetup.entrypoint.name : '')">{{item.name}}</option>
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <select v-model="tradeSetup.mistake.id" class="form-select">
-                                <option value='null' selected>Mistake</option>
-                                <option v-for="item in mistakes" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.mistake.name != null ? tradeSetup.mistake.name : '')">{{item.name}}</option>
-                            </select>
-                        </div>
-                        <div class="col-2">
-                            <button class="btn btn-outline-success btn-sm" v-on:click="updateSetup(tradeToShow[0].trades[videoToPlay].id)">Save
-                            </button>
+
+                        <!-- Setup Inputs -->
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-3">
+                                    <select v-on:input="selectedPattern($event.target.value)" class="form-select">
+                                        <option value='null' selected>Pattern</option>
+                                        <option v-for="item in patterns" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.pattern.name != null ? tradeSetup.pattern.name : '')">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-2">
+                                    <select v-model="tradeSetup.pattern.timeInterval" class="form-select">
+                                        <option value='null' selected>Interval</option>
+                                        <option v-for="item in timeIntervals" v-bind:value="item.value" v-bind:selected="item.label == (tradeSetup.pattern.timeInterval != null ? tradeSetup.pattern.timeInterval : '')">{{item.label}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select v-model="tradeSetup.entrypoint.id" class="form-select">
+                                        <option value='null' selected>Entrypoint</option>
+                                        <option v-for="item in entrypoints" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.entrypoint.name != null ? tradeSetup.entrypoint.name : '')">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-2">
+                                    <select v-model="tradeSetup.mistake.id" class="form-select">
+                                        <option value='null' selected>Mistake</option>
+                                        <option v-for="item in mistakes" v-bind:value="item.id" v-bind:selected="item.name == (tradeSetup.mistake.name != null ? tradeSetup.mistake.name : '')">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-2">
+                                    <select v-model="tradeSetup.pattern.winStrategy" class="form-select">
+                                        <option value='null' selected>Win Strat.</option>
+                                        <option v-for="item in winStrategies" v-bind:value="item.value" v-bind:selected="item.label == (tradeSetup.pattern.winStrategy != null ? tradeSetup.pattern.winStrategy : '')">{{item.label}}</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    </hr>
                     <div class="d-flex">
-                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videoToPlay-1)&&tradeToShow[0].trades[videoToPlay-1].videoStart&&tradeToShow[0].trades[videoToPlay-1].videoEnd">
-                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewVideo(videoToPlay-1)">
+                        <!--<div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)&&tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd">
+                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideos(true, videosArrayIndex-1)">
                                 <i class="fa fa-chevron-left me-2"></i>Previous</button>
                         </div>
-                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videoToPlay+1)&&tradeToShow[0].trades[videoToPlay+1].videoStart&&tradeToShow[0].trades[videoToPlay+1].videoEnd" class="ms-auto">
-                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewVideo(videoToPlay+1)">Next<i class="fa fa-chevron-right ms-2"></i>
+                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex+1)&&tradeToShow[0].trades[videosArrayIndex+1].videoStart&&tradeToShow[0].trades[videosArrayIndex+1].videoEnd" class="ms-auto">
+                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideos(true, videosArrayIndex+1)">Next<i class="fa fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>-->
+                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)">
+                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1)">
+                                <i class="fa fa-chevron-left me-2"></i>Previous</button>
+                        </div>
+                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto">
+                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex+1].videoStart&&tradeToShow[0].trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1)">Next<i class="fa fa-chevron-right ms-2"></i>
                             </button>
                         </div>
                     </div>

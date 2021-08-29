@@ -27,7 +27,7 @@
                 <div class="line"></div>
                 <div class="step" data-target="#step3">
                     <button type="button" class="btn step-trigger">
-                        <span class="bs-stepper-circle">4</span>
+                        <span class="bs-stepper-circle">3</span>
                         <span class="bs-stepper-label">Validate</span>
                     </button>
                 </div>
@@ -41,9 +41,9 @@
                     <span v-show="executions != null">@@include('components/stepperNext.html')</span>
                     @@include('components/cancelAdd.html')    
                     
-                    <label>Include Finviz Data</label>
+                    <label>Include Financials</label>
                     <label class="switch">
-                        <input type="checkbox" v-model="includeFinviz" v-on:click="includeFinviz = !includeFinviz">
+                        <input type="checkbox" v-model="includeFinancials" v-on:click="includeFinancials = !includeFinancials">
                         <span class="slider round"></span>
                     </label>
 

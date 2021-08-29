@@ -5,13 +5,18 @@ const settingsMixin = {
             const Object = Parse.Object.extend("patterns")
             const query = new Parse.Query(Object)
             query.equalTo("user", Parse.User.current())
-            query.include("entrypoints")
             query.ascending("order");
             const results = await query.find();
-            const Object2 = Parse.Object.extend("mistakes")
+
+            const Object2 = Parse.Object.extend("entrypoints")
             const query2 = new Parse.Query(Object2)
             query2.equalTo("user", Parse.User.current())
             const results2 = await query2.find();
+
+            const Object3 = Parse.Object.extend("mistakes")
+            const query3 = new Parse.Query(Object3)
+            query3.equalTo("user", Parse.User.current())
+            const results3 = await query3.find();
 
             for (let i = 0; i < results.length; i++) {
                 var temp = {}
@@ -19,21 +24,22 @@ const settingsMixin = {
                 temp.id = object.id
                 temp.name = object.get('name')
                 temp.description = object.get('description')
-                temp.entrypoints = []
-                object.get('entrypoints').forEach(element => {
-                    var elementObject = JSON.parse(JSON.stringify(element))
-                    var temp2 = {}
-                    temp2.id = element.id
-                    temp2.name = elementObject.name
-                    temp2.description = elementObject.description
-                    temp.entrypoints.push(temp2)
-                    this.entrypoints.push(temp2)
-                });
-                this.patternsEntrypoints.push(temp)
+                temp.imageUrl = object.get('imageUrl')
+                this.patterns.push(temp)
             }
+            
             for (let i = 0; i < results2.length; i++) {
                 var temp = {}
                 const object = results2[i];
+                temp.id = object.id
+                temp.name = object.get('name')
+                temp.description = object.get('description')
+                this.entrypoints.push(temp)
+            }
+
+            for (let i = 0; i < results3.length; i++) {
+                var temp = {}
+                const object = results3[i];
                 temp.id = object.id
                 temp.name = object.get('name')
                 temp.description = object.get('description')

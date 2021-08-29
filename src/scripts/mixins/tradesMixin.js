@@ -816,7 +816,7 @@ const tradesMixin = {
                 return ceilTrades
             })
             .value()
-            console.log("group by entryprice " + JSON.stringify(this.groups.entryPrice))
+            //console.log("group by entryprice " + JSON.stringify(this.groups.entryPrice))
 
         },
 
