@@ -70,6 +70,7 @@ const tradesMixin = {
                 await this.barChartNegative("barChartNegative11") //entrypoints
                 await this.barChartNegative("barChartNegative12") //share float
                 await this.barChartNegative("barChartNegative13") //entry price
+                await this.barChartNegative("barChartNegative14") //market cap
                 await this.boxPlotChart()
                 await (this.totalPAndLChartMounted = true)
             }
@@ -92,6 +93,24 @@ const tradesMixin = {
                         console.log(" -> Data exists in IndexedDB. Retreiving trades")
                         this.allTrades = event.target.result.data;
                         //console.log("all trades " + JSON.stringify(this.allTrades))
+                        (async() => {
+                            if (!navigator.storage) return;
+
+                            function formatBytes(bytes, decimals = 2) {
+                                if (bytes === 0) return '0 Bytes';
+                                const k = 1024;
+                                const dm = decimals < 0 ? 0 : decimals;
+                                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+                                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+                            }
+                            const
+                                estimate = await navigator.storage.estimate(),
+                                // calculate remaining storage in MB
+                                quota = formatBytes(estimate.quota)
+                            usage = formatBytes(estimate.usage)
+                            console.log("Local storage quota " + quota + " and usage " + usage);
+                        })();
                         resolve(true)
                     } else {
                         console.log(" -> Data does not exist in IndexedDB. Retreiving from DB")
@@ -172,6 +191,7 @@ const tradesMixin = {
             var totalNetLossQuantity = 0
             var totalNetWinsCount = 0
             var totalNetLossCount = 0
+            var financials = {}
 
 
 
@@ -247,6 +267,7 @@ const tradesMixin = {
                     totalNetLossQuantity += el.netLossQuantity
                     totalNetWinsCount += el.netWinsCount //Total number/count of net winning trades
                     totalNetLossCount += el.netLossCount //Total number/count of net losing trades
+                    financials += el.financials //Total number/count of net losing trades
 
                     temp1.push(el) // needed for grouping
                 })
@@ -690,26 +711,7 @@ const tradesMixin = {
                 })
                 //console.log("d "+JSON.stringify(d))
 
-            /*******************
-             * GROUP BY ENTRYPRICE
-             *******************/
-            var e = _(temp1)
-                .orderBy(x => x.entryPrice)
-                .groupBy(x => {
-                    // under 5$, 5-10$, 10-15$, 15-20$, 20-25$mn, 25-30$, above 30$
-                    if (x.entryPrice < 30) {
-                        var priceRange = 5
-                        floorPrice = (Math.floor(x.entryPrice / priceRange) * priceRange);
-                    }
-                    if (x.entryPrice > 30) {
-                        floorPrice = 30
-                    }
 
-                    //console.log(" -> entry price " + x.entryPrice +" and floor/interval "+floorPrice)
-
-                    return floorPrice
-                })
-                //console.log("e "+JSON.stringify(e))
 
             /*******************
              * GROUP BY NUMBER OF TRADES
@@ -745,7 +747,15 @@ const tradesMixin = {
              * GROUP BY PATTERN
              *******************/
             this.groups.patterns = _(temp1)
-                .groupBy('setup.pattern')
+                .groupBy(x => {
+                    //in my first version pattern was a string id. Now pattern is an object. So we need to check this
+                    if (typeof(x.setup.pattern) == 'string') {
+                        return x.setup.pattern
+                    }
+                    if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                        return x.setup.pattern.id
+                    }
+                })
                 .value()
                 //console.log("group by patterns " + JSON.stringify(this.groups.patterns))
 
@@ -758,35 +768,22 @@ const tradesMixin = {
                 //console.log("group by entrypoints " + JSON.stringify(this.groups.entrypoints))
 
             /*******************
-             * GROUP BY SHAREFLOAT
+             * GROUP BY PUBLIC FLOAT
              *******************/
-            let path = "financials['Shs Float']";
+            let path = "financials";
             this.groups.shareFloat = _(temp1)
                 .filter(object => _.has(object, path))
                 .groupBy(x => {
-                    if (shsFloat != "-") {
-                        var shsFloat = x.financials['Shs Float']
-                        var floatArray = shsFloat.split(/(?<=[0-9])(?=[a-z]+)/i)
-                        var shsFloatNumber = Number(floatArray[0])
-                        var shsFloatMult = floatArray[1];
-                        //console.log("float number "+shsFloatNumber+" and mult "+shsFloatMult)
+                    var publicFloatFinviz = x.financials.publicFloat.finviz
+                    if (publicFloatFinviz != "-") {
+                        console.log("public float (finviz) " + JSON.stringify(publicFloatFinviz))
 
-                        if (shsFloatMult == "M") {
-                            shsFloat = shsFloatNumber * 1000000;
-                        } else if (shsFloatMult == "B") {
-                            shsFloat = shsFloatNumber * 1000000000;
-                        } else if (shsFloatMult == "K") {
-                            shsFloat = shsFloatNumber * 100000;
-                        } else {
-                            console.log(" -> Unrecognized multiplier " + shsFloatMult);
-                        }
-                        //console.log("shs float " + shsFloat)
-                            // under 10M, 10-20M, 20-30, 30-50, above 50M float
-                        if (shsFloat <= 50000000) {
+                        // under 10M, 10-20M, 20-30, 30-50, above 50M float
+                        if (publicFloatFinviz <= 50000000) {
                             var range = 10000000
-                            ceilTrades = (Math.ceil(shsFloat / range) * range);
+                            ceilTrades = (Math.ceil(publicFloatFinviz / range) * range);
                         }
-                        if (shsFloat > 50000000) {
+                        if (publicFloatFinviz > 50000000) {
                             ceilTrades = 50000000
                         }
                         //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
@@ -798,25 +795,66 @@ const tradesMixin = {
 
             //console.log("group by share float " + JSON.stringify(this.groups.shareFloat))
 
+
+            /*******************
+             * GROUP BY MARKET CAP
+             *******************/
+            this.groups.mktCap = _(temp1)
+                .filter(object => _.has(object, path))
+                .groupBy(x => {
+                    var mktCap = x.financials.mktCap
+                    if (mktCap != null) {
+                        //console.log("mktCap " + mktCap)
+                            //Mega-cap: Market cap of $200 billion and greater
+                            //Big-cap: $10 billion and greater
+                            //Mid-cap: $2 billion to $10 billion
+                            //Small-cap: $300 million to $2 billion
+                            //Micro-cap: $50 million to $300 million
+                            //Nano-cap: Under $50 million
+                        if (mktCap <= 50 * 1000000) {
+                            ceilTrades = 50 * 1000000
+                        }
+                        if (mktCap > 50 * 1000000 && mktCap <= 300 * 1000000) {
+                            ceilTrades = 300 * 1000000
+                        }
+                        if (mktCap > 300 * 1000000 && mktCap <= 2000 * 1000000) {
+                            ceilTrades = 2000 * 1000000
+                        }
+                        if (mktCap > 2000 * 1000000 && mktCap <= 10000 * 1000000) {
+                            ceilTrades = 10000 * 1000000
+                        }
+                        if (mktCap > 10000 * 1000000) {
+                            ceilTrades = 10001 * 1000000
+                        }
+                        //console.log(" -> interval "+ceilTrades)
+
+                        return ceilTrades
+                    }
+                })
+                .value()
+
+            //console.log("group by mktCap " + JSON.stringify(this.groups.mktCap))
+
+
             /*******************
              * GROUP BY ENTRYPRICE
              *******************/
-             this.groups.entryPrice = _(temp1)
-             .groupBy(x => {
-                // under 5, 6-10, 11-15, 16-20, 21-30, above 30 trades
-                if (x.entryPrice <= 30) {
-                    var range = 5
-                    ceilTrades = (Math.ceil(x.entryPrice / range) * range);
-                }
-                if (x.entryPrice > 30) {
-                    ceilTrades = 30
-                }
-                //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
+            this.groups.entryPrice = _(temp1)
+                .groupBy(x => {
+                    // under 5, 5-9.99, 10-14.99, 15-19.99, 20-29.99, above 30 trades
+                    if (x.entryPrice < 30) {
+                        var range = 5
+                        floor = (Math.floor(x.entryPrice / range) * range);
+                    }
+                    if (x.entryPrice >= 30) {
+                        floor = 30
+                    }
+                    console.log(" -> Entry price "+x.entryPrice+" and interval "+floor)
 
-                return ceilTrades
-            })
-            .value()
-            //console.log("group by entryprice " + JSON.stringify(this.groups.entryPrice))
+                    return floor
+                })
+                .value()
+                //console.log("group by entryprice " + JSON.stringify(this.groups.entryPrice))
 
         },
 

@@ -183,6 +183,9 @@
                                 <div class="col-1">
                                     <button class="ps-2 btn btn-outline-success btn-sm" v-on:click="updateSetup(tradeToShow[0].trades[videosArrayIndex].id)">Save</button>
                                 </div>
+                                <div v-show="spinnerSetups" class="col-4">
+                                    <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{spinnerSetupsText}}
+                                </div>
                             </div>
                         </div>
 
@@ -222,9 +225,9 @@
                             </div>
                         </div>
                     </div>
-                    </hr>
-                    <div class="d-flex">
-                        <!--<div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)&&tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd">
+                </hr>
+                <div class="d-flex">
+                    <!--<div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)&&tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd">
                             <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideos(true, videosArrayIndex-1)">
                                 <i class="fa fa-chevron-left me-2"></i>Previous</button>
                         </div>
@@ -232,17 +235,17 @@
                             <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideos(true, videosArrayIndex+1)">Next<i class="fa fa-chevron-right ms-2"></i>
                             </button>
                         </div>-->
-                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)">
-                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1)">
-                                <i class="fa fa-chevron-left me-2"></i>Previous</button>
-                        </div>
-                        <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto">
-                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex+1].videoStart&&tradeToShow[0].trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1)">Next<i class="fa fa-chevron-right ms-2"></i>
-                            </button>
-                        </div>
+                    <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex-1)">
+                        <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex-1].videoStart&&tradeToShow[0].trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1)" v-bind:disabled="spinnerSetups==true">
+                            <i class="fa fa-chevron-left me-2"></i>Previous</button>
+                    </div>
+                    <div v-if="tradeToShow[0].trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto">
+                        <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideos(tradeToShow[0].trades[videosArrayIndex+1].videoStart&&tradeToShow[0].trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1)" v-bind:disabled="spinnerSetups==true">Next<i class="fa fa-chevron-right ms-2"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>

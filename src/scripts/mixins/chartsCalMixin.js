@@ -393,10 +393,11 @@ const chartsCalMixin = {
                     var probNetWins = (element.netWinsCount / element.trades)
                     var probNetLoss = (element.netLossCount / element.trades)
 
-                    var avgNetWins = (element.netWins / element.netWinsCount)
-                    var avgNetLoss = -(element.netLoss / element.netLossCount)
+                    var avgNetWins = element.netWinsCount == 0 ? 0 : (element.netWins / element.netWinsCount)
+                    var avgNetLoss = element.netLossCount == 0 ? 0 : -(element.netLoss / element.netLossCount)
 
                     var appt = (probNetWins * avgNetWins) - (probNetLoss * avgNetLoss)
+                        //console.log("appt "+appt+" probNetWins "+probNetWins+" avgNetWins "+avgNetWins+" probNetLoss "+probNetLoss+" avgNetLoss "+avgNetLoss+ " element.netWinsCount "+element.netWinsCount+" element.netLossCount "+element.netLossCount)
 
                     if (param1 == "barChart1") {
                         if (keys.length <= this.maxChartValues) {
@@ -485,7 +486,7 @@ const chartsCalMixin = {
         },
 
         barChartNegative(param1) {
-            console.log("\nBAR CHART NEGATIVE")
+            console.log("\nBAR CHART NEGATIVE (" + param1 + ")")
             return new Promise((resolve, reject) => {
                 var yAxis = []
                 var series = []
@@ -501,7 +502,7 @@ const chartsCalMixin = {
                 if (param1 == "barChartNegative10") {
                     const toRemove = ['null', 'undefined'];
                     var keyObject = _.omit(this.groups.patterns, toRemove)
-                        //console.log("filtered "+JSON.stringify(filteredObj))
+                        //console.log("filtered "+JSON.stringify(keyObject))
                 }
                 if (param1 == "barChartNegative11") {
                     const toRemove = ['null', 'undefined'];
@@ -517,15 +518,20 @@ const chartsCalMixin = {
                     var keyObject = this.groups.entryPrice
                 }
 
+                if (param1 == "barChartNegative14") {
+                    var keyObject = this.groups.mktCap
+                }
+
                 const keys = Object.keys(keyObject);
 
                 //console.log("object " + JSON.stringify(keyObject))
+                //console.log("keys " + JSON.stringify(keys))
                 for (const key of keys) {
-                    //console.log("key " + key)
+                    //console.log("key " + JSON.stringify(key))
                     if (param1 == "barChartNegative10") {
-                        var patternEntrypoint = this.patterns.find(item => item.id === key)
-                            //console.log("pattern name " + JSON.stringify(patternEntrypoint))
-                        yAxis.push(patternEntrypoint.name) // unshift because I'm only able to sort timeframe ascending
+                        var patterns = this.patterns.find(item => item.id === key)
+                            //console.log("pattern name " + JSON.stringify(patterns))
+                        yAxis.push(patterns.name) // unshift because I'm only able to sort timeframe ascending
 
                     } else if (param1 == "barChartNegative11") {
                         var entrypoint = this.entrypoints.find(item => item.id === key)
@@ -580,7 +586,7 @@ const chartsCalMixin = {
 
                             var appt = (probWins * avgWins) - (probLoss * avgLoss)
                                 //console.log("APPT " + appt)
-                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13") {
+                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14") {
                                 series.unshift(appt)
                             }
                             if (param1 == "barChartNegative2" || param1 == "barChartNegative5" || param1 == "barChartNegative8") {
@@ -669,18 +675,48 @@ const chartsCalMixin = {
                                     if (params > 30) {
                                         return "+30"
                                     }
-                                } else if (param1 == "barChartNegative12") {
-                                    params = params/1000000
+                                } else if (param1 == "barChartNegative13") {
+                                    //console.log("params "+params)
+                                    if (params < 30) {
+                                        if (params < 5) {
+                                            return "0-4.99$"
+                                        } else {
+                                            return params + "-" + (Number(params) + 4.99).toFixed(2) +"$"
+                                        }
+                                    }
+                                    if (params >= 30) {
+                                        return "+30$"
+                                    }
+                                }
+                                
+                                else if (param1 == "barChartNegative12") {
+                                    params = params / 1000000
                                     if (params < 50) {
                                         var range = 10
-                                        if(params <= 10){
-                                            return (params - range) + "-" + params+"M"
-                                        }else{
-                                            return (params - range) + "M-" + params+"M"
+                                        if (params <= 10) {
+                                            return (params - range) + "-" + params + "M"
+                                        } else {
+                                            return (params - range) + "M-" + params + "M"
                                         }
                                     }
                                     if (params >= 50) {
                                         return "+50M"
+                                    }
+                                } else if (param1 == "barChartNegative14") {
+                                    params = params / 1000000
+                                    if (params <= 50) {
+                                        return "Nano-cap (0-" + params + "M)"
+                                    }
+                                    if (params > 50 && params <= 300) {
+                                        return "Micro-cap (50M-" + params + "M)"
+                                    }
+                                    if (params > 300 && params <= 2000) {
+                                        return "Small-cap (300M-" + params/1000 + "B)"
+                                    }
+                                    if (params > 2000 && params <= 10000) {
+                                        return "Mid-cap (2B-" + params/1000 + "B)"
+                                    }else{
+                                        return "Big-cap (+10B)"
                                     }
                                 } else {
                                     return params

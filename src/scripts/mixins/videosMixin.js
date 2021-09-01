@@ -156,8 +156,8 @@ const videosMixin = {
         },
 
         viewModalVideos: async function(param1, param2) { //When we click on the video icon to view a video. Param1 : is video true/false, Param2: index of array
-            this.hasVideo = false
-            this.resetSetup()
+            await (this.hasVideo = false)
+            await (this.resetSetup())
             this.modalVideosOpen = false
             if (param1 == true) {
                 this.hasVideo = true
@@ -176,6 +176,7 @@ const videosMixin = {
         },
 
         resetSetup() {
+            console.log("resetting setup")
             //we need to reset the setup variable each time
             this.tradeSetup = {
                 pattern: {
@@ -262,6 +263,7 @@ const videosMixin = {
 
         updateSetup: async function(param) { //param1 : trade unixDate ; param2 : trade id inside trade array
             console.log("\nUPDATING TRADE SETUP")
+            this.spinnerSetups = true
             console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeId)
             if (this.tradeSetup.pattern.id == null || (this.tradeSetup.pattern.id == null && this.tradeSetup.entrypoint.id == null && this.tradeSetup.mistake.id == null)) {
                 alert("Please enter setup")
@@ -270,6 +272,7 @@ const videosMixin = {
 
             if (this.tradeId != null) {
                 console.log(" -> Updating setups")
+                this.spinnerSetupsText = "Updating setups"
                 const Object = Parse.Object.extend("setups");
                 const query = new Parse.Query(Object);
                 query.equalTo("tradeId", this.tradeId)
@@ -284,6 +287,7 @@ const videosMixin = {
                     results.save()
                         .then(async() => {
                             console.log(' -> Updated setup with id ' + results.id)
+                            this.spinnerSetupsText = "Updated setup"
                             this.updateTrade(param)
                         }, (error) => {
                             console.log('Failed to create new object, with error code: ' + error.message);
@@ -293,6 +297,7 @@ const videosMixin = {
                 }
             } else {
                 console.log(" -> Saving setups")
+                this.spinnerSetupsText = "Saving setups"
                 const Object = Parse.Object.extend("setups");
                 const object = new Object();
                 object.set("user", Parse.User.current())
@@ -311,6 +316,7 @@ const videosMixin = {
                 object.save()
                     .then(async(object) => {
                         console.log(' -> Added new setup with id ' + object.id)
+                        this.spinnerSetupsText = "Added new setup"
                         this.updateTrade(param)
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);
@@ -345,6 +351,7 @@ const videosMixin = {
         },
 
         updateTrade: async function(param, param2) {
+            this.spinnerSetupsText = "Updating trades"
             //query trade to update
             //console.log("date unix "+this.videoToLoad+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
             const Object = Parse.Object.extend("trades");
@@ -374,10 +381,14 @@ const videosMixin = {
                 results.set("trades", arrayTrades)
                 results.save().then(async() => {
                     console.log(' -> Updated trades with id ' + results.id)
+                    await (this.spinnerSetupsText = "Updated trade")
+                    await (this.spinnerSetupsText = "Getting trades from DB")
                     await this.getTradesFromDb() //update indexedDB
-                    await this.getAllTrades(true)
+                    await (this.spinnerSetupsText = "Getting all trades")
+                    await this.getAllTrades(true)                    
                         //await this.showMore(this.videoToLoad, this.videoIndex)
                     await (() => {
+                        this.spinnerSetupsText = "Updating filtered trade"
                         var filterTrades = []
                         this.tradeToShow = []
                             /* ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ---- */
@@ -400,7 +411,9 @@ const videosMixin = {
                             }
                         })
                         console.log(" -> Updated filtered trade")
+                        this.spinnerSetups = false
                     })()
+
                 })
             } else {
                 alert("Update query did not return any results")

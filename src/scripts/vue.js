@@ -281,6 +281,10 @@ const vueApp = new Vue({
                     label: '1mn',
                 },
                 {
+                    value: 3,
+                    label: '3mn',
+                },
+                {
                     value: 5,
                     label: '5mn',
                 },
@@ -326,6 +330,8 @@ const vueApp = new Vue({
             tradeId: null,
             hasVideo: false,
             modalVideosOpen: false,
+            spinnerSetups: false,
+            spinnerSetupsText: null,
 
             //ADDTRADES
             apiBaseUrl: "API_BASE_URL",

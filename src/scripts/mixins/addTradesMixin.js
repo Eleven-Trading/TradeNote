@@ -1546,7 +1546,7 @@ const addTradesMixin = {
             await this.getTradesFromDb()
             console.log("done")
             this.loadingSpinner = false
-                //window.location.href = "/dashboard"
+            window.location.href = "/dashboard"
                 //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
     } //End methods

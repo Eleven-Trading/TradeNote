@@ -330,6 +330,17 @@
                         </div>
                     </div>
 
+                    <!-- GROUP BY MARKET CAP -->
+                    <div class="col-12 col-xl-4 mb-3">
+                        <div class="dailyCard">
+                            <div class="text-center" v-if="!totalPAndLChartMounted">
+                                <div class="spinner-border text-blue" role="status"></div>
+                            </div>
+                            <h6>Group by Market Cap</h6>
+                            <div v-bind:key="renderData" id="barChartNegative14" class="chartClass"></div>
+                        </div>
+                    </div>
+
                     <!-- GROUP BY ENTRYPRICE -->
                     <div class="col-12 col-xl-4 mb-3">
                         <div class="dailyCard">
