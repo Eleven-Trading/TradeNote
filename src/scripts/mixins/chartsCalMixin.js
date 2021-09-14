@@ -637,6 +637,14 @@ const chartsCalMixin = {
                         trigger: 'axis',
                         axisPointer: {
                             type: 'shadow'
+                        },
+                        formatter: (params) => {
+                            //console.log("params "+JSON.stringify(params[0].value))
+                            if (param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14"){
+                                return "APPT: "+(params[0].value).toFixed(2)+"$"
+                            }
+                            
+
                         }
                     },
                     grid: {

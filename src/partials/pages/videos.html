@@ -178,6 +178,9 @@
                                     <i v-show="tradeSetup.pattern.id != null" id="videoImgUrl" class="ps-2 uil uil-info-circle pointerClass" data-bs-trigger="hover focus" data-bs-toggle="popover"></i>
                                 </div>
                                 <div class="col-1">
+                                    <button class="ps-2 btn btn-outline-info btn-sm" v-on:click="updateInfo">Update</button>
+                                </div>
+                                <div class="col-1">
                                     <button class="ps-2 btn btn-outline-danger btn-sm" v-on:click="deleteSetup(tradeToShow[0].trades[videosArrayIndex].id)">Delete</button>
                                 </div>
                                 <div class="col-1">

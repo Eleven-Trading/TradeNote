@@ -177,7 +177,7 @@ const videosMixin = {
 
         resetSetup() {
             console.log("resetting setup")
-            //we need to reset the setup variable each time
+                //we need to reset the setup variable each time
             this.tradeSetup = {
                 pattern: {
                     id: null,
@@ -202,7 +202,7 @@ const videosMixin = {
             this.tradeSetup.pattern.id = param
             var filtered = JSON.parse(JSON.stringify(this.patterns.filter((item) => item.id == this.tradeSetup.pattern.id)))[0]
             this.imageUrl = filtered.imageUrl
-            //console.log("Filtered " + this.imageUrl)
+                //console.log("Filtered " + this.imageUrl)
             var exampleEl = document.getElementById('videoImgUrl')
             var options = {
                 placement: 'right',
@@ -223,7 +223,7 @@ const videosMixin = {
 
         getTradeSetupNames: async function(param) {
             console.log("Trade setup in DB (param) " + JSON.stringify(param))
-            if (param.pattern != null) {
+            if (param.pattern.id != null) {
                 var filteredPattern = JSON.parse(JSON.stringify(this.patterns.filter((item) => item.id == param.pattern.id)))[0]
 
                 this.tradeSetup.pattern.id = filteredPattern.id
@@ -265,7 +265,7 @@ const videosMixin = {
             console.log("\nUPDATING TRADE SETUP")
             this.spinnerSetups = true
             console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeId)
-            if (this.tradeSetup.pattern.id == null || (this.tradeSetup.pattern.id == null && this.tradeSetup.entrypoint.id == null && this.tradeSetup.mistake.id == null)) {
+            if (this.tradeSetup.pattern.id == null &&  (this.tradeSetup.pattern.id == null && this.tradeSetup.entrypoint.id == null && this.tradeSetup.mistake.id == null)) {
                 alert("Please enter setup")
                 return
             }
@@ -352,8 +352,8 @@ const videosMixin = {
 
         updateTrade: async function(param, param2) {
             this.spinnerSetupsText = "Updating trades"
-            //query trade to update
-            //console.log("date unix "+this.videoToLoad+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
+                //query trade to update
+                //console.log("date unix "+this.videoToLoad+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
             const Object = Parse.Object.extend("trades");
             const query = new Parse.Query(Object);
             query.equalTo("dateUnix", this.videoToLoad)
@@ -382,21 +382,17 @@ const videosMixin = {
                 results.save().then(async() => {
                     console.log(' -> Updated trades with id ' + results.id)
                     await (this.spinnerSetupsText = "Updated trade")
-                    await (this.spinnerSetupsText = "Getting trades from DB")
-                    await this.getTradesFromDb() //update indexedDB
-                    await (this.spinnerSetupsText = "Getting all trades")
-                    await this.getAllTrades(true)                    
-                        //await this.showMore(this.videoToLoad, this.videoIndex)
-                    await (() => {
+                    /*await (() => {
                         this.spinnerSetupsText = "Updating filtered trade"
                         var filterTrades = []
                         this.tradeToShow = []
-                            /* ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ---- */
+                        
+                        // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
                         var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
                         this.tradeToShow = filterTrades
                             //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
 
-                        /* ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ---- */
+                        // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
                         this.tradeToShow[0].trades.forEach((element, index) => {
                             if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
                                 this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
@@ -411,13 +407,49 @@ const videosMixin = {
                             }
                         })
                         console.log(" -> Updated filtered trade")
-                        this.spinnerSetups = false
-                    })()
+                    })()*/
+                    this.spinnerSetups = false
 
                 })
             } else {
                 alert("Update query did not return any results")
             }
+        },
+
+        updateInfo: async function() {
+            await (this.spinnerSetups = true)
+            await (this.spinnerSetupsText = "Getting trades from DB")
+            await this.getTradesFromDb() //update indexedDB
+            await (this.spinnerSetupsText = "Getting all trades")
+            await this.getAllTrades(true)
+                //Once we get all trades, we need to update the filtered trades so it reflects on the page we are looking at
+            await (() => {
+                this.spinnerSetupsText = "Updating filtered trade"
+                var filterTrades = []
+                this.tradeToShow = []
+
+                // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
+                var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
+                this.tradeToShow = filterTrades
+                    //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
+
+                // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
+                this.tradeToShow[0].trades.forEach((element, index) => {
+                    if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
+                        this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
+                    } else {
+                        this.tradeToShow[0].trades[index].videoStart = null
+                    }
+
+                    if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
+                        this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
+                    } else {
+                        this.tradeToShow[0].trades[index].videoEnd = null
+                    }
+                })
+                console.log(" -> Updated filtered trade")
+            })()
+            await (this.spinnerSetups = false)
         }
 
     }

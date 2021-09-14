@@ -776,7 +776,7 @@ const tradesMixin = {
                 .groupBy(x => {
                     var publicFloatFinviz = x.financials.publicFloat.finviz
                     if (publicFloatFinviz != "-") {
-                        console.log("public float (finviz) " + JSON.stringify(publicFloatFinviz))
+                        //console.log("public float (finviz) " + JSON.stringify(publicFloatFinviz))
 
                         // under 10M, 10-20M, 20-30, 30-50, above 50M float
                         if (publicFloatFinviz <= 50000000) {
@@ -849,7 +849,7 @@ const tradesMixin = {
                     if (x.entryPrice >= 30) {
                         floor = 30
                     }
-                    console.log(" -> Entry price "+x.entryPrice+" and interval "+floor)
+                    //console.log(" -> Entry price "+x.entryPrice+" and interval "+floor)
 
                     return floor
                 })

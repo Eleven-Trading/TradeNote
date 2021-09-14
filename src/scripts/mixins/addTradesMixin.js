@@ -73,7 +73,7 @@ const addTradesMixin = {
 
                                     resolve()
                                 }).catch(e => {
-                                    console.log(" -> Error crawling Finviz " + e)
+                                    alert(" -> Error crawling Finviz " + e)
                                     this.loadingSpinner = false
                                     resolve()
                                 })
@@ -681,7 +681,7 @@ const addTradesMixin = {
                                                     this.financials.push(temp7.financials)
                                                     resolve()
                                                 }).catch(e => {
-                                                    console.log(" -> Error getting financials " + e)
+                                                    alert(" -> Error getting financials " + e)
                                                     this.loadingSpinner = false
                                                     resolve()
                                                 })
