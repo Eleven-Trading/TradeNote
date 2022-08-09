@@ -6,14 +6,14 @@ const videosMixin = {
                 return filtered.entrypoints
             }
         }*/
-        filteredPattern() {
+        /*filteredPattern() {
             if (this.tradeSetup.pattern.id != null) {
                 var filtered = JSON.parse(JSON.stringify(this.patterns.filter((item) => item.id == this.tradeSetup.pattern.id)))[0]
                 this.imageUrl = filtered.imageUrl
                 console.log("Filtered " + this.imageUrl)
                     //return filtered.imageUrl
             }
-        }
+        }*/
     },
     watch: {
         /*tradeSetup: function() {
