@@ -1265,7 +1265,7 @@ const tradesMixin = {
                 }
             }
 
-            var indexes = [1, 2, 3, 4, 7, 10, 11, 12, 13, 14, 15, 16] // This way here because I took out some charts
+            var indexes = [1, 2, 3, 4, 7, 13, 16] // This way here because I took out some charts
             indexes.forEach(index => {
                 var chartId = 'barChartNegative' + index
                 if (param == "clear") {
