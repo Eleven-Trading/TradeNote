@@ -3,8 +3,6 @@
 <h4 align="center">- Open Source Day Trading Journal -</h4>
 
 
-# ! For the time being, I'm putting this project on hold. If you are interested in TradeNote, please contact me !
-
 # The project
 ## About
 TraderVue and TraderSync are great and very powerful trading journals. However, most of these tools are very limited in terms of control and customisations (data control, privacy, UI&UX customization, etc.). Moreover, I was missing some essential features for improving my day trading, like having a diary.
