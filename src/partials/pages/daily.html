@@ -1,14 +1,20 @@
 <div class="row mt-2 mb-2">
-
+    @@include('components/filters.html')
     <!-- ============ DASHBOARD ============ -->
     <div class="text-center overlay" v-show="renderingCharts">
         <div class="d-flex justify-content-center">
             <div class="spinner-border text-blue" role="status"></div>
         </div>
+        {{spinnerSetupsUpdateText}}
     </div>
     @@include('components/noData.html')
-    
-    <div class="col-12 col-xl-8" v-bind:key="renderData">
+    <div v-show="spinnerSetupsUpdate" class="text-center overlay">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-blue" role="status"></div>
+        </div>
+        {{spinnerSetupsUpdateText}}
+    </div>
+    <div v-show="!spinnerSetupsUpdate" class="col-12 col-xl-8">
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
             <div class="col-12">
                 <div class="dailyCard">
@@ -28,12 +34,123 @@
     <!-- end dashboard-->
 
     <!-- ============ CALENDAR ============ -->
-    <div v-show="calendarData" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+    <div v-show="calendarData && !spinnerSetupsUpdate" class="col-12 col-xl-4 text-center mt-2 align-self-start">
         <div class="dailyCard calCard">
             <div class="row">
                 @@include('components/calendar.html', {
                     "type": "short"
                 })
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ VIDEO MODAL ============ -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div v-if="modalVideosOpen">
+
+                    <!-- *** Video *** -->
+                    <div v-if="hasVideo">
+                        <div v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&daily.trades[videosArrayIndex].videoStart&&daily.trades[videosArrayIndex].videoEnd">
+                            <span id="videoBig">
+                                <video v-bind:id="'video'+videosArrayIndex" controls controlslist width="100%" v-bind:key="videoBlob+'#t='+daily.trades[videosArrayIndex].videoStart+','+daily.trades[videosArrayIndex].videoEnd" @playing="videoPlaying(videosArrayIndex)">
+                                    <source v-bind:src="videoBlob+'#t='+(daily.trades[videosArrayIndex].videoStart-videoBuffer)+','+(daily.trades[videosArrayIndex].videoEnd+videoBuffer)"></video>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- *** Table *** -->
+                    <div v-bind:class="[!hasVideo ? 'mt-3' : '']">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Symbol</th>
+                                    <th scope="col">Qty</th>
+                                    <th scope="col">Position</th>
+                                    <th scope="col">Time(i)</th>
+                                    <th scope="col">Time(o)</th>
+                                    <th scope="col">Duration</th>
+                                    <th scope="col">Price(i)</th>
+                                    <th scope="col">Price(o)</th>
+                                    <th scope="col">P&L/Sh(g)</th>
+                                    <th scope="col">P/L(n)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                                <tr>
+                                    <td>{{daily.trades[videosArrayIndex].symbol}}</td>
+                                    <td>{{daily.trades[videosArrayIndex].buyQuantity+daily.trades[videosArrayIndex].sellQuantity}}</td>
+                                    <td>{{daily.trades[videosArrayIndex].side == 'B' ? 'Long' : 'Short'}}</td>
+                                    <td>{{timeFormat(daily.trades[videosArrayIndex].entryTime)}}</td>
+                                    <td>{{timeFormat(daily.trades[videosArrayIndex].exitTime)}}</td>
+                                    <td>{{timeDuration(daily.trades[videosArrayIndex].exitTime - daily.trades[videosArrayIndex].entryTime)}}</td>
+                                    <td>{{(daily.trades[videosArrayIndex].entryPrice).toFixed(2)}}</td>
+                                    <td>{{(daily.trades[videosArrayIndex].exitPrice).toFixed(2)}}</td>
+                                    <td v-bind:class="[(daily.trades[videosArrayIndex].grossSharePL)>0 ? 'greenTrade' : 'redTrade']">{{(daily.trades[videosArrayIndex].grossSharePL).toFixed(2)}}</td>
+                                    <td v-bind:class="[daily.trades[videosArrayIndex].netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(daily.trades[videosArrayIndex].netProceeds).toFixed(2)}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- *** Setup *** -->
+                    <div class="mt-1 mb-2 row align-items-center ms-1 me-1 tradeSetup">
+
+                        <!-- Setup Inputs -->
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-4">
+                                    <select v-on:change="updateSetup(daily.dateUnix, daily.trades[videosArrayIndex].id, $event.target.value, 'pattern')" class="form-select">
+                                        <option value='null' selected>Pattern</option>
+                                        <option v-for="item in setups" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.side + ' | '+item.type+ ' - '+item.name}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select v-on:change="updateSetup(daily.dateUnix, daily.trades[videosArrayIndex].id, $event.target.value, 'mistake')" class="form-select">
+                                        <option value='null' selected>Mistake</option>
+                                        <option v-for="item in mistakes" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">{{item.name}}</option>
+                                    </select>
+                                </div>
+                                <div v-show="spinnerSetups" class="col-5">
+                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                    <span>{{spinnerSetupsText}}</span>
+                                </div>
+                                <div class="col-5" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <i v-on:click="deleteSetup(daily.dateUnix, daily.trades[videosArrayIndex].id)" class="ps-2 uil uil-trash-alt pointerClass" ></i>
+                                        </div>
+
+                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)" class="col-5">
+                                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex-1].videoStart&&daily.trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1)" v-bind:disabled="spinnerSetups==true">
+                                                <i class="fa fa-chevron-left me-2"></i>Back</button>
+                                        </div>
+                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto col-5">
+                                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex+1].videoStart&&daily.trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1)" v-bind:disabled="spinnerSetups==true">Next<i class="fa fa-chevron-right ms-2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </hr>
+                <div class="d-flex">
+                    <!--<div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)&&daily.trades[videosArrayIndex-1].videoStart&&daily.trades[videosArrayIndex-1].videoEnd">
+                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideosDaily(true, videosArrayIndex-1)">
+                                <i class="fa fa-chevron-left me-2"></i>Previous</button>
+                        </div>
+                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)&&daily.trades[videosArrayIndex+1].videoStart&&daily.trades[videosArrayIndex+1].videoEnd" class="ms-auto">
+                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideosDaily(true, videosArrayIndex+1)">Next<i class="fa fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>-->
+
+                </div>
             </div>
         </div>
     </div>

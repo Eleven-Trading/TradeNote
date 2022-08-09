@@ -1,20 +1,21 @@
 <div class="col-2 logoDiv d-flex align-items-center justify-content-center">
-    <p class="">TradeNote</p>
+    <span v-if="screenType == 'mobile'"><a v-on:click="toggleMobileMenu">TradeNote</a></span>
+    <span v-else>TradeNote</span>
 </div>
 
 <div class="sideMenuDiv">
     <div class="sideMenuDivContent">
-        <label class="fw-lighter">MEASURE</label>
-        <a v-bind:class="[currentPage.id === 'dashboard' ? 'activeNavCss' : '', 'nav-link']" href="/dashboard">
+        <label class="fw-lighter">ANALYZE</label>
+        <a v-bind:class="[currentPage.id === 'dashboard' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/dashboard">
             <i class="uil uil-apps me-2"></i>Dashboard</a>
-        <a v-bind:class="[currentPage.id === 'calendar' ? 'activeNavCss' : '', 'nav-link']" href="/calendar">
+        <a v-bind:class="[currentPage.id === 'calendar' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/calendar">
             <i class="uil uil-calendar-alt me-2"></i>Calendar</a>
-        <a v-bind:class="[currentPage.id === 'daily' ? 'activeNavCss' : '', 'nav-link']" href="/daily">
+        <a v-bind:class="[currentPage.id === 'daily' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/daily">
             <i class="uil uil-signal-alt-3 me-2"></i>Daily
                 </a>
     </div>
 </div>
-<div class="sideMenuDiv">
+<!--<div class="sideMenuDiv">
     <div class="sideMenuDivContent">
         <label class="fw-lighter mt-3">Learn</label>
         <a v-bind:class="[currentPage.id === 'screenshots' ? 'activeNavCss' : '', 'nav-link']" href="/screenshots">
@@ -24,15 +25,27 @@
             <i class="uil uil-clapper-board me-2"></i>Videos
                 </a>
     </div>
-</div>
+</div>-->
 <div class="sideMenuDiv">
     <div class="sideMenuDivContent">
         <label class="fw-lighter mt-3">Reflect</label>
-        <a v-bind:class="[currentPage.id === 'notes' ? 'activeNavCss' : '', 'nav-link']" href="/notes">
-            <i class="uil uil-edit me-2"></i>Notes
+        <a v-bind:class="[currentPage.id === 'journal' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/journal">
+            <i class="uil uil-diary me-2"></i>Journal
                 </a>
-        <a v-bind:class="[currentPage.id === 'playbook' ? 'activeNavCss' : '', 'nav-link']" href="/playbook">
+        <a v-bind:class="[currentPage.id === 'setups' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/setups">
+            <i class="uil uil-layer-group me-2"></i>Setups
+                </a>
+        <a v-bind:class="[currentPage.id === 'playbook' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/playbook">
             <i class="uil uil-compass me-2"></i>Playbook
             </a>
+    </div>
+</div>
+
+<div class="sideMenuDiv">
+    <div class="sideMenuDivContent">
+        <label class="fw-lighter mt-3">Anticipate</label>
+        <a v-bind:class="[currentPage.id === 'forecast' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/forecast">
+            <i class="uil uil-cloud-sun me-2"></i>Forecast
+                </a>
     </div>
 </div>

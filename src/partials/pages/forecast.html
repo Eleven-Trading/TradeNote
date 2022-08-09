@@ -1,0 +1,65 @@
+<div class="row mt-2 mb-2">
+    <div class="col-12">
+        <div class="dailyCard">
+            <div>
+                <div v-bind:key="renderData" id="lineBarChartForecast" class="chartClass"></div>
+            </div>
+            <div class="mt-2 mb-2 table-responsive">
+                <table class="table forecastTable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th width="16.66%" class="forecastTH">#</th>
+                            <th v-for="(el, index) in forecast">{{monthFormatShort(el.dateUnix)}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Trading Days</td>
+                            <td class="forecastTDValue" v-for="(el, index) in forecast" >{{el.days}}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Win / Share</td>
+                            <td v-for="(el, index) in forecast" >{{twoDecCurrencyFormat(el.avgWinShare.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Avg Loss / Share</td>
+                            <td v-for="(el, index) in forecast" >{{twoDecCurrencyFormat(el.avgLossShare.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Win Prob</td>
+                            <td v-for="(el, index) in forecast" >{{oneDecPercentFormat(el.winProb.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Loss Prob</td>
+                            <td v-for="(el, index) in forecast" >{{oneDecPercentFormat(el.lossProb.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Size / Trade</td>
+                            <td v-for="(el, index) in forecast" >{{thousandFormat(el.size.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Num Trades / Day</td>
+                            <td v-for="(el, index) in forecast" >{{thousandFormat(el.numTrades.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>P&L (G)</td>
+                            <td v-for="(el, index) in forecast" >{{thousandCurrencyFormat(el.pAndLGross.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Commissions</td>
+                            <td v-for="(el, index) in forecast" >{{thousandCurrencyFormat(el.commissions.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>P&L (N)</td>
+                            <td v-for="(el, index) in forecast" >{{thousandCurrencyFormat(el.pAndLNet.est)}}</td>
+                        </tr>
+                        <tr>
+                            <td>P&L Cumul (N)</td>
+                            <td v-for="(el, index) in forecast" >{{thousandCurrencyFormat(el.pAndLNetCumul.est)}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

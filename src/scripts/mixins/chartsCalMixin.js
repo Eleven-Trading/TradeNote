@@ -1,14 +1,13 @@
 const chartsCalMixin = {
     methods: {
 
-        loadCalendar: async function(param) {
+        loadCalendar: async function(param, param2) {
             console.log("\nLOADING CALENDAR")
             this.renderingCharts = true
             this.totalCalendarMounted = false
             var month
             var year
 
-            var calCumulatedParam
             if (this.currentPage.id == "daily" ||  this.currentPage.id == 'calendar') {
                 calCumulatedParam = parseInt(localStorage.getItem('calCumulatedParamDaily'))
             }
@@ -17,14 +16,19 @@ const chartsCalMixin = {
             }
 
             /* ---- 1: GET CALENDAR DATES ---- */
+            console.log(" -> Getting calendar dates")
             await new Promise((resolve, reject) => {
-
                 if (param == undefined) {
                     param = 0
                 }
-                this.selectedCalRange.start = dayjs.unix(this.selectedCalRange.start).add(param, 'month').startOf('month').unix()
-                this.selectedCalRange.end = dayjs.unix(this.selectedCalRange.end).add(param, 'month').endOf('month').unix()
+                
+                /* contrary to filtered trades in tradesMixin, here we need to .tz because we are recreating date */
 
+                this.selectedCalRange.start = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
+                /* reuse just created .start because we only show one month at a time */
+                this.selectedCalRange.end = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).endOf('month').unix()
+                //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
+                
                 month = dayjs.unix(this.selectedCalRange.start).get('month') + 1 //starts at 0
                 year = dayjs.unix(this.selectedCalRange.start).get('year')
                 localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
@@ -33,24 +37,56 @@ const chartsCalMixin = {
             })
 
             /* ---- 2: CREATE CALENDAR ---- */
+            console.log(" -> Creating calendar dates")
             var calendarizeData = calendarize(dayjs.unix(this.selectedCalRange.start).format("YYYY-MM-DD"), 1)
-            console.log(" -> creating calendar data")
             var calendarJson = {}
             var i = 0
-            calendarizeData.forEach(element => {
+                //console.log("selectedRange "+param2)
+                //this.selectedCalRange = param2
+
+            let calTrade
+            if (this.threeMonthsBack <= this.selectedCalRange.start) {
+                if (this.threeMonthsTrades.length > 0) {
+                    console.log(" -> Getting existing variable")
+                    calTrade = this.threeMonthsTrades
+                } else {
+                    console.log(" -> Checking tradese in IndexedDB")
+                    let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
+                    console.log(" -> Daily - threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
+                    if (!dataExistsInIndexedDB) {
+                        await this.getTradesFromDb(6)
+                    }
+                    calTrade = this.threeMonthsTrades
+                }
+            } else {
+                if (this.allTrades.length > 0) {
+                    calTrade = this.allTrades
+                } else {
+                    let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
+                    if (!dataExistsInIndexedDB) {
+                        await this.getTradesFromDb(0)
+                    }
+                    calTrade = this.allTrades
+                }
+            }
+
+            calendarizeData.forEach((element) => {
                 calendarJson[i] = []
-                element.forEach(element => {
+                element.forEach((element) => {
                     // 1- Create a calendar date from each element (calendar number)
                     var elementDate = year + "/" + month + "/" + element
                     var elementDateUnix = dayjs(elementDate).unix()
 
                     // 2- Create data for each calendar box
-                    tempData = {}
+                    let tempData = {}
                     tempData.day = element // day number of the month
                     tempData.dateUnix = elementDateUnix // date in unix
 
                     //Using allTrades and not filteredTrades because we do not want calendar to be filtered
-                    var trade = this.allTrades.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
+                    //console.log("selectedRange "+param2.start)
+
+                    let trade = calTrade.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
+
                     if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
                         tempData.pAndL = trade[0].pAndL
                     } else {
@@ -74,12 +110,17 @@ const chartsCalMixin = {
             await new Promise((resolve, reject) => {
                 //console.log("all " + JSON.stringify(this.allTrades))
                 if (param != 0) {
-                    this.filteredTrades = this.allTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
+                    if (this.threeMonthsBack <= this.selectedCalRange.start) {
+                        this.filteredTrades = this.threeMonthsTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
+                    } else {
+                        this.filteredTrades = this.allTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
+                    }
 
                 }
                 this.filteredTrades.sort(function(a, b) {
-                    return b.dateUnix - a.dateUnix
-                })
+                        return b.dateUnix - a.dateUnix
+                    })
+                    //console.log("filered trads "+JSON.stringify(this.filteredTrades))
                 resolve()
             })
             if (this.currentPage.id == "videos") {
@@ -90,10 +131,10 @@ const chartsCalMixin = {
 
             //await 2 : re-render DOM in order to create new charts
             //await (this.renderData += 1)
-            await (this.renderData += 1)
             if (this.currentPage.id == "daily") {
-
+                await (this.spinnerSetupsUpdate = false)
                 //Rendering double line chart
+                //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
                 await this.filteredTrades.forEach(el => {
                     var chartId = 'doubleLineChart' + el.dateUnix
                     var chartDataGross = []
@@ -128,12 +169,175 @@ const chartsCalMixin = {
                         //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
                     this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
                 })
-            }
 
+            }
             await (this.renderingCharts = false)
+            await (this.spinnerSetupsUpdate = false)
 
         },
 
+        lineChart(param) { //chartID, chartDataGross, chartDataNet, chartCategories
+            //console.log("  --> " + param)
+            return new Promise((resolve, reject) => {
+                var myChart = echarts.init(document.getElementById(param));
+                var chartData = []
+                var chartXAxis = []
+                var wins = 0
+                var loss = 0
+                var profitFactor = 0
+                var weekOfYear = null
+                var monthOfYear = null
+                var i = 1
+
+                let objectY = JSON.parse(JSON.stringify(this.totalsByDate))
+                const keys = Object.keys(objectY);
+
+                for (const key of keys) {
+                    var element = objectY[key]
+
+                    var pushingChartData = () => {
+                        chartData.push(profitFactor)
+                    }
+
+                    if (this.selectedTimeFrame == "daily") {
+                        wins = element[this.amountCase + 'Wins']
+                        loss = -element[this.amountCase + 'Loss']
+                            //console.log("wins " + wins + " and loss " + loss)
+                        if (loss != 0) {
+                            profitFactor = wins / loss
+                        }
+                        chartXAxis.push(this.chartFormat(key))
+                        pushingChartData()
+                    }
+
+                    if (this.selectedTimeFrame == "weekly") {
+                        //First value
+                        if (weekOfYear == null) {
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                            chartXAxis.push(this.chartFormat(key))
+
+                        } else if (weekOfYear == dayjs.unix(key).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                        }
+                        if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            if (loss != 0) {
+                                profitFactor = wins / loss
+                            }
+                            pushingChartData()
+
+                            //New week, new proceeds
+                            wins = 0
+                            loss = 0
+                            profitFactor = 0
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            if (loss != 0) {
+                                profitFactor = wins / loss
+                            }
+                            pushingChartData()
+                                //console.log("Last element")
+                        }
+                    }
+
+                    if (this.selectedTimeFrame == "monthly") {
+                        //First value
+                        if (monthOfYear == null) {
+                            monthOfYear = dayjs.unix(key).month()
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                            chartXAxis.push(this.chartFormat(key))
+
+                        }
+                        //Same month. Let's continue adding proceeds
+                        else if (monthOfYear == dayjs.unix(key).month()) {
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                        }
+                        if (dayjs.unix(key).month() != monthOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            profitFactor = wins / loss
+                            pushingChartData()
+
+                            //New month, new proceeds
+                            wins = 0
+                            loss = 0
+                            profitFactor = 0
+                            monthOfYear = dayjs.unix(key).month()
+                            wins += element[this.amountCase + 'Wins']
+                            loss += -element[this.amountCase + 'Loss']
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('month') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            profitFactor = wins / loss
+                            pushingChartData()
+                        }
+                    }
+                    i++
+
+                    //console.log("element "+JSON.stringify(element))
+                }
+                option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        backgroundColor: this.blackbg7,
+                        borderColor: this.blackbg7,
+                        textStyle: {
+                            color: this.white87
+                        },
+                        formatter: (params) => {
+                            return params[0].value.toFixed(2)
+
+                        }
+                    },
+                    axisLabel: {
+                        interval: 1000,
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: chartXAxis,
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitLine: {
+                            lineStyle: {
+                                type: 'solid',
+                                color: this.cssColor38
+                            }
+                        },
+                        axisLabel: {
+                            formatter: (params) => {
+                                return params.toFixed(2)
+                            }
+                        },
+                    },
+                    series: [{
+                        data: chartData,
+                        type: 'line',
+                        smooth: true,
+                        itemStyle: {
+                            color: '#35C4FE',
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: '#01B4FF'
+                            }
+                        },
+                    }]
+                }
+                myChart.setOption(option);
+                resolve()
+            })
+        },
 
         doubleLineChart(param1, param2, param3, param4) { //chartID, chartDataGross, chartDataNet, chartCategories
             return new Promise((resolve, reject) => {
@@ -141,11 +345,17 @@ const chartsCalMixin = {
                 option = {
                         tooltip: {
                             trigger: 'axis',
+                            backgroundColor: this.blackbg7,
+                            borderColor: this.blackbg7,
+                            textStyle: {
+                                color: this.white87
+                            },
                             formatter: (params) => {
                                 var gross
                                 var net
                                 var time
                                 params.forEach((element, index) => {
+                                    //console.log('element ' + JSON.stringify(element))
                                     if (index == 0) {
                                         gross = element.value.toFixed(0) + "$"
                                         time = element.name
@@ -155,6 +365,7 @@ const chartsCalMixin = {
                                     }
                                 });
                                 //console.log("params "+JSON.stringify(params[0][0]))
+                                //console.log('time format ' + typeof time + "time " + time)
                                 return time + "<br>Gross: " + gross + "<br>Net: " + net
 
                             }
@@ -178,7 +389,7 @@ const chartsCalMixin = {
                             },*/
                             axisLabel: {
                                 show: false,
-                                formatter: function(params) {
+                                formatter: (params) => {
                                     return params.toFixed(0) + "$"
                                 }
                             },
@@ -221,63 +432,159 @@ const chartsCalMixin = {
             })
         },
 
-        lineBarChart() {
+        lineBarChart(param) {
+            //console.log("  --> " + param)
             return new Promise((resolve, reject) => {
-                var myChart = echarts.init(document.getElementById('lineBarChart1'));
+                var myChart = echarts.init(document.getElementById(param));
                 var chartData = []
                 var chartBarData = []
                 var chartXAxis = []
-                objectY = JSON.parse(JSON.stringify(this.totalsByDate))
+                var sumProceeds = 0
+                var weekOfYear = null
+                var monthOfYear = null
+                var i = 1
+
+                let objectY = JSON.parse(JSON.stringify(this.totalsByDate))
                 const keys = Object.keys(objectY);
+
                 for (const key of keys) {
                     var element = objectY[key]
+                    var proceeds = 0
 
-                    var proceeds = element[this.amountCase + 'Proceeds']
-
-                    if (keys.length <= this.maxChartValues) {
-                        var temp = {}
-                        temp.value = proceeds
-                        temp.label = {}
-                        temp.label.show = true
-                        if (proceeds >= 0) {
-                            temp.label.position = 'top'
+                    var pushingChartBarData = () => {
+                        if (keys.length <= this.maxChartValues) {
+                            var temp = {}
+                            temp.value = proceeds
+                            temp.label = {}
+                            temp.label.show = true
+                            if (proceeds >= 0) {
+                                temp.label.position = 'top'
+                            } else {
+                                temp.label.position = 'bottom'
+                            }
+                            temp.label.formatter = (params) => {
+                                return this.thousandCurrencyFormat(params.value)
+                            }
+                            chartBarData.push(temp)
                         } else {
-                            temp.label.position = 'bottom'
+                            chartBarData.push(proceeds)
                         }
-                        temp.label.formatter = function(params) {
-                            return (params.value).toFixed(0) + "$"
-                        }
-                        chartBarData.push(temp)
-                    } else {
-                        chartBarData.push(proceeds)
                     }
 
-
-                    if (chartData.length == 0) {
-                        chartData.push(proceeds)
-                    } else {
-                        chartData.push(chartData.slice(-1).pop() + proceeds)
+                    var pushingChartData = () => {
+                        if (chartData.length == 0) {
+                            chartData.push(proceeds)
+                        } else {
+                            chartData.push(chartData.slice(-1).pop() + proceeds)
+                        }
                     }
-                    chartXAxis.push(this.chartFormat(key))
-                        //chartXAxis = _.takeRight(chartXAxis, this.maxChartValues);
-                        //chartData = _.takeRight(chartData, this.maxChartValues);
-                        //chartBarData = _.takeRight(chartBarData, this.maxChartValues);
 
+                    if (this.selectedTimeFrame == "daily") {
+                        proceeds = element[this.amountCase + 'Proceeds']
+                        chartXAxis.push(this.chartFormat(key))
+                        pushingChartBarData()
+                        pushingChartData()
+                    }
+
+                    if (this.selectedTimeFrame == "weekly") {
+                        //First value
+                        if (weekOfYear == null) {
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                                //console.log("First run. Week of year: "+weekOfYear+" and month of year "+ dayjs.unix(key).month()+" and start of week "+dayjs.unix(key).startOf('isoWeek')+" and month of start of week "+dayjs.unix(dayjs.unix(key).startOf('isoWeek')/1000).month())
+                                //If start of week is another month
+                                /*if (dayjs.unix(key).month() != dayjs.unix(dayjs.unix(key).startOf('isoWeek') / 1000).month()) {
+                                    chartXAxis.push(this.chartFormat(key))
+                                } else {
+                                    chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                                }*/
+                                //First I did the logic above. But I realized that it makes difficult to compare. Expl: 1 month you will have from 1/09, then 06/09. But then, last two weeks, the 06/09 value will not be the same, because two weeks back is actually starting at 07/09.So, for the first, we always push the key
+                            chartXAxis.push(this.chartFormat(key))
+
+                        } else if (weekOfYear == dayjs.unix(key).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time
+                            //console.log("Same week. Week of year: " + weekOfYear)
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                        }
+                        if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            proceeds = sumProceeds
+                            pushingChartBarData()
+                            pushingChartData()
+
+                            //New week, new proceeds
+                            sumProceeds = 0
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                                //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(key).startOf('isoWeek'))
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            proceeds = sumProceeds
+                            pushingChartBarData()
+                            pushingChartData()
+                                //console.log("Last element")
+                        }
+                    }
+
+                    if (this.selectedTimeFrame == "monthly") {
+                        //First value
+                        if (monthOfYear == null) {
+                            monthOfYear = dayjs.unix(key).month()
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                            chartXAxis.push(this.chartFormat(key))
+
+                        }
+                        //Same month. Let's continue adding proceeds
+                        else if (monthOfYear == dayjs.unix(key).month()) {
+                            //console.log("Same week. Week of year: " + monthOfYear)
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                        }
+                        if (dayjs.unix(key).month() != monthOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            proceeds = sumProceeds
+                            pushingChartBarData()
+                            pushingChartData()
+
+                            //New month, new proceeds
+                            sumProceeds = 0
+                            monthOfYear = dayjs.unix(key).month()
+                                //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(key).startOf('month'))
+                            sumProceeds += element[this.amountCase + 'Proceeds']
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('month') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            proceeds = sumProceeds
+                            pushingChartBarData()
+                            pushingChartData()
+                            sumProceeds = 0
+                                //console.log("Last element")
+                        }
+                    }
+                    i++
+
+                    //console.log("element "+JSON.stringify(element))
                 }
                 option = {
                     tooltip: {
                         trigger: 'axis',
+                        backgroundColor: this.blackbg7,
+                        borderColor: this.blackbg7,
+                        textStyle: {
+                            color: this.white87
+                        },
                         formatter: (params) => {
                             var proceeds
                             var cumulProceeds
                             var date
                             params.forEach((element, index) => {
                                 if (index == 0) {
-                                    cumulProceeds = element.value.toFixed(0) + "$"
+                                    cumulProceeds = this.thousandCurrencyFormat(element.value)
                                     date = element.name
                                 }
                                 if (index == 1) {
-                                    proceeds = element.value.toFixed(0) + "$"
+                                    proceeds = this.thousandCurrencyFormat(element.value)
                                 }
                             });
                             //console.log("params "+JSON.stringify(params[0][0]))
@@ -294,9 +601,15 @@ const chartsCalMixin = {
                     },
                     yAxis: {
                         type: 'value',
+                        splitLine: {
+                            lineStyle: {
+                                type: 'solid',
+                                color: this.cssColor38
+                            }
+                        },
                         axisLabel: {
-                            formatter: function(params) {
-                                return params.toFixed(0) + "$"
+                            formatter: (params) => {
+                                return this.thousandCurrencyFormat(params)
                             }
                         },
                     },
@@ -317,6 +630,9 @@ const chartsCalMixin = {
                             data: chartBarData,
                             type: 'bar',
                             smooth: true,
+                            label: {
+                                color: this.cssColor87
+                            },
                             itemStyle: {
                                 color: '#35C4FE',
                             },
@@ -333,9 +649,10 @@ const chartsCalMixin = {
             })
         },
 
-        pieChart(param1, param2, param3, param4) { //chart ID, winShare, lossShare, page
+        pieChart(param1, param2, param3) { //chart ID, winShare, lossShare, page
             return new Promise((resolve, reject) => {
-                //console.log("params " + param1 + ", " + param2 + ", " + param3)
+                //console.log("  --> " + param1)
+                    //console.log("para 2 " + param2 + " and 3 " + param3)
                 var myChart = echarts.init(document.getElementById(param1));
                 var winShare = param2
                 var lossShare = param3
@@ -349,7 +666,7 @@ const chartsCalMixin = {
                                 { value: lossShare, name: "Loss Share" },
                             ],
                             itemStyle: {
-                                color: function(params) {
+                                color: (params) => {
                                     if (params.dataIndex == 0) {
                                         return '#00CA73'
                                     }
@@ -361,12 +678,13 @@ const chartsCalMixin = {
                             label: {
                                 show: true,
                                 position: 'center',
-                                formatter: function(params) {
-                                    if (param4 == "dashboard") {
-                                        return (winShare * 100).toFixed(1) + "%\nWin rate(n)"
+                                color: this.cssColor87,
+                                formatter: (params) => {
+                                    if (this.currentPage.id == "dashboard") {
+                                        return this.oneDecPercentFormat(winShare) + "\nWin rate"
                                     }
-                                    if (param4 == "daily") {
-                                        return (winShare * 100).toFixed(1) + "%"
+                                    if (this.currentPage.id == "daily") {
+                                        return this.oneDecPercentFormat(winShare)
                                     }
                                 }
                             }
@@ -380,62 +698,208 @@ const chartsCalMixin = {
         },
 
         barChart(param1) {
-            console.log("\nBAR CHART")
+            //console.log("  --> " + param1)
             return new Promise((resolve, reject) => {
                 var chartData = []
                 var chartXAxis = []
-                    //console.log("totals " + JSON.stringify(this.totalsByDate))
-                objectY = JSON.parse(JSON.stringify(this.totalsByDate))
+                var sumWinsCount = 0
+                var sumLossCount = 0
+                var sumTrades = 0
+                var sumWins = 0
+                var sumLoss = 0
+                var sumSharePLWins = 0
+                var sumSharePLLoss = 0
+                var sumWinsCount = 0
+                var sumLossCount = 0
+
+                var probWins
+                var probLoss
+                var avgWins
+                var avgLoss
+                var avgSharePLWins
+                var avgSharePLLoss
+                var appt
+                var appspt
+
+                var weekOfYear = null
+                var monthOfYear = null
+                var i = 1
+
+                //console.log("totals " + JSON.stringify(this.totalsByDate))
+                let objectY = JSON.parse(JSON.stringify(this.totalsByDate))
                 const keys = Object.keys(objectY);
                 for (const key of keys) {
                     var element = objectY[key]
+                    var ratio
+                    var pushingChartData = () => {
+                        if (this.selectedRatio == "appt") {
+                            ratio = appt
+                        } else {
+                            ratio = appspt
+                        }
 
-                    var probNetWins = (element.netWinsCount / element.trades)
-                    var probNetLoss = (element.netLossCount / element.trades)
-
-                    var avgNetWins = element.netWinsCount == 0 ? 0 : (element.netWins / element.netWinsCount)
-                    var avgNetLoss = element.netLossCount == 0 ? 0 : -(element.netLoss / element.netLossCount)
-
-                    var appt = (probNetWins * avgNetWins) - (probNetLoss * avgNetLoss)
-                        //console.log("appt "+appt+" probNetWins "+probNetWins+" avgNetWins "+avgNetWins+" probNetLoss "+probNetLoss+" avgNetLoss "+avgNetLoss+ " element.netWinsCount "+element.netWinsCount+" element.netLossCount "+element.netLossCount)
-
-                    if (param1 == "barChart1") {
-                        if (keys.length <= this.maxChartValues) {
-                            var temp = {}
-                            temp.value = appt
-                            temp.label = {}
-                            temp.label.show = true
-                            if (appt >= 0) {
-                                temp.label.position = 'top'
+                        if (param1 == "barChart1") {
+                            if (keys.length <= this.maxChartValues) {
+                                var temp = {}
+                                temp.value = ratio
+                                temp.label = {}
+                                temp.label.show = true
+                                if (ratio >= 0) {
+                                    temp.label.position = 'top'
+                                } else {
+                                    temp.label.position = 'bottom'
+                                }
+                                temp.label.formatter = (params) => {
+                                    return this.twoDecCurrencyFormat(params.value)
+                                }
+                                chartData.push(temp)
                             } else {
-                                temp.label.position = 'bottom'
+                                chartData.push(ratio)
                             }
-                            temp.label.formatter = function(params) {
-                                return (params.value).toFixed(1) + "$"
+                        }
+                        if (param1 == "barChart2") {
+                            if (keys.length <= this.maxChartValues) {
+                                var temp = {}
+                                temp.value = probWins
+                                temp.label = {}
+                                temp.label.show = true
+                                temp.label.position = 'top'
+                                temp.label.formatter = (params) => {
+                                    return this.oneDecPercentFormat(params.value)
+                                }
+                                chartData.push(temp)
+                            } else {
+                                chartData.push(probWins)
                             }
-                            chartData.push(temp)
-                        } else {
-                            chartData.push(appt)
+
                         }
                     }
-                    if (param1 == "barChart2") {
-                        if (keys.length <= this.maxChartValues) {
-                            var temp = {}
-                            temp.value = probNetWins
-                            temp.label = {}
-                            temp.label.show = true
-                            temp.label.position = 'top'
-                            temp.label.formatter = function(params) {
-                                return (params.value * 100).toFixed(1) + "%"
-                            }
-                            chartData.push(temp)
-                        } else {
-                            chartData.push(probNetWins)
-                        }
 
+                    var sumElements = () => {
+                        sumWinsCount += element[this.amountCase + 'WinsCount']
+                        sumTrades += element.trades
+                        sumLossCount += element[this.amountCase + 'LossCount']
+                        sumWins += element[this.amountCase + 'Wins']
+                        sumLoss += element[this.amountCase + 'Loss']
+                        sumSharePLWins += element[this.amountCase + 'SharePLWins']
+                        sumSharePLLoss += element[this.amountCase + 'SharePLLoss']
                     }
 
-                    chartXAxis.push(this.chartFormat(key))
+                    var createAP = () => {
+                        probWins = (sumWinsCount / sumTrades)
+                        probLoss = (sumLossCount / sumTrades)
+
+                        avgWins = sumWinsCount == 0 ? 0 : (sumWins / sumWinsCount)
+                        avgLoss = sumLossCount == 0 ? 0 : -(sumLoss / sumLossCount)
+
+                        avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
+                        avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
+
+                        appt = (probWins * avgWins) - (probLoss * avgLoss)
+                        appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+                    }
+
+                    if (this.selectedTimeFrame == "daily") {
+                        var probWins = (element[this.amountCase + 'WinsCount'] / element.trades)
+                        var probLoss = (element[this.amountCase + 'LossCount'] / element.trades)
+
+                        var avgWins = element[this.amountCase + 'WinsCount'] == 0 ? 0 : (element[this.amountCase + 'Wins'] / element[this.amountCase + 'WinsCount'])
+                        var avgLoss = element[this.amountCase + 'LossCount'] == 0 ? 0 : -(element[this.amountCase + 'Loss'] / element[this.amountCase + 'LossCount'])
+
+                        //element[this.amountCase + 'SharePLWins'] is from totals (by date) so it's a sum of share PL wins => the average is divided by the total number of wins
+                        var avgSharePLWins = element[this.amountCase + 'WinsCount'] == 0 ? 0 : (element[this.amountCase + 'SharePLWins'] / element[this.amountCase + 'WinsCount'])
+                        var avgSharePLLoss = element[this.amountCase + 'LossCount'] == 0 ? 0 : -(element[this.amountCase + 'SharePLLoss'] / element[this.amountCase + 'LossCount'])
+
+                        appt = (probWins * avgWins) - (probLoss * avgLoss)
+                        appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+
+                        chartXAxis.push(this.chartFormat(key))
+                        pushingChartData()
+                    }
+
+
+                    if (this.selectedTimeFrame == "weekly") {
+                        //First value
+                        if (weekOfYear == null) {
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                            sumElements()
+                            chartXAxis.push(this.chartFormat(key))
+
+                        } else if (weekOfYear == dayjs.unix(key).isoWeek()) {
+                            sumElements()
+                        }
+                        if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            createAP()
+                            pushingChartData()
+
+                            //New week, new proceeds
+                            sumWinsCount = 0
+                            sumLossCount = 0
+                            sumTrades = 0
+                            sumWins = 0
+                            sumLoss = 0
+                            sumSharePLWins = 0
+                            sumSharePLLoss = 0
+                            sumWinsCount = 0
+                            sumLossCount = 0
+
+                            weekOfYear = dayjs.unix(key).isoWeek()
+                                //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(key).startOf('isoWeek'))
+                            sumElements()
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            createAP()
+                            pushingChartData()
+                                //console.log("Last element")
+                        }
+                    }
+
+                    if (this.selectedTimeFrame == "monthly") {
+                        //First value
+                        if (monthOfYear == null) {
+                            monthOfYear = dayjs.unix(key).month()
+                            sumElements()
+                            chartXAxis.push(this.chartFormat(key))
+
+                        }
+                        //Same month. Let's continue adding proceeds
+                        else if (monthOfYear == dayjs.unix(key).month()) {
+                            sumElements()
+                        }
+                        if (dayjs.unix(key).month() != monthOfYear) {
+                            //When week changes, we create values proceeds and push both chart datas
+                            createAP()
+                            pushingChartData()
+
+                            //New week, new proceeds
+                            sumWinsCount = 0
+                            sumLossCount = 0
+                            sumTrades = 0
+                            sumWins = 0
+                            sumLoss = 0
+                            sumSharePLWins = 0
+                            sumSharePLLoss = 0
+                            sumWinsCount = 0
+                            sumLossCount = 0
+
+                            monthOfYear = dayjs.unix(key).month()
+                                //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(key).startOf('month'))
+                            sumElements()
+                            chartXAxis.push(this.chartFormat(dayjs.unix(key).startOf('month') / 1000))
+                        }
+                        if (i == keys.length) {
+                            //Last key. We wrap up.
+                            createAP()
+                            pushingChartData()
+                        }
+                    }
+                    //console.log("proceeds " + proceeds)
+                    i++
+
+
                 }
                 var myChart = echarts.init(document.getElementById(param1));
                 option = {
@@ -445,13 +909,19 @@ const chartsCalMixin = {
                     },
                     yAxis: {
                         type: 'value',
+                        splitLine: {
+                            lineStyle: {
+                                type: 'solid',
+                                color: this.cssColor38
+                            }
+                        },
                         axisLabel: {
-                            formatter: function(params) {
+                            formatter: (params) => {
                                 if (param1 == "barChart2") {
-                                    return (params * 100).toFixed(0) + "%"
+                                    return this.oneDecPercentFormat(params)
                                 }
                                 if (param1 == "barChart1") {
-                                    return (params).toFixed(0) + "$"
+                                    return this.thousandCurrencyFormat(params)
                                 }
                             }
                         },
@@ -459,6 +929,9 @@ const chartsCalMixin = {
                     series: [{
                         data: chartData,
                         type: 'bar',
+                        label: {
+                            color: this.cssColor87
+                        },
                         itemStyle: {
                             color: '#35C4FE',
                         },
@@ -470,12 +943,17 @@ const chartsCalMixin = {
                     }],
                     tooltip: {
                         trigger: 'axis',
-                        formatter: function(params) {
+                        backgroundColor: this.blackbg7,
+                        borderColor: this.blackbg7,
+                        textStyle: {
+                            color: this.white87
+                        },
+                        formatter: (params) => {
                             if (param1 == "barChart2") {
-                                return params[0].name + ": " + (params[0].value * 100).toFixed(1) + "%"
+                                return params[0].name + ": " + this.oneDecPercentFormat(params[0].value)
                             }
                             if (param1 == "barChart1") {
-                                return params[0].name + ": " + (params[0].value).toFixed(1) + "$"
+                                return params[0].name + ": " + this.twoDecCurrencyFormat(params[0].value)
                             }
                         }
                     },
@@ -486,17 +964,23 @@ const chartsCalMixin = {
         },
 
         barChartNegative(param1) {
-            console.log("\nBAR CHART NEGATIVE (" + param1 + ")")
+            //console.log("  --> " + param1)
             return new Promise((resolve, reject) => {
                 var yAxis = []
                 var series = []
-                if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3") {
+                if (param1 == "barChartNegative1") {
                     var keyObject = this.groups.timeframe
                 }
-                if (param1 == "barChartNegative4" || param1 == "barChartNegative5" || param1 == "barChartNegative6") {
+                if (param1 == "barChartNegative2") {
+                    var keyObject = this.groups.duration
+                }
+                if (param1 == "barChartNegative3") {
+                    var keyObject = this.groups.day
+                }
+                if (param1 == "barChartNegative4") {
                     var keyObject = this.groups.trades
                 }
-                if (param1 == "barChartNegative7" || param1 == "barChartNegative8" || param1 == "barChartNegative9") {
+                if (param1 == "barChartNegative7") {
                     var keyObject = this.groups.executions
                 }
                 if (param1 == "barChartNegative10") {
@@ -506,7 +990,12 @@ const chartsCalMixin = {
                 }
                 if (param1 == "barChartNegative11") {
                     const toRemove = ['null', 'undefined'];
-                    var keyObject = _.omit(this.groups.entrypoints, toRemove)
+                    var keyObject = _.omit(this.groups.patternTypes, toRemove)
+                        //console.log("filtered "+JSON.stringify(filteredObj))
+                }
+                if (param1 == "barChartNegative15") {
+                    const toRemove = ['null', 'undefined'];
+                    var keyObject = _.omit(this.groups.mistakes, toRemove)
                         //console.log("filtered "+JSON.stringify(filteredObj))
                 }
 
@@ -522,6 +1011,10 @@ const chartsCalMixin = {
                     var keyObject = this.groups.mktCap
                 }
 
+                if (param1 == "barChartNegative16") {
+                    var keyObject = this.groups.symbols
+                }
+
                 const keys = Object.keys(keyObject);
 
                 //console.log("object " + JSON.stringify(keyObject))
@@ -529,94 +1022,116 @@ const chartsCalMixin = {
                 for (const key of keys) {
                     //console.log("key " + JSON.stringify(key))
                     if (param1 == "barChartNegative10") {
-                        var patterns = this.patterns.find(item => item.id === key)
+                        var patterns = this.patterns.find(item => item.objectId === key)
                             //console.log("pattern name " + JSON.stringify(patterns))
-                        yAxis.push(patterns.name) // unshift because I'm only able to sort timeframe ascending
+                        if (patterns) yAxis.push(patterns.name) // unshift because I'm only able to sort timeframe ascending
 
                     } else if (param1 == "barChartNegative11") {
-                        var entrypoint = this.entrypoints.find(item => item.id === key)
-                            //console.log("entrypoint" + JSON.stringify(entrypoint))
-                        yAxis.push(entrypoint.name)
+                        var patterns = this.patterns.find(item => item.type === key)
+                            //console.log("patteerns "+patterns)
+                        yAxis.push(patterns.type) // unshift because I'm only able to sort timeframe ascending
+
+                    } else if (param1 == "barChartNegative15") {
+                        //console.log(" mistakes "+JSON.stringify(this.mistakes))
+                        var mistakes = this.mistakes.find(item => item.objectId === key)
+                            //console.log("mistakes "+mistakes)
+                        yAxis.push(mistakes.name) // unshift because I'm only able to sort timeframe ascending
 
                     } else {
                         yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
                     }
                     //console.log("yaxis "+JSON.stringify(yAxis))
 
-                    var winsCount = 0
-                    var lossCount = 0
-                    var wins = 0
-                    var loss = 0
+                    var sumWinsCount = 0
+                    var sumLossCount = 0
+                    var sumWins = 0
+                    var sumLoss = 0
+                    var sumSharePLWins = 0
+                    var sumSharePLLoss = 0
                     var trades = 0
+                    var profitFactor = 0
                     var numElements = keyObject[key].length
                         //console.log("num elemnets " + numElements)
                     keyObject[key].forEach((element, index) => {
                         //console.log("index " + index)
                         //console.log("element " + JSON.stringify(element))
-                        winsCount += element[this.amountCase + 'WinsCount']
-                        lossCount += element[this.amountCase + 'LossCount']
-                        wins += element[this.amountCase + 'Wins']
-                        loss += element[this.amountCase + 'Loss']
+                        sumWinsCount += element[this.amountCase + 'WinsCount']
+                        sumLossCount += element[this.amountCase + 'LossCount']
+                        sumWins += element[this.amountCase + 'Wins']
+                        sumLoss += element[this.amountCase + 'Loss']
+                        sumSharePLWins += element[this.amountCase + 'SharePLWins']
+                        sumSharePLLoss += element[this.amountCase + 'SharePLLoss']
+
                         if (param1 == "barChartNegative4") {
                             trades += element.trades
                         } else {
                             trades += element.tradesCount
                         }
-                        //console.log("wins count "+element.winsCount+", loss count "+element.lossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
+                        //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                         if (numElements == (index + 1)) {
                             if (trades > 0) {
-                                var probWins = (winsCount / trades)
-                                var probLoss = (lossCount / trades)
+                                var probWins = (sumWinsCount / trades)
+                                var probLoss = (sumLossCount / trades)
                             } else {
                                 var probWins = 0
                                 var probLoss = 0
                             }
 
-                            if (winsCount > 0) {
-                                var avgWins = (wins / winsCount)
+                            if (sumWinsCount > 0) {
+                                var avgWins = (sumWins / sumWinsCount)
                             } else {
                                 var avgWins = 0
                             }
 
-                            if (lossCount > 0) {
-                                var avgLoss = -(loss / lossCount)
+                            if (sumLossCount > 0) {
+                                var avgLoss = -(sumLoss / sumLossCount)
                             } else {
                                 var avgLoss = 0
                             }
 
+                            var avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
+                            var avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
+
                             var appt = (probWins * avgWins) - (probLoss * avgLoss)
-                                //console.log("APPT " + appt)
-                            if (param1 == "barChartNegative1" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14") {
-                                series.unshift(appt)
+                            var appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+
+                            sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
+                                //sumLoss > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = "Infinity"
+
+                            var ratio
+                            if (this.selectedRatio == "appt") {
+                                ratio = appt
                             }
-                            if (param1 == "barChartNegative2" || param1 == "barChartNegative5" || param1 == "barChartNegative8") {
-                                series.unshift(avgWins)
+                            if (this.selectedRatio == "appspt") {
+                                ratio = appspt
                             }
-                            if (param1 == "barChartNegative3" || param1 == "barChartNegative6" || param1 == "barChartNegative9") {
-                                series.unshift(avgLoss)
+                            if (this.selectedRatio == "profitFactor") {
+                                ratio = profitFactor
                             }
-                            if (param1 == "barChartNegative10" || param1 == "barChartNegative11") {
-                                series.push(appt)
+
+                            if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16") {
+                                series.unshift(ratio)
+                            }
+                            if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15") {
+                                series.push(ratio)
                             }
                         }
                     })
                 }
-                if (param1 == "barChartNegative10" || param1 == "barChartNegative11") {
+                if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16") {
                     //1) combine the arrays:
                     var list = [];
                     for (var j = 0; j < series.length; j++)
-                        list.push({ 'appt': series[j], 'name': yAxis[j] });
-
+                        list.push({ 'ratio': series[j], 'name': yAxis[j] });
                     //2) sort:
                     list.sort(function(a, b) {
-                        return ((a.appt < b.appt) ? -1 : ((a.appt == b.appt) ? 0 : 1));
+                        return ((a.ratio < b.ratio) ? -1 : ((a.ratio == b.ratio) ? 0 : 1));
                         //Sort could be modified to, for example, sort on the age 
                         // if the name is the same.
                     });
-
                     //3) separate them back out:
                     for (var k = 0; k < list.length; k++) {
-                        series[k] = list[k].appt;
+                        series[k] = list[k].ratio;
                         yAxis[k] = list[k].name;
                     }
 
@@ -625,9 +1140,7 @@ const chartsCalMixin = {
 
                     var sortedAPPT = indices.map(i => series[i])
                     var sortedName = indices.map(i => yAxis[i])*/
-
-
-                    //console.log("Sorted APPT " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
+                    //console.log("Sorted ratio " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
 
                 }
 
@@ -635,16 +1148,16 @@ const chartsCalMixin = {
                 option = {
                     tooltip: {
                         trigger: 'axis',
+                        backgroundColor: this.blackbg7,
+                        borderColor: this.blackbg7,
+                        textStyle: {
+                            color: this.white87
+                        },
                         axisPointer: {
                             type: 'shadow'
                         },
                         formatter: (params) => {
-                            //console.log("params "+JSON.stringify(params[0].value))
-                            if (param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14"){
-                                return "APPT: "+(params[0].value).toFixed(2)+"$"
-                            }
-                            
-
+                            return this.twoDecCurrencyFormat(params[0].value)
                         }
                     },
                     grid: {
@@ -657,9 +1170,19 @@ const chartsCalMixin = {
                         position: 'bottom',
                         splitLine: {
                             lineStyle: {
-                                type: 'dashed'
+                                type: 'solid',
+                                color: this.cssColor38
                             }
                         },
+                        axisLabel: {
+                            formatter: (params) => {
+                                if (this.selectedRatio == "profitFactor") {
+                                    return params.toFixed(0)
+                                } else {
+                                    return this.thousandCurrencyFormat(params)
+                                }
+                            }
+                        }
                     },
                     yAxis: {
                         type: 'category',
@@ -669,8 +1192,8 @@ const chartsCalMixin = {
                         splitLine: { show: false },
                         data: yAxis,
                         axisLabel: {
-                            formatter: function(params) {
-                                if (param1 == "barChartNegative4" || param1 == "barChartNegative5" || param1 == "barChartNegative6") {
+                            formatter: (params) => {
+                                if (param1 == "barChartNegative4") {
                                     if (params <= 30) {
                                         var range
                                         if (params <= 5) {
@@ -683,29 +1206,60 @@ const chartsCalMixin = {
                                     if (params > 30) {
                                         return "+30"
                                     }
+                                } else if (param1 == "barChartNegative2") { //Duration
+                                    //console.log("params "+params)
+                                    if (params < 1) {
+                                        return "00:00-00:59"
+                                    }
+                                    if (params >= 1 && params < 2) {
+                                        return "01:00-01:59"
+                                    }
+                                    if (params >= 2 && params < 5) {
+                                        return "02:00-04:59"
+                                    }
+                                    if (params >= 5 && params < 10) {
+                                        return "05:00-09:59"
+                                    }
+                                    if (params >= 10 && params < 20) {
+                                        return "10:00-19:59"
+                                    }
+                                    if (params >= 20 && params < 40) {
+                                        return "20:00-39:59"
+                                    }
+                                    if (params >= 40 && params < 60) {
+                                        return "40:00-59:59"
+                                    }
+                                    if (params >= 60) {
+                                        return "+60:00"
+                                    }
+                                } else if (param1 == "barChartNegative3") { //Day of week
+                                    //console.log(dayjs.updateLocale('en').weekdays[params])
+                                    return dayjs.updateLocale('en').weekdays[params]
                                 } else if (param1 == "barChartNegative13") {
                                     //console.log("params "+params)
                                     if (params < 30) {
                                         if (params < 5) {
                                             return "0-4.99$"
                                         } else {
-                                            return params + "-" + (Number(params) + 4.99).toFixed(2) +"$"
+                                            return params + "-" + (Number(params) + 4.99).toFixed(2) + "$"
                                         }
                                     }
                                     if (params >= 30) {
                                         return "+30$"
                                     }
-                                }
-                                
-                                else if (param1 == "barChartNegative12") {
+                                } else if (param1 == "barChartNegative12") { //Float
                                     params = params / 1000000
-                                    if (params < 50) {
-                                        var range = 10
-                                        if (params <= 10) {
-                                            return (params - range) + "-" + params + "M"
+                                    if (params < 20) {
+                                        var range = 4.9
+                                        if (params < 5) {
+                                            return "0-" + (params + range) + "M"
                                         } else {
-                                            return (params - range) + "M-" + params + "M"
+                                            return params + "M-" + (params + range) + "M"
                                         }
+                                    }
+                                    if (params >= 20 && params < 50) {
+                                        var range = 9.9
+                                        return params + "M-" + (params + range) + "M"
                                     }
                                     if (params >= 50) {
                                         return "+50M"
@@ -719,11 +1273,11 @@ const chartsCalMixin = {
                                         return "Micro-cap (50M-" + params + "M)"
                                     }
                                     if (params > 300 && params <= 2000) {
-                                        return "Small-cap (300M-" + params/1000 + "B)"
+                                        return "Small-cap (300M-" + params / 1000 + "B)"
                                     }
                                     if (params > 2000 && params <= 10000) {
-                                        return "Mid-cap (2B-" + params/1000 + "B)"
-                                    }else{
+                                        return "Mid-cap (2B-" + params / 1000 + "B)"
+                                    } else {
                                         return "Big-cap (+10B)"
                                     }
                                 } else {
@@ -738,8 +1292,16 @@ const chartsCalMixin = {
                             color: '#35C4FE',
                         },
                         label: {
-                            show: false,
-                            formatter: '{b}'
+                            show: true,
+                            position: "right",
+                            color: this.cssColor87,
+                            formatter: (params) => {
+                                if (this.selectedRatio == "profitFactor") {
+                                    return params.value.toFixed(2)
+                                } else {
+                                    return this.twoDecCurrencyFormat(params.value)
+                                }
+                            }
                         },
                         data: series
                     }]
@@ -750,17 +1312,98 @@ const chartsCalMixin = {
         },
 
         boxPlotChart() {
-            console.log("\nBOXPLOT CHART")
+            //console.log("  --> boxPlotChart")
             return new Promise((resolve, reject) => {
                 //console.log("totals "+JSON.stringify(this.filteredTrades))
                 var myChart = echarts.init(document.getElementById('boxPlotChart1'));
-                var dateArray = []
                 var dataArray = []
+                var dateArray = []
+
+                var sumSharePL = 0
+                var sumTrades = 0
+                var weekOfYear = null
+                var monthOfYear = null
+                var i = 1
+                var numOfEl = 0
                 this.filteredTrades.forEach(element => {
-                    temp = {}
-                    var listGrossSharePL = []
+                    var sharePL = 0
+                    var tradesLength = element.trades.length
                     element.trades.forEach(element => {
-                        listGrossSharePL.push(element.grossSharePL)
+                        if (this.selectedTimeFrame == "daily") {
+                            dataArray.push(element[this.amountCase + 'SharePL'])
+                            dateArray.push(this.chartFormat(element.dateUnix))
+                        }
+
+                        if (this.selectedTimeFrame == "weekly") {
+                            //First value
+                            if (weekOfYear == null) {
+                                weekOfYear = dayjs.unix(element.dateUnix).isoWeek()
+                                sumSharePL += element[this.amountCase + 'SharePL']
+                                numOfEl += 1
+                                dateArray.push(this.chartFormat(element.dateUnix))
+
+                            } else if (weekOfYear == dayjs.unix(element.dateUnix).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time
+                                //console.log("Same week. Week of year: " + weekOfYear)
+                                sumSharePL += element[this.amountCase + 'SharePL']
+                                numOfEl += 1
+                            }
+                            if (dayjs.unix(element.dateUnix).isoWeek() != weekOfYear) {
+                                //When week changes, we create values proceeds and push both chart datas
+                                dataArray.push(sumSharePL / numOfEl)
+
+                                //New week, new proceeds
+                                sumSharePL = 0
+                                numOfEl = 0
+
+                                weekOfYear = dayjs.unix(element.dateUnix).isoWeek()
+                                    //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(element.dateUnix).startOf('isoWeek'))
+                                sumSharePL += element[this.amountCase + 'SharePL']
+                                numOfEl += 1
+                                dateArray.push(this.chartFormat(dayjs.unix(element.dateUnix).startOf('isoWeek') / 1000))
+                            }
+                            if (i == tradesLength) {
+                                //Last key. We wrap up.
+                                dataArray.push(sumSharePL / numOfEl)
+                                    //console.log("Last element")
+                            }
+                        }
+
+                        if (this.selectedTimeFrame == "monthly") {
+                            //First value
+                            if (monthOfYear == null) {
+                                monthOfYear = dayjs.unix(element.dateUnix).month()
+                                sumSharePL += element[this.amountCase + 'Proceeds']
+                                chartXAxis.push(this.chartFormat(element.dateUnix))
+
+                            }
+                            //Same month. Let's continue adding proceeds
+                            else if (monthOfYear == dayjs.unix(element.dateUnix).month()) {
+                                //console.log("Same week. Week of year: " + monthOfYear)
+                                sumSharePL += element[this.amountCase + 'Proceeds']
+                            }
+                            if (dayjs.unix(element.dateUnix).month() != monthOfYear) {
+                                //When week changes, we create values proceeds and push both chart datas
+                                proceeds = sumSharePL
+                                pushingChartBarData()
+                                pushingChartData()
+
+                                //New month, new proceeds
+                                sumSharePL = 0
+                                monthOfYear = dayjs.unix(element.dateUnix).month()
+                                    //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(element.dateUnix).startOf('month'))
+                                sumSharePL += element[this.amountCase + 'Proceeds']
+                                chartXAxis.push(this.chartFormat(dayjs.unix(element.dateUnix).startOf('month') / 1000))
+                            }
+                            if (i == tradesLength) {
+                                //Last key. We wrap up.
+                                proceeds = sumSharePL
+                                pushingChartBarData()
+                                pushingChartData()
+                                sumSharePL = 0
+                                    //console.log("Last element")
+                            }
+                        }
+                        i++
                     });
                     //console.log("gross list " + listGrossSharePL)
 
@@ -768,11 +1411,6 @@ const chartsCalMixin = {
 
 
 
-                    //Getting date
-                    var date = this.chartFormat(element.dateUnix)
-                        //console.log("data "+listGrossSharePL)
-                    dateArray.push(date)
-                    dataArray.push(listGrossSharePL)
                 });
                 // specify chart configuration item and data
                 option = {
@@ -782,7 +1420,7 @@ const chartsCalMixin = {
                         transform: {
                             type: 'boxplot',
                             config: {
-                                itemNameFormatter: function(params) {
+                                itemNameformatter: (params) => {
                                     return dateArray[params.value];
                                 }
                             }
@@ -793,10 +1431,15 @@ const chartsCalMixin = {
                     }],
                     tooltip: {
                         trigger: 'item',
+                        backgroundColor: this.blackbg7,
+                        borderColor: this.blackbg7,
+                        textStyle: {
+                            color: this.white87
+                        },
                         axisPointer: {
                             type: 'shadow'
                         },
-                        formatter: function(params) {
+                        formatter: (params) => {
                             if (params.componentIndex == 0) {
                                 return 'Maximum: ' + params.value[5].toFixed(2) + '$<br/>' +
                                     'Upper quartile: ' + params.value[4].toFixed(2) + '$<br/>' +
@@ -826,7 +1469,7 @@ const chartsCalMixin = {
                             show: true
                         },
                         axisLabel: {
-                            formatter: function(params) {
+                            formatter: (params) => {
                                 return params.toFixed(2) + "$"
                             }
                         },

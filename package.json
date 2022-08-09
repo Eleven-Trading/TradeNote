@@ -12,15 +12,14 @@
   "author": "eleven.trading",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "browser-sync": "^2.26.14",
-    "fancy-log": "^1.3.3",
+    "browser-sync": "^2.27.10",
+    "fancy-log": "^2.0.0",
     "gulp": "^4.0.2",
-    "gulp-changed": "^4.0.2",
+    "gulp-changed": "^4.0.3",
     "gulp-clean": "^0.4.0",
-    "gulp-connect-php": "^1.0.3",
     "gulp-file-include": "^2.3.0",
-    "gulp-nunjucks": "^5.1.0",
     "gulp-nunjucks-render": "^2.2.3",
-    "gulp-replace": "^1.0.0"
+    "gulp-replace": "^1.1.3",
+    "npm-check-updates": "^16.0.5"
   }
 }

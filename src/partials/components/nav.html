@@ -1,49 +1,49 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white d-flex justify-content-center align-items-center">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="nav justify-content-center">
-            <li class="nav-item">
-                <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}
-            </li>
-            <!-- ============ LINE 1: DATE FILTERS ============ -->
-        </ul>
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-            <!-- GROSS NET SWITCH -->
-            <li class="nav-item me-2">
-                <label class="switch">
-                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
-                    <span class="slider round sliderText">
-                        <span v-if="isNet" class="v-align-start">Net</span>
-                        <span v-else="isNet" class="v-align-end">Gross</span>
-                    </span>
-                </label>
-            </li>
-            <li class="nav-item me-2">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Add</a>
+<div class="justify-content-between navbar">
+    <div class="col-6">
+        <span v-if="screenType == 'mobile'">
+            <a v-on:click="toggleMobileMenu">
+                <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}</a>
+        </span>
+        <span v-else="screenType == 'mobile'">
+            <i v-bind:class="currentPage.icon" class="me-1"></i>{{currentPage.name}}</span>
+    </div>
+    <div class="col-6 ms-auto text-end">
+        <div class="row">
+            <div class="col align-self-end">
+                <button class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="uil uil-plus me-2"></i>Add</button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>
                         <a class="dropdown-item" href="addTrades">Trades</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="addScreenshot">Screenshot</a>
+                        <a class="dropdown-item" href="addJournal">Journal</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="addNote">Note</a>
+                        <a class="dropdown-item" href="addSetup">Setup</a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" href="addPlaybook">Playbook</a>
+                    </li>
+
                 </ul>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
+            </div>
+            <div class="col-1">
+                <a v-if="currentUser.hasOwnProperty('avatar')" class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" v-bind:src="currentUser.avatar.url"/></a>
+                <a v-else class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>
-                        <a class="dropdown-item" href="settings">
-                            <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
+                        <a class="dropdown-item">Cash Balance : {{thousandCurrencyFormat(dailyInfos.cashBalance)}}</a>
                     </li>
                     <li>
-                        <a class="dropdown-item" v-on:click="getTradesFromDb()">
+                        <a class="dropdown-item">Buying Power : {{thousandCurrencyFormat(dailyInfos.buyingPower)}}</a>
+                    </li>
+                    <!--<li>
+                        <a class="dropdown-item" href="settings">
+                            <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
+                    </li>-->
+                    <li>
+                        <a class="dropdown-item" v-on:click="refreshTrades()">
                             <i class="uil uil-sync me-2"></i>Refresh Data</a>
                     </li>
                     <li>
@@ -51,7 +51,7 @@
                             <i class="uil uil-signout me-2"></i>Logout</a>
                     </li>
                 </ul>
-            </li>
-        </ul>
+            </div>
+        </div>
     </div>
-</nav>
+</div>

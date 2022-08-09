@@ -21,7 +21,7 @@
                         <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
                     @@if(type === "full"){
                         <p v-show="line[index].pAndL.trades">{{line[index].pAndL.trades}} trades</p>
-                        <p v-show="line[index].pAndL[amountCase+'Proceeds']">{{parseInt(line[index].pAndL[amountCase+'Proceeds']).toFixed(2)}}$</p>
+                        <p v-show="line[index].pAndL[amountCase+'Proceeds']">{{thousandCurrencyFormat(parseInt(line[index].pAndL[amountCase+'Proceeds']))}}</p>
                     }
                 </div>
                 </div>

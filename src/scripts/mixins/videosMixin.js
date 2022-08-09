@@ -82,7 +82,7 @@ const videosMixin = {
                         this.tradeToShow[0].trades[index].videoEnd = null
                     }
                 })
-                //console.log("trades "+JSON.stringify(this.tradeToShow))
+                console.log("trades "+JSON.stringify(this.tradeToShow))
 
 
             /* ---- 3: GET VIDEO URL FROM INDEXEDDB OR DB ---- */
@@ -106,7 +106,7 @@ const videosMixin = {
                     this.loadingSpinner = false
                 } else {
                     console.log(" -> Video does not exist in IndexedDB. Storing it")
-                    this.loadingSpinnerText = "First time getting this video. Process will be faster next time. Please wait ...";
+                    this.loadingSpinnerText = "First time getting this video, please wait ...";
 
                     (async() => {
                         //console.log("Creating video file")
@@ -124,8 +124,8 @@ const videosMixin = {
                             //console.log("video file "+this.videoFile+ " and blob "+this.videoBlob)
 
                         this.showMoreVideos = true
-                        this.loadingSpinner = false
-
+                        this.spinnerSetupsUpdate = false
+                        console.log("spinner setup update "+this.spinnerSetupsUpdate)
                         // Open a transaction to the database
                         let transaction = this.indexedDB.transaction(["videos"], "readwrite");
 
@@ -139,11 +139,13 @@ const videosMixin = {
 
                         objectToAdd.onsuccess = (event) => {
                             console.log(" -> Stored video in IndexedDB")
+                            console.log("spinner setup update "+this.spinnerSetupsUpdate)
                         }
                         objectToAdd.onserror = (event) => {
                             alert(" -> Error storing video in IndexedDB with message " + event)
                         }
                     })()
+                    console.log("spinner setup update "+this.spinnerSetupsUpdate)
                 }
 
             }
@@ -172,27 +174,6 @@ const videosMixin = {
             } else {
                 console.log(" -> Trade has No setup in DB")
                 this.tradeId = null
-            }
-        },
-
-        resetSetup() {
-            console.log("resetting setup")
-                //we need to reset the setup variable each time
-            this.tradeSetup = {
-                pattern: {
-                    id: null,
-                    name: null,
-                    timeInterval: null,
-                    winStrategy: null,
-                },
-                entrypoint: {
-                    id: null,
-                    name: null,
-                },
-                mistake: {
-                    id: null,
-                    name: null,
-                },
             }
         },
 
@@ -259,198 +240,8 @@ const videosMixin = {
                 //this.tradeSetup.pattern = filtered.name
                 //this.tradeSetup.entrypoint = filtered 
                 //return filtered.name
-        },
-
-        updateSetup: async function(param) { //param1 : trade unixDate ; param2 : trade id inside trade array
-            console.log("\nUPDATING TRADE SETUP")
-            this.spinnerSetups = true
-            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeId)
-            if (this.tradeSetup.pattern.id == null &&  (this.tradeSetup.pattern.id == null && this.tradeSetup.entrypoint.id == null && this.tradeSetup.mistake.id == null)) {
-                alert("Please enter setup")
-                return
-            }
-
-            if (this.tradeId != null) {
-                console.log(" -> Updating setups")
-                this.spinnerSetupsText = "Updating setups"
-                const Object = Parse.Object.extend("setups");
-                const query = new Parse.Query(Object);
-                query.equalTo("tradeId", this.tradeId)
-                const results = await query.first();
-                if (results) {
-                    results.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern.id })
-                    results.set("patternTimeInterval", this.tradeSetup.pattern.timeInterval)
-                    results.set("patternWinStrategy", this.tradeSetup.pattern.winStrategy)
-                    results.set("entrypoint", { __type: "Pointer", className: "entrypoints", objectId: this.tradeSetup.entrypoint.id })
-                    results.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake.id })
-
-                    results.save()
-                        .then(async() => {
-                            console.log(' -> Updated setup with id ' + results.id)
-                            this.spinnerSetupsText = "Updated setup"
-                            this.updateTrade(param)
-                        }, (error) => {
-                            console.log('Failed to create new object, with error code: ' + error.message);
-                        })
-                } else {
-                    console.log(" -> Problem : the tradeId has setup but it is not present in setups")
-                }
-            } else {
-                console.log(" -> Saving setups")
-                this.spinnerSetupsText = "Saving setups"
-                const Object = Parse.Object.extend("setups");
-                const object = new Object();
-                object.set("user", Parse.User.current())
-                object.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern.id })
-                object.set("patternTimeInterval", this.tradeSetup.pattern.timeInterval)
-                object.set("patternWinStrategy", this.tradeSetup.pattern.winStrategy)
-                object.set("entrypoint", { __type: "Pointer", className: "entrypoints", objectId: this.tradeSetup.entrypoint.id })
-                if (this.tradeSetup.mistake.id != null) {
-                    object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake.id })
-                } else {
-                    object.set("mistake", null)
-                }
-                object.set("tradeUnixDate", this.videoToLoad)
-                object.set("tradeId", param)
-                object.setACL(new Parse.ACL(Parse.User.current()));
-                object.save()
-                    .then(async(object) => {
-                        console.log(' -> Added new setup with id ' + object.id)
-                        this.spinnerSetupsText = "Added new setup"
-                        this.updateTrade(param)
-                    }, (error) => {
-                        console.log('Failed to create new object, with error code: ' + error.message);
-                    })
-            }
-        },
-
-        deleteSetup: async function(param) {
-            console.log("\nDELETING TRADE SETUP")
-            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeId)
-
-            if (this.tradeId != null) {
-                console.log(" -> Deleting setup")
-                const Object = Parse.Object.extend("setups");
-                const query = new Parse.Query(Object);
-                query.equalTo("tradeId", this.tradeId)
-                const results = await query.first();
-                if (results) {
-                    results.destroy().then(() => {
-                        console.log(' -> Deleted setup with id ' + results.id)
-                    }, (error) => {
-                        console.log('Failed to delete setup, with error code: ' + error.message);
-                    });
-                } else {
-                    console.log(" -> Problem : the tradeId has setup but it is not present in setups")
-                }
-                this.updateTrade(param, true)
-            } else {
-                alert("There is no existing setup")
-                return
-            }
-        },
-
-        updateTrade: async function(param, param2) {
-            this.spinnerSetupsText = "Updating trades"
-                //query trade to update
-                //console.log("date unix "+this.videoToLoad+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
-            const Object = Parse.Object.extend("trades");
-            const query = new Parse.Query(Object);
-            query.equalTo("dateUnix", this.videoToLoad)
-            const results = await query.first();
-            if (results) {
-                //console.log("result from query " + JSON.stringify(results))
-                var objectResults = JSON.parse(JSON.stringify(results))
-                var arrayTrades = objectResults.trades
-                var tradeIndex = arrayTrades.findIndex(f => f.id == param)
-                console.log(" -> Updating trade with id " + param)
-                if (param2 == true) { //Delete == true
-                    arrayTrades[tradeIndex].setup = {}
-                } else {
-                    arrayTrades[tradeIndex].setup = {
-                        pattern: {
-                            id: this.tradeSetup.pattern.id,
-                            timeInterval: this.tradeSetup.pattern.timeInterval,
-                            winStrategy: this.tradeSetup.pattern.winStrategy
-                        },
-                        entrypoint: this.tradeSetup.entrypoint.id,
-                        mistake: this.tradeSetup.mistake.id
-                    }
-                }
-                //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
-                results.set("trades", arrayTrades)
-                results.save().then(async() => {
-                    console.log(' -> Updated trades with id ' + results.id)
-                    await (this.spinnerSetupsText = "Updated trade")
-                    /*await (() => {
-                        this.spinnerSetupsText = "Updating filtered trade"
-                        var filterTrades = []
-                        this.tradeToShow = []
-                        
-                        // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
-                        var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
-                        this.tradeToShow = filterTrades
-                            //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
-
-                        // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
-                        this.tradeToShow[0].trades.forEach((element, index) => {
-                            if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
-                                this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
-                            } else {
-                                this.tradeToShow[0].trades[index].videoStart = null
-                            }
-
-                            if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
-                                this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
-                            } else {
-                                this.tradeToShow[0].trades[index].videoEnd = null
-                            }
-                        })
-                        console.log(" -> Updated filtered trade")
-                    })()*/
-                    this.spinnerSetups = false
-
-                })
-            } else {
-                alert("Update query did not return any results")
-            }
-        },
-
-        updateInfo: async function() {
-            await (this.spinnerSetups = true)
-            await (this.spinnerSetupsText = "Getting trades from DB")
-            await this.getTradesFromDb() //update indexedDB
-            await (this.spinnerSetupsText = "Getting all trades")
-            await this.getAllTrades(true)
-                //Once we get all trades, we need to update the filtered trades so it reflects on the page we are looking at
-            await (() => {
-                this.spinnerSetupsText = "Updating filtered trade"
-                var filterTrades = []
-                this.tradeToShow = []
-
-                // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
-                var filterTrades = this.filteredTrades.filter(f => f.dateUnix == this.videoToLoad)
-                this.tradeToShow = filterTrades
-                    //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
-
-                // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
-                this.tradeToShow[0].trades.forEach((element, index) => {
-                    if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
-                        this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
-                    } else {
-                        this.tradeToShow[0].trades[index].videoStart = null
-                    }
-
-                    if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
-                        this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
-                    } else {
-                        this.tradeToShow[0].trades[index].videoEnd = null
-                    }
-                })
-                console.log(" -> Updated filtered trade")
-            })()
-            await (this.spinnerSetups = false)
         }
 
+        
     }
 }

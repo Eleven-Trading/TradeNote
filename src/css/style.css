@@ -172,6 +172,24 @@ input:checked+.slider:before {
 
 /*=================== /END GENERAL/ ===================*/
 
+/*=================== Radio Check Box ===================*/
+
+.form-check-sm{
+    padding-left: 1em;
+}
+
+.check-sm{
+    width: 0.8em;
+    height: 0.8em;
+    margin-top: 0.35em;
+    margin-left: 1em;
+}
+
+.check-sm:checked{
+    background-color:var(--blue-active-color);
+    border-color: var(--blue-active-color);
+}
+
 
 /*=================== NAV BAR AND SIDE MENU ===================*/
 

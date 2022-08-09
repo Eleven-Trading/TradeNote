@@ -36,10 +36,15 @@ const dashboardMixin = {
                     var elementDateUnix = dayjs(elementDate).unix()
                         //console.log("dateUnix "+elementDateUnix+" type "+typeof elementDateUnix)
                         //console.log("element date "+year+"-"+month+"-"+element+" and unix "+elementDateUnix)
-                    tempData = {}
+                    let tempData = {}
                     tempData.day = element
                     tempData.dateUnix = elementDateUnix
-                    var trade = this.allTrades.filter(f => f.dateUnix == elementDateUnix)
+                    let trade
+                    if (this.threeMonthsBack <= this.selectedRange.start) {
+                        trade = this.threeMonthsTrades.filter(f => f.dateUnix == elementDateUnix)
+                    } else {
+                        trade = this.allTrades.filter(f => f.dateUnix == elementDateUnix)
+                    }
                     if (trade.length) {
                         tempData.pAndL = trade[0].pAndL
                             //console.log("trade "+JSON.stringify(trade[0].pAndL))
@@ -55,6 +60,21 @@ const dashboardMixin = {
             this.calendarData = calendarJson
                 //console.log("cal "+JSON.stringify(calendarJson))
 
+        },
+
+        getDailyInfos:async function() {
+            return new Promise(async(resolve, reject) => {
+                console.log(" -> Getting Daily Infos");
+                const Object = Parse.Object.extend("dailyInfos");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current());
+                query.descending("dateUnix");
+                const results = await query.first();
+                this.dailyInfos = JSON.parse(JSON.stringify(results))
+                //console.log(" -> cash balance " + this.dailyInfos.cashBalance)
+                //console.log(" -> dailyInfos " + JSON.stringify(this.dailyInfos))
+                resolve()
+            })
         },
     }
 }

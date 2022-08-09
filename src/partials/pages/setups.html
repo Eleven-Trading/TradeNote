@@ -1,0 +1,36 @@
+<div class="row mt-2 mb-2">
+    <!-- ============ DASHBOARD ============ -->
+    
+    @@include('components/noData.html')
+    <div v-else-if="spinnerSetupsUpdate" class="text-center overlay">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-blue" role="status"></div>
+        </div>
+        {{spinnerSetupsUpdateText}}
+    </div>
+
+    <div v-else v-for="(setup, index) in setups" class="col-12 col-xl-6 mt-2">
+        <div class="dailyCard">
+            <div class="row">
+                <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
+                    <div class="col-auto">{{createdDateFormat(setup.dateUnix)}}</div>
+                </div>
+                <div class="col-12">
+                    <div class="row mt-2 journalRow">
+                        <span v-if="setup.side" class="col mb-2">{{setup.symbol}} @ {{timeFormat(setup.dateUnix)}} ({{setup.side}})</span>
+                        <span v-else class="col mb-2">{{setup.symbol}} @ {{hourMinuteFormat(setup.dateUnix)}}</span>
+                        <span class="col mb-2 ms-auto text-end">
+                            <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(setup.objectId)"></i>
+                            <i v-on:click="selectedItem = setup.objectId" class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true" data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover"></i>
+                        </span>
+                    </div>
+                    <div class="">
+                        <img v-bind:id="setup.objectId" class="setupEntryImg mt-3 img-fluid" v-bind:src="setup.annotated.url"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end dashboard-->
+
+</div>

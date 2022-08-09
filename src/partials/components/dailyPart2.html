@@ -1,32 +1,111 @@
 <div class="col-12 table-responsive">
-    <a v-on:click="moreLess(index)">More/Less</a>
-    <table v-bind:id="'table'+index" class="table d-none">
-        <thead class="thead-dark">
-            <tr>
-                <th scope="col">Symbol</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">P&L(g)</th>
-                <th scope="col">Fees</th>
-                <th scope="col">P&L(n)</th>
-                <th scope="col">Wins</th>
-                <th scope="col">Losses</th>
-                <th scope="col">Trades</th>
-                <th scope="col">Executions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="blot in daily.blotter">
+    <nav>
+        <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
+            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}</button>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
 
-                <td>{{blot.symbol}}</td>
-                <td>{{blot.buyQuantity+blot.sellQuantity}}</td>
-                <td v-bind:class="[blot.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.grossProceeds).toFixed(2)}}</td>
-                <td>{{(blot.fees).toFixed(2)}}</td>
-                <td v-bind:class="[blot[amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{(blot[amountCase+'Proceeds']).toFixed(2)}}</td>
-                <td>{{blot.grossWinsCount}}</td>
-                <td>{{blot.grossLossCount}}</td>
-                <td>{{blot.trades}}</td>
-                <td>{{blot.executions}}</td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- JOURNALS TAB -->
+        <div class="tab-pane fade" v-bind:id="'journalsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <div v-if="journals.findIndex(obj => obj.dateUnix==daily.dateUnix) != -1">
+                <p>
+                    <div class="row journalRow">
+                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
+                        <span class="col mb-2 ms-auto text-end">
+                            <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].objectId)"></i>
+                            <i v-on:click="selectedItem = note.id" class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true" data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover"></i>
+                        </span>
+                    </div>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.positive"></span>
+                </p>
+                <p>
+                    <span class="dashInfoTitle">Negative aspect</span>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.negative"></span>
+                </p>
+                <p>
+                    <span class="dashInfoTitle">Other</span>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.other"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- TRADES TAB -->
+        <div class="tab-pane fade" v-bind:id="'tradesNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Video</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Position</th>
+                        <th scope="col">Time(i)</th>
+                        <th scope="col">Time(o)</th>
+                        <th scope="col">Price(i)</th>
+                        <th scope="col">P&L/Sh(g)</th>
+                        <th scope="col">P&L(n)</th>
+                        <th scope="col">Setup</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                    <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
+
+                    <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#videoModal"  v-on:click="viewModalVideosDaily(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
+                        <td id="videoTd">
+                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
+                            <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-diary-alt']"></i>
+                        </td>
+                        <td>{{trade.symbol}}</td>
+                        <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
+                        <td>{{trade.side == 'B' ? 'Long' : 'Short'}}</td>
+                        <td>{{timeFormat(trade.entryTime)}}</td>
+                        <td>{{timeFormat(trade.exitTime)}}</td>
+                        <td>{{(trade.entryPrice).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
+                        <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
+                        <td>
+                            <i v-if="Object.keys(trade.setup).length >0" class="uil uil-check-square"></i>
+                            <i v-else class="uil uil-times-square"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BLOTTER TAB -->
+        <div class="tab-pane fade" v-bind:id="'blotterNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <table v-bind:id="'table'+index" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">P&L(g)</th>
+                        <th scope="col">Fees</th>
+                        <th scope="col">P&L(n)</th>
+                        <th scope="col">Wins</th>
+                        <th scope="col">Losses</th>
+                        <th scope="col">Trades</th>
+                        <th scope="col">Executions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="blot in daily.blotter">
+
+                        <td>{{blot.symbol}}</td>
+                        <td>{{blot.buyQuantity+blot.sellQuantity}}</td>
+                        <td v-bind:class="[blot.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.grossProceeds).toFixed(2)}}</td>
+                        <td>{{(blot.fees).toFixed(2)}}</td>
+                        <td v-bind:class="[blot[amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{(blot[amountCase+'Proceeds']).toFixed(2)}}</td>
+                        <td>{{blot.grossWinsCount}}</td>
+                        <td>{{blot.grossLossCount}}</td>
+                        <td>{{blot.trades}}</td>
+                        <td>{{blot.executions}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

@@ -1,140 +1,447 @@
 const tradesMixin = {
     methods: {
+        inputAccounts() {
+            this.dashboardChartsMounted = false
+            this.eCharts("clear")
+            this.getAllTrades(true)
+        },
+
         inputDateRange(param) {
+            this.dashboardChartsMounted = false
+            this.spinnerSetupsUpdate = true
+            this.eCharts("clear")
+            
             var filterJson = this.dateRange.filter(element => element.value == param)[0]
             this.selectedDateRange = filterJson
-            localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
+
+            /*Now we update selectedDateRangeCal*/
+            let temp = {}
+            temp.start = this.selectedDateRange.start
+            temp.end = this.selectedDateRange.end
+            this.selectedDateRangeCal = temp
+            console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
+            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal)) 
+            
             this.getAllTrades(true)
+        },
+
+        inputDateRangeCal(param1, param2) {
+            let dateUnix = null 
+            if (param1 == "start"){
+                dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
+            }
+            if (param1 == "end"){
+                dateUnix = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix()
+            }
+
+            let dateLocalStorage = JSON.parse(localStorage.getItem('selectedDateRangeCal'))
+
+            const refresh = () => {
+                this.dashboardChartsMounted = false
+                this.spinnerSetupsUpdate = true
+                this.eCharts("clear")
+                localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage)) 
+                this.getAllTrades(true)
+            }
+            
+            /* Check if start date before end date and vice versa */
+            if (dateLocalStorage && param1 == "start" && dateLocalStorage.end > dateUnix) {
+                dateLocalStorage.start = dateUnix
+                this.selectedDateRangeCal = dateLocalStorage
+                console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
+                refresh()
+            }
+
+            if (dateLocalStorage && param1 == "end" && dateLocalStorage.start < dateUnix) {
+                dateLocalStorage.end = dateUnix
+                this.selectedDateRangeCal = dateLocalStorage
+                refresh()
+            }
+
+            /* Update selectedDateRange */
+            let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
+            if(tempFilter.length > 0){
+                this.selectedDateRange = tempFilter[0]
+            }else{
+                this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
+            }
+        },
+
+        inputPositions() {
+            if (this.currentPage.id == "dashboard") {
+                this.dashboardChartsMounted = false
+                this.spinnerSetupsUpdate = true
+                this.eCharts("clear")
+            }
+            this.getAllTrades(true)
+        },
+
+        inputTimeFrame(param) {
+            this.selectedTimeFrame = param
+            localStorage.setItem('selectedTimeFrame', this.selectedTimeFrame)
+            console.log(" -> Building charts")
+            this.lineChart("lineChart1")
+            this.lineBarChart("lineBarChart1")
+            this.barChart("barChart1")
+            this.barChart("barChart2")
+        },
+
+        inputRatio(param) {
+            this.selectedRatio = param
+            localStorage.setItem('selectedRatio', param)
+            if (param = !"profitRatio") {
+                this.eCharts("barChart")
+            }
+            this.eCharts("barChartNegative")
 
         },
 
-        inputPosition(param) {
-            this.selectedPosition = param
-            localStorage.setItem('selectedPosition', this.selectedPosition)
+        inputGrossNet(param) {
+            if (this.currentPage.id == "dashboard") {
+                this.dashboardChartsMounted = false
+                this.spinnerSetupsUpdate = true
+                this.eCharts("clear")
+            }
+
+            this.selectedGrossNet = param
+            localStorage.setItem('selectedGrossNet', this.selectedGrossNet)
+            this.amountCase = param
+            this.amountCapital = param.charAt(0).toUpperCase() + param.slice(1)
             this.getAllTrades(true)
         },
+
         getAllTrades: async function(param) {
-            console.log("\nGETTING ALL TRADES")
-            if (param) { // if true, getting all trades. Else juste the graphs
-                var selectedRange
-                if (!localStorage.getItem('selectedDateRange')) {
-                    localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
-                }
+            console.log("\nGETTING TRADES")
+                //console.log("this.selectedDateRange "+this.selectedDateRange)
+            this.dashboardChartsMounted = false
+            this.spinnerSetupsUpdate = true
+            this.dashboardIdMounted = false
+            this.spinnerSetupsUpdateText = "Getting trades"
+                //console.log("filtered "+JSON.stringify(this.filteredTrades))
+
+            let selectedRange
+                /* If true, getting all trades. Else juste the graphs */
+            if (param) {
+
+                /*============= 1- Get selected date range =============*/
+
                 if (!localStorage.getItem('selectedCalRange')) {
                     localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
                 }
                 if (this.currentPage.id == "dashboard") {
-                    selectedRange = this.selectedDateRange
+                    selectedRange = this.selectedDateRangeCal
                 } else {
-                    selectedRange = this.selectedCalRange
+                    selectedRange = this.selectedDateRangeCal
                 }
 
-                filterTrades = () => {
-                    console.log(" -> Filtering trades")
-                        //console.log("trades "+JSON.stringify(this.allTrades))
-                    this.filteredTrades = this.allTrades.filter(f => f.dateUnix >= selectedRange.start && f.dateUnix < selectedRange.end);
+                /*============= 2 - Check last date in parse db =============
+
+                 * If there is a new date we will update indexedDB
+                 ***************************************************/
+
+                let lastDateParse
+
+                    (async() => {
+                    return new Promise(async(resolve, reject) => { //put return is very important or else it was not waiting for the promise
+                        console.log(" -> Getting last date from ParseDB");
+                        const Object = Parse.Object.extend("trades");
+                        const query = new Parse.Query(Object);
+                        query.equalTo("user", Parse.User.current());
+                        query.descending("dateUnix");
+                        const results = await query.first()
+                        lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
+                        console.log("  --> Last date parse " + lastDateParse)
+                        resolve()
+                    })
+                })()
+
+                /*============= 3 - Check if trades data exists in variable =============
+
+                 * I've put it in variable for quicker extract
+                 * If does not exist in variable, check IndexedDB
+                 * If not in IndexedDB, then get from Parse
+                 ***************************************************/
+
+                console.log(" -> Checking local storage");
+                this.spinnerSetupsUpdateText = "Getting trades - Checking local storage"
+                let lastDateLocal
+                if (this.threeMonthsBack <= selectedRange.start) {
+
+                    /*Check if variable exists*/
+                    if (this.threeMonthsTrades.length > 0) {
+                        console.log("  --> 3 Months trades already exists")
+                        console.log("  --> Size of this.threeMonths: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
+                        this.spinnerSetupsUpdateText = "Getting trades - 3 Months trades already exists"
+
+                        /*Compare last dateUnix with last date from #2*/
+                        lastDateLocal = this.threeMonthsTrades[this.threeMonthsTrades.length - 1].dateUnix
+                            //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
+
+                        /*If new date, we update IndexedDB by getting trades from Parse*/
+                        if (lastDateLocal < lastDateParse) {
+                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            await this.getTradesFromDb(6)
+                        }
+
+                        /* If variable does not exist, we check IndexedDB or get from Parse */
+                    } else {
+                        console.log("  --> 3 months trades is null. Getting data")
+                        this.spinnerSetupsUpdateText = "Getting trades - 3 months trades is null. Getting data"
+
+                        /* Check if data exists in indexed db */
+                        let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
+                            //console.log("dataExistsInIndexedDB "+dataExistsInIndexedDB)
+                            //this.spinnerSetupsUpdateText = "Getting trades - data exists is "+dataExistsInIndexedDB
+
+                        if (dataExistsInIndexedDB) {
+                            lastDateLocal = this.threeMonthsTrades[this.threeMonthsTrades.length - 1].dateUnix
+                            console.log("  --> threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
+                        }
+                        //this.spinnerSetupsUpdateText = "Getting trades - last date is "+lastDateLocal +" and last date parse "+lastDateParse
+                        //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
+
+                        /* Get from parse db if not exist in indexed db (resolve returns false in checkTradesInIndexedDB) or if there is a new date in parse db */
+                        if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
+                            await this.getTradesFromDb(6)
+                        }
+
+                    }
+                } else {
+                    if (this.allTrades.length > 0) {
+                        console.log("  --> All trades already exists")
+                        console.log("  --> Size of this.allTrades: " + this.formatBytes(new Blob([JSON.stringify(this.allTrades)]).size))
+                        this.spinnerSetupsUpdateText = "Getting trades - All trades already exists"
+
+                        lastDateLocal = this.allTrades[this.allTrades.length - 1].dateUnix
+                        if (lastDateLocal < lastDateParse) {
+                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            await this.getTradesFromDb(0)
+                        }
+
+                    } else {
+                        console.log("  --> All trades is null. Getting data")
+
+                        this.spinnerSetupsUpdateText = "Getting trades - All trades is null. Getting data"
+                        let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
+                        this.spinnerSetupsUpdateText = "Getting trades - data exists is " + dataExistsInIndexedDB
+
+                        if (dataExistsInIndexedDB) {
+                            lastDateLocal = this.allTrades[this.allTrades.length - 1].dateUnix
+                            console.log("  --> allTrades size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.allTrades)]).size))
+                        }
+                        //this.spinnerSetupsUpdateText = "Getting trades - lastDateLocal is "+lastDateLocal
+
+                        if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
+                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            await this.getTradesFromDb(0)
+                        }
+                    }
                 }
 
-                //Check if if data exists in IndexedDB
-                let dataExistsInIndexedDB = await this.checkTradesInIndexedDB()
-                if (!dataExistsInIndexedDB) {
-                    await this.getTradesFromDb()
+                /*============= 4 - Apply filter to trades =============
+                 
+                * We filter by date range, position, account by looping/creating trades column
+                * New variable will be called filteredTrades
+                ***************************************************/
+
+                //console.log(" -> Getting trades from " + dayjs.unix(selectedRange.start).format("DD/MM/YY") + " to " + dayjs.unix(selectedRange.end).format("DD/MM/YY"))
+                console.log(" -> Filtering trades")
+                this.spinnerSetupsUpdateText = "Getting trades - Filtering trades"
+                console.log("Range (Date or Call) start " + selectedRange.start + " Range (Date or Call) end " + selectedRange.end)
+
+                this.filteredTrades = []
+                let loopTrades = (param1) => {
+                    param1.forEach(element => {
+                        let temp = _.omit(element, ["trades"])
+                        temp.trades = []
+                        element.trades.forEach(element => {
+                            /* Here we do not .tz because it's done at source, in dateRange variable (vue.js) */
+
+                            /* For specific pages, we only show per month, so we limit end date */
+                            if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
+                                selectedRange.end = dayjs(selectedRange.start * 1000).add(1, "month").unix()
+                            }
+
+                            /* We use if here but then conditional inside to check all possibilities */
+                            if ((selectedRange.start === 0 && selectedRange.end === 0 ? element.entryTime >= selectedRange.start : element.entryTime >= selectedRange.start && element.entryTime < selectedRange.end) && this.selectedPositions.includes(element.strategy) /*(this.selectedPosition != "all" ? element.strategy == this.selectedPosition : element.strategy)*/ && /*(this.selectedAccount != "all" ? element.account == this.selectedAccount : element.account)*/ this.selectedAccounts.includes(element.account)) {
+                                temp.trades.push(element)
+                            }
+                        });
+                        /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
+                        if (temp.trades.length > 0) {
+                            this.filteredTrades.push(temp)
+                        }
+                    });
                 }
 
-                console.log(" -> Getting trades from " + dayjs.unix(selectedRange.start).format("DD/MM/YY") + " to " + dayjs.unix(selectedRange.end).format("DD/MM/YY"))
+                /* If all dates selected, we use allTrades */
                 if (selectedRange.start == 0 && selectedRange.end == 0) {
-                    this.filteredTrades = this.allTrades
-                } else {
-                    filterTrades()
+                    loopTrades(this.allTrades)
+                }
+
+                /* If not, we per selected range */
+                else {
+                    /* We must check if we are in in 3 months range or full range */
+                    if (this.threeMonthsBack <= selectedRange.start) {
+                        console.log(" -> Using 3 months")
+                        loopTrades(this.threeMonthsTrades)
+                    } else {
+                        console.log(" -> Using all trades")
+                        loopTrades(this.allTrades)
+                    }
                 }
             }
+
+            /*============= 5 - Render data, charts, totals =============*/
+
             if (this.currentPage.id == "dashboard") {
+                this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
+                    //await this.getPatterns()
+                await this.prepareTrades()
+                await (this.spinnerSetupsUpdate = false)
+                console.log(" -> Building charts")
                 await (this.renderData += 1)
-                await this.getPatterns()
-                await (this.totalPAndLChartMounted = false)
-                await this.createTotals()
-                await this.pieChart("pieChart1", this.totals.probNetWins, this.totals.probNetLoss, this.currentPage.id) //chart ID, winShare, lossShare
-                await this.lineBarChart()
-                await this.barChart("barChart1")
-                await this.barChart("barChart2")
-                await this.barChartNegative("barChartNegative1") //timeframe (appt)
-                await this.barChartNegative("barChartNegative2") //timeframe (average win)
-                await this.barChartNegative("barChartNegative3") //timeframe (average loss)
-                await this.barChartNegative("barChartNegative4") //trades (appt)
-                await this.barChartNegative("barChartNegative5") //trades (average win)
-                await this.barChartNegative("barChartNegative6") //trades (average loss)
-                await this.barChartNegative("barChartNegative7") //executions (appt)
-                await this.barChartNegative("barChartNegative8") //executions (average win)
-                await this.barChartNegative("barChartNegative9") //executions (average loss)
-                await this.barChartNegative("barChartNegative10") //patterns
-                await this.barChartNegative("barChartNegative11") //entrypoints
-                await this.barChartNegative("barChartNegative12") //share float
-                await this.barChartNegative("barChartNegative13") //entry price
-                await this.barChartNegative("barChartNegative14") //market cap
-                await this.boxPlotChart()
-                await (this.totalPAndLChartMounted = true)
+                await this.eCharts("init")
+                await (this.dashboardChartsMounted = true)
+
             }
             if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
-                //In dashboard, filter is dependant on the filter input on top of page
-                //In daily, filter is dependant on the calendar -> charts are loaded after and inside calendar in this case
-                this.loadCalendar()
+                this.spinnerSetupsUpdateText = "Loading Calendar"
+
+                /*In dashboard, filter is dependant on the filter input on top of page
+                 * In daily, filter is dependant on the calendar -> charts are loaded after and inside calendar in this case
+                 */
+                this.loadCalendar(undefined, selectedRange)
 
             }
 
 
         },
-        checkTradesInIndexedDB: async function() {
-            return new Promise((resolve, reject) => {
-                let transaction = this.indexedDB.transaction(["trades"], "readwrite");
-                var objectToGet = transaction.objectStore("trades").get("1")
 
+        /***************************************
+         * CHECKING AND GETTING DATA FROM DB 
+         * (see #3)
+         ***************************************/
+
+        checkTradesInIndexedDB: async function(param) {
+            return new Promise((resolve, reject) => {
+                this.spinnerSetupsUpdateText = "Getting trades - Checking data in IndexedDB"
+                let transaction = this.indexedDB.transaction(["trades"], "readwrite");
+
+                if (param == 6) {
+                    var objectToGet = transaction.objectStore("trades").get("2")
+                }
+                if (param == 0) {
+                    var objectToGet = transaction.objectStore("trades").get("1")
+                }
                 objectToGet.onsuccess = (event) => {
                     if (event.target.result != undefined) {
-                        console.log(" -> Data exists in IndexedDB. Retreiving trades")
-                        this.allTrades = event.target.result.data;
+                        console.log("  --> Data exists in IndexedDB. Retreiving trades")
+                        this.spinnerSetupsUpdateText = "Getting trades - Data exists in IndexedDB. Retreiving trades"
+                        if (param == 6) {
+                            this.threeMonthsTrades = event.target.result.data;
+                        }
+                        if (param == 0) {
+                            this.allTrades = event.target.result.data;
+                        }
                         //console.log("all trades " + JSON.stringify(this.allTrades))
                         (async() => {
                             if (!navigator.storage) return;
 
-                            function formatBytes(bytes, decimals = 2) {
-                                if (bytes === 0) return '0 Bytes';
-                                const k = 1024;
-                                const dm = decimals < 0 ? 0 : decimals;
-                                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-                                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-                            }
                             const
                                 estimate = await navigator.storage.estimate(),
                                 // calculate remaining storage in MB
-                                quota = formatBytes(estimate.quota)
-                            usage = formatBytes(estimate.usage)
-                            console.log("Local storage quota " + quota + " and usage " + usage);
+                                quota = this.formatBytes(estimate.quota)
+                            let usage = this.formatBytes(estimate.usage)
+                                //console.log("Local storage quota " + quota + " and usage " + usage);
                         })();
                         resolve(true)
                     } else {
-                        console.log(" -> Data does not exist in IndexedDB. Retreiving from DB")
+                        console.log("  --> Data does not exist in IndexedDB. Retreiving from DB")
+                        this.spinnerSetupsUpdateText = "Getting trades - Data does not exist in IndexedDB. Retreiving from DB"
                         resolve(false)
                     }
 
                 }
                 objectToGet.onerror = (event) => {
-                    console.log(" -> There was an error getting trades from IndexedDB")
+                    console.log("  --> There was an error getting trades from IndexedDB")
+                    this.spinnerSetupsUpdateText = "Getting trades - There was an error getting trades from IndexedDB"
                     return
                 }
             })
         },
+
+        /***************************************
+         * GETTING DATA FROM PARSE DB 
+         * (see #3)
+         * We get the data and save it to IndexedDB
+         ***************************************/
+
+        getTradesFromDb: async function(param) {
+            return new Promise((resolve, reject) => {
+                (async() => {
+                    console.log(" -> Getting trades from ParseDB");
+                    console.time("  --> Execution time");
+                    this.spinnerSetupsUpdateText = "Getting trades from ParseDB"
+                    const Object = Parse.Object.extend("trades");
+                    const query = new Parse.Query(Object)
+                    query.equalTo("user", Parse.User.current());
+                    query.ascending("dateUnix");
+                    query.exclude("executions", "blotter")
+                    query.limit(1000000); // limit to at most 10 results
+                    const results = await query.find();
+                    console.timeEnd("  --> Execution time");
+                    console.log("  --> Size: " + this.formatBytes(JSON.stringify(results).length))
+                    this.allTrades = []
+                    this.threeMonthsTrades = []
+                        //this.allTrades = JSON.parse(JSON.stringify(results))
+                        //this.allTrades = JSON.parse(JSON.stringify(results))
+                    console.log(" -> Parsing data from ParseDB");
+                    this.spinnerSetupsUpdateText = "Parsing data from ParseDB"
+
+                    JSON.parse(JSON.stringify(results)).forEach(element => {
+                        if (element.dateUnix >= this.threeMonthsBack) {
+                            this.threeMonthsTrades.push(element)
+                        }
+                        this.allTrades.push(element)
+                    });
+                    //console.log("3 months back " + JSON.stringify(this.threeMonthsTrades))
+                    //console.log("all trades before "+JSON.stringify(this.allTrades))
+                    this.threeMonthsTrades.sort(function(a, b) {
+                        return a.dateUnix - b.dateUnix
+                    })
+
+                    if (param == 0 || param == 6) {
+                        console.log("has param")
+                        await this.saveAllTradesToIndexedDb(param)
+                    } else {
+                        console.log("no param")
+                        await Promise.all([this.saveAllTradesToIndexedDb(0), this.saveAllTradesToIndexedDb(6)])
+                    }
+                    resolve()
+                })()
+            })
+        },
+
         saveAllTradesToIndexedDb(param) {
             return new Promise((resolve, reject) => {
-                console.log(" -> Saving trades to IndexedDB");
-
+                console.log(" -> Saving trades to IndexedDB (param: " + param + ")");
                 // Open a transaction to the database
                 let transaction = this.indexedDB.transaction(["trades"], "readwrite");
                 //console.log("all trades after "+JSON.stringify(this.allTrades))
-                let data = {
-                    id: "1",
-                    data: this.allTrades
-                };
+                let data = {}
+                if (param == 0) {
+                    data = {
+                        id: "1",
+                        data: this.allTrades
+                    };
+                }
+                if (param == 6) {
+                    data = {
+                        id: "2",
+                        data: this.threeMonthsTrades
+                    };
+                }
 
                 var objectToAdd = transaction.objectStore("trades").put(data)
 
@@ -153,13 +460,27 @@ const tradesMixin = {
                 };
             })
         },
-        createTotals() {
+
+
+        /*============= Prepare Trades (#4) =============
+
+        * Here we are going to create general totals
+        * Create a list of all trades needed for grouping by date but also by strategy, price, etc.
+        * Create totals per date needed for grouping monthly, weekly and daily
+        ***************************************/
+
+        prepareTrades: async function() {
             console.log(" -> Creating totals")
+
+            /* Variables */
             var totalQuantity = 0
 
             var totalCommission = 0
             var totalOtherCommission = 0
             var totalFees = 0
+            var totalLocateFees = 0
+            var totalSoftwareFees = 0
+            var totalBankingFees = 0
 
             var totalGrossProceeds = 0
             var totalGrossWins = 0
@@ -193,18 +514,31 @@ const tradesMixin = {
             var totalNetLossCount = 0
             var financials = {}
 
-
-
             //console.log("filtered trades "+JSON.stringify(this.filteredTrades[0].trades))
+
+            /* List of all trades inside trades column (needed for grouping) */
             var temp1 = []
-            var temp2 = []
-            var temp3 = {}
+
+            /*============= 1- CREATING GENERAL TOTALS =============
+
+            * needed for dashboard
+            * we start by iterating trades to created totals
+            * Note: during iteration, we will also push to create a list of trades needed for grouping
+            * Then we prepare a json that we push to this.totals
+            */
+
+            /* 1a - In each filtered trade, we will iterate trade to create totals */
             this.filteredTrades.forEach((element, index) => {
-                if (this.selectedPosition != "all") { //if filtering by position other than all
-                    element.trades = element.trades.filter(f => f.strategy == this.selectedPosition);
+
+                // Other fees
+                if (element.cashJournal != undefined) {
+                    //console.log("cash journal " + JSON.stringify(element.cashJournal))
+                    totalLocateFees += element.cashJournal.locate
+                    totalSoftwareFees += element.cashJournal.software
+                    totalBankingFees += element.cashJournal.banking.fee
+                        //console.log("totalLocateFees" + totalLocateFees)
                 }
 
-                /*============= RECREATING TRADES FOR GROUPING =============*/
                 element.trades.forEach(el => {
 
                     totalQuantity += el.buyQuantity + el.sellQuantity
@@ -218,8 +552,6 @@ const tradesMixin = {
                     totalGrossSharePL += el.grossSharePL
                     totalGrossSharePLWins += el.grossSharePLWins
                     totalGrossSharePLLoss += el.grossSharePLLoss
-                        //el.highGrossSharePLWin > highGrossSharePLWin ? highGrossSharePLWin = el.highGrossSharePLWin : highGrossSharePLWin = highGrossSharePLWin
-                        //el.highGrossSharePLLoss < highGrossSharePLLoss ? highGrossSharePLLoss = el.highGrossSharePLLoss : highGrossSharePLLoss = highGrossSharePLLoss
 
                     if (el.grossSharePL >= 0) {
                         if (el.grossSharePL > highGrossSharePLWin) {
@@ -254,8 +586,6 @@ const tradesMixin = {
 
                     }
 
-
-
                     totalExecutions += el.executionsCount
                     totalTrades += el.tradesCount
                     totalGrossWinsQuantity += el.grossWinsQuantity
@@ -269,66 +599,134 @@ const tradesMixin = {
                     totalNetLossCount += el.netLossCount //Total number/count of net losing trades
                     financials += el.financials //Total number/count of net losing trades
 
-                    temp1.push(el) // needed for grouping
+                    /*============= NOTE - Creating list of trades =============
+
+                    * at the same time, we will push each trade inside trades
+                    * This way we have a list of trades that we can group 
+                    * according to grouping need (per date but also entry, strategy, etc.)
+                    */
+                    temp1.push(el)
                 })
-
-                temp2.push(element.pAndL)
-
-                /*totalQuantity += element.pAndL.buyQuantity + element.pAndL.sellQuantity
-
-                totalCommission += element.pAndL.commission
-                totalOtherCommission += element.pAndL.otherCommission
-                totalFees += element.pAndL.fees
-
-                totalGrossProceeds += element.pAndL.grossProceeds //Total amount of proceeds
-                totalGrossWins += element.pAndL.grossWins
-                totalGrossLoss += element.pAndL.grossLoss
-                totalGrossSharePL += element.pAndL.grossSharePL
-                totalGrossSharePLWins += element.pAndL.grossSharePLWins
-                totalGrossSharePLLoss += element.pAndL.grossSharePLLoss
-                element.pAndL.highGrossSharePLWin > highGrossSharePLWin ? highGrossSharePLWin = element.pAndL.highGrossSharePLWin : highGrossSharePLWin = highGrossSharePLWin
-                element.pAndL.highGrossSharePLLoss < highGrossSharePLLoss ? highGrossSharePLLoss = element.pAndL.highGrossSharePLLoss : highGrossSharePLLoss = highGrossSharePLLoss
-
-                totalNetProceeds += element.pAndL.netProceeds
-                totalNetWins += element.pAndL.netWins
-                totalNetLoss += element.pAndL.netLoss
-                totalNetSharePL += element.pAndL.netSharePL
-                totalNetSharePLWins += element.pAndL.netSharePLWins
-                totalNetSharePLLoss += element.pAndL.netSharePLLoss
-                element.pAndL.highNetSharePLWin > highNetSharePLWin ? highNetSharePLWin = element.pAndL.highNetSharePLWin : highNetSharePLWin = highNetSharePLWin
-                element.pAndL.highNetSharePLLoss < highNetSharePLLoss ? highNetSharePLLoss = element.pAndL.highNetSharePLLoss : highNetSharePLLoss = highNetSharePLLoss
-
-                totalExecutions += element.pAndL.executions
-                totalTrades += element.pAndL.trades
-                totalGrossWinsQuantity += element.pAndL.grossWinsQuantity
-                totalGrossLossQuantity += element.pAndL.grossLossQuantity
-                totalGrossWinsCount += element.pAndL.grossWinsCount //Total number/count of gross winning trades
-                totalGrossLossCount += element.pAndL.grossLossCount //Total number/count of gross losing trades
-
-                totalNetWinsQuantity += element.pAndL.netWinsQuantity
-                totalNetLossQuantity += element.pAndL.netLossQuantity
-                totalNetWinsCount += element.pAndL.netWinsCount //Total number/count of net winning trades
-                totalNetLossCount += element.pAndL.netLossCount //Total number/count of net losing trades*/
 
 
             })
 
-            /*============= RECREATING TOTALS BY DATE =============*/
-            temp3 = {}
-            var tempExecs = temp1
-                //console.log("tempExecs9 " + JSON.stringify(tempExecs));
+            /* 1b - Create a json that we push to this.totals */
+            let temp2 = {}
+
+            /*******************
+             * Info
+             *******************/
+            temp2.quantity = totalQuantity
+
+            /*******************
+             * Commissions and fees
+             *******************/
+            temp2.commission = totalCommission
+            temp2.otherCommission = totalOtherCommission
+            temp2.fees = totalFees
+            temp2.locateFees = totalLocateFees
+            temp2.softwareFees = totalSoftwareFees
+            temp2.bankingFees = totalBankingFees
+            temp2.otherFees = totalLocateFees + totalSoftwareFees + totalBankingFees
+
+            /*******************
+             * Gross proceeds and P&L
+             *******************/
+            temp2.grossProceeds = totalGrossProceeds
+            temp2.grossWins = totalGrossWins
+            temp2.grossLoss = totalGrossLoss
+            temp2.grossSharePL = totalGrossSharePL
+                /*totalGrossWinsQuantity == 0 ? temp2.grossSharePLWins = 0 : temp2.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
+                totalGrossLossQuantity == 0 ? temp2.grossSharePLLoss = 0 : temp2.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
+            temp2.grossSharePLWins = totalGrossSharePLWins
+            temp2.grossSharePLLoss = totalGrossSharePLLoss
+            temp2.highGrossSharePLWin = highGrossSharePLWin
+            temp2.highGrossSharePLLoss = highGrossSharePLLoss
+
+
+            /*******************
+             * Net proceeds and P&L
+             *******************/
+            temp2.netProceeds = totalNetProceeds
+            temp2.netFeesProceeds = totalNetProceeds - temp2.otherFees
+            temp2.netWins = totalNetWins
+            temp2.netLoss = totalNetLoss
+            temp2.netSharePL = totalNetSharePL
+                /*totalNetWinsQuantity == 0 ? temp2.netSharePLWins = 0 : temp2.netSharePLWins = totalNetWins / totalNetWinsQuantity
+                totalNetLossQuantity == 0 ? temp2.netSharePLLoss = 0 : temp2.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
+            temp2.netSharePLWins = totalNetSharePLWins
+            temp2.netSharePLLoss = totalNetSharePLLoss
+            temp2.highNetSharePLWin = highNetSharePLWin
+            temp2.highNetSharePLLoss = highNetSharePLLoss
+            temp2.netProceedsEstimations = temp2.grossProceedsEstimations - temp2.feesEstimations
+            temp2.netWinsEstimations = temp2.grossWinsEstimations - temp2.feesEstimations
+            temp2.netLossEstimations = temp2.grossLossEstimations - temp2.feesEstimations
+
+
+            /*******************
+             * Counts
+             *******************/
+            temp2.executions = totalExecutions
+            temp2.trades = totalTrades
+
+            temp2.grossWinsQuantity = totalGrossWinsQuantity
+            temp2.grossLossQuantity = totalGrossLossQuantity
+            temp2.grossWinsCount = totalGrossWinsCount
+            temp2.grossLossCount = totalGrossLossCount
+
+            temp2.netWinsQuantity = totalNetWinsQuantity
+            temp2.netLossQuantity = totalNetLossQuantity
+            temp2.netWinsCount = totalNetWinsCount
+            temp2.netLossCount = totalNetLossCount
+
+            //temp2.netSharePLWins = totalNetSharePLWins
+            //temp2.netSharePLLoss = totalNetSharePLLoss
+
+
+
+
+            //Needed for Dashboard
+            var numPL = this.filteredTrades.length
+            temp2.probGrossWins = (totalGrossWinsCount / totalTrades)
+            temp2.probGrossLoss = (totalGrossLossCount / totalTrades)
+            temp2.probNetWins = (totalNetWinsCount / totalTrades)
+            temp2.probNetLoss = (totalNetLossCount / totalTrades)
+                //console.log("prob net win "+temp2.probNetWins+" and loss "+temp2.probNetLoss)
+
+            temp2.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
+            temp2.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
+            temp2.avgNetWins = (totalNetWins / totalNetWinsCount)
+            temp2.avgNetLoss = -(totalNetLoss / totalNetLossCount)
+
+            temp2.avgGrossSharePLWins = (totalGrossSharePLWins / totalGrossWinsCount)
+            temp2.avgGrossSharePLLoss = -(totalGrossSharePLLoss / totalGrossLossCount)
+            temp2.avgNetSharePLWins = (totalNetSharePLWins / totalNetWinsCount)
+            temp2.avgNetSharePLLoss = -(totalNetSharePLLoss / totalNetLossCount)
+
+            this.totals = temp2
+                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+            this.dashboardIdMounted = true
+
+
+            /*============= 2- RECREATING TOTALS BY DATE =============
+             *
+             * Create totals per date needed for grouping monthly, weekly and daily
+             */
+            let temp3 = {}
+                //console.log("temp2 "+JSON.stringify(temp2))
             var z = _
-                .chain(tempExecs)
+                .chain(temp1)
                 .orderBy(["td"], ["asc"])
                 .groupBy("td")
 
-            objectY = JSON.parse(JSON.stringify(z))
+            let objectY = JSON.parse(JSON.stringify(z))
             const keys3 = Object.keys(objectY);
             for (const key3 of keys3) {
-                //console.log("key 10 " + key3)
+                //console.log("key 3 " + key3)
                 //console.log("z "+JSON.stringify(z))
-                var tempExecs = objectY[key3]
-                    //console.log("tempExecs " + JSON.stringify(tempExecs));
+                var tempTrades = objectY[key3]
+                    //console.log("tempTrades " + JSON.stringify(tempTrades));
                 temp3[key3] = {};
 
                 /*******************
@@ -389,7 +787,7 @@ const tradesMixin = {
 
 
 
-                tempExecs.forEach(element => {
+                tempTrades.forEach(element => {
                     sumBuyQuantity += element.buyQuantity
                     sumSellQuantity += element.sellQuantity
                     sumCommission += element.commission
@@ -437,6 +835,7 @@ const tradesMixin = {
 
                     }
 
+
                     sumExecutions += element.executionsCount
                     sumGrossWinsQuantity += element.grossWinsQuantity
                     sumGrossLossQuantity += element.grossLossQuantity
@@ -468,6 +867,7 @@ const tradesMixin = {
                 temp3[key3].nasdaq = sumNasdaq
                 temp3[key3].otherCommission = sumOtherCommission;
                 temp3[key3].fees = sumFees;
+                //console.log("totalLocateFees" + JSON.stringify(temp2))
 
                 /*******************
                  * Gross proceeds and P&L
@@ -520,132 +920,31 @@ const tradesMixin = {
                 /*******************
                  * Financials
                  *******************/
-                temp3[key3].financials = tempExecs[0].financials
+                temp3[key3].financials = tempTrades[0].financials
 
 
 
             }
+
             this.totalsByDate = temp3
                 //console.log(" -> TOTALS BY DATE " + JSON.stringify(this.totalsByDate))
 
-            /*============= CREATING GENERAL TOTAL =============*/
-            temp = {}
-
-            /*******************
-             * Estimations var
-             *******************/
-            var grossWinsQuantityEstimations = this.estimations.quantity * (totalGrossWinsQuantity / (totalGrossWinsQuantity + totalGrossLossQuantity))
-            var grossLossQuantityEstimations = this.estimations.quantity - grossWinsQuantityEstimations
-                //console.log(" wins " + grossWinsQuantityEstimations + " and loss " + grossLossQuantityEstimations)
-
-            /*******************
-             * Info
-             *******************/
-            temp.quantity = totalQuantity
-
-            /*******************
-             * Commissions and fees
-             *******************/
-            temp.commission = totalCommission
-            temp.otherCommission = totalOtherCommission
-            temp.fees = totalFees
-            temp.feesEstimations = (totalTrades * 2 * this.estimations.quantity * this.estimations.fees)
-
-            /*******************
-             * Gross proceeds and P&L
-             *******************/
-            temp.grossProceeds = totalGrossProceeds
-            temp.grossWins = totalGrossWins
-            temp.grossLoss = totalGrossLoss
-            temp.grossSharePL = totalGrossSharePL
-                /*totalGrossWinsQuantity == 0 ? temp.grossSharePLWins = 0 : temp.grossSharePLWins = (totalGrossWins / totalGrossWinsQuantity)
-                totalGrossLossQuantity == 0 ? temp.grossSharePLLoss = 0 : temp.grossSharePLLoss = totalGrossLoss / totalGrossLossQuantity*/
-            temp.grossSharePLWins = totalGrossSharePLWins
-            temp.grossSharePLLoss = totalGrossSharePLLoss
-            temp.highGrossSharePLWin = highGrossSharePLWin
-            temp.highGrossSharePLLoss = highGrossSharePLLoss
-            temp.grossProceedsEstimations = totalGrossSharePL * this.estimations.quantity
-            temp.grossWinsEstimations = totalGrossSharePLWins * this.estimations.quantity
-            temp.grossLossEstimations = totalGrossSharePLLoss * this.estimations.quantity
-
-            /*******************
-             * Net proceeds and P&L
-             *******************/
-            temp.netProceeds = totalNetProceeds
-            temp.netWins = totalNetWins
-            temp.netLoss = totalNetLoss
-            temp.netSharePL = totalNetSharePL
-                /*totalNetWinsQuantity == 0 ? temp.netSharePLWins = 0 : temp.netSharePLWins = totalNetWins / totalNetWinsQuantity
-                totalNetLossQuantity == 0 ? temp.netSharePLLoss = 0 : temp.netSharePLLoss = totalNetLoss / totalNetLossQuantity*/
-            temp.netSharePLWins = totalNetSharePLWins
-            temp.netSharePLLoss = totalNetSharePLLoss
-            temp.highNetSharePLWin = highNetSharePLWin
-            temp.highNetSharePLLoss = highNetSharePLLoss
-            temp.netProceedsEstimations = temp.grossProceedsEstimations - temp.feesEstimations
-            temp.netWinsEstimations = temp.grossWinsEstimations - temp.feesEstimations
-            temp.netLossEstimations = temp.grossLossEstimations - temp.feesEstimations
 
 
-            /*******************
-             * Counts
-             *******************/
-            temp.executions = totalExecutions
-            temp.trades = totalTrades
+            /*============= 3- MISC GROUPING =============
+            
+            * Miscelanious grouping of trades by entry, price, etc.
+            */
+            var thousand = 1000
+            var million = 1000000
 
-            temp.grossWinsQuantity = totalGrossWinsQuantity
-            temp.grossLossQuantity = totalGrossLossQuantity
-            temp.grossWinsCount = totalGrossWinsCount
-            temp.grossLossCount = totalGrossLossCount
-
-            temp.netWinsQuantity = totalNetWinsQuantity
-            temp.netLossQuantity = totalNetLossQuantity
-            temp.netWinsCount = totalNetWinsCount
-            temp.netLossCount = totalNetLossCount
-
-            //temp.netSharePLWins = totalNetSharePLWins
-            //temp.netSharePLLoss = totalNetSharePLLoss
-
-
-
-
-            //Needed for Dashboard
-            var numPL = this.filteredTrades.length
-            temp.probGrossWins = (totalGrossWinsCount / totalTrades)
-            temp.probGrossLoss = (totalGrossLossCount / totalTrades)
-            temp.probNetWins = (totalNetWinsCount / totalTrades)
-            temp.probNetLoss = (totalNetLossCount / totalTrades)
-                //console.log("prob net win "+temp.probNetWins+" and loss "+temp.probNetLoss)
-
-            temp.avgGrossWins = (totalGrossWins / totalGrossWinsCount)
-            temp.avgGrossLoss = -(totalGrossLoss / totalGrossLossCount)
-            temp.avgNetWins = (totalNetWins / totalNetWinsCount)
-            temp.avgNetLoss = -(totalNetLoss / totalNetLossCount)
-            temp.avgNetWinsEstimations = (temp.netWinsEstimations / totalGrossWinsCount)
-            temp.avgNetLossEstimations = -(temp.netLossEstimations / totalGrossLossCount)
-
-            /*Average P&L per stock
-            temp.grossSharePLWins = (totalGrossSharePLWins / numPL) // here we do an average of P&L per share so it's not divided by the count, as in blotter, but by the number of P&L shares in the array (the number of numbers in the array)
-            temp.grossSharePLLoss = (totalGrossSharePLLoss / numPL)*/
-            //temp.riskReward = temp.grossSharePLWins / (-temp.grossSharePLLoss)
-
-
-            /*listGrossMargins.sort(function(a, b) {
-                    return a - b
-                })
-                //console.log("list "+listGrossMargins)
-            temp.listGrossMargins = listGrossMargins*/
-            this.totals = temp
-                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
-
-
-            /*============= GROUPING =============*/
             /*******************
              * GROUP BY DAY OF WEEK
              *******************/
 
             this.groups.day = _
                 .groupBy(temp1, t => dayjs.unix(t.entryTime).day()); //temp1 is json array with trades and is created during totals
-            //console.log("a "+JSON.stringify(a))
+            //console.log("day  "+JSON.stringify(this.groups.day))
 
             /*******************
              * GROUP BY MONTH OF YEAR
@@ -673,7 +972,7 @@ const tradesMixin = {
             //console.log("timeframe " + JSON.stringify(this.groups.timeframe))
 
             /* ==== Group by trade duration ==== */
-            var d = _(temp1)
+            this.groups.duration = _(temp1)
                 .orderBy(x => x.exitTime - x.entryTime)
                 .groupBy(t => {
                     // under 1mn, 1mn-2mn, 2-5mn, 5-10mn, 10-20mn, 20-40mn, 40-60mn, above 60mn
@@ -682,34 +981,38 @@ const tradesMixin = {
 
                     var floorDurationSeconds
                     if (tradeDurationDiv < 1) {
-                        floorDurationSeconds = 0 * 60 // 0-1mn
+                        floorDurationSeconds = 0 // 0-1mn
                     }
                     if (tradeDurationDiv >= 1 && tradeDurationDiv < 2) {
-                        floorDurationSeconds = 1 * 60 // 1-2mn
+                        floorDurationSeconds = 1 // 1-2mn
                     }
                     if (tradeDurationDiv >= 2 && tradeDurationDiv < 5) {
-                        floorDurationSeconds = 2 * 60 // 2-5mn
+                        floorDurationSeconds = 2 // 2-5mn
                     }
                     if (tradeDurationDiv >= 5 && tradeDurationDiv < 10) {
-                        floorDurationSeconds = 5 * 60 // 5-10mn
+                        floorDurationSeconds = 5 // 5-10mn
                     }
                     if (tradeDurationDiv >= 10 && tradeDurationDiv < 20) {
-                        floorDurationSeconds = 10 * 60 // 10-20mn
+                        floorDurationSeconds = 10 // 10-20mn
                     }
                     if (tradeDurationDiv >= 20 && tradeDurationDiv < 40) {
-                        floorDurationSeconds = 20 * 60 // 20-40mn
+                        floorDurationSeconds = 20 // 20-40mn
                     }
                     if (tradeDurationDiv >= 40 && tradeDurationDiv < 60) {
-                        floorDurationSeconds = 40 * 60 // 40-60mn
+                        floorDurationSeconds = 40 // 40-60mn
                     }
                     if (tradeDurationDiv >= 60) {
-                        floorDurationSeconds = 60 * 60 // >60mn
+                        floorDurationSeconds = 60 // >60mn
                     }
                     //console.log(" -> duration " + dayjs.duration(tradeDuration * 1000).format('HH:mm:ss') + " - interval in seconds " + floorDurationSeconds + " - formated interval " + dayjs.duration(floorDurationSeconds * 1000).format('HH:mm:ss'))
 
-                    return dayjs.duration(floorDurationSeconds * 1000).format('HH:mm:ss')
+                    return floorDurationSeconds
                 })
-                //console.log("d "+JSON.stringify(d))
+                .toPairs()
+                .sortBy(0)
+                .fromPairs()
+                .value()
+                //console.log("d "+JSON.stringify(this.groups.duration))
 
 
 
@@ -718,7 +1021,8 @@ const tradesMixin = {
              *******************/
             this.groups.trades = _(temp3)
                 .groupBy(x => {
-                    // under 5, 6-10, 11-15, 16-20, 21-30, above 30 trades
+                    let ceilTrades
+                        // under 5, 6-10, 11-15, 16-20, 21-30, above 30 trades
                     if (x.trades <= 30) {
                         var range = 5
                         ceilTrades = (Math.ceil(x.trades / range) * range);
@@ -752,49 +1056,105 @@ const tradesMixin = {
                     if (typeof(x.setup.pattern) == 'string') {
                         return x.setup.pattern
                     }
-                    if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
-                        return x.setup.pattern.id
-                    }
+                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                        return x.setup.pattern
+                    }*/
                 })
                 .value()
                 //console.log("group by patterns " + JSON.stringify(this.groups.patterns))
 
             /*******************
-             * GROUP BY ENTRYPOINT
+             * GROUP BY PATTERN TYPE
              *******************/
-            this.groups.entrypoints = _(temp1)
-                .groupBy('setup.entrypoint')
+            this.groups.patternTypes = _(temp1)
+                .groupBy(x => {
+                    //in my first version pattern was a string id. Now pattern is an object. So we need to check this
+                    if (typeof(x.setup.pattern) == 'string') {
+                        //console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern)
+                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                        if (pattern != undefined && pattern.hasOwnProperty("type")) {
+                            let patternType = pattern.type
+                                //console.log("pattern type "+patternType)
+                            return patternType
+                        } else {
+                            return null
+                        }
+
+                    }
+
+                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                        console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
+                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                        let patternType = pattern
+                        console.log("pattern type "+patternType)
+                        //return patternType
+                    }*/
+                })
                 .value()
-                //console.log("group by entrypoints " + JSON.stringify(this.groups.entrypoints))
+                //console.log("group by pattern types " + JSON.stringify(this.groups.patternTypes))
+
+            /*******************
+             * GROUP BY MISTAKE
+             *******************/
+            this.groups.mistakes = _(temp1)
+                .groupBy(x => {
+
+                    if (typeof(x.setup.mistake) == 'string') {
+                        //console.log(" mistake id "+x.setup.mistake)
+                        return x.setup.mistake
+                    }
+
+                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                        console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
+                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                        let patternType = pattern
+                        console.log("pattern type "+patternType)
+                        //return patternType
+                    }*/
+                })
+                .value()
+                //console.log("group by mistakes " + JSON.stringify(this.groups.mistakes))
+
+            /*******************
+             * GROUP BY SYMBOL
+             *******************/
+            this.groups.symbols = _(temp1)
+                .groupBy('symbol')
+                .value()
+                //console.log("symbols " + JSON.stringify(this.groups.symbols))
 
             /*******************
              * GROUP BY PUBLIC FLOAT
              *******************/
-            let path = "financials";
+            let path = "financials.publicFloat";
             this.groups.shareFloat = _(temp1)
                 .filter(object => _.has(object, path))
                 .groupBy(x => {
+                    let ceilFloor
                     var publicFloatFinviz = x.financials.publicFloat.finviz
                     if (publicFloatFinviz != "-") {
                         //console.log("public float (finviz) " + JSON.stringify(publicFloatFinviz))
 
                         // under 10M, 10-20M, 20-30, 30-50, above 50M float
-                        if (publicFloatFinviz <= 50000000) {
-                            var range = 10000000
-                            ceilTrades = (Math.ceil(publicFloatFinviz / range) * range);
+                        if (publicFloatFinviz < 20 * million) {
+                            var range = 5 * 1000000
+                            ceilFloor = (Math.floor(publicFloatFinviz / range) * range);
                         }
-                        if (publicFloatFinviz > 50000000) {
-                            ceilTrades = 50000000
+                        if ((publicFloatFinviz >= 20 * million) && (publicFloatFinviz < 50 * million)) {
+                            var range = 10 * 1000000
+                            ceilFloor = (Math.floor(publicFloatFinviz / range) * range);
                         }
-                        //console.log(" -> trades " + x.trades +" and interval "+ceilTrades)
+                        if (publicFloatFinviz >= 50 * million) {
+                            ceilFloor = 50 * million
+                        }
+                        //console.log(" -> trades " + x.trades +" and interval "+ceilFloor)
 
-                        return ceilTrades
+                        return ceilFloor
                     }
                 })
                 .value()
 
             //console.log("group by share float " + JSON.stringify(this.groups.shareFloat))
-
 
             /*******************
              * GROUP BY MARKET CAP
@@ -802,15 +1162,16 @@ const tradesMixin = {
             this.groups.mktCap = _(temp1)
                 .filter(object => _.has(object, path))
                 .groupBy(x => {
+                    let ceilTrades
                     var mktCap = x.financials.mktCap
                     if (mktCap != null) {
                         //console.log("mktCap " + mktCap)
-                            //Mega-cap: Market cap of $200 billion and greater
-                            //Big-cap: $10 billion and greater
-                            //Mid-cap: $2 billion to $10 billion
-                            //Small-cap: $300 million to $2 billion
-                            //Micro-cap: $50 million to $300 million
-                            //Nano-cap: Under $50 million
+                        //Mega-cap: Market cap of $200 billion and greater
+                        //Big-cap: $10 billion and greater
+                        //Mid-cap: $2 billion to $10 billion
+                        //Small-cap: $300 million to $2 billion
+                        //Micro-cap: $50 million to $300 million
+                        //Nano-cap: Under $50 million
                         if (mktCap <= 50 * 1000000) {
                             ceilTrades = 50 * 1000000
                         }
@@ -858,24 +1219,68 @@ const tradesMixin = {
 
         },
 
-        getTradesFromDb: async function() {
-            return new Promise((resolve, reject) => {
-                (async() => {
-                    console.log(" -> Getting trades from DB");
-                    const Object = Parse.Object.extend("trades");
-                    const query = new Parse.Query(Object);
-                    query.equalTo("user", Parse.User.current());
-                    query.ascending("dateUnix");
-                    query.limit(1000000); // limit to at most 10 results
-                    const results = await query.find();
-                    this.allTrades = []
-                    this.allTrades = JSON.parse(JSON.stringify(results))
-                        //console.log("all trades before "+JSON.stringify(this.allTrades))
-                    await this.saveAllTradesToIndexedDb()
-                    resolve()
-                })()
-            })
+        eCharts(param) {
+            console.log(" -> eCharts " + param)
+
+            for (let index = 1; index <= 1; index++) {
+                var chartId = 'pieChart' + index
+                if (param == "clear") {
+                    echarts.init(document.getElementById(chartId)).clear()
+                }
+                if (param == "init" ||  "pieChart") {
+                    //console.log("totals "+JSON.stringify(this.totals))
+                    var probWins = (this.totals[this.amountCase + 'WinsCount'] / this.totals.trades)
+                    var probLoss = (this.totals[this.amountCase + 'LossCount'] / this.totals.trades)
+                    this.pieChart(chartId, probWins, probLoss)
+                }
+            }
+
+            for (let index = 1; index <= 1; index++) {
+                var chartId = 'lineChart' + index
+                if (param == "clear") {
+                    echarts.init(document.getElementById(chartId)).clear()
+                }
+                if (param == "init") {
+                    this.lineChart(chartId)
+                }
+            }
+
+            for (let index = 1; index <= 1; index++) {
+                var chartId = 'lineBarChart' + index
+                if (param == "clear") {
+                    echarts.init(document.getElementById(chartId)).clear()
+                }
+                if (param == "init" ||  param == "lineBarChart") {
+                    this.lineBarChart(chartId)
+                }
+            }
+
+            for (let index = 1; index <= 2; index++) {
+                var chartId = 'barChart' + index
+                if (param == "clear") {
+                    echarts.init(document.getElementById(chartId)).clear()
+                }
+                if (param == "init"  ||  param == "barChart") {
+                    this.barChart(chartId)
+                }
+            }
+
+            var indexes = [1, 2, 3, 4, 7, 10, 11, 12, 13, 14, 15, 16] // This way here because I took out some charts
+            indexes.forEach(index => {
+                var chartId = 'barChartNegative' + index
+                if (param == "clear") {
+                    echarts.init(document.getElementById(chartId)).clear()
+                }
+                if (param == "init" || param == "barChartNegative") {
+                    this.barChartNegative(chartId)
+                }
+            });
+
+            /*for (let index = 1; index <= 1; index++) {
+                echarts.init(document.getElementById('boxPlotChart' + index)).clear()
+            }*/
         }
+
 
     }
 }

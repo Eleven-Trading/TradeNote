@@ -2,21 +2,34 @@ const vueApp = new Vue({
 
     components: {},
     el: '#vapp',
-    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, addScreenshotMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin],
+    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, entriesMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin, journalslMixin, setupsMixin, forecastMixin],
     data() {
         return {
+            cssTheme: "dark",
+            cssColor87: "#333",
+            cssColor60: "#333",
+            blackbg0: "hsl(0, 0%, 0%)",
+            blackbg5: "hsl(0, 0%, 5%)",
+            blackbg7: "hsl(0, 0%, 7%)",
+            white87: "hsla(0, 0%, 100%, 0.87)",
+            white60: "hsla(0, 0%, 100%, 0.6)",
+            white38: "hsla(0, 0%, 100%, 0.38)",
             fromFirstFeature: "",
             fromSecondFeature: "",
+            sideMenuMobileOut: false,
             //IndexDB
             indexedDBVersion: 10,
             indexedDBOpenRequest: null,
             indexedDb: null,
+            threeMonthsBack: dayjs().startOf('month').subtract(3, 'month').unix(),
+            screenType: null,
 
             //Login/Register
             registerForm: { username: null, password: null },
             loginForm: { username: null, password: null },
 
             //General
+            currentUser: null,
             pages: [{
                     id: "dashboard",
                     name: "Dashboard",
@@ -43,13 +56,23 @@ const vueApp = new Vue({
                     icon: "uil uil-clapper-board"
                 },
                 {
+                    id: "journal",
+                    name: "Journal",
+                    icon: "uil uil-diary"
+                },
+                {
                     id: "notes",
                     name: "Notes",
-                    icon: "uil uil-edit"
+                    icon: "uil uil-diary"
                 },
                 {
                     id: "playbook",
                     name: "Playbook",
+                    icon: "uil uil-compass"
+                },
+                {
+                    id: "addPlaybook",
+                    name: "Add Playbook",
                     icon: "uil uil-compass"
                 },
                 {
@@ -58,9 +81,9 @@ const vueApp = new Vue({
                     icon: "uil uil-plus-circle"
                 },
                 {
-                    id: "addScreenshot",
-                    name: "Add Screenshot",
-                    icon: "uil uil-plus-circle"
+                    id: "addEntry",
+                    name: "Add Entry",
+                    icon: "uil uil-signin"
                 },
                 {
                     id: "addNote",
@@ -68,9 +91,34 @@ const vueApp = new Vue({
                     icon: "uil uil-plus-circle"
                 },
                 {
+                    id: "addJournal",
+                    name: "Add Journal",
+                    icon: "uil uil-plus-circle"
+                },
+                {
                     id: "settings",
                     name: "Settings",
                     icon: "uil uil-sliders-v-alt"
+                },
+                {
+                    id: "setups",
+                    name: "Setups",
+                    icon: "uil uil-layer-group"
+                },
+                {
+                    id: "addSetup",
+                    name: "Add Setup",
+                    icon: "uil uil-layer-group"
+                },
+                {
+                    id: "entries",
+                    name: "Entries",
+                    icon: "uil uil-signin"
+                },
+                {
+                    id: "forecast",
+                    name: "Forecast",
+                    icon: "uil uil-cloud-sun"
                 }
             ],
             currentPage: null,
@@ -83,10 +131,10 @@ const vueApp = new Vue({
                 fees: 0.005
             },
             isNet: JSON.parse(localStorage.getItem('isNet')), //JSON parse because localstorage stores in string and not bool
-            amountCase: JSON.parse(localStorage.getItem('isNet')) == true ? 'net' : 'gross',
-            amountCapital: JSON.parse(localStorage.getItem('isNet')) == true ? 'Net' : 'Gross',
-
+            amountCase: localStorage.getItem('selectedGrossNet'),
+            amountCapital: localStorage.getItem('selectedGrossNet').charAt(0).toUpperCase() + localStorage.getItem('selectedGrossNet').slice(1),
             tradeTimeZone: "America/New_York",
+            logCharts: [],
 
             //Show/Hide page
             showDashboard: true,
@@ -99,11 +147,15 @@ const vueApp = new Vue({
 
             //DASHBOARD
             allTrades: [],
+            threeMonthsTrades: [],
             filteredTrades: [],
-            totalPAndLChartMounted: false,
+            dashboardChartsMounted: false,
+            dashboardIdMounted: false,
             totalCalendarMounted: false,
             totalPAndLChartHeight: 400,
             totals: null,
+            cashBalance: null,
+            buyingPower: null,
             totalsByDate: null,
             filteredTotalsByDate: [],
             groups: {},
@@ -124,19 +176,22 @@ const vueApp = new Vue({
                     label: "Trades&Executions",
                     target: "#tradesNav"
                 },
-                {
+                /*{
                     id: "setupsTab",
                     label: "Setups",
                     target: "#setupsNav"
-                },
+                },*/
                 {
                     id: "financialsTab",
                     label: "Financials",
                     target: "#financialsNav"
                 }
             ],
+            toggleAP: localStorage.getItem('toggleAP'),
+            dailyInfos: {},
 
             //Filter
+            filtersOpen: false,
             dateRange: [{
                     value: "all",
                     label: "All",
@@ -146,83 +201,98 @@ const vueApp = new Vue({
                 {
                     value: "thisWeek",
                     label: "This Week",
-                    start: dayjs().startOf('week').add(1, 'day').unix(),
-                    end: dayjs().endOf('week').add(1, 'day').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
+                    end: Number(dayjs().tz("America/New_York").endOf('week').add(1, 'day').unix())
                 },
                 {
                     value: "lastWeek",
                     label: "Last Week",
-                    start: dayjs().startOf('week').add(1, 'day').subtract(1, 'week').unix(),
-                    end: dayjs().endOf('week').add(1, 'day').subtract(1, 'week').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('week').add(1, 'day').subtract(1, 'week').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('week').add(1, 'day').subtract(1, 'week').unix())
                 },
                 {
                     value: "lastWeekTilNow",
                     label: "Last Week Until Now",
-                    start: dayjs().startOf('week').add(1, 'day').subtract(1, 'week').unix(),
-                    end: dayjs().endOf('week').add(1, 'day').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('week').add(1, 'day').subtract(1, 'week').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('week').add(1, 'day').unix())
                 },
                 {
                     value: "lastTwoWeeks",
                     label: "Last Two Weeks",
-                    start: dayjs().startOf('week').add(1, 'day').subtract(2, 'week').unix(),
-                    end: dayjs().endOf('week').add(1, 'day').subtract(1, 'week').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('week').add(1, 'day').subtract(2, 'week').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('week').add(1, 'day').subtract(1, 'week').unix())
                 },
                 {
                     value: "lastTwoWeeksTilNow",
                     label: "Last Two Weeks Until Now",
-                    start: dayjs().startOf('week').add(1, 'day').subtract(2, 'week').unix(),
-                    end: dayjs().endOf('week').add(1, 'day').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('week').add(1, 'day').subtract(2, 'week').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('week').add(1, 'day').unix())
                 },
                 {
                     value: "thisMonth",
                     label: "This Month",
-                    start: dayjs().startOf('month').unix(),
-                    end: dayjs().endOf('month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').unix())
                 },
                 {
                     value: "lastMonth",
                     label: "Last Month",
-                    start: dayjs().startOf('month').subtract(1, 'month').unix(),
-                    end: dayjs().endOf('month').subtract(1, 'month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(1, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').subtract(1, 'month').unix())
                 },
                 {
                     value: "lastMonthTilNow",
                     label: "Last Month Until Now",
-                    start: dayjs().startOf('month').subtract(1, 'month').unix(),
-                    end: dayjs().endOf('month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(1, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').unix())
                 },
                 {
                     value: "lastTwoMonths",
                     label: "Last Two Months",
-                    start: dayjs().startOf('month').subtract(2, 'month').unix(),
-                    end: dayjs().endOf('month').subtract(1, 'month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(2, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').subtract(1, 'month').unix())
                 },
                 {
                     value: "lastTwoMonthsTilNow",
                     label: "Last Two Months Until Now",
-                    start: dayjs().startOf('month').subtract(2, 'month').unix(),
-                    end: dayjs().endOf('month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(2, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').unix())
                 },
                 {
                     value: "lastThreeMonths",
                     label: "Last Three Months",
-                    start: dayjs().startOf('month').subtract(3, 'month').unix(),
-                    end: dayjs().endOf('month').subtract(1, 'month').unix()
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(3, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').subtract(1, 'month').unix())
                 },
                 {
                     value: "lastThreeMonthsTilNow",
                     label: "Last Three Months Until Now",
-                    start: dayjs().startOf('month').subtract(3, 'month').unix(),
-                    end: dayjs().endOf('month').unix()
-                }
-            ],
-            selectedDateRange: {},
-            selectedCalRange: {},
-            positions: [{
-                    value: "all",
-                    label: "All"
+                    start: Number(dayjs().tz("America/New_York").startOf('month').subtract(3, 'month').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('month').unix())
                 },
                 {
+                    value: "thisYear",
+                    label: "This Year",
+                    start: Number(dayjs().tz("America/New_York").startOf('year').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('year').unix())
+                },
+                {
+                    value: "lastYear",
+                    label: "Last Year",
+                    start: Number(dayjs().tz("America/New_York").startOf('year').subtract(1, 'year').unix()),
+                    end: Number(dayjs().tz("America/New_York").endOf('year').subtract(1, 'year').unix())
+                },
+                {
+                    value: "custom",
+                    label: "Custom",
+                    start: -1,
+                    end: -1
+                },
+            ],
+            selectedDateRange: {},
+            selectedDateRangeCal: {},
+            selectedCalRange: {},
+            positions: [{
                     value: "long",
                     label: "Long"
                 },
@@ -231,9 +301,69 @@ const vueApp = new Vue({
                     label: "Short"
                 }
             ],
+            timeFrames: [{
+                    value: "daily",
+                    label: "Daily"
+                },
+                {
+                    value: "weekly",
+                    label: "Weekly"
+                },
+                {
+                    value: "monthly",
+                    label: "Monthly"
+                }
+            ],
+            ratios: [{
+                    value: "appt",
+                    label: "APPT"
+                },
+                {
+                    value: "appspt",
+                    label: "APPSPT"
+                },
+                {
+                    value: "profitFactor",
+                    label: "Profit Factor"
+                }
+            ],
+            accounts: [{
+                    value: "all",
+                    label: "Live+Demo"
+                },
+                {
+                    value: "KHO88922",
+                    label: "Live"
+                },
+                {
+                    value: "KHO88922DEMO",
+                    label: "Demo"
+                }
+            ],
+            grossNet: [{
+                    value: "gross",
+                    label: "Gross"
+                },
+                {
+                    value: "net",
+                    label: "Net"
+                },
+                {
+                    value: "netFees",
+                    label: "Net Fees"
+                }
+            ],
             selectedPosition: localStorage.getItem('selectedPosition'),
+            selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : [],
+            selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
+            selectedRatio: localStorage.getItem('selectedRatio'),
+            selectedAccount: localStorage.getItem('selectedAccount'),
+            selectedAccounts: localStorage.getItem('selectedAccounts') ? localStorage.getItem('selectedAccounts').split(",") : [],
+            selectedGrossNet: localStorage.getItem('selectedGrossNet'),
             renderData: 0, //this is for updating DOM
+            renderData0: 0,
             renderData1: 0, //this is for updating DOM
+            renderData2: 0,
             renderingCharts: true, // this is for spinner
 
             //DAILY
@@ -246,6 +376,23 @@ const vueApp = new Vue({
             todayDate: null,
             todayMonth: null,
             todayYear: null,
+            dailyTabs: [{
+                    id: "journals",
+                    label: "Journal",
+                    target: "#journalsNav"
+                },
+                {
+                    id: "trades",
+                    label: "Trades",
+                    target: "#tradesNav"
+                },
+                {
+                    id: "blotter",
+                    label: "Blotter",
+                    target: "#blotterNav"
+                }
+            ],
+            daily: null,
 
             //Screenshots
             screenshots: [],
@@ -275,8 +422,7 @@ const vueApp = new Vue({
             uploadPercentCompleted: null,
             videosInIndexedDB: [],
             imageUrl: null,
-            timeIntervals: [
-                {
+            timeIntervals: [{
                     value: 1,
                     label: '1mn',
                 },
@@ -305,7 +451,7 @@ const vueApp = new Vue({
                     label: '2h',
                 },
                 {
-                    value:  180,
+                    value: 180,
                     label: '3h',
                 },
                 {
@@ -317,8 +463,7 @@ const vueApp = new Vue({
                     label: '1D',
                 },
             ],
-            winStrategies: [
-                {
+            winStrategies: [{
                     value: "long",
                     label: "Long"
                 },
@@ -330,25 +475,10 @@ const vueApp = new Vue({
             tradeId: null,
             hasVideo: false,
             modalVideosOpen: false,
-            spinnerSetups: false,
-            spinnerSetupsText: null,
 
             //ADDTRADES
             apiBaseUrl: "API_BASE_URL",
             apiEndPointTempUrl: "API_END_POINT_TEMP_URL",
-            apiEndPointFinancials: "API_END_POINT_FINANCIALS",
-            apiEndPointTimezone: "API_END_POINT_TIMEZONE",
-            publicBaseUrlB2: "PUBLIC_BASE_URL_B2",
-            includeFinancials: true,
-            existingTradesArray: [],
-            executions: null,
-            trades: null,
-            blotter: null,
-            pAndL: null,
-            videos: {},
-            inputToShow: [],
-            financials: [],
-
 
             screenshotIndex: 0,
             posterImg: null,
@@ -363,29 +493,7 @@ const vueApp = new Vue({
             notes: [],
             note: {},
 
-            //Playbook
-            playbookImg: null,
-            testImg: null,
-            playbookImgB2Url: null,
-
             //Settings
-            tradeSetup: {
-                pattern: {
-                    id: null,
-                    name: null,
-                    timeInterval: null,
-                    winStrategy: null,
-                },
-                entrypoint: {
-                    id: null,
-                    name: null,
-                },
-                mistake: {
-                    id: null,
-                    name: null,
-                },
-            }, //setup I choose in videos
-            //patternsEntrypoints: [],
             patterns: [],
             entrypoints: [],
             mistakes: [],
@@ -395,28 +503,74 @@ const vueApp = new Vue({
 
         //SET DEFAULT LOCAL STORAGE VARIABLES
         !localStorage.getItem('isNet') ? localStorage.setItem('isNet', true) : '';
-        !localStorage.getItem('selectedPosition') ? localStorage.setItem('selectedPosition', 'all') : '';
         !localStorage.getItem('selectedDashTab') ? localStorage.setItem('selectedDashTab', 'overviewTab') : '';
+        !localStorage.getItem('toggleAP') ? localStorage.setItem('toggleAP', "appt") : '';
+        !localStorage.getItem('selectedTimeFrame') ? localStorage.setItem('selectedTimeFrame', "daily") : '';
+        !localStorage.getItem('selectedRatio') ? localStorage.setItem('selectedRatio', "appt") : '';
+        !localStorage.getItem('selectedAccount') ? localStorage.setItem('selectedAccount', "all") : '';
+        !localStorage.getItem('selectedGrossNet') ? localStorage.setItem('selectedGrossNet', "gross") : '';
+
+        let date = dayjs().tz("America/New_York").startOf("day").unix()
+            //console.log("date "+date)
+            //the hours is not correct. UTC time ?
+
     },
     created: async function() {
-        //we create the selectedDate and Calendar range
-        this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'all')[0]
+        this.initParse()
+        this.checkCurrentUser()
+
+        /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
+        !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
+        console.log("selected accounts " + this.selectedAccounts)
+
+
+        this.cssTheme == "dark" ? this.cssColor87 = "rgba(255, 255, 255, 0.87)" : this.cssColor = "#333333"
+        this.cssTheme == "dark" ? this.cssColor60 = "rgba(255, 255, 255, 0.60)" : this.cssColor = "#333333"
+        this.cssTheme == "dark" ? this.cssColor38 = "rgba(255, 255, 255, 0.38)" : this.cssColor = "#333333"
+            //we create the selectedDate and Calendar range
+            /*this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'thisMonth')[0]*/
+
+        this.selectedDateRangeCal = localStorage.getItem('selectedDateRangeCal') ? JSON.parse(localStorage.getItem('selectedDateRangeCal')) : { "start": this.dateRange.filter(element => element.value == 'thisMonth')[0].start, "end": this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
+
+        /* we set the initial selectedDateRange based on selectedDateRangeCal */
+        if (localStorage.getItem('selectedDateRangeCal')) {
+            console.log("this.selectedDateRangeCal.end " + this.selectedDateRangeCal.end)
+            let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
+            if (tempFilter.length > 0) {
+                console.log("range ok + " + JSON.stringify(tempFilter))
+                this.selectedDateRange = tempFilter[0]
+            } else {
+                console.log("range not ok")
+                this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
+            }
+        }
 
         this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
 
         //this.currentPage = document.getElementsByTagName("main")[0].id
-        this.initParse()
-        this.checkCurrentUser()
 
         await this.initIndexedDB()
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
             await this.getAllTrades(true)
-            await this.initTab()
+            await this.initTab("dashboard")
         }
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
             await this.getAllTrades(true)
+            await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getSetups(), this.getMistakes(), this.dailyModal()])
+            await this.initPopover()
+            await this.initTab("daily")
+
+        }
+
+        if (this.currentPage.id == "journal") {
+            await this.getJournals(30)
+        }
+
+        if (this.currentPage.id == "entries") {
+            await this.getEntries(30)
+            await this.initPopover()
         }
 
         if (this.currentPage.id == "screenshots") {
@@ -429,49 +583,102 @@ const vueApp = new Vue({
             await this.initPopover()
         }
 
-        if (this.currentPage.id == "playbook") {
-            this.getPlaybook()
+        if (this.currentPage.id == "setups") {
+            await this.getSetups()
+            await this.initPopover()
         }
-        var itemToEditId = sessionStorage.getItem('editItemId')
+
+        if (this.currentPage.id == "playbook") {
+            this.getPlaybooks()
+        }
+        let itemToEditId = sessionStorage.getItem('editItemId')
+
         if (this.currentPage.id == "addNote") {
             await this.getNoteToEdit(itemToEditId)
             await this.initQuill()
             await sessionStorage.removeItem('editItemId');
         }
-        if (this.currentPage.id == "addScreenshot") {
-            //await this.getScreenshotToEdit(itemToEditId)
-            //await this.initQuill()
+
+        if (this.currentPage.id == "addJournal") {
+            await this.getJournalToEdit(itemToEditId)
+            await this.initJournalJson()
+            await Promise.all([this.initQuill(0), this.initQuill(1), this.initQuill(2)])
+            await sessionStorage.removeItem('editItemId');
+            await this.journalDateInput(this.currentDate)
+        }
+
+        if (this.currentPage.id == "addPlaybook") {
+            await this.getPlaybookToEdit(itemToEditId)
+            await this.initQuill('Playbook')
+            await sessionStorage.removeItem('editItemId');
+            await this.playbookDateInput(this.currentDate)
+        }
+
+        if (this.currentPage.id == "addSetup") {
+            await this.getSetupToEdit(itemToEditId)
             await sessionStorage.removeItem('editItemId');
         }
-        this.playbookImgChange()
+
+        if (this.currentPage.id == "addEntry") {
+            await this.getEntryToEdit(itemToEditId)
+            await sessionStorage.removeItem('editItemId');
+        }
 
         if (this.currentPage.id == "settings" || this.currentPage.id == "videos") {
             await this.getPatterns()
         }
+
+        if (this.currentPage.id == "forecast") {
+            await this.getScenarios()
+            await this.createForecast()
+            await this.linesChartForecast()
+        }
+
     },
     mounted() {
+        /*console.log("\nDATE EXPLORATION")
+        console.log(" -> Guessing timezone "+dayjs.tz.guess())
+        //console.log(" -> Current date "+dayjs())
+        let currentDateUnix = dayjs.unix()
+        console.log(" -> Current date unix "+currentDateUnix)
+        console.log(" -> Current date "+dayjs().format())
+        //console.log(" -> Current date w/ guess timezone "+dayjs().tz(dayjs.tz.guess()))
+        console.log(" -> Current date unix w/ guess tz "+dayjs().tz(dayjs.tz.guess()).unix())
+        console.log(" -> Current date unix w/ tz "+dayjs().tz(this.tradeTimeZone).unix())
+        console.log(" -> Current date w/ tz "+dayjs().tz(this.tradeTimeZone).format())
+        console.log(" -> Start of day "+dayjs().startOf("day"))
+        console.log(" -> Start of day unix "+dayjs().startOf("day").unix())
+        console.log(" -> Start of day unix tz "+dayjs().tz(this.tradeTimeZone).startOf("day").unix())
+        console.log(" -> Start of week " + dayjs().startOf('week').add(1, 'day').unix())
+        console.log(" -> Start of week tz " + dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').unix())
+        console.log(" -> entryTime "+dayjs.unix(1656682798).format())
+        console.log(" -> entryTime w/ tz "+dayjs.unix(1656682798).tz(this.tradeTimeZone).format())
+        console.log(" -> entryTime unix w/ tz "+dayjs.unix(1656682798).tz(this.tradeTimeZone).unix())*/
+
+        /* DAYJS Rules
+         * Setting timezone to dayjs and showing in unix shows in local unix
+         * setting timezone to dayjs and formatting shows in tz date
+         * Manipulating with startOf shows in tz date even in unix
+         * Inside dayjs(xxx) it must be in miliseconds. If you have a timestamp in seconds, use dayjs.unix(xxx)
+         * .unix in most cases (excempt for example startOf ) seems to convert to local time. so dayjs.unix(1656682798).tz(this.tradeTimeZone).format() shows in tz time. dayjs.unix(1656682798).tz(this.tradeTimeZone).unix() show unix in local time
+         */
+
+        console.log("END DATE EXPLORATION")
+        console.log("\n")
+        let screenWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width
+        this.screenType = (screenWidth >= 992) ? 'computer' : 'mobile'
+            //console.log(" Width : " + screenWidth + " and screen type " + this.screenType)
+        this.getDailyInfos()
         var itemToEditId = sessionStorage.getItem('editItemId')
-        if (this.currentPage.id == "addScreenshot") {
-            //this.getScreenshotToEdit(itemToEditId)
-            this.initQuill()
-                /*if (itemToEditId) {
-                    this.getScreenshotToEdit(itemToEditId)
-                        //sessionStorage.removeItem('editItemId');
-                }*/
-        }
         if (this.currentPage.id == "addTrades") {
             this.initStepper()
         }
 
         this.tagArray()
         this.initWheelEvent()
-        var fullFileName = "2021_07_19-142702.mp4"
-
-        var fileName = fullFileName.substring(0, fullFileName.lastIndexOf('.'))
-        console.log("file name " + fileName)
 
 
-        var fileDate = fileName.split("-")[0].split("_")
+        /*var fileDate = fileName.split("-")[0].split("_")
         var fileYear = fileDate[0]
         var fileMonth = fileDate[1]
         var fileDay = fileDate[2]
@@ -482,18 +689,28 @@ const vueApp = new Vue({
         var fileSeconds = fileTime.substring(4, 6)
             //console.log("hour "+fileHour + " minutes "+fileMinutes+" seconds "+fileSeconds)
         var fileDateUnix = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
-        console.log("unix " + fileDateUnix)
+        console.log("unix " + fileDateUnix)*/
 
     },
     watch: {
         activeNav: function() {
-            console.log("nav " + this.activeNav + ' and type ' + typeof this.activeNav)
-        },
-        playbookImg: function() {
-            //console.log("watch img "+this.playbookImg)
+            //console.log("nav " + this.activeNav + ' and type ' + typeof this.activeNav)
         },
         includeFinancials: function() {
             //console.log("watch finviz "+this.includeFinancials)
+        },
+
+        selectedAccounts: function() {
+            console.log("selectedAccounts " + this.selectedAccounts + " type " + typeof(JSON.stringify(this.selectedAccounts)))
+            localStorage.setItem('selectedAccounts', this.selectedAccounts)
+            this.inputAccounts()
+                //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
+        },
+
+        selectedPositions: function() {
+            localStorage.setItem('selectedPositions', this.selectedPositions)
+            this.inputPositions()
+                //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
         },
 
     },
@@ -503,6 +720,8 @@ const vueApp = new Vue({
         // =================================================================================
 
         grossNetToggle() {
+            this.dashboardChartsMounted = false
+            this.eCharts("clear")
             this.getAllTrades(true)
             currentState = JSON.parse(localStorage.getItem('isNet'))
                 //console.log("state " + currentState)
@@ -512,7 +731,15 @@ const vueApp = new Vue({
         },
 
         /* ---- INITS ---- */
-        initTab() {
+        initTab(param) {
+            let showId
+            let showType
+            let showNumber
+
+            let hideId
+            let hideType
+            let hideNumber
+
             var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
                 //console.log("list " + triggerTabList)
             var self = this // this is needed or else could not call function inside eventlistener
@@ -520,19 +747,96 @@ const vueApp = new Vue({
                 /*var tabTrigger = new bootstrap.Tab(triggerEl)
                 triggerEl.addEventListener('click', function(event) {
                     console.log("clicking")
-                    event.preventDefault()
-                    tabTrigger.show()
+                    //event.preventDefault()
+                    //tabTrigger.show()
                 })*/
+                if (param == "dashboard") {
+                    // GET TAB ID THAT IS CLICKED
+                    triggerEl.addEventListener('shown.bs.tab', (event) => {
+                        //console.log("target " + event.target.getAttribute('id')) // newly activated tab
+                        this.selectedDashTab = event.target.getAttribute('id')
+                        console.log("selected tab " + this.selectedDashTab)
+                        localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
+                        self.getAllTrades(false)
+                            //console.log("related" + event.relatedTarget) // previous active tab
+                    })
+                }
 
-                // GET TAB ID THAT IS CLICKED
-                triggerEl.addEventListener('shown.bs.tab', (event) => {
-                    //console.log("target " + event.target.getAttribute('id')) // newly activated tab
-                    this.selectedDashTab = event.target.getAttribute('id')
-                    console.log("selected tab " + this.selectedDashTab)
-                    localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                    self.getAllTrades(false)
-                        //console.log("related" + event.relatedTarget) // previous active tab
-                })
+                if (param == "daily") {
+                    // GET TAB ID THAT IS CLICKED
+
+
+                    /*triggerEl.addEventListener('show.bs.tab', (event) => {                        
+                        showId = event.target.getAttribute('id')
+                        showType = showId.split('-')[0]
+                        showNumber = showId.split('-')[1]
+                        //console.log(" clickedNav tab "+clickedNav)
+                    })
+                    
+                    triggerEl.addEventListener('hide.bs.tab', (event) => {
+                        console.log(" Hide id "+event.target.getAttribute('id'))
+                        //clickedTab = true
+                        id = event.target.getAttribute('id')
+                        type = id.split('-')[0]
+                        number = id.split('-')[1]
+                        //console.log(" clickedNav tab "+clickedNav)
+                    })*/
+
+                    triggerEl.addEventListener('click', function(event) {
+                        //console.log("1- hideId " + hideId)
+                        showId = event.target.getAttribute('id')
+                        showType = showId.split('-')[0]
+                        showNumber = showId.split('-')[1]
+
+                        if (showId != hideId && hideId != undefined) {
+                            //console.log(" -> Clicking on new tab New tab, with showId " + showId + ", hideId " + hideId)
+                            console.log(" --> Hiding previous tab content")
+                            hideType = hideId.split('-')[0]
+                            hideNumber = hideId.split('-')[1]
+                            $("#" + hideType + "Nav-" + hideNumber).removeClass('d-block')
+                            $("#" + hideType + "Nav-" + hideNumber).removeClass('d-none')
+
+                            hideId = showId
+                        }
+
+                        if (showId != undefined && showId == hideId) {
+                            const elTab = document.querySelector("#" + showId);
+                            const elContent = document.querySelector("#" + showType + "Nav-" + showNumber);
+
+                            if (elContent.classList.contains('d-none')) { //if is hidden -> Show
+                                $("#" + showType + "Nav-" + showNumber).addClass('d-block')
+                                $("#" + showType + "Nav-" + showNumber).removeClass('d-none')
+                                $("#" + showId).addClass('active')
+                            } else if (elContent.classList.contains('d-block')) { //if open -> Hide
+                                $("#" + showType + "Nav-" + showNumber).addClass('d-none')
+                                $("#" + showType + "Nav-" + showNumber).removeClass('d-block')
+                                $("#" + showId).removeClass('active')
+                            } else { //its a new tab click we add d-block
+                                $("#" + showType + "Nav-" + showNumber).addClass('d-block')
+                            }
+                            //console.log("3- hideId " + hideId)
+                        }
+
+                        if (hideId == undefined) {
+                            console.log(" -> Clicking on new tab and hideId is undefined")
+                            hideId = showId
+                                //console.log("4- hideId " + hideId)
+                        }
+
+
+                        //console.log("showId " + showId + ", hideId " + hideId)
+                        //console.log("showId " + typeof showId)
+
+
+
+
+
+
+
+
+
+                    })
+                }
             })
 
 
@@ -542,19 +846,52 @@ const vueApp = new Vue({
             Parse.initialize("PARSE_INIT")
             Parse.serverURL = "PARSE_URL"
         },
-        initQuill() {
-            var quill = new Quill('#quillEditor', {
+        initQuill(param) {
+            console.log("param " + param)
+            let quillEditor
+            if (param != undefined) {
+                quillEditor = '#quillEditor' + param
+            } else {
+                quillEditor = '#quillEditor'
+            }
+            console.log("quilEditor " + quillEditor)
+            let quill = new Quill(quillEditor, {
                 theme: 'snow'
             });
             quill.root.setAttribute('spellcheck', true)
 
             quill.on('text-change', () => {
-                if (this.currentPage.id == "addScreenshot") {
-                    this.screenshot.comment = document.querySelector(".ql-editor").innerHTML
-                }
                 if (this.currentPage.id == "addNote") {
                     this.note.note = document.querySelector(".ql-editor").innerHTML
                     console.log("note " + this.note.note)
+                }
+
+                if (this.currentPage.id == "addSetup") {
+                    this.setupUpdate.checkList = document.querySelector(".ql-editor").innerHTML
+                        //console.log("setup " + JSON.stringify(this.setupUpdate))
+                }
+
+                if (this.currentPage.id == "addJournal") {
+
+                    let elements = document.querySelectorAll(".ql-editor");
+                    elements.forEach((input, index) => {
+                            if (index == 0) {
+                                this.journalUpdate.journal.positive = input.innerHTML
+                            }
+                            if (index == 1) {
+                                this.journalUpdate.journal.negative = input.innerHTML
+                            }
+                            if (index == 2) {
+                                this.journalUpdate.journal.other = input.innerHTML
+                            }
+                        })
+                        //console.log(" -> journalUpdate " + JSON.stringify(this.journalUpdate))
+                    this.journalButton = true
+                }
+
+                if (this.currentPage.id == "addPlaybook") {
+                    this.playbookUpdate.playbook = document.querySelector(".ql-editor").innerHTML
+                    this.playbookButton = true
                 }
             });
         },
@@ -627,7 +964,6 @@ const vueApp = new Vue({
         },
 
         initPopover() {
-            //console.log("init popover")
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
             popoverTriggerList.map(function(popoverTriggerEl) {
                 return new bootstrap.Popover(popoverTriggerEl)
@@ -636,19 +972,26 @@ const vueApp = new Vue({
             $(document).on('click', '.popoverDelete', (e) => {
                 var $this = $(e.currentTarget);
                 $('.popoverDelete').not($this).popover('hide');
+                //console.log("this "+JSON.stringify($this))
             });
 
             $(document).on('click', '.popoverYes', (e) => {
                 var $this = $(e.currentTarget);
+                $('.popoverDelete').not($this).popover('hide');
                 if (this.currentPage.id == "notes") {
                     this.deleteNote()
                 }
-                $this.parents().popover('hide');
+                if (this.currentPage.id == "setups") {
+                    this.deleteSetup()
+                }
+                if (this.currentPage.id == "entries") {
+                    this.deleteEntry()
+                }
             });
 
             $(document).on('click', '.popoverNo', (e) => {
                 var $this = $(e.currentTarget);
-                $this.parents().popover('hide');
+                $('.popoverDelete').not($this).popover('hide');
                 this.selectedItem = null
             });
 
@@ -663,16 +1006,16 @@ const vueApp = new Vue({
         /* ---- LOGIN/REGISTER ---- */
         checkCurrentUser() {
             var path = window.location.pathname
-            const currentUser = Parse.User.current();
+            this.currentUser = JSON.parse(JSON.stringify(Parse.User.current()));
             if (path != "/" && path != "/register") {
-                if (currentUser) {
-                    //console.log("Your are logged in " + JSON.stringify(currentUser) + " and id " + Parse.User.current().id)
+                if (this.currentUser) {
+                    //console.log("Your are logged in " + JSON.stringify(this.currentUser) + " and id " + Parse.User.current().id)
                 } else {
                     window.location.replace("/");
                 }
             }
             if (path == "/" || path == "/register") {
-                if (currentUser) {
+                if (this.currentUser) {
                     window.location.replace("/dashboard");
                 } else {
                     console.log("Your are not logged")
@@ -716,8 +1059,14 @@ const vueApp = new Vue({
         },
 
         /* ---- DATE FORMATS ---- */
-        dateFormat(param) {
+        dateNumberFormat(param) {
+            return Number(Math.trunc(param)) //we have to use /1000 and not unix because or else does not take into account tz
+        },
+        /*dateFormat(param) {
             return dayjs.unix(param).format("DD MMMM YYYY")
+        },*/
+        dateCalFormat(param) {
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("YYYY-MM-DD")
         },
         timeFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("HH:mm:ss")
@@ -726,30 +1075,63 @@ const vueApp = new Vue({
             return dayjs.duration(param * 1000).format("HH:mm:ss")
         },
         hourMinuteFormat(param) {
-            return dayjs.unix(param).format("hh:mm")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("HH:mm")
         },
         chartFormat(param) {
-            return dayjs.unix(param).format("DD/MM/YY")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("DD/MM/YY")
         },
         monthFormat(param) {
-            return dayjs.unix(param).format("MMMM YYYY")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("MMMM YYYY")
+        },
+        monthFormatShort(param) {
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("MMM YY")
         },
         createdDateFormat(param) {
-            return dayjs(param).format("DD MMMM YYYY")
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("ddd DD MMMM YYYY")
+        },
+        datetimeLocalFormat(param) {
+            return dayjs.tz(param * 1000, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss") //here we ne
         },
 
         /* ---- NUMBER FORMATS ---- */
+        thousandCurrencyFormat(param) {
+            return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0, style: 'currency', currency: 'USD' }).format(param)
+        },
+
         thousandFormat(param) {
-            return new Intl.NumberFormat().format(param.toFixed(0))
+            return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(param)
+        },
+
+        twoDecCurrencyFormat(param) {
+            return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, style: 'currency', currency: 'USD' }).format(param)
+        },
+
+        oneDecPercentFormat(param) {
+            return new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, style: 'percent' }).format(param)
+        },
+
+        twoDecPercentFormat(param) {
+            return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, style: 'percent' }).format(param)
+        },
+
+        formatBytes(param, decimals = 2) {
+            if (param === 0) return '0 bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['param', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const i = Math.floor(Math.log(param) / Math.log(k));
+            return parseFloat((param / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         },
 
         /* ---- STEPPER---- */
         stepperNext() {
             this.stepper.next()
+            this.existingImports = []
         },
 
         stepperPrevious() {
             this.stepper.previous()
+            this.existingImports = []
         },
 
         /* ---- VIDEO PLAYER ---- */
@@ -791,8 +1173,47 @@ const vueApp = new Vue({
 
         editItem(param) {
             sessionStorage.setItem('editItemId', param);
-            window.location.href = "/addNote"
-        }
+            if (this.currentPage.id == "daily" || this.currentPage.id == "journal") {
+                window.location.href = "/addJournal"
+            }
+            if (this.currentPage.id == "entries") {
+                window.location.href = "/addEntry"
+            }
+            if (this.currentPage.id == "setups") {
+                window.location.href = "/addSetup"
+            }
+            if (this.currentPage.id == "playbook") {
+                window.location.href = "/addPlaybook"
+            }
+        },
+
+        toggleMobileMenu() {
+            let element = document.getElementById("sideMenu");
+            element.classList.toggle("toggleSideMenu");
+            this.sideMenuMobileOut = !this.sideMenuMobileOut
+            con
+            sole.log("sideMenuMobileOut " + this.sideMenuMobileOut)
+        },
+
+        /* ---- IMAGES ---- */
+        enlargeImg(param) {
+            // Get the img object using its Id
+            img = document.getElementById(param);
+            // Function to increase image size
+
+            // Set image size to 1.5 times original
+            img.style.transform = "scale(1.5)";
+            // Animation effect
+            img.style.transition = "transform 0.25s ease";
+
+            // Function to reset image size
+            function resetImg() {
+                // Set image size to original
+                img.style.transform = "scale(1)";
+                img.style.transition = "transform 0.25s ease";
+            }
+        },
+
 
     }
 })

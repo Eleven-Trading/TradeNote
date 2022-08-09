@@ -30,6 +30,14 @@ var paths = {
         src: "src/*.html",
         dest: "dist/"
     },
+    manifestPath: {
+        src: "src/manifest.json",
+        dest: "dist/"
+    },
+    swPath: {
+        src: "src/sw.js",
+        dest: "dist/"
+    },
     partialsPath: {
         src: "src/partials/",
     },
@@ -73,39 +81,10 @@ function scriptsFunction() {
         PARSE_URL = process.argv[i + 1];
     } else { PARSE_URL = '' }
     
-    var API_BASE_URL, i = process.argv.indexOf("--API_BASE_URL");
-    if (i > -1) {
-        API_BASE_URL = process.argv[i + 1];
-    } else { API_BASE_URL = '' }
-    
-    var API_END_POINT_TEMP_URL, i = process.argv.indexOf("--API_END_POINT_TEMP_URL");
-    if (i > -1) {
-        API_END_POINT_TEMP_URL = process.argv[i + 1];
-    } else { API_END_POINT_TEMP_URL = '' }
-
-    var API_END_POINT_FINANCIALS, i = process.argv.indexOf("--API_END_POINT_FINANCIALS");
-    if (i > -1) {
-        API_END_POINT_FINANCIALS = process.argv[i + 1];
-    } else { API_END_POINT_FINANCIALS = '' }
-
-    var API_END_POINT_TIMEZONE, i = process.argv.indexOf("--API_END_POINT_TIMEZONE");
-    if (i > -1) {
-        API_END_POINT_TIMEZONE = process.argv[i + 1];
-    } else { API_END_POINT_TIMEZONE = '' }
-
-    var PUBLIC_BASE_URL_B2, i = process.argv.indexOf("--PUBLIC_BASE_URL_B2");
-    if (i > -1) {
-        PUBLIC_BASE_URL_B2 = process.argv[i + 1];
-    } else { PUBLIC_BASE_URL_B2 = '' }
     
     return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
         .pipe(replace('PARSE_INIT', PARSE_INIT))
         .pipe(replace('PARSE_URL', PARSE_URL))
-        .pipe(replace('API_BASE_URL', API_BASE_URL))
-        .pipe(replace('API_END_POINT_TEMP_URL', API_END_POINT_TEMP_URL))
-        .pipe(replace('API_END_POINT_FINANCIALS', API_END_POINT_FINANCIALS))
-        .pipe(replace('API_END_POINT_TIMEZONE', API_END_POINT_TIMEZONE))
-        .pipe(replace('PUBLIC_BASE_URL_B2', PUBLIC_BASE_URL_B2))
         .pipe(gulp.dest(paths.scriptsPath.dest))
         .pipe(browserSync.stream());
 };
@@ -118,6 +97,20 @@ function viewsFunction() {
             basepath: paths.partialsPath.src
         }))
         .pipe(gulp.dest(paths.viewsPath.dest))
+        .pipe(browserSync.stream());
+};
+
+function manifestFunction() {
+    return gulp.src(paths.manifestPath.src, { allowEmpty: true })
+        .pipe(changed(paths.manifestPath.dest))
+        .pipe(gulp.dest(paths.manifestPath.dest))
+        .pipe(browserSync.stream());
+};
+
+function swFunction() {
+    return gulp.src(paths.swPath.src, { allowEmpty: true })
+        .pipe(changed(paths.swPath.dest))
+        .pipe(gulp.dest(paths.swPath.dest))
         .pipe(browserSync.stream());
 };
 
@@ -145,8 +138,10 @@ function browserInit() {
             routes: {
                 "/": "dist/",
                 "/addNote": "dist/addNote.html",
-                "/addScreenshot": "dist/addScreenshot.html",
+                "/addJournal": "dist/addJournal.html",
+                "/addEntry": "dist/addEntry.html",
                 "/addTrades": "dist/addTrades.html",
+                "/addSetup": "dist/addSetup.html",
                 "/daily": "dist/daily.html",
                 "/dashboard": "dist/dashboard.html",
                 "/calendar": "dist/calendar.html",
@@ -157,6 +152,11 @@ function browserInit() {
                 "/videos": "dist/videos.html",
                 "/playbook": "dist/playbook.html",
                 "/settings": "dist/settings.html",
+                "/setups": "dist/setups.html",
+                "/journal": "dist/journal.html",
+                "/entries": "dist/entries.html",
+                "/forecast": "dist/forecast.html",
+                "/addPlaybook": "dist/addPlaybook.html",
             }
         },
         open: true,
@@ -173,12 +173,14 @@ function watch() {
     gulp.watch(paths.imagesPath.src, imagesFunction);
     gulp.watch(paths.scriptsPath.src, scriptsFunction);
     gulp.watch(paths.viewsPath.src, viewsFunction);
+    gulp.watch(paths.manifestPath.src, manifestFunction);
+    gulp.watch(paths.swPath.src, swFunction);
     gulp.watch(paths.partialsPath.src, viewsFunction);
     gulp.watch(paths.captainPath.src, captainFunction);
 }
 
 /******** GULP *********/
-var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, captainFunction);
+var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, manifestFunction, swFunction, captainFunction);
 var build = gulp.parallel(prod, watch, browserInit); //run prod is necessary in case clean has beed done before
 
 gulp.task('default', build);

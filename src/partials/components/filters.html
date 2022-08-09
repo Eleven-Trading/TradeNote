@@ -1,27 +1,68 @@
 <!-- ============ LINE 1: DATE FILTERS ============ -->
-    <div class="col-12 mb-3 text-center align-items-center">
-        <div class="row">
-            <div class="col-auto">
+<div class="col-12 mb-3">
+    <div class="dailyCard">
+        <div>
+            <span v-if="!filtersOpen" v-on:click="filtersOpen = !filtersOpen" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
+            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3">{{selectedAccounts.toString()}} | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} |  {{selectedDateRange.label}} | {{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}} | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} | {{selectedRatio.toUpperCase()}}</span>
+            <span v-else v-on:click="filtersOpen = !filtersOpen" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
+            </span>
+        </div>
+        <div v-show="filtersOpen" class="row text-center align-items-center">
+            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'dashboard'">
                 <select v-on:input="inputDateRange($event.target.value)" class="form-select">
                     <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
                 </select>
             </div>
-            
-            <div class="col-auto">
-                <select v-on:input="inputPosition($event.target.value)" class="form-select">
-                    <option v-for="item in positions" v-bind:value="item.value" v-bind:selected="item.value ==  selectedPosition">{{item.label}}</option>
+            <div class="col-12 col-lg-8 mt-1 mt-lg-0 mb-1" v-show="currentPage.id == 'dashboard'">
+                <div class="row">
+                    <div class="col-5">
+                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRangeCal.start)" v-bind:selected="selectedDateRangeCal.start" v-on:input="inputDateRangeCal('start', $event.target.value)"/>
+                    </div>
+                    <div class="col-2"><i class="uil uil-angle-right-b"></i></div>
+                    <div class="col-5">
+                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRangeCal.end)" v-bind:selected="selectedDateRangeCal.end" v-on:input="inputDateRangeCal('end', $event.target.value)">
+                        <div class="row"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id == 'dashboard'">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Accounts <span class="dashInfoTitle">({{selectedAccounts.length}})</span></button>
+                <ul class="dropdown-menu dropdownCheck">
+                    <div v-for="item in currentUser.accounts" class="form-check">
+                        <input class="form-check-input" type="checkbox" v-bind:value="item.value" v-model="selectedAccounts">
+                        {{item.label}}
+                    </div>
+                </ul>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <select v-on:input="inputGrossNet($event.target.value)" class="form-select">
+                    <option v-for="item in grossNet" v-bind:value="item.value" v-bind:selected="item.value ==  selectedGrossNet">{{item.label}}</option>
                 </select>
             </div>
 
-            <!-- GROSS NET SWITCH
-            <div class="col-auto">
-                <label class="switch">
-                    <input type="checkbox" v-model="isNet" v-on:change="grossNetToggle">
-                    <span class="slider round sliderText">
-                        <span v-if="isNet" class="v-align-start">Net</span>
-                        <span v-else="isNet" class="v-align-end">Gross</span>
-                    </span>
-                </label>
-            </div> -->
+            <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id == 'dashboard'">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>
+                <ul class="dropdown-menu dropdownCheck">
+                    <div v-for="item in positions" class="form-check">
+                        <input class="form-check-input" type="checkbox" v-bind:value="item.value" v-model="selectedPositions">
+                        {{item.label}}
+                    </div>
+                </ul>
+            </div>
+
+            <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="currentPage.id == 'dashboard'">
+                <select v-on:input="inputTimeFrame($event.target.value)" class="form-select">
+                    <option v-for="item in timeFrames" v-bind:value="item.value" v-bind:selected="item.value ==  selectedTimeFrame">{{item.label}}</option>
+                </select>
+            </div>
+
+            <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="currentPage.id == 'dashboard'">
+                <select v-on:input="inputRatio($event.target.value)" class="form-select">
+                    <option v-for="item in ratios" v-bind:value="item.value" v-bind:selected="item.value ==  selectedRatio">{{item.label}}</option>
+                </select>
+            </div>
         </div>
     </div>
+</div>

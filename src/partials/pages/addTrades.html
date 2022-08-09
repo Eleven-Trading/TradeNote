@@ -5,23 +5,23 @@
     </div>
 </div>
 <div>
-    <!-- ============ ADD VIDEO ============ -->
 
     <div v-show="!loadingSpinner">
-        <!-- Stepper - Steps -->
+
+        <!-- ============ STEPPER INIT ============ -->
         <div id="addStepper" class="bs-stepper">
             <div class="bs-stepper-header">
                 <div class="step" data-target="#step1">
                     <button type="button" class="btn step-trigger">
                         <span class="bs-stepper-circle">1</span>
-                        <span class="bs-stepper-label">Trades</span>
+                        <span class="bs-stepper-label">Cash Journal(s)</span>
                     </button>
                 </div>
                 <div class="line"></div>
                 <div class="step" data-target="#step2">
                     <button type="button" class="btn step-trigger">
                         <span class="bs-stepper-circle">2</span>
-                        <span class="bs-stepper-label">Video(s)</span>
+                        <span class="bs-stepper-label">Trades</span>
                     </button>
                 </div>
                 <div class="line"></div>
@@ -33,25 +33,83 @@
                 </div>
             </div>
 
-            <!-- Stepper - Content -->
+            <!-- ============ STEPPER CONTENT ============ -->
             <div class="bs-stepper-content">
 
-                <!-- STEP 1 - Trades -->
+                <!-- STEP 1 - Cash Journals -->
                 <div id="step1" class="content">
-                    <span v-show="executions != null">@@include('components/stepperNext.html')</span>
+                    <span>@@include('components/stepperNext.html')</span>
                     @@include('components/cancelAdd.html')    
                     
-                    <label>Include Financials</label>
+                    <div class="mt-3 input-group mb-3">
+                        <input id="tradesInput" type="file" v-on:change="importCashJournals($event)"/>
+                    </div>
+
+                    <div v-if="existingImports.length != 0">
+                        Following dates are already imported: <span v-for="(item, index) in existingImports">
+                            <span v-if="index > 0">, </span>{{dateCalFormat(item)}}</span>
+                    </div>
+
+                    <div v-if="cashJournals" v-for="(item, index) in cashJournals">
+                        <h3 class="ml-2 mt-2 text-blue">{{createdDateFormat(index)}}</h3>
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Fee</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item2 in item.locates">
+                                    <td>{{item2.symbol}}</td>
+                                    <td>{{twoDecCurrencyFormat(item2.fee)}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Locate Fee</td>
+                                    <td>{{twoDecCurrencyFormat(item.locate)}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Software Fee</td>
+                                    <td>{{twoDecCurrencyFormat(item.software)}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Wire Inn</td>
+                                    <td>{{twoDecCurrencyFormat(item.banking.inn)}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Wire Out</td>
+                                    <td>{{twoDecCurrencyFormat(item.banking.out)}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Wire Fee</td>
+                                    <td>{{twoDecCurrencyFormat(item.banking.fee)}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- STEP 2 - Trades -->
+                <div id="step2" class="content">
+                    @@include('components/stepperPrevious.html')
+                    <span v-show="Object.keys(executions).length > 0||Object.keys(cashJournals).length > 0">@@include('components/stepperNext.html')</span>
+                    @@include('components/cancelAdd.html')    
+                    
+                    <!--<label>Include Financials</label>
                     <label class="switch">
                         <input type="checkbox" v-model="includeFinancials" v-on:click="includeFinancials = !includeFinancials">
                         <span class="slider round"></span>
-                    </label>
-
+                    </label>-->
+                    <h4 class="mt-3">Trades</h4>
                     <div class="mt-3 input-group mb-3">
-                        <input id="tradesInput" type="file" v-on:change="createTables($event)"/>
+                        <input id="tradesInput" type="file" v-on:change="importTrades($event)"/>
                     </div>
-                    <div v-if="blotter != null" v-for="(execution, index) in executions">
-                        <h3 class="ml-2 mt-2 text-blue">{{dateFormat(index)}}</h3>
+                    <div v-if="existingImports.length != 0">
+                        Following dates are already imported: <span v-for="(item, index) in existingImports">
+                            <span v-if="index > 0">, </span>{{dateCalFormat(item)}}</span>
+                    </div>
+                    <div v-if="Object.keys(blotter).length > 0 && Object.keys(pAndL).length > 0" v-for="(execution, index) in executions">
+                        <h3 class="ml-2 mt-2 text-blue">{{createdDateFormat(index)}}</h3>
                         <table class="table">
                             <thead class="thead-dark">
                                 <tr>
@@ -81,7 +139,7 @@
                                     <td>{{blot.trades}}</td>
                                     <td>{{blot.executions}}</td>
                                 </tr>
-                                <tr class="sumRow">
+                                <tr v-if="index !=null" class="sumRow">
                                     <td>All</td>
                                     <td>{{pAndL[index].buyQuantity + pAndL[index].sellQuantity}}</td>
                                     <td v-bind:class="[pAndL[index].grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(pAndL[index].grossProceeds).toFixed(2)}}</td>
@@ -95,33 +153,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                <!-- STEP 2 - Video & DATE -->
-                <div id="step2" class="content">
-                                    @@include('components/stepperPrevious.html')
-                                    @@include('components/stepperNext.html')
-                                    <!--<span v-show="videoUrl">@@include('components/stepperNext.html')</span>-->
-                                    @@include('components/cancelAdd.html')
-                                    <div v-for="(execution, index) in executions">
-                        {{dateFormat(index)}}
-                        <div class="mt-3 mb-3">
-                            <input v-bind:id="'videoInput'+index" type="file" @change="videoInput($event, index)"/>
-                        </div>
-                        <div v-if="inputToShow.includes(index)" class="mb-3">
-                            <video v-bind:id="'videoPreview'+index" v-bind:key="videos[index].videoUrl" width="100%" crossorigin="use-credentials">
-                                <source v-bind:src="videos[index].videoUrl"></video>
-                        </div>
-                        <!--<div v-show="videoUrlStorage" class="mb-3">
-                                            <video id="" v-bind:key="videoUrlStorage" controls width="100%" crossorigin="use-credentials">
-                                                <source v-bind:src="videoUrlStorage"></video>
-                                        </div>-->
-                        <canvas v-bind:id="'videoPreviewCanvas'+index" class="d-none"></canvas>
-
-                        <div v-if="inputToShow.includes(index)" class="mt-3 input-group mb-3">
-                            <input type="datetime-local" class="form-control" v-bind:value="videos[index].startTime" v-on:input="videoStartTime($event.target.value, index)"/>
-                        </div>
                     </div>
                 </div>
 
