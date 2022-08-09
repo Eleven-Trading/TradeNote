@@ -1,4 +1,4 @@
 {
     "schemaVersion": 2,
-    "dockerfileLines": "Dockerfile"
-}
+    "dockerfilePath" :"docker/Dockerfile"
+   }
