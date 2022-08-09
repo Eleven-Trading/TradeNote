@@ -1,4 +1,4 @@
 {
     "schemaVersion": 2,
-    "dockerfileLines": "./docker/Dockerfile"
+    "dockerfileLines": "Dockerfile"
 }
