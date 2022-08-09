@@ -19,7 +19,7 @@ This project arose from a personal need and as such is currently only used (and 
 
 
 # Benefits
-TradeNote is divided in 3 sections, each being and essential building block for becoming a consistent trading and managing your trading business.
+TradeNote is divided in 3 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
 
 ### Measure
 TradeNote offers a dashboard, daily view and calendar view so you can measure your progress. You can easily filter your trades by month or date range.
@@ -48,7 +48,7 @@ This project uses [Parse](https://parseplatform.org/ "Parse") as backend.
 ### Docker
 1. Clone the repository
 ```
-git clone https://
+git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 2. Enter the cloned directory
 3. Build Doocker image with arguments
@@ -68,7 +68,7 @@ If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), yo
 ### Running locally in development mode
 1. Clone the repository
 ```
-git clone https://
+git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 2. Enter cloed directory and install dependencies
 ```
