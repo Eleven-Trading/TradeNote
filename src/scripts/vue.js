@@ -668,7 +668,7 @@ const vueApp = new Vue({
         let screenWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width
         this.screenType = (screenWidth >= 992) ? 'computer' : 'mobile'
             //console.log(" Width : " + screenWidth + " and screen type " + this.screenType)
-        this.getDailyInfos()
+        //this.getDailyInfos()
         var itemToEditId = sessionStorage.getItem('editItemId')
         if (this.currentPage.id == "addTrades") {
             this.initStepper()
