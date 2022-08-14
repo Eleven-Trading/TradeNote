@@ -34,16 +34,38 @@ They say trading is like running a business so with TradeNote you can create a f
 
 # Installation
 ## Prerequisite
-This project uses [Parse](https://parseplatform.org/ "Parse") as backend.
+### Parse
+This project uses [Parse](https://parseplatform.org/ "Parse") as its backend framework. Parse is composed of 3 parts :
+1. The Parse server that does all the "heavy lifting"
+2. A mongo database where the data is stored
+3. A dashboard for nicely displaying the mongo database
+
+TradeNote uses Parse for the following reasons: 
+1. Manage the authentification (flow)
+2. Parse is a great framework for all API communications with the mongo database
+3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
+
+You need to install Parse (for example on a VPS like Google Cloud, etc.), configure it (add Classes) and get your Parse ID and Parse URL to make TradeNote work.
+
+### Installing Parse
 1. Install and run Parse. Please visit their website for instructions : https://parseplatform.org/
 2. Enter your Parse Dashboard and add the following classes
-- _User (alreay exists by default)
-- dailyInfos
+- _User (already exists by default)
 - cashJournals
 - journals
 - playbooks
 - setupsEntries
 - trades
+3. In "trades" Class, add the following columns: 
+- ACL - type ACL
+- user - type Pointer (pointing to _User)
+- date - type Date
+- dateUnix - type Number
+- executions - type Array
+- trades - type Array
+- blotter - type Object
+- pAndL - type Object
+
 ## Installation
 ### Docker
 1. Clone the repository
