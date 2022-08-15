@@ -35,7 +35,7 @@ They say trading is like running a business so with TradeNote you can create a f
 # Installation
 ## Prerequisite
 ### Parse
-This project uses [Parse](https://parseplatform.org/ "Parse") as its backend framework. Parse is composed of 3 parts :
+This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
 1. The Parse server that does all the "heavy lifting"
 2. A mongo database where the data is stored
 3. A dashboard for nicely displaying the mongo database
@@ -48,7 +48,9 @@ TradeNote uses Parse for the following reasons:
 You need to install Parse (for example on a VPS like Google Cloud, etc.), configure it (add Classes) and get your Parse ID and Parse URL to make TradeNote work.
 
 ### Installing Parse
-1. Install and run Parse. Please visit their website for instructions : https://parseplatform.org/
+1. Install and run Parse
+- Instructions for installing [parse-server](https://github.com/parse-community/parse-server "parse-server")
+- Instructions for installing [parse-dashboard](https://github.com/parse-community/parse-dashboard "parse-dashboard")
 2. Enter your Parse Dashboard and add the following classes
 - _User (already exists by default)
 - cashJournals
@@ -56,7 +58,7 @@ You need to install Parse (for example on a VPS like Google Cloud, etc.), config
 - playbooks
 - setupsEntries
 - trades
-3. In "trades" Class, add the following columns: 
+3. In "trades" Class, create the following columns: 
 - ACL - type ACL
 - user - type Pointer (pointing to _User)
 - date - type Date
@@ -65,6 +67,21 @@ You need to install Parse (for example on a VPS like Google Cloud, etc.), config
 - trades - type Array
 - blotter - type Object
 - pAndL - type Object
+4. In "user" Class, create the following columns
+- avatar - type file - and add your avatar
+- accounts - type array - and add your broker id accounts the following way:
+```
+[
+  {
+    "value": "XY000001",
+    "label": "Live Account"
+  },
+  {
+    "value": "XY000002",
+    "label": "Demo Account"
+  }
+]
+```
 
 ## Installation
 ### Docker
@@ -92,7 +109,7 @@ If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), yo
 ```
 git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
-2. Enter cloed directory and install dependencies
+2. Enter closed directory and install dependencies
 ```
 npm install
 ```
@@ -106,21 +123,6 @@ gulp --PARSE_INIT <your_parse_app_id> --PARSE_URL <your_parse_server_url>
 1. When running the app for the first time, register a new user
 ```
 http://localhost:7777/register
-```
-2. In user Class, create the following columns
-- avatar (type file) and add your avatar
-- accounts (type array): and add your accounts the following way:
-```
-[
-  {
-    "value": "XY000001",
-    "label": "Live Account"
-  },
-  {
-    "value": "XY000002",
-    "label": "Demo Account"
-  }
-]
 ```
 
 # Contribute
