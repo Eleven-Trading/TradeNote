@@ -52,14 +52,11 @@ You need to install Parse (for example on a VPS like Google Cloud, etc.), config
 - Instructions for installing [parse-server](https://github.com/parse-community/parse-server "parse-server")
 - Instructions for installing [parse-dashboard](https://github.com/parse-community/parse-dashboard "parse-dashboard")
 2. Enter your Parse Dashboard and add the following classes
-- _User (already exists by default)
-- cashJournals
 - journals
 - playbooks
 - setupsEntries
 - trades
 3. In "trades" Class, create the following columns: 
-- ACL - type ACL
 - user - type Pointer (pointing to _User)
 - date - type Date
 - dateUnix - type Number
