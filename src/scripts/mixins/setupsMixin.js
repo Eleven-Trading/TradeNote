@@ -1,8 +1,8 @@
 const setupsMixin = {
     data() {
         return {
-            entrySide: [
-                {
+            expandedSetup: null,
+            entrySide: [{
                     value: null,
                     label: "Side"
                 },
@@ -19,26 +19,25 @@ const setupsMixin = {
             dateSetupEdited: false,
             setup: {
                 "side": null,
-                "type":null
+                "type": null
             },
             setupButton: false,
             setups: [],
             setupIdToEdit: null,
             currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
-            setupType: [
-                {
+            setupType: [{
                     value: null,
                     label: "Type"
                 },
                 {
-                value: "setup",
-                label: "Setup"
-            },
-            {
-                value: "entry",
-                label: "Entry"
-            }
-        ],
+                    value: "setup",
+                    label: "Setup"
+                },
+                {
+                    value: "entry",
+                    label: "Entry"
+                }
+            ],
         }
     },
 
@@ -80,7 +79,7 @@ const setupsMixin = {
                 this.setup = JSON.parse(JSON.stringify(results))
                 if (this.setup.side) {
                     this.setup.type = "entry"
-                }else{
+                } else {
                     this.setup.type = "setup"
                 }
 
@@ -158,7 +157,7 @@ const setupsMixin = {
 
             this.loadingSpinner = true
             this.loadingSpinnerText = "Uploading setup ..."
-            
+
             if (!this.editingSetup || (this.editingSetup && this.dateSetupEdited)) {
                 this.setup.dateUnix = dayjs.tz(this.setup.date, "America/New_York").unix()
             }
@@ -167,7 +166,7 @@ const setupsMixin = {
             }
 
             //extension is created during setupImageUpload. So when edit, must create it here before upload
-            if (this.editingSetup){
+            if (this.editingSetup) {
                 this.setup.extension = this.setup.originalBase64.substring(this.setup.originalBase64.indexOf('/') + 1, this.setup.originalBase64.indexOf(';base64'))
             }
 
