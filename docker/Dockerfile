@@ -12,4 +12,8 @@ RUN cp /usr/share/nginx/html/tmp/nginx.conf /etc/nginx/nginx.conf
 RUN cp -R /usr/share/nginx/html/tmp/dist/* /usr/share/nginx/html/
 WORKDIR /usr/share/nginx/html/
 RUN rm -r /usr/share/nginx/html/tmp
+
+COPY docker/addclasses.sh /addclasses.sh
+RUN chmod +x /addclasses.sh
+
 EXPOSE 7777
