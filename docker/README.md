@@ -1,6 +1,6 @@
 ## docker installation
 
-1. build the tradenote image with your custom parameters
+1. build the tradenote image with your custom parameters, eg, PARSE_INIT=APPID PARSE_URL=http://localhost:1337/parse
 ```
 docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
 ```
