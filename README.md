@@ -12,7 +12,7 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
 ## Dicsussions and Feeback
-You can follow the project on [Discord](https://discord.gg/7HFvqW2z "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider")
+You can follow the project on [Discord](https://discord.gg/7HFvqW2z "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider").
 
 ## Built with
 The objective is to have a lightweight and fast website. As such, the website runs on static pages without any server, using VueJs, JS and HTML as well as [Parse](https://parseplatform.org/ "Parse") for its backend.
@@ -37,7 +37,6 @@ They say trading is like running a business so with TradeNote you can create a f
 
 # Installation
 ## Prerequisite
-### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
 1. The Parse server that does all the "heavy lifting"
 2. A mongo database where the data is stored
@@ -48,40 +47,7 @@ TradeNote uses Parse for the following reasons:
 2. Parse is a great framework for all API communications with the mongo database
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
-You need to install Parse (for example on a VPS like Google Cloud, etc.), configure it (add Classes) and get your Parse ID and Parse URL to make TradeNote work.
-
-### Installing Parse
-1. Install and run Parse
-- Instructions for installing [parse-server](https://github.com/parse-community/parse-server "parse-server")
-- Instructions for installing [parse-dashboard](https://github.com/parse-community/parse-dashboard "parse-dashboard")
-2. Enter your Parse Dashboard and add the following classes
-- journals
-- playbooks
-- setupsEntries
-- trades
-3. In "trades" Class, create the following columns: 
-- user - type Pointer (pointing to _User)
-- date - type Date
-- dateUnix - type Number
-- executions - type Array
-- trades - type Array
-- blotter - type Object
-- pAndL - type Object
-4. In "user" Class, create the following columns
-- avatar - type file - and add your avatar
-- accounts - type array - and add your broker id accounts the following way:
-```
-[
-  {
-    "value": "XY000001",
-    "label": "Live Account"
-  },
-  {
-    "value": "XY000002",
-    "label": "Demo Account"
-  }
-]
-```
+During the installation process, Parse is installed via Docker. If you use Caprover, you can istall Parse using One-Click Apps.
 
 ## Installation
 ### Docker
@@ -90,40 +56,47 @@ You need to install Parse (for example on a VPS like Google Cloud, etc.), config
 git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 2. Enter the cloned directory
-3. Build Doocker image with arguments
- - PARSE_INIT : your parse app id
- - PARSE_URL : your parse server url
+```
+cd docker
+```
+3. Build Doocker image with your custom parameters
+ - <your_parse_app_id> : your parse app id which is a random string.
+ - <your_parse_server_url> : your parse server url i.e. localhost if you're running TradeNote locally or your server IP if you're running TradeNote remotely.
 ```
 docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
 ```
-4. Run the docker image
+2. modify the env.env file to match your environment
+- <your_parse_app_id>: your parse app id which is a random string (same as point 3)
+- <your_parse_master_key>: enter a random string
+- <your_parse_server_ip>: your parse server url
+- <your_parse_dashboard_user>: username used for login into the Parse dashboard
+- <your_parse_dashboard_password>: password used for login into the Parse dashboard
+- <your_app_name>: pich a name for your app e.g. TradeNote
+
+3. run all the services up
+
+   3a. Run TradeNote with parse-dashboard
+   
 ```
-docker run -p 7777:80 tradenote:latest
+docker-compose up -d
+```   
+
+   3b. Run TradeNote without parse-dashboard.
+  This may be interesting in certain cases when you're running TradeNote on Raspberry Pi.
+
 ```
+docker-compose -f docker-compose-without-dashboard.yaml up -d
+```
+
+4. wait at least 1 minute for services up and data creation (IMPORTANT)
+
+5. Register via http://<your_ip>:7777/register
 
 ### Caprover
 If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), you can deploy directly thanks to the existing captain-definition file.
+1. Install Parse from One-Click Apps
+2. Deploy TradeNote using the captain-definition file
 
-### Running locally in development mode
-1. Clone the repository
-```
-git clone https://github.com/Eleven-Trading/TradeNote.git
-```
-2. Enter closed directory and install dependencies
-```
-npm install
-```
-3. Run "gulp" in terminal with the following arguments
-  - PARSE_INIT : your parse app id
-  - PARSE_URL : your parse server url
-```
-gulp --PARSE_INIT <your_parse_app_id> --PARSE_URL <your_parse_server_url>
-```
-## Post installation (first time user)
-1. When running the app for the first time, register a new user
-```
-http://localhost:7777/register
-```
 
 # Contribute
 I'm a trader and recreational developer. My days are very packed but I will do my best to answer your questions and update the code when needed. As such, do not hesitate to contact me if you would like to contribute and help improve this project. Things to work on and improve:
