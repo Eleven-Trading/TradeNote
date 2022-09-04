@@ -1,0 +1,31 @@
+version: '3.7'
+services:
+  parse-mongodb:
+    image: mongo:4.4.15
+    ports:
+      - '27017:27017'
+    env_file: env.env
+    restart: always
+
+  parse-server:
+    image: parseplatform/parse-server
+    ports:
+      - '1337:1337'
+    depends_on:
+      - parse-mongodb
+    env_file: env.env
+    restart: always
+
+  tradenote:
+    image: tradenote
+    ports:
+      - '7777:80'
+    depends_on:
+      - parse-server
+    env_file: env.env
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/addclasses.sh", "||", "exit", "1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    restart: always
