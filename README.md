@@ -47,7 +47,7 @@ TradeNote uses Parse for the following reasons:
 2. Parse is a great framework for all API communications with the mongo database
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
-During the installation process, Parse is installed via Docker. If you use Caprover, you can istall Parse using One-Click Apps.
+During the installation process, Parse is installed via Docker. If you use [Caprover](https://github.com/caprover/caprover "Caprover"), you can install Parse using One-Click Apps.
 
 ## Installation
 ### Docker
