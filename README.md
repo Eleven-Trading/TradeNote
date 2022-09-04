@@ -18,7 +18,7 @@ You can follow the project on [Discord](https://discord.gg/7HFvqW2z "Discord") a
 The objective is to have a lightweight and fast website. As such, the website runs on static pages without any server, using VueJs, JS and HTML as well as [Parse](https://parseplatform.org/ "Parse") for its backend.
 
 ## Note
-This project arose from a personal need and as such is currently only used (and tested) for intraday trades and using TradeZero Broker. Please refer to the "Contribute" section for more information
+This project arose from a personal need and as such is currently only used (and tested) for intraday trades and using TradeZero Broker. Please feel free to contribute if you want to see other brokers or vote for your broker via [Fider](https://fider.tradenote.co "Fider"). 
 
 
 # Benefits
