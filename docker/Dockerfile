@@ -13,7 +13,8 @@ RUN cp -R /usr/share/nginx/html/tmp/dist/* /usr/share/nginx/html/
 WORKDIR /usr/share/nginx/html/
 RUN rm -r /usr/share/nginx/html/tmp
 
-COPY docker/addclasses.sh /addclasses.sh
+RUN wget https://raw.githubusercontent.com/Eleven-Trading/TradeNote/main/docker/addclasses.sh -O /addclasses.sh
+#COPY docker/addclasses.sh /addclasses.sh
 RUN chmod +x /addclasses.sh
 
 EXPOSE 7777
