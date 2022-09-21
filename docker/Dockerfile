@@ -1,5 +1,5 @@
 FROM nginx:alpine
-RUN apk update && apk add nano npm bash --no-cache coreutils git
+RUN apk update && apk add nano npm wget bash --no-cache coreutils git
 RUN npm install --global gulp-cli
 RUN mkdir -p /usr/share/nginx/html/tmp/
 WORKDIR /usr/share/nginx/html/tmp/

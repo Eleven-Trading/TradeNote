@@ -59,9 +59,9 @@ git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 cd docker
 ```
-3. Build Doocker image with your custom parameters
- - <your_parse_app_id> : your parse app id which is a random string.
- - <your_parse_server_url> : your parse server url i.e. localhost if you're running TradeNote locally or your server IP if you're running TradeNote remotely.
+3. Build Docker image with your custom parameters
+ - PARSE_INIT : your parse app id which is a random string.
+ - PARSE_URL : your parse server url i.e. localhost if you're running TradeNote locally or your server IP if you're running TradeNote remotely.
 ```
 docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
 ```
@@ -95,7 +95,10 @@ docker-compose -f docker-compose-without-dashboard.yaml up -d
 ### Caprover
 If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), you can deploy directly thanks to the existing captain-definition file.
 1. Install Parse from One-Click Apps
-2. Deploy TradeNote using the captain-definition file
+2. Create an app in Caprover and in "App Configs" add the following variables: 
+   - PARSE_INIT : your parse app id
+   - PARSE_URL : your parse server url
+3. Deploy TradeNote using the captain-definition file
 
 
 # Contribute
