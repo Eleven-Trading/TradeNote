@@ -12,7 +12,7 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
 ## Dicsussions and Feeback
-You can follow the project on [Discord](https://discord.gg/7HFvqW2z "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider").
+You can follow the project on [Discord](https://discord.gg/ZbHekKYb85 "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider").
 
 ## Built with
 The objective is to have a lightweight and fast website. As such, the website runs on static pages without any server, using VueJs, JS and HTML as well as [Parse](https://parseplatform.org/ "Parse") for its backend.
