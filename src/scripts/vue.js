@@ -558,7 +558,7 @@ const vueApp = new Vue({
         }
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
             await this.getAllTrades(true)
-            await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getSetups(), this.getMistakes(), this.dailyModal()])
+            await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes(), this.dailyModal()])
             await this.initPopover()
             await this.initTab("daily")
 
@@ -584,7 +584,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "setups") {
-            await this.getSetups()
+            await this.getSetupsEntries()
             await this.initPopover()
         }
 

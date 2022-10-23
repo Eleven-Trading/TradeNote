@@ -48,9 +48,9 @@ const setupsMixin = {
     },
 
     methods: {
-        getSetups: async function(param) {
+        getSetupsEntries: async function(param) {
             return new Promise(async(resolve, reject) => {
-                console.log(" -> Getting setups and entries");
+                console.log(" -> Getting Setups and entries");
                 const Object = Parse.Object.extend("setupsEntries");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
@@ -289,7 +289,7 @@ const setupsMixin = {
             if (results) {
                 await results.destroy()
                     //document.location.reload()
-                await this.getSetups()
+                await this.getPatterns()
                 await (this.renderData += 1)
                 await this.initPopover()
 

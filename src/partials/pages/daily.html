@@ -123,7 +123,7 @@
                                 <div class="col-5" v-show="!spinnerSetups">
                                     <div class="row">
                                         <div class="col-2">
-                                            <i v-on:click="deleteSetup(daily.dateUnix, daily.trades[videosArrayIndex].id)" class="ps-2 uil uil-trash-alt pointerClass" ></i>
+                                            <i v-on:click="deletePatternMistake(daily.dateUnix, daily.trades[videosArrayIndex].id)" class="ps-2 uil uil-trash-alt pointerClass" ></i>
                                         </div>
 
                                         <div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)" class="col-5">

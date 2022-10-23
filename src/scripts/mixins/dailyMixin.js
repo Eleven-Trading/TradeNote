@@ -22,9 +22,9 @@ const dailyMixin = {
         }
     },
     methods: {
-        getSetups: async function() {
+        getPatterns: async function() {
             return new Promise(async(resolve, reject) => {
-                console.log(" -> Getting Setups");
+                console.log(" -> Getting Patterns");
                 const Object = Parse.Object.extend("patterns");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
@@ -34,7 +34,7 @@ const dailyMixin = {
                 this.setups = []
                 const results = await query.find();
                 this.setups = JSON.parse(JSON.stringify(results))
-                    //console.log(" -> Setups " + JSON.stringify(this.setups))
+                //console.log(" -> Patterns " + JSON.stringify(this.setups))
                 resolve()
             })
         },
@@ -112,7 +112,7 @@ const dailyMixin = {
                 this.tradeId = null
             }*/
 
-            const Object = Parse.Object.extend("setups");
+            const Object = Parse.Object.extend("patternsMistakes");
             const query = new Parse.Query(Object);
             query.equalTo("tradeId", this.daily.trades[param2].id)
             const results = await query.first();
@@ -276,7 +276,7 @@ const dailyMixin = {
             }
 
 
-            const Object = Parse.Object.extend("setups");
+            const Object = Parse.Object.extend("patternsMistakes");
             const query = new Parse.Query(Object);
             query.equalTo("tradeId", param2)
             const results = await query.first();
@@ -321,14 +321,14 @@ const dailyMixin = {
             }
         },
 
-        /*deleteSetup: async function(param1, param2) {
+        deletePatternMistake: async function(param1, param2) {
             console.log("\nDELETING TRADE SETUP")
             this.tradeSetupChanged = true
             console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + param2)
 
             if (param2 != null) {
                 console.log(" -> Deleting setup")
-                const Object = Parse.Object.extend("setups");
+                const Object = Parse.Object.extend("patternsMistakes");
                 const query = new Parse.Query(Object);
                 query.equalTo("tradeId", param2)
                 const results = await query.first();
@@ -347,7 +347,7 @@ const dailyMixin = {
                 alert("There is no existing setup")
                 return
             }
-        },*/
+        },
 
         updateTrades: async function(param1, param2, param3) {
             //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
