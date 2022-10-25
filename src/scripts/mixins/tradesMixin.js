@@ -306,6 +306,9 @@ const tradesMixin = {
 
             }
             if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
+                this.spinnerSetupsUpdateText = "Getting Daily Data"
+                await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes(), this.dailyModal()])
+                
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page

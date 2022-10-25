@@ -7,7 +7,7 @@ const dailyMixin = {
             spinnerSetupsText: null,
             spinnerSetupsUpdate: false,
             spinnerSetupsUpdateText: null,
-            setups: [],
+            patterns: [],
             mistakes: [],
             tradeSetup: {
                 pattern: null,
@@ -31,10 +31,10 @@ const dailyMixin = {
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.limit(1000000); // limit to at most 10 results
-                this.setups = []
+                this.patterns = []
                 const results = await query.find();
-                this.setups = JSON.parse(JSON.stringify(results))
-                //console.log(" -> Patterns " + JSON.stringify(this.setups))
+                this.patterns = JSON.parse(JSON.stringify(results))
+                    //console.log(" -> Patterns " + JSON.stringify(this.patterns))
                 resolve()
             })
         },
@@ -50,10 +50,11 @@ const dailyMixin = {
                 this.mistakes = []
                 const results = await query.find();
                 this.mistakes = JSON.parse(JSON.stringify(results))
-                    //console.log(" -> Setups " + JSON.stringify(this.setups))
+                    //console.log(" -> Setups " + JSON.stringify(this.patterns))
                 resolve()
             })
         },
+
 
         addVideoStartEnd: async function() {
             return new Promise((resolve, reject) => {
@@ -92,12 +93,12 @@ const dailyMixin = {
 
             if (param3) {
                 this.daily = param3
-                if (param3.video){
+                if (param3.video) {
                     await this.getVideo(param3.dateUnix, param2)
                 }
             }
             //console.log("Has video ? "+this.hasVideo)
-            
+
             //console.log("video array "+this.videosArrayIndex)
             //console.log("param3 trades "+JSON.stringify(param3))
             //console.log("daily trades " + JSON.stringify(this.daily.trades[param2]))
@@ -128,7 +129,7 @@ const dailyMixin = {
             return new Promise((resolve, reject) => {
                 console.log("\nGETTTING VIDEO URL FROM LOCAL OR REMOTE DB")
                     //console.log("Video to load (dateUnix) " + param1 + " and index of the video " + param2)
-                //this.loadingSpinner = true
+                    //this.loadingSpinner = true
                 this.showDashboard = false
                 var x = document.getElementById(param1);
                 this.videoToLoad = param1 //Video that has been clicked on
@@ -176,7 +177,7 @@ const dailyMixin = {
                         //console.log("url to create " + URL.createObjectURL(videoFile.url))
                         this.videoBlob = URL.createObjectURL(videoFile.url)
                             //console.log("blob " + this.videoBlob)
-                        //this.loadingSpinner = false
+                            //this.loadingSpinner = false
                     } else {
                         console.log(" -> Video does not exist in IndexedDB. Storing it")
                         this.spinnerSetupsUpdate = true
@@ -198,11 +199,11 @@ const dailyMixin = {
                                 //console.log("video file "+this.videoFile+ " and blob "+this.videoBlob)
 
                             this.showMoreVideos = true
-                            //this.loadingSpinner = false
+                                //this.loadingSpinner = false
                             this.spinnerSetupsUpdate = false
-                            console.log("spinner setup update "+this.spinnerSetupsUpdate)
-                            // Open a transaction to the database
-                            
+                            console.log("spinner setup update " + this.spinnerSetupsUpdate)
+                                // Open a transaction to the database
+
                             let transaction = this.indexedDB.transaction(["videos"], "readwrite");
 
                             let videoData = {
@@ -215,7 +216,7 @@ const dailyMixin = {
 
                             objectToAdd.onsuccess = (event) => {
                                 console.log(" -> Stored video in IndexedDB")
-                                console.log("spinner setup update "+this.spinnerSetupsUpdate)
+                                console.log("spinner setup update " + this.spinnerSetupsUpdate)
                             }
                             objectToAdd.onserror = (event) => {
                                 alert(" -> Error storing video in IndexedDB with message " + event)
@@ -227,7 +228,7 @@ const dailyMixin = {
 
                 objectToGet.onerror = (event) => {
                     console.log("there was an error getting video from indexedDB")
-                    //this.loadingSpinner = false
+                        //this.loadingSpinner = false
                     this.showDashboard = true
                 }
                 resolve()
@@ -281,7 +282,7 @@ const dailyMixin = {
             query.equalTo("tradeId", param2)
             const results = await query.first();
             if (results) {
-                console.log(" -> Updating setups")
+                console.log(" -> Updating patterns mistakes")
                 this.spinnerSetupsText = "Updating"
                 results.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern })
                 results.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake })
@@ -295,7 +296,7 @@ const dailyMixin = {
                         console.log('Failed to create new object, with error code: ' + error.message);
                     })
             } else {
-                console.log(" -> Saving setups")
+                console.log(" -> Saving patterns mistakes")
                 this.spinnerSetupsText = "Saving"
 
                 const object = new Object();
@@ -322,12 +323,12 @@ const dailyMixin = {
         },
 
         deletePatternMistake: async function(param1, param2) {
-            console.log("\nDELETING TRADE SETUP")
+            console.log("\nDELETING PATTERN MISTAKE")
             this.tradeSetupChanged = true
             console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + param2)
 
             if (param2 != null) {
-                console.log(" -> Deleting setup")
+                console.log(" -> Deleting patterns mistakes")
                 const Object = Parse.Object.extend("patternsMistakes");
                 const query = new Parse.Query(Object);
                 query.equalTo("tradeId", param2)
@@ -340,7 +341,7 @@ const dailyMixin = {
                         console.log('Failed to delete setup, with error code: ' + error.message);
                     });
                 } else {
-                    console.log(" -> Problem : the tradeId has setup but it is not present in setups")
+                    console.log(" -> Problem : the tradeId has setup but it is not present in paternsMistakes")
                 }
                 this.updateTrades(param1, param2, true)
             } else {

@@ -1,7 +1,7 @@
 const chartsCalMixin = {
     methods: {
 
-        loadCalendar: async function(param, param2) {
+        loadCalendar: async function(param, param2) {            
             console.log("\nLOADING CALENDAR")
             this.renderingCharts = true
             this.totalCalendarMounted = false
@@ -21,14 +21,14 @@ const chartsCalMixin = {
                 if (param == undefined) {
                     param = 0
                 }
-                
+
                 /* contrary to filtered trades in tradesMixin, here we need to .tz because we are recreating date */
 
                 this.selectedCalRange.start = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
-                /* reuse just created .start because we only show one month at a time */
+                    /* reuse just created .start because we only show one month at a time */
                 this.selectedCalRange.end = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).endOf('month').unix()
-                //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
-                
+                    //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
+
                 month = dayjs.unix(this.selectedCalRange.start).get('month') + 1 //starts at 0
                 year = dayjs.unix(this.selectedCalRange.start).get('year')
                 localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
@@ -652,7 +652,7 @@ const chartsCalMixin = {
         pieChart(param1, param2, param3) { //chart ID, winShare, lossShare, page
             return new Promise((resolve, reject) => {
                 //console.log("  --> " + param1)
-                    //console.log("para 2 " + param2 + " and 3 " + param3)
+                //console.log("para 2 " + param2 + " and 3 " + param3)
                 var myChart = echarts.init(document.getElementById(param1));
                 var winShare = param2
                 var lossShare = param3

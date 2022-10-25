@@ -31,11 +31,10 @@
         </div>
 
         <!-- TRADES TAB -->
-        <div class="tab-pane fade" v-bind:id="'tradesNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+        <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
             <table class="table">
                 <thead class="thead-dark">
                     <tr>
-                        <th scope="col">Video</th>
                         <th scope="col">Symbol</th>
                         <th scope="col">Qty</th>
                         <th scope="col">Position</th>
@@ -44,8 +43,9 @@
                         <th scope="col">Price(i)</th>
                         <th scope="col">P&L/Sh(g)</th>
                         <th scope="col">P&L(n)</th>
-                        <th scope="col">Setup</th>
-
+                        <th scope="col">Pattern</th>
+                        <th scope="col">Mistake</th>
+                        <th scope="col">Video</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,10 +54,6 @@
                     <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
 
                     <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#videoModal"  v-on:click="viewModalVideosDaily(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
-                        <td id="videoTd">
-                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
-                            <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-diary-alt']"></i>
-                        </td>
                         <td>{{trade.symbol}}</td>
                         <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
                         <td>{{trade.side == 'B' ? 'Long' : 'Short'}}</td>
@@ -66,9 +62,21 @@
                         <td>{{(trade.entryPrice).toFixed(2)}}</td>
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
-                        <td>
-                            <i v-if="Object.keys(trade.setup).length >0" class="uil uil-check-square"></i>
-                            <i v-else class="uil uil-times-square"></i>
+                        <td v-if="trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null">
+                            {{JSON.parse(JSON.stringify(patterns.filter(x => x.objectId == trade.setup.pattern)[0])).name}}
+                        </td>
+                        <td v-else>
+                            <i class="uil uil-times-square"></i>
+                        </td>
+                        <td v-if="trade.setup.hasOwnProperty('mistake')&&trade.setup.mistake != null">
+                            {{JSON.parse(JSON.stringify(mistakes.filter(x => x.objectId == trade.setup.mistake)[0])).name}}
+                        </td>
+                        <td v-else>
+                            <i class="uil uil-times-square"></i>
+                        </td>
+                        <td id="videoTd">
+                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
+                            <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-times-square']"></i>
                         </td>
                     </tr>
                 </tbody>

@@ -14,7 +14,9 @@
         </div>
         {{spinnerSetupsUpdateText}}
     </div>
-    <div v-show="!spinnerSetupsUpdate" class="col-12 col-xl-8">
+    
+    <!-- added v-if instead v-show because need to wait for patterns to load -->
+    <div v-if="!spinnerSetupsUpdate" class="col-12 col-xl-8">
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
             <div class="col-12">
                 <div class="dailyCard">
@@ -107,7 +109,7 @@
                                 <div class="col-4">
                                     <select v-on:change="updateSetup(daily.dateUnix, daily.trades[videosArrayIndex].id, $event.target.value, 'pattern')" class="form-select">
                                         <option value='null' selected>Pattern</option>
-                                        <option v-for="item in setups" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name + ' - '+ item.side + ' | '+ item.type}}</option>
+                                        <option v-for="item in patterns" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name + ' - '+ item.side + ' | '+ item.type}}</option>
                                     </select>
                                 </div>
                                 <div class="col-3">

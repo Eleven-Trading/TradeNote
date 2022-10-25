@@ -500,7 +500,7 @@ const vueApp = new Vue({
         }
     },
     beforeCreate: async function() {
-
+        
         //SET DEFAULT LOCAL STORAGE VARIABLES
         !localStorage.getItem('isNet') ? localStorage.setItem('isNet', true) : '';
         !localStorage.getItem('selectedDashTab') ? localStorage.setItem('selectedDashTab', 'overviewTab') : '';
@@ -513,7 +513,7 @@ const vueApp = new Vue({
         let date = dayjs().tz("America/New_York").startOf("day").unix()
             //console.log("date "+date)
             //the hours is not correct. UTC time ?
-
+        
     },
     created: async function() {
         this.initParse()
@@ -556,9 +556,9 @@ const vueApp = new Vue({
             await this.getAllTrades(true)
             await this.initTab("dashboard")
         }
+        
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
             await this.getAllTrades(true)
-            await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes(), this.dailyModal()])
             await this.initPopover()
             await this.initTab("daily")
 
@@ -635,6 +635,7 @@ const vueApp = new Vue({
         }
 
     },
+
     mounted() {
         /*console.log("\nDATE EXPLORATION")
         console.log(" -> Guessing timezone "+dayjs.tz.guess())
