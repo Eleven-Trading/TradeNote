@@ -176,11 +176,11 @@ const vueApp = new Vue({
                     label: "Trades&Executions",
                     target: "#tradesNav"
                 },
-                /*{
+                {
                     id: "setupsTab",
                     label: "Setups",
                     target: "#setupsNav"
-                },*/
+                },
                 {
                     id: "financialsTab",
                     label: "Financials",

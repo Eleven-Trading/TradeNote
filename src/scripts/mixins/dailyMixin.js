@@ -12,14 +12,18 @@ const dailyMixin = {
             tradeSetup: {
                 pattern: null,
                 mistake: null,
+                note: null,
             },
-            tradeSetupChanged: false
+            tradeSetupChanged: false,
+            indexedDBtoUpdate: false,
+            tradeSetupDateUnix: null,
+            tradeSetupId: null
         }
     },
     watch: {
         tradeSetup: function() {
             //console.log("Watch tradeSetup " + JSON.stringify(this.tradeSetup))
-        }
+        },
     },
     methods: {
         getPatterns: async function() {
@@ -55,6 +59,24 @@ const dailyMixin = {
             })
         },
 
+        tradeSetupChange(param1, param2, param3, param4) {
+            //console.log("param 1 " + param1 + " param2 " + param2)
+            if (param2 == "pattern") {
+                this.tradeSetup.pattern = param1
+            }
+            if (param2 == "mistake") {
+                this.tradeSetup.mistake = param1
+            }
+            if (param2 == "note") {
+                this.tradeSetup.note = param1
+            }
+            this.tradeSetupDateUnix = param3
+            this.tradeSetupId = param4
+                //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
+            this.tradeSetupChanged = true
+            this.indexedDBtoUpdate = true
+
+        },
 
         addVideoStartEnd: async function() {
             return new Promise((resolve, reject) => {
@@ -80,7 +102,12 @@ const dailyMixin = {
         },
 
         viewModalVideosDaily: async function(param1, param2, param3) { //When we click on the video icon to view a video. Param1 : is video true/false, Param2: index of array; Param3: daily
-            //console.log("param 1: "+param1+" param2 "+param2+" param3 "+param3)
+            //console.log("param 1: " + param1 + " param2 " + param2 + " param3 " + param3 + " param 4 " + param4 + " param 5 " + param5)
+            if (!param3 && this.tradeSetupChanged) {
+                await this.updatePatternsMistakes()
+                await this.updateTrades()
+            }
+            this.tradeSetupChanged = false
             await (this.hasVideo = false)
             await (this.resetSetup())
             this.modalVideosOpen = false
@@ -119,9 +146,11 @@ const dailyMixin = {
             const results = await query.first();
             if (results) {
                 let resultsParse = JSON.parse(JSON.stringify(results))
-                    //console.log(" results "+JSON.parse(JSON.stringify(results)).pattern.objectId)
+                    //console.log(" results "+JSON.stringify(resultsParse))
+                    //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
                 resultsParse.pattern != null ? this.tradeSetup.pattern = resultsParse.pattern.objectId : null
                 resultsParse.mistake != null ? this.tradeSetup.mistake = resultsParse.mistake.objectId : null
+                resultsParse.note != null || resultsParse.note != 'null' ? this.tradeSetup.note = resultsParse.note : null
             }
         },
 
@@ -238,15 +267,21 @@ const dailyMixin = {
 
 
 
-        dailyModal() {
+        dailyModal: async function() {
             let myModalEl = document.getElementById('videoModal')
-            myModalEl.addEventListener('hide.bs.modal', (event) => {
-                //console.log("daily hidden")
-                if (this.tradeSetupChanged) {
-                    this.updateIndexedDB()
+            myModalEl.addEventListener('hide.bs.modal', async(event) => {
+                console.log("daily hidden")
+
+                if (this.indexedDBtoUpdate) {
+                    if (this.tradeSetupChanged) {
+                        await this.updatePatternsMistakes()
+                        await this.updateTrades()
+                    }
+                    await this.updateIndexedDB()
+
                 }
-                this.tradeSetupChanged = false
-            })
+                this.indexedDBtoUpdate = false
+            }, {once: true})//it was firing multiple times here... don't know why
         },
 
         resetSetup() {
@@ -255,83 +290,89 @@ const dailyMixin = {
             this.tradeSetup = {
                 pattern: null,
                 mistake: null,
+                note: null,
             }
         },
 
 
-        updateSetup: async function(param1, param2, param3, param4) { //param1 : trade unixDate ; param2 : trade id inside trade array (gotten from daily.trades[videosArrayIndex].id and then later as this.tradeId), param3: value; param4: pattern or mistake
+        updatePatternsMistakes: async function(param1, param2, param3, param4) { //param1 : trade unixDate ; param2 : trade id inside trade array (gotten from daily.trades[videosArrayIndex].id and then later as this.tradeId), param3: value; param4: pattern or mistake
             console.log("\nUPDATING OR SAVING SETUPS IN PARSE")
-            this.spinnerSetups = true
-            this.tradeSetupChanged = true
-            console.log("param 3 " + param3)
-            if (param4 == "pattern") {
-                this.tradeSetup.pattern = param3
-            }
-            if (param4 == "mistake") {
-                this.tradeSetup.mistake = param3
-            }
-            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeId)
-            if (this.tradeSetup.pattern == null &&  (this.tradeSetup.pattern == null && this.tradeSetup.mistake == null)) {
-                alert("Please enter setup")
-                return
-            }
+            return new Promise(async(resolve, reject) => {
 
+                if (this.tradeSetup.pattern != null || this.tradeSetup.mistake != null || this.tradeSetup.note != null) {
+                    //console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + param2)
+                    this.spinnerSetups = true
+                        //this.tradeSetupChanged = true
+                    const Object = Parse.Object.extend("patternsMistakes");
+                    const query = new Parse.Query(Object);
+                    query.equalTo("tradeId", this.tradeSetupId)
+                    const results = await query.first();
+                    if (results) {
+                        console.log(" -> Updating patterns mistakes")
+                        this.spinnerSetupsText = "Updating"
+                        results.set("pattern", this.tradeSetup.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern })
+                        results.set("mistake", this.tradeSetup.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake })
+                        results.set("note", this.tradeSetup.note)
 
-            const Object = Parse.Object.extend("patternsMistakes");
-            const query = new Parse.Query(Object);
-            query.equalTo("tradeId", param2)
-            const results = await query.first();
-            if (results) {
-                console.log(" -> Updating patterns mistakes")
-                this.spinnerSetupsText = "Updating"
-                results.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern })
-                results.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake })
+                        results.save()
+                            .then(async() => {
+                                console.log(' -> Updated setup with id ' + results.id)
+                                    //this.spinnerSetupsText = "Updated setup"
+                            }, (error) => {
+                                console.log('Failed to create new object, with error code: ' + error.message);
+                            })
+                    } else {
+                        console.log(" -> Saving patterns mistakes")
+                        this.spinnerSetupsText = "Saving"
 
-                results.save()
-                    .then(async() => {
-                        console.log(' -> Updated setup with id ' + results.id)
-                            //this.spinnerSetupsText = "Updated setup"
-                        this.updateTrades(param1, param2)
-                    }, (error) => {
-                        console.log('Failed to create new object, with error code: ' + error.message);
-                    })
-            } else {
-                console.log(" -> Saving patterns mistakes")
-                this.spinnerSetupsText = "Saving"
+                        const object = new Object();
+                        object.set("user", Parse.User.current())
+                        object.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern })
+                        if (this.tradeSetup.mistake != null) {
+                            object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake })
+                        } else {
+                            object.set("mistake", null)
+                        }
+                        if (this.tradeSetup.note != null) {
+                            object.set("note", this.tradeSetup.note)
+                        } else {
+                            object.set("note", null)
+                        }
 
-                const object = new Object();
-                object.set("user", Parse.User.current())
-                object.set("pattern", { __type: "Pointer", className: "patterns", objectId: this.tradeSetup.pattern })
-                if (this.tradeSetup.mistake != null) {
-                    object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: this.tradeSetup.mistake })
-                } else {
-                    object.set("mistake", null)
+                        object.set("tradeUnixDate", this.tradeSetupDateUnix)
+                        object.set("tradeId", this.tradeSetupId)
+                        object.setACL(new Parse.ACL(Parse.User.current()));
+                        object.save()
+                            .then(async(object) => {
+                                console.log(' -> Added new setup with id ' + object.id)
+                                    //this.spinnerSetupsText = "Added new setup"
+                                this.tradeId = this.tradeSetupId // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+                            }, (error) => {
+                                console.log('Failed to create new object, with error code: ' + error.message);
+                            })
+                    }
+                    
                 }
-                object.set("tradeUnixDate", param1)
-                object.set("tradeId", param2)
-                object.setACL(new Parse.ACL(Parse.User.current()));
-                object.save()
-                    .then(async(object) => {
-                        console.log(' -> Added new setup with id ' + object.id)
-                            //this.spinnerSetupsText = "Added new setup"
-                        this.tradeId = param2 // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
-                        this.updateTrades(param1, param2)
-                    }, (error) => {
-                        console.log('Failed to create new object, with error code: ' + error.message);
-                    })
-            }
+                resolve()
+                
+
+            })
         },
 
         deletePatternMistake: async function(param1, param2) {
             console.log("\nDELETING PATTERN MISTAKE")
+            this.tradeSetupDateUnix = param1
+            this.tradeSetupId = param2
+            this.spinnerSetups = true
             this.tradeSetupChanged = true
-            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + param2)
+            this.indexedDBtoUpdate = true
+            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeSetupId)
 
-            if (param2 != null) {
+            if (this.tradeSetupId != null) {
                 console.log(" -> Deleting patterns mistakes")
                 const Object = Parse.Object.extend("patternsMistakes");
                 const query = new Parse.Query(Object);
-                query.equalTo("tradeId", param2)
+                query.equalTo("tradeId", this.tradeSetupId)
                 const results = await query.first();
                 if (results) {
                     results.destroy().then(() => {
@@ -343,93 +384,104 @@ const dailyMixin = {
                 } else {
                     console.log(" -> Problem : the tradeId has setup but it is not present in paternsMistakes")
                 }
-                this.updateTrades(param1, param2, true)
+                this.updateTrades(true)
             } else {
                 alert("There is no existing setup")
                 return
             }
+            this.spinnerSetups = false
         },
 
-        updateTrades: async function(param1, param2, param3) {
+        updateTrades: async function(param3) {
             //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
             //this.spinnerSetupsText = "Updating trades"
             //query trade to update
             //console.log("date unix "+param1+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
-            const Object = Parse.Object.extend("trades");
-            const query = new Parse.Query(Object);
-            query.equalTo("dateUnix", param1)
-            const results = await query.first();
-            if (results) {
-                //console.log("result from query " + JSON.stringify(results))
-                var objectResults = JSON.parse(JSON.stringify(results))
-                var arrayTrades = objectResults.trades
-                var tradeIndex = arrayTrades.findIndex(f => f.id == param2)
-                console.log(" -> Updating trade with id " + param2)
-                if (param3 == true) { //Delete == true
-                    arrayTrades[tradeIndex].setup = {}
-                } else {
-                    arrayTrades[tradeIndex].setup = {
-                        pattern: this.tradeSetup.pattern,
-                        mistake: this.tradeSetup.mistake
+            return new Promise(async(resolve, reject) => {
+                const Object = Parse.Object.extend("trades");
+                const query = new Parse.Query(Object);
+                query.equalTo("dateUnix", this.tradeSetupDateUnix)
+                const results = await query.first();
+                if (results) {
+                    //console.log("result from query " + JSON.stringify(results))
+                    var objectResults = JSON.parse(JSON.stringify(results))
+                    var arrayTrades = objectResults.trades
+                    var tradeIndex = arrayTrades.findIndex(f => f.id == this.tradeSetupId)
+                    console.log(" -> Updating trade with id " + this.tradeSetupId)
+                    if (param3 == true) { //Delete == true
+                        arrayTrades[tradeIndex].setup = {}
+                    } else {
+                        arrayTrades[tradeIndex].setup = {
+                            pattern: this.tradeSetup.pattern,
+                            mistake: this.tradeSetup.mistake,
+                            note: this.tradeSetup.note
+                        }
                     }
-                }
-                //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
-                results.set("trades", arrayTrades)
-                results.save().then(async() => {
-                    console.log(' -> Updated trades with id ' + results.id)
-                        //await (this.spinnerSetupsText = "Updated trade")
-                    this.spinnerSetups = false
+                    //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
+                    results.set("trades", arrayTrades)
+                    results.save().then(async() => {
+                        console.log(' -> Updated trades with id ' + results.id)
+                            //await (this.spinnerSetupsText = "Updated trade")
+                        this.spinnerSetups = false
+                        resolve()
 
-                })
-            } else {
-                alert("Update query did not return any results")
-                this.spinnerSetups = false
-            }
+                    })
+                } else {
+                    alert("Update query did not return any results")
+                    this.spinnerSetups = false
+                    resolve()
+                }
+                
+            })
         },
 
         updateIndexedDB: async function(param1) {
             console.log("\nUPDATING INDEXEDDB")
-            await (this.spinnerSetupsUpdate = true)
-            await (this.spinnerSetupsUpdateText = "Updating trades in IndexedDB")
-            //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedCalRange.start "+this.selectedCalRange.start)
-            if (this.threeMonthsBack <= this.selectedCalRange.start) {
-                console.log("3 months")
-                await this.getTradesFromDb(6)
-            } else {
-                console.log(">6 months")
-                await this.getTradesFromDb(0)
-            }
-            await (this.spinnerSetupsUpdateText = "Getting all trades")
-            await this.getAllTrades(true)
-                //Once we get all trades, we need to update the filtered trades so it reflects on the page we are looking at
-                /*await (() => {
-                    this.spinnerSetupsText = "Updating filtered trade"
-                    var filterTrades = []
-                    this.tradeToShow = []
+            return new Promise(async(resolve, reject) => {
+                await (this.spinnerSetupsUpdate = true)
+                await (this.spinnerSetupsUpdateText = "Updating trades in IndexedDB")
+                //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedCalRange.start "+this.selectedCalRange.start)
+                if (this.threeMonthsBack <= this.selectedCalRange.start) {
+                    console.log("3 months")
+                    await this.getTradesFromDb(6)
+                } else {
+                    console.log(">6 months")
+                    await this.getTradesFromDb(0)
+                }
+                await (this.spinnerSetupsUpdateText = "Getting all trades")
+                await this.getAllTrades(true)
+                    //Once we get all trades, we need to update the filtered trades so it reflects on the page we are looking at
+                    /*await (() => {
+                        this.spinnerSetupsText = "Updating filtered trade"
+                        var filterTrades = []
+                        this.tradeToShow = []
 
-                    // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
-                    var filterTrades = this.filteredTrades.filter(f => f.dateUnix == param1)
-                    this.tradeToShow = filterTrades
-                        //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
+                        // ---- 1: GET THE INFOS OF THE SELECTED VIDEO (TO LOAD) AND SAVE TO SPECIFIC VAR ----
+                        var filterTrades = this.filteredTrades.filter(f => f.dateUnix == param1)
+                        this.tradeToShow = filterTrades
+                            //console.log("tradeToShow " + JSON.stringify(this.tradeToShow) + " and month " + typeof this.curMonthTrades)
 
-                    // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
-                    this.tradeToShow[0].trades.forEach((element, index) => {
-                        if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
-                            this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
-                        } else {
-                            this.tradeToShow[0].trades[index].videoStart = null
-                        }
+                        // ---- 2: UPDATE TRADES TO SHOW WITH VIDEO START AND END TIME ----
+                        this.tradeToShow[0].trades.forEach((element, index) => {
+                            if (element.entryTime >= this.tradeToShow[0].videoDateUnix) {
+                                this.tradeToShow[0].trades[index].videoStart = element.entryTime - this.tradeToShow[0].videoDateUnix
+                            } else {
+                                this.tradeToShow[0].trades[index].videoStart = null
+                            }
 
-                        if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
-                            this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
-                        } else {
-                            this.tradeToShow[0].trades[index].videoEnd = null
-                        }
-                    })
-                    console.log(" -> Updated filtered trade")
-                })()*/
-            await (this.spinnerSetupsUpdate = false)
+                            if (element.exitTime >= this.tradeToShow[0].videoDateUnix) {
+                                this.tradeToShow[0].trades[index].videoEnd = element.exitTime - this.tradeToShow[0].videoDateUnix
+                            } else {
+                                this.tradeToShow[0].trades[index].videoEnd = null
+                            }
+                        })
+                        console.log(" -> Updated filtered trade")
+                    })()*/
+                await (this.spinnerSetupsUpdate = false)
+                resolve()
+            })
         }
+
 
     }
 }

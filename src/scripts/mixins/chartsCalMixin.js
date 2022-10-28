@@ -1034,7 +1034,7 @@ const chartsCalMixin = {
                     } else if (param1 == "barChartNegative15") {
                         //console.log(" mistakes "+JSON.stringify(this.mistakes))
                         var mistakes = this.mistakes.find(item => item.objectId === key)
-                            //console.log("mistakes "+mistakes)
+                        //console.log("mistakes "+mistakes)
                         yAxis.push(mistakes.name) // unshift because I'm only able to sort timeframe ascending
 
                     } else {

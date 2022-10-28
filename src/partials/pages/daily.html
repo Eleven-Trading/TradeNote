@@ -14,7 +14,7 @@
         </div>
         {{spinnerSetupsUpdateText}}
     </div>
-    
+
     <!-- added v-if instead v-show because need to wait for patterns to load -->
     <div v-if="!spinnerSetupsUpdate" class="col-12 col-xl-8">
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
@@ -72,7 +72,7 @@
                                 <tr>
                                     <th scope="col">Symbol</th>
                                     <th scope="col">Qty</th>
-                                    <th scope="col">Position</th>
+                                    <th scope="col">Side</th>
                                     <th scope="col">Time(i)</th>
                                     <th scope="col">Time(o)</th>
                                     <th scope="col">Duration</th>
@@ -106,17 +106,26 @@
                         <!-- Setup Inputs -->
                         <div class="col-12">
                             <div class="row">
-                                <div class="col-4">
-                                    <select v-on:change="updateSetup(daily.dateUnix, daily.trades[videosArrayIndex].id, $event.target.value, 'pattern')" class="form-select">
-                                        <option value='null' selected>Pattern</option>
-                                        <option v-for="item in patterns" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name + ' - '+ item.side + ' | '+ item.type}}</option>
-                                    </select>
-                                </div>
-                                <div class="col-3">
-                                    <select v-on:change="updateSetup(daily.dateUnix, daily.trades[videosArrayIndex].id, $event.target.value, 'mistake')" class="form-select">
-                                        <option value='null' selected>Mistake</option>
-                                        <option v-for="item in mistakes" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">{{item.name}}</option>
-                                    </select>
+                                <div class="col-7">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <select v-on:change="tradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
+                                                <option value='null' selected>Pattern</option>
+                                                <option v-for="item in patterns" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name + ' - '+ item.side + ' | '+ item.type}}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5">
+                                            <select v-on:change="tradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
+                                                <option value='null' selected>Mistake</option>
+                                                <option v-for="item in mistakes" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">{{item.name}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-1">
+                                        <div class="col-12">
+                                           <textarea class="form-control" placeholder="note" id="floatingTextarea" v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''" v-on:input="tradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id)"></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div v-show="spinnerSetups" class="col-5">
                                     <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
@@ -129,11 +138,11 @@
                                         </div>
 
                                         <div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)" class="col-5">
-                                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex-1].videoStart&&daily.trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1)" v-bind:disabled="spinnerSetups==true">
+                                            <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex-1].videoStart&&daily.trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1, '')" v-bind:disabled="spinnerSetups==true">
                                                 <i class="fa fa-chevron-left me-2"></i>Back</button>
                                         </div>
                                         <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto col-5">
-                                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex+1].videoStart&&daily.trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1)" v-bind:disabled="spinnerSetups==true">Next<i class="fa fa-chevron-right ms-2"></i>
+                                            <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex+1].videoStart&&daily.trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1, '')" v-bind:disabled="spinnerSetups==true">Next<i class="fa fa-chevron-right ms-2"></i>
                                             </button>
                                         </div>
                                     </div>

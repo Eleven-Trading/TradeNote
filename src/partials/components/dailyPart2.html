@@ -37,14 +37,15 @@
                     <tr>
                         <th scope="col">Symbol</th>
                         <th scope="col">Qty</th>
-                        <th scope="col">Position</th>
-                        <th scope="col">Time(i)</th>
-                        <th scope="col">Time(o)</th>
-                        <th scope="col">Price(i)</th>
+                        <th scope="col">Side</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Duration</th>
                         <th scope="col">P&L/Sh(g)</th>
                         <th scope="col">P&L(n)</th>
                         <th scope="col">Pattern</th>
                         <th scope="col">Mistake</th>
+                        <th scope="col">Note</th>
                         <th scope="col">Video</th>
                     </tr>
                 </thead>
@@ -56,10 +57,10 @@
                     <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#videoModal"  v-on:click="viewModalVideosDaily(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
                         <td>{{trade.symbol}}</td>
                         <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
-                        <td>{{trade.side == 'B' ? 'Long' : 'Short'}}</td>
+                        <td>{{trade.side}}</td>
                         <td>{{timeFormat(trade.entryTime)}}</td>
-                        <td>{{timeFormat(trade.exitTime)}}</td>
                         <td>{{(trade.entryPrice).toFixed(2)}}</td>
+                        <td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
                         <td v-if="trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null">
@@ -70,6 +71,12 @@
                         </td>
                         <td v-if="trade.setup.hasOwnProperty('mistake')&&trade.setup.mistake != null">
                             {{JSON.parse(JSON.stringify(mistakes.filter(x => x.objectId == trade.setup.mistake)[0])).name}}
+                        </td>
+                        <td v-else>
+                            <i class="uil uil-times-square"></i>
+                        </td>
+                        <td v-if="trade.setup.hasOwnProperty('note')&&trade.setup.note != null">
+                            {{trade.setup.note}}
                         </td>
                         <td v-else>
                             <i class="uil uil-times-square"></i>

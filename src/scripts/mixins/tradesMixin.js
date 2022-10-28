@@ -296,7 +296,7 @@ const tradesMixin = {
 
             if (this.currentPage.id == "dashboard") {
                 this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
-                    //await this.getPatterns()
+                await Promise.all([this.getPatterns(), this.getMistakes()])
                 await this.prepareTrades()
                 await (this.spinnerSetupsUpdate = false)
                 console.log(" -> Building charts")
@@ -1074,6 +1074,7 @@ const tradesMixin = {
                     //in my first version pattern was a string id. Now pattern is an object. So we need to check this
                     if (typeof(x.setup.pattern) == 'string') {
                         //console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern)
+                        //console.log("patterns "+JSON.stringify(this.patterns))
                         let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
                         if (pattern != undefined && pattern.hasOwnProperty("type")) {
                             let patternType = pattern.type
@@ -1268,7 +1269,7 @@ const tradesMixin = {
                 }
             }
 
-            var indexes = [1, 2, 3, 4, 7, 13, 16] // This way here because I took out some charts
+            var indexes = [1, 2, 3, 4, 7, 13, 16, 10, 11, 15] // This way here because I took out some charts
             indexes.forEach(index => {
                 var chartId = 'barChartNegative' + index
                 if (param == "clear") {
