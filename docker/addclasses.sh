@@ -90,3 +90,58 @@ curl -X PUT \
       }
     }' \
   http://$PARSEHOST:1337/parse/schemas/_User
+
+
+curl -X POST \
+  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '
+    {
+      "className": "patterns",
+      "fields": {
+        "user": {"type": "Pointer", "targetClass":"_User"},
+        "name": {"type": "String"},
+        "type": {"type": "String"},
+        "side": {"type": "String"},
+        "note": {"type": "String"},
+        "order": {"type": "Number"}
+      }
+    }' \
+  http://$PARSEHOST:1337/parse/schemas/patterns
+
+
+  curl -X POST \
+  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '
+    {
+      "className": "mistakes",
+      "fields": {
+        "user": {"type": "Pointer", "targetClass":"_User"},
+        "name": {"type": "String"},
+        "description": {"type": "String"},
+        "order": {"type": "Number"}
+      }
+    }' \
+  http://$PARSEHOST:1337/parse/schemas/mistakes
+
+
+  curl -X POST \
+  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '
+    {
+      "className": "patternsMistakes",
+      "fields": {
+        "user": {"type": "Pointer", "targetClass":"_User"},
+        "pattern": {"type": "Pointer", "targetClass":"patterns"},
+        "mistake": {"type": "Pointer", "targetClass":"mistakes"},
+        "note": {"type": "String"},
+        "tradeUnixDate": {"type": "Number"},
+        "tradeId": {"type": "String"}
+      }
+    }' \
+  http://$PARSEHOST:1337/parse/schemas/patternsMistakes
