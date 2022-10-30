@@ -7,7 +7,7 @@ const addTradesMixin = {
             existingImports: [],
             includeFinancials: true,
             existingTradesArray: [],
-            
+
             cashJournals: {},
             executions: {},
             trades: {},
@@ -20,6 +20,11 @@ const addTradesMixin = {
     },
 
     methods: {
+
+        inputChooseBroker(param) {
+            localStorage.setItem('selectedBroker', param)
+            this.selectedBroker = param
+        },
 
         importCashJournals: async function(e) {
             console.log("IMPORTING CASH JOURNALS")
@@ -71,7 +76,7 @@ const addTradesMixin = {
                     let temp = [];
 
                     for (const key of keys) {
-                        console.log("key "+key)
+                        console.log("key " + key)
                         let temp2 = {};
                         temp2.account = this.cashJournalsData[key].Account
                         temp2.name = this.cashJournalsData[key].Name
@@ -113,13 +118,13 @@ const addTradesMixin = {
                     this.loadingSpinnerText = "Creating blotter by cost ..."
                         //based on trades
                     let objectZ = JSON.parse(JSON.stringify(a))
-                    //console.log("objectZ "+JSON.stringify(objectZ))
+                        //console.log("objectZ "+JSON.stringify(objectZ))
                     const keys9 = Object.keys(objectZ);
                     var temp10 = {}
 
                     // Iterating each date/ED
                     for (const key9 of keys9) {
-                        console.log("key9 "+JSON.stringify(key9))
+                        console.log("key9 " + JSON.stringify(key9))
                         temp10[key9] = {}
                         var keys10 = objectZ[key9]
                         console.log("Cost for given date " + JSON.stringify(keys10));
@@ -187,36 +192,130 @@ const addTradesMixin = {
             if (!files.length)
                 return;
 
-            if (files[0].type != "text/csv") {
+            /*if (files[0].type != "text/csv") {
                 alert("Please upload a csv type file")
                 document.getElementById('tradesInput').value = null;
                 this.loadingSpinner = false
                 return
+            }*/
+            if (this.selectedBroker == "tradeZero") {
+                let promise = new Promise((resolve, reject) => {
+                    var reader = new FileReader();
+                    var vm = this;
+                    reader.onload = e => {
+                        resolve((vm.fileinput = reader.result));
+                    };
+                    reader.readAsText(files[0]);
+                });
+
+                promise.then(async() => {
+
+
+                    let papaParse = Papa.parse(this.fileinput, { header: true })
+                        //we need to recreate the JSON with proper date format + we simplify
+                    this.tradesData = JSON.parse(JSON.stringify(papaParse.data))
+                    console.log("tradesData " + JSON.stringify(this.tradesData))
+
+                    await this.createTempExecutions()
+                    await this.createExecutions()
+                    await this.createTrades()
+                    await this.createBlotter()
+                    await this.filterExisting("trades")
+                    await this.createPnL()
+
+                })
+            }
+            if (this.selectedBroker == "metaTrader") {
+                console.log(" -> MetaTrader")
+                let promise = new Promise((resolve, reject) => {
+                    var reader = new FileReader();
+                    var vm = this;
+                    reader.onload = e => {
+                        resolve((vm.fileinput = reader.result));
+                    };
+                    reader.readAsArrayBuffer(files[0]);
+                });
+
+                promise.then(async() => {
+
+                    var workbook = XLSX.read(this.fileinput);
+                    var result = {};
+                    workbook.SheetNames.forEach(function(sheetName) {
+                        var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                        if (roa.length > 0) {
+                            result[sheetName] = roa;
+                        }
+                    });
+                    let accountKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Account:")
+                    let dealsKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Deals")
+
+                    let accountJson = result[Object.keys(result)[0]][accountKey] // doit it this way instead of naming keys in case key names change
+                    let account = [Object.values(accountJson)[1]][0].split(" ")[0]
+                        //console.log("Account "+JSON.stringify(account))
+
+                    let dealIterate = true
+                    this.tradesData = []
+                    for (let i = dealsKey + 2; dealIterate; i++) {
+                        let temp = {}
+                        let row = result[Object.keys(result)[0]][i]
+                        if (!row.hasOwnProperty("Trade History Report")) {
+                            dealIterate = false
+                        } else {
+                            //console.log("row "+JSON.stringify(row))
+                            //check for balance
+                            let checkBalance = Object.values(row)[2]
+                            if (checkBalance != "balance") {
+                                temp.Account = account
+                                let tempDate = Object.values(row)[0].split(" ")[0]
+                                let newDate = tempDate.split(".")[1] + "/" + tempDate.split(".")[2] + "/" + tempDate.split(".")[0]
+                                temp["T/D"] = newDate
+                                temp["S/D"] = newDate
+                                temp.Currency = "USD"
+                                temp.type = "0"
+                                if (Object.values(row)[3] == "buy" && Object.values(row)[4] == "in") {
+                                    temp.Side = "B"
+                                }
+                                if (Object.values(row)[3] == "buy" && Object.values(row)[4] == "out") {
+                                    temp.Side = "BC"
+                                }
+                                if (Object.values(row)[3] == "sell" && Object.values(row)[4] == "in") {
+                                    temp.Side = "SS"
+                                }
+                                if (Object.values(row)[3] == "sell" && Object.values(row)[4] == "out") {
+                                    temp.Side = "S"
+                                }
+                                temp.Symbol = Object.values(row)[2]
+                                temp.Qty = (Object.values(row)[5] * 100000).toString()
+                                temp.Price = Object.values(row)[6].toString()
+                                temp["Exec Time"] = Object.values(row)[0].split(" ")[1]
+                                temp.Comm = (-Object.values(row)[8]).toString()
+                                temp.SEC = (-Object.values(row)[9]).toString()
+                                temp.TAF = (-Object.values(row)[10]).toString()
+                                temp.NSCC = "0"
+                                temp.Nasdaq = "0"
+                                temp["ECN Remove"] = "0"
+                                temp["ECN Add"] = "0"
+                                temp["Gross Proceeds"] = Object.values(row)[11].toString()
+                                temp["Net Proceeds"] = (Object.values(row)[11] + Object.values(row)[8] + Object.values(row)[9] + Object.values(row)[10]).toString()
+                                temp["Clr Broker"] = ""
+                                temp.Liq = ""
+                                temp.Note = ""
+                                this.tradesData.push(temp)
+                            }
+                        }
+                    }
+                    console.log("trade data " + JSON.stringify(this.tradesData))
+
+                    await this.createTempExecutions()
+                    await this.createExecutions()
+                    await this.createTrades()
+                    await this.createBlotter()
+                    await this.filterExisting("trades")
+                    await this.createPnL()
+
+                })
             }
 
-            let promise = new Promise((resolve, reject) => {
-                var reader = new FileReader();
-                var vm = this;
-                reader.onload = e => {
-                    resolve((vm.fileinput = reader.result));
-                };
-                reader.readAsText(files[0]);
-            });
-
-            promise.then(async() => {
-                let papaParse = Papa.parse(this.fileinput, { header: true })
-
-                //we need to recreate the JSON with proper date format + we simplify
-                this.tradesData = JSON.parse(JSON.stringify(papaParse.data))
-
-                await this.createTempExecutions()
-                await this.createExecutions()
-                await this.createTrades()
-                await this.createBlotter()
-                await this.filterExisting("trades")
-                await this.createPnL()
-
-            })
         },
 
         createTempExecutions: async function() {
@@ -630,7 +729,7 @@ const addTradesMixin = {
                         }
                     });
                     this.cashJournals = _.omit(this.cashJournals, this.existingTradesArray)
-                    console.log("cashJournal "+JSON.stringify(this.cashJournals))
+                    console.log("cashJournal " + JSON.stringify(this.cashJournals))
                 }
                 if (param == "trades") {
                     this.existingTradesArray.forEach(element => {
@@ -1109,7 +1208,7 @@ const addTradesMixin = {
                     object.save()
                         .then((object) => {
 
-                            console.log(" -> Added new "+param2+" with id " + object.id)
+                            console.log(" -> Added new " + param2 + " with id " + object.id)
                             i++
                             if (i == numberOfDates) {
                                 console.log("resolve")

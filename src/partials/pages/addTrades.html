@@ -7,27 +7,29 @@
 <div>
 
     <div v-show="!loadingSpinner">
-
+        <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
+            <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value ==  selectedBroker">{{item.label}}</option>
+        </select>
         <!-- ============ STEPPER INIT ============ -->
         <div id="addStepper" class="bs-stepper">
             <div class="bs-stepper-header">
-                <div class="step" data-target="#step1">
+                <!--!<div class="step" data-target="#step1">
                     <button type="button" class="btn step-trigger">
                         <span class="bs-stepper-circle">1</span>
                         <span class="bs-stepper-label">Cash Journal(s)</span>
                     </button>
                 </div>
-                <div class="line"></div>
+                <div class="line"></div>-->
                 <div class="step" data-target="#step2">
                     <button type="button" class="btn step-trigger">
-                        <span class="bs-stepper-circle">2</span>
+                        <span class="bs-stepper-circle">1</span>
                         <span class="bs-stepper-label">Trades</span>
                     </button>
                 </div>
                 <div class="line"></div>
                 <div class="step" data-target="#step3">
                     <button type="button" class="btn step-trigger">
-                        <span class="bs-stepper-circle">3</span>
+                        <span class="bs-stepper-circle">2</span>
                         <span class="bs-stepper-label">Validate</span>
                     </button>
                 </div>
@@ -91,7 +93,7 @@
 
                 <!-- STEP 2 - Trades -->
                 <div id="step2" class="content">
-                    @@include('components/stepperPrevious.html')
+                    <!--@@include('components/stepperPrevious.html')-->
                     <span v-show="Object.keys(executions).length > 0||Object.keys(cashJournals).length > 0">@@include('components/stepperNext.html')</span>
                     @@include('components/cancelAdd.html')    
                     
