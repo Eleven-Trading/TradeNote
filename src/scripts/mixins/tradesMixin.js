@@ -6,11 +6,12 @@ const tradesMixin = {
             this.getAllTrades(true)
         },
 
+        //input date range from dropdown
         inputDateRange(param) {
             this.dashboardChartsMounted = false
             this.spinnerSetupsUpdate = true
             this.eCharts("clear")
-            
+
             var filterJson = this.dateRange.filter(element => element.value == param)[0]
             this.selectedDateRange = filterJson
 
@@ -19,36 +20,47 @@ const tradesMixin = {
             temp.start = this.selectedDateRange.start
             temp.end = this.selectedDateRange.end
             this.selectedDateRangeCal = temp
-            console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
-            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal)) 
-            
+            console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
+            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal))
+
             this.getAllTrades(true)
         },
 
+        //input date range from calendar
         inputDateRangeCal(param1, param2) {
-            let dateUnix = null 
-            if (param1 == "start"){
+            console.log("param1 " + param1 + ", param2 " + param2)
+            let dateUnix = null
+            if (param1 == "start") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
             }
-            if (param1 == "end"){
+            if (param1 == "end") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix()
             }
 
+            if (param1 == "cal") {
+                dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
+            }
+            console.log("dateUnix " + dateUnix)
+
             let dateLocalStorage = JSON.parse(localStorage.getItem('selectedDateRangeCal'))
+
 
             const refresh = () => {
                 this.dashboardChartsMounted = false
                 this.spinnerSetupsUpdate = true
+                this.renderingCharts = true
+                this.totalCalendarMounted = false
                 this.eCharts("clear")
-                localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage)) 
+                    //localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage)) 
+
                 this.getAllTrades(true)
             }
-            
+
             /* Check if start date before end date and vice versa */
             if (dateLocalStorage && param1 == "start" && dateLocalStorage.end > dateUnix) {
                 dateLocalStorage.start = dateUnix
                 this.selectedDateRangeCal = dateLocalStorage
-                console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
+                console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
                 refresh()
             }
 
@@ -58,11 +70,22 @@ const tradesMixin = {
                 refresh()
             }
 
+
+            if (param1 == "cal") {
+                let temp = {}
+                temp.start = dayjs.tz(param2, this.tradeTimeZone).unix()
+                temp.end = dayjs.tz(param2, this.tradeTimeZone).endOf("month").unix()
+                this.selectedCalRange = temp
+                console.log("selectedCalRange " + JSON.stringify(this.selectedCalRange))
+                localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
+                refresh()
+            }
+
             /* Update selectedDateRange */
             let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
-            if(tempFilter.length > 0){
+            if (tempFilter.length > 0) {
                 this.selectedDateRange = tempFilter[0]
-            }else{
+            } else {
                 this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
             }
         },
@@ -128,10 +151,11 @@ const tradesMixin = {
                 if (!localStorage.getItem('selectedCalRange')) {
                     localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
                 }
+
                 if (this.currentPage.id == "dashboard") {
                     selectedRange = this.selectedDateRangeCal
                 } else {
-                    selectedRange = this.selectedDateRangeCal
+                    selectedRange = this.selectedCalRange
                 }
 
                 /*============= 2 - Check last date in parse db =============
@@ -148,8 +172,10 @@ const tradesMixin = {
                         const query = new Parse.Query(Object);
                         query.equalTo("user", Parse.User.current());
                         query.descending("dateUnix");
-                        const results = await query.first()
-                        lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
+                        query.limit(1)
+                        const results = await query.find()//.first stopped working, for unknown reason. So I added limit(1) and .find()
+                        //console.log("results "+JSON.stringify(JSON.parse(JSON.stringify(results))[0].dateUnix))
+                        lastDateParse = JSON.parse(JSON.stringify(results))[0].dateUnix
                         console.log("  --> Last date parse " + lastDateParse)
                         resolve()
                     })
@@ -308,7 +334,7 @@ const tradesMixin = {
             if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes(), this.dailyModal()])
-                
+
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page

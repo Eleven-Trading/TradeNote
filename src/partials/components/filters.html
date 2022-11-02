@@ -63,6 +63,9 @@
                     <option v-for="item in ratios" v-bind:value="item.value" v-bind:selected="item.value ==  selectedRatio">{{item.label}}</option>
                 </select>
             </div>
+            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'daily'">
+                 <input type="month" class="form-control" v-bind:value="dateCalFormatMonth(selectedCalRange.start)" v-on:input="loadCalendar('filter', $event.target.value)">
+            </div>
         </div>
     </div>
 </div>

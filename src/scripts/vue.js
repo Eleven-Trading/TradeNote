@@ -191,7 +191,7 @@ const vueApp = new Vue({
             dailyInfos: {},
 
             //Filter
-            filtersOpen: false,
+            filtersOpen: true,
             dateRange: [{
                     value: "all",
                     label: "All",
@@ -1079,6 +1079,9 @@ const vueApp = new Vue({
         },*/
         dateCalFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("YYYY-MM-DD")
+        },
+        dateCalFormatMonth(param) {
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("YYYY-MM")
         },
         timeFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("HH:mm:ss")

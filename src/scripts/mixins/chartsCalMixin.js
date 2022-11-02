@@ -1,7 +1,7 @@
 const chartsCalMixin = {
     methods: {
 
-        loadCalendar: async function(param, param2) {            
+        loadCalendar: async function(param, param2) {
             console.log("\nLOADING CALENDAR")
             this.renderingCharts = true
             this.totalCalendarMounted = false
@@ -18,20 +18,29 @@ const chartsCalMixin = {
             /* ---- 1: GET CALENDAR DATES ---- */
             console.log(" -> Getting calendar dates")
             await new Promise((resolve, reject) => {
+                
                 if (param == undefined) {
                     param = 0
                 }
 
-                /* contrary to filtered trades in tradesMixin, here we need to .tz because we are recreating date */
+                if (param == "filter") {
+                    let temp = {}
+                    temp.start = dayjs.tz(param2, this.tradeTimeZone).unix()
+                    temp.end = dayjs.tz(param2, this.tradeTimeZone).endOf("month").unix()
+                    this.selectedCalRange = temp
+                    console.log("selectedCalRange " + JSON.stringify(this.selectedCalRange))
+                    localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
+                } else {
+                    /* contrary to filtered trades in tradesMixin, here we need to .tz because we are recreating date */
 
-                this.selectedCalRange.start = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
-                    /* reuse just created .start because we only show one month at a time */
-                this.selectedCalRange.end = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).endOf('month').unix()
-                    //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
-
+                    this.selectedCalRange.start = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
+                        /* reuse just created .start because we only show one month at a time */
+                    this.selectedCalRange.end = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).endOf('month').unix()
+                        //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
+                    localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
+                }
                 month = dayjs.unix(this.selectedCalRange.start).get('month') + 1 //starts at 0
                 year = dayjs.unix(this.selectedCalRange.start).get('year')
-                localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
                 resolve()
 
             })
@@ -110,6 +119,7 @@ const chartsCalMixin = {
             await new Promise((resolve, reject) => {
                 //console.log("all " + JSON.stringify(this.allTrades))
                 if (param != 0) {
+                    console.log("start " + this.selectedCalRange.start)
                     if (this.threeMonthsBack <= this.selectedCalRange.start) {
                         this.filteredTrades = this.threeMonthsTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
                     } else {
@@ -118,9 +128,9 @@ const chartsCalMixin = {
 
                 }
                 this.filteredTrades.sort(function(a, b) {
-                        return b.dateUnix - a.dateUnix
-                    })
-                    //console.log("filered trads "+JSON.stringify(this.filteredTrades))
+                    return b.dateUnix - a.dateUnix
+                })
+                //console.log("filered trades " + JSON.stringify(this.filteredTrades))
                 resolve()
             })
             if (this.currentPage.id == "videos") {
@@ -136,12 +146,14 @@ const chartsCalMixin = {
                 //Rendering double line chart
                 //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
                 await this.filteredTrades.forEach(el => {
+                    //console.log(" date "+el.dateUnix)
                     var chartId = 'doubleLineChart' + el.dateUnix
                     var chartDataGross = []
                     var chartDataNet = []
                     var chartCategories = []
                     el.trades.forEach(element => {
                         var proceeds = Number((element.grossProceeds).toFixed(2))
+                            //console.log("proceeds "+proceeds)
                         var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
                         if (chartDataGross.length == 0) {
                             chartDataGross.push(proceeds)
@@ -155,6 +167,7 @@ const chartsCalMixin = {
                             chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
                         }
                         chartCategories.push(this.hourMinuteFormat(element.exitTime))
+                            //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
                         this.doubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
                     });
                 })
@@ -340,7 +353,9 @@ const chartsCalMixin = {
         },
 
         doubleLineChart(param1, param2, param3, param4) { //chartID, chartDataGross, chartDataNet, chartCategories
+            //console.log("param1 "+param1+", param2 "+param2+", param3 "+param3+", param4 "+param4)
             return new Promise((resolve, reject) => {
+                //console.log("param1 "+param1)
                 var myChart = echarts.init(document.getElementById(param1));
                 option = {
                         tooltip: {
@@ -1034,7 +1049,7 @@ const chartsCalMixin = {
                     } else if (param1 == "barChartNegative15") {
                         //console.log(" mistakes "+JSON.stringify(this.mistakes))
                         var mistakes = this.mistakes.find(item => item.objectId === key)
-                        //console.log("mistakes "+mistakes)
+                            //console.log("mistakes "+mistakes)
                         yAxis.push(mistakes.name) // unshift because I'm only able to sort timeframe ascending
 
                     } else {
