@@ -191,7 +191,7 @@ const vueApp = new Vue({
             dailyInfos: {},
 
             //Filter
-            filtersOpen: true,
+            filtersOpen: false,
             dateRange: [{
                     value: "all",
                     label: "All",

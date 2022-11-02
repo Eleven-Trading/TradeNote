@@ -128,11 +128,14 @@ const tradesMixin = {
                 if (!localStorage.getItem('selectedCalRange')) {
                     localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
                 }
+
                 if (this.currentPage.id == "dashboard") {
                     selectedRange = this.selectedDateRangeCal
                 } else {
-                    selectedRange = this.selectedDateRangeCal
+                    selectedRange = this.selectedCalRange
                 }
+
+                
 
                 /*============= 2 - Check last date in parse db =============
 
@@ -309,7 +312,8 @@ const tradesMixin = {
             }
             if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
-                await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes(), this.dailyModal()])
+                if (this.currentPage.id == "daily") await this.dailyModal()
+                await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes()])
                 
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
