@@ -151,10 +151,8 @@ const tradesMixin = {
                         const query = new Parse.Query(Object);
                         query.equalTo("user", Parse.User.current());
                         query.descending("dateUnix");
-                        query.limit(1)
-                        const results = await query.find()//.first stopped working, for unknown reason. So I added limit(1) and .find()
-                        //console.log("results "+JSON.stringify(JSON.parse(JSON.stringify(results))[0].dateUnix))
-                        lastDateParse = JSON.parse(JSON.stringify(results))[0].dateUnix
+                        const results = await query.first()
+                        lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
                         console.log("  --> Last date parse " + lastDateParse)
                         resolve()
                     })
