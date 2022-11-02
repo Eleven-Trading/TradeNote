@@ -220,7 +220,7 @@ const addTradesMixin = {
                     await this.createExecutions()
                     await this.createTrades()
                     await this.createBlotter()
-                    await this.filterExisting("trades")
+                    //await this.filterExisting("trades")
                     await this.createPnL()
 
                 })
@@ -1149,7 +1149,7 @@ const addTradesMixin = {
 
 
                 }
-                console.log(" -> P&L: " + JSON.stringify(temp9))
+                //console.log(" -> P&L: " + JSON.stringify(temp9))
                 this.pAndL = temp9
 
 
@@ -1206,9 +1206,9 @@ const addTradesMixin = {
                     object.setACL(new Parse.ACL(Parse.User.current()));
 
                     object.save()
-                        .then((object) => {
+                        .then((test) => {
 
-                            console.log(" -> Added new " + param2 + " with id " + object.id)
+                            console.log(" -> Added new " + param2 + " with id " + test)
                             i++
                             if (i == numberOfDates) {
                                 console.log("resolve")
@@ -1226,6 +1226,7 @@ const addTradesMixin = {
 
 
             uploadFunction = async(param) => {
+                //console.log(" -> Upload function for "+param)
                 return new Promise(async(resolve, reject) => {
                     let keys
                     i = 0
@@ -1269,7 +1270,7 @@ const addTradesMixin = {
                 await this.initTab()
             }
             if (this.currentPage.id == "addTrades") {
-                window.location.href = "/dashboard"
+                //window.location.href = "/dashboard"
             }
             //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
