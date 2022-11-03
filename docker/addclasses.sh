@@ -145,3 +145,14 @@ curl -X POST \
       }
     }' \
   http://$PARSEHOST:1337/parse/schemas/patternsMistakes
+
+
+ACCOUNTID=$(curl -X GET -H "X-Parse-Application-Id: $PARSE_INIT" -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" -G  --data-urlencode 'keys=objectId' http://$PARSEHOST:1337/parse/users | grep -o '"objectId":"[^"]*' | cut -d '"' -f4)
+
+
+curl -X PUT \
+  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"accounts":[{"value": "XY000001","label": "Live Account"},{"value": "XY000002","label": "Demo Account"},{"value":"'"$CUSTOM_ACCOUNT"'","label":"'"$ACCOUNT_LABEL"'"}]}' \
+  http://$PARSEHOST:1337/parse/users/$ACCOUNTID

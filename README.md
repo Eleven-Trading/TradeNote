@@ -24,7 +24,7 @@ This project arose from a personal need and as such is most widely used (and tes
 
 TradeNote works best for intraday stocks and forex trading. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
-Please feel free to contribute if you want to see other brokers or vote for your broker via [Fider](https://fider.tradenote.co "Fider"). 
+Please feel free to contribute if you want to see other brokers or vote for your broker via [Fider](https://fider.tradenote.co "Fider").
 
 
 # Benefits
@@ -48,10 +48,10 @@ This project uses [Parse](https://github.com/parse-community "Parse") as its bac
 2. A mongo database where the data is stored
 3. A dashboard for nicely displaying the mongo database
 
-TradeNote uses Parse for the following reasons: 
+TradeNote uses Parse for the following reasons:
 1. Manage the authentification (flow)
 2. Parse is a great framework for all API communications with the mongo database
-3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
+3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter.
 
 During the installation process, Parse is installed via Docker. If you use [Caprover](https://github.com/caprover/caprover "Caprover"), you can install Parse using One-Click Apps.
 
@@ -72,6 +72,8 @@ cd docker
 docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
 ```
 2. modify the env.env file to match your environment
+- <custom_account>: trade account (must match trade history)
+- <account_label>: account description
 - <your_parse_app_id>: your parse app id which is a random string (same as point 3)
 - <your_parse_master_key>: enter a random string
 - <your_parse_server_ip>: your parse server url
@@ -82,7 +84,7 @@ docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<
 3. run all the services up
 
    3a. Run TradeNote with parse-dashboard
-   
+
 ```
 docker-compose up -d
 ```   
@@ -98,10 +100,17 @@ docker-compose -f docker-compose-without-dashboard.yaml up -d
 
 5. Register via http://<your_ip>:7777/register
 
+6. update
+```
+docker rm -f docker-tradenote-1
+```
+- repeat step 1 - 4
+- logout and login TradeNote
+
 ### Caprover
 If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), you can deploy directly thanks to the existing captain-definition file.
 1. Install Parse from One-Click Apps
-2. Create an app in Caprover and in "App Configs" add the following variables: 
+2. Create an app in Caprover and in "App Configs" add the following variables:
    - PARSE_INIT : your parse app id
    - PARSE_URL : your parse server url
 3. Deploy TradeNote using the captain-definition file
