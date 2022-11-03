@@ -1001,7 +1001,7 @@ const chartsCalMixin = {
                 if (param1 == "barChartNegative10") {
                     const toRemove = ['null', 'undefined'];
                     var keyObject = _.omit(this.groups.patterns, toRemove)
-                        //console.log("filtered "+JSON.stringify(keyObject))
+                    //console.log("filtered "+JSON.stringify(keyObject))
                 }
                 if (param1 == "barChartNegative11") {
                     const toRemove = ['null', 'undefined'];
@@ -1036,15 +1036,21 @@ const chartsCalMixin = {
                 //console.log("keys " + JSON.stringify(keys))
                 for (const key of keys) {
                     //console.log("key " + JSON.stringify(key))
+                    let pushRatio = true
                     if (param1 == "barChartNegative10") {
-                        var patterns = this.patterns.find(item => item.objectId === key)
-                            //console.log("pattern name " + JSON.stringify(patterns))
-                        if (patterns) yAxis.push(patterns.name) // unshift because I'm only able to sort timeframe ascending
+                        let pattern = this.patterns.find(item => item.objectId === key)
+                        //console.log("pattern name " + JSON.stringify(pattern))
+                        if (pattern){
+                            yAxis.push(pattern.name) // unshift because I'm only able to sort timeframe ascending
+                        }else{
+                            pushRatio = false //this because I manage to remove pattern name from list, but the ratio is still calculated. So I need to mark it here
+                        }
+                        //console.log("yaxis "+JSON.stringify(yAxis))
 
                     } else if (param1 == "barChartNegative11") {
-                        var patterns = this.patterns.find(item => item.type === key)
-                            //console.log("patteerns "+patterns)
-                        yAxis.push(patterns.type) // unshift because I'm only able to sort timeframe ascending
+                        let pattern = this.patterns.find(item => item.type === key)
+                            //console.log("patteern "+pattern)
+                        yAxis.push(pattern.type) // unshift because I'm only able to sort timeframe ascending
 
                     } else if (param1 == "barChartNegative15") {
                         //console.log(" mistakes "+JSON.stringify(this.mistakes))
@@ -1128,7 +1134,7 @@ const chartsCalMixin = {
                                 series.unshift(ratio)
                             }
                             if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15") {
-                                series.push(ratio)
+                                if (pushRatio) series.push(ratio)
                             }
                         }
                     })

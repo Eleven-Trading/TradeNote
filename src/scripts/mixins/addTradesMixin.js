@@ -1206,9 +1206,9 @@ const addTradesMixin = {
                     object.setACL(new Parse.ACL(Parse.User.current()));
 
                     object.save()
-                        .then((test) => {
+                        .then((object) => {
 
-                            console.log(" -> Added new " + param2 + " with id " + test)
+                            console.log(" -> Added new " + param2 + " with id " + object.id)
                             i++
                             if (i == numberOfDates) {
                                 console.log("resolve")
