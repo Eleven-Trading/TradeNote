@@ -371,6 +371,8 @@ const vueApp = new Vue({
             curWeekTrades: [],
             winLossChartToLoad: null,
             calendarData: null,
+            miniCalendarsData: null,
+            calendarMonths: [],
             days: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
             currentCalendarDate: null,
             todayDate: null,
@@ -753,9 +755,9 @@ const vueApp = new Vue({
             let hideNumber
 
             var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
-                //console.log("list " + triggerTabList)
+            console.log("list " + triggerTabList)
             var self = this // this is needed or else could not call function inside eventlistener
-            triggerTabList.forEach(function(triggerEl) {
+            triggerTabList.forEach((triggerEl) => {
                 /*var tabTrigger = new bootstrap.Tab(triggerEl)
                 triggerEl.addEventListener('click', function(event) {
                     console.log("clicking")
@@ -794,8 +796,8 @@ const vueApp = new Vue({
                         //console.log(" clickedNav tab "+clickedNav)
                     })*/
 
-                    triggerEl.addEventListener('click', function(event) {
-                        //console.log("1- hideId " + hideId)
+                    triggerEl.addEventListener('click', (event) => {
+                        console.log("1- hideId " + hideId)
                         showId = event.target.getAttribute('id')
                         showType = showId.split('-')[0]
                         showNumber = showId.split('-')[1]

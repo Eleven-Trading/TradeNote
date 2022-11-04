@@ -688,6 +688,17 @@ img.navbar-brand {
     margin: 0;
 }
 
+.miniCalCol {
+    max-width: 400px !important;
+}
+.calDivMini {
+    margin: 1px;
+    border: 1px solid lightgray;
+    height: 9px;
+    width: 9px;
+    padding: 1em;
+}
+
 .dashInfoTitle {
     font-size: x-small;
     color: var(--white-60);

@@ -29,3 +29,22 @@
         </div>
     </div>
 </div>
+<div v-show="currentPage.id == 'calendar'" class="col-12">
+    <div class="row justify-content-center">
+        <div class="col-3 miniCalCol me-2" v-for="(calData, index) in miniCalendarsData">
+            <div class="row">
+                <div>{{calData[0][0].month}}</div>
+                <div class="col" v-for="(day, index) in days">
+                    <div>{{day}}</div>
+                    <div v-for="line in calData">
+                        <div class="row">
+                            <div class="col" v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv': line[index].pAndL[amountCase+'Proceeds']>=0, 'redTradeDiv': line[index].pAndL[amountCase+'Proceeds']<0}, 'calDivMini']">
+                                <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

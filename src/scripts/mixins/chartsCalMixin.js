@@ -5,8 +5,8 @@ const chartsCalMixin = {
             console.log("\nLOADING CALENDAR")
             this.renderingCharts = true
             this.totalCalendarMounted = false
-            var month
-            var year
+            this.miniCalendarsData = []
+            this.calendarMonths = []
 
             if (this.currentPage.id == "daily" ||  this.currentPage.id == 'calendar') {
                 calCumulatedParam = parseInt(localStorage.getItem('calCumulatedParamDaily'))
@@ -18,7 +18,7 @@ const chartsCalMixin = {
             /* ---- 1: GET CALENDAR DATES ---- */
             console.log(" -> Getting calendar dates")
             await new Promise((resolve, reject) => {
-                
+
                 if (param == undefined) {
                     param = 0
                 }
@@ -39,76 +39,104 @@ const chartsCalMixin = {
                         //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
                     localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
                 }
-                month = dayjs.unix(this.selectedCalRange.start).get('month') + 1 //starts at 0
-                year = dayjs.unix(this.selectedCalRange.start).get('year')
                 resolve()
 
             })
 
             /* ---- 2: CREATE CALENDAR ---- */
             console.log(" -> Creating calendar dates")
-            var calendarizeData = calendarize(dayjs.unix(this.selectedCalRange.start).format("YYYY-MM-DD"), 1)
-            var calendarJson = {}
-            var i = 0
-                //console.log("selectedRange "+param2)
-                //this.selectedCalRange = param2
+            const createCalendar = async(param1, param2) => {
+                console.log("param 1 "+param1)
+                return new Promise(async(resolve, reject) => {
+                    let calendarizeData = calendarize(dayjs.unix(param1).format("YYYY-MM-DD"), 1) // this creates calendar date numbers needed for a table calendar
+                    let calendarJson = {}
+                    let month = dayjs.unix(param1).get('month') + 1 //starts at 0
+                    let year = dayjs.unix(param1).get('year')
+                    let calTrade
 
-            let calTrade
-            if (this.threeMonthsBack <= this.selectedCalRange.start) {
-                if (this.threeMonthsTrades.length > 0) {
-                    console.log(" -> Getting existing variable")
-                    calTrade = this.threeMonthsTrades
-                } else {
-                    console.log(" -> Checking tradese in IndexedDB")
-                    let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
-                    console.log(" -> Daily - threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
-                    if (!dataExistsInIndexedDB) {
-                        await this.getTradesFromDb(6)
+                    if (this.threeMonthsBack <= param1) {
+                        if (this.threeMonthsTrades.length > 0) {
+                            console.log(" -> Getting existing variable")
+                            calTrade = this.threeMonthsTrades
+                        } else {
+                            console.log(" -> Checking tradese in IndexedDB")
+                            let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
+                            console.log(" -> Daily - threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
+                            if (!dataExistsInIndexedDB) {
+                                await this.getTradesFromDb(6)
+                            }
+                            calTrade = this.threeMonthsTrades
+                        }
+                    } else {
+                        if (this.allTrades.length > 0) {
+                            calTrade = this.allTrades
+                        } else {
+                            let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
+                            if (!dataExistsInIndexedDB) {
+                                await this.getTradesFromDb(0)
+                            }
+                            calTrade = this.allTrades
+                        }
                     }
-                    calTrade = this.threeMonthsTrades
-                }
-            } else {
-                if (this.allTrades.length > 0) {
-                    calTrade = this.allTrades
-                } else {
-                    let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
-                    if (!dataExistsInIndexedDB) {
-                        await this.getTradesFromDb(0)
+
+                    calendarizeData.forEach((element, index) => {
+                        calendarJson[index] = []
+                        element.forEach((element) => {
+                            // 1- Create a calendar date from each element (calendar number)
+                            var elementDate = year + "/" + month + "/" + element
+                            var elementDateUnix = dayjs(elementDate).unix()
+
+                            // 2- Create data for each calendar box
+                            let tempData = {}
+                            tempData.month = this.monthFormat(param1) // day number of the month
+                            //console.log("month "+tempData.month)
+                            tempData.day = element // day number of the month
+                            tempData.dateUnix = elementDateUnix // date in unix
+
+                            //Using allTrades and not filteredTrades because we do not want calendar to be filtered
+                            //console.log("selectedRange "+param1.start)
+
+                            let trade = calTrade.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
+
+                            if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
+                                tempData.pAndL = trade[0].pAndL
+                            } else {
+                                tempData.pAndL = []
+                            }
+                            calendarJson[index].push(tempData)
+
+                        })
+
+                    })
+                    if (param1 == this.selectedCalRange.start) {
+                        this.calendarData = calendarJson
+                    } else {
+                        this.miniCalendarsData.push(calendarJson)
                     }
-                    calTrade = this.allTrades
-                }
+                    resolve()
+                })
             }
 
-            calendarizeData.forEach((element) => {
-                calendarJson[i] = []
-                element.forEach((element) => {
-                    // 1- Create a calendar date from each element (calendar number)
-                    var elementDate = year + "/" + month + "/" + element
-                    var elementDateUnix = dayjs(elementDate).unix()
-
-                    // 2- Create data for each calendar box
-                    let tempData = {}
-                    tempData.day = element // day number of the month
-                    tempData.dateUnix = elementDateUnix // date in unix
-
-                    //Using allTrades and not filteredTrades because we do not want calendar to be filtered
-                    //console.log("selectedRange "+param2.start)
-
-                    let trade = calTrade.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
-
-                    if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
-                        tempData.pAndL = trade[0].pAndL
-                    } else {
-                        tempData.pAndL = []
-                    }
-                    calendarJson[i].push(tempData)
-
-                })
-                i++
-            })
-            this.calendarData = calendarJson
+            let currentMonthNumber = dayjs(this.selectedCalRange.start * 1000).month()
+            let i = 0
+            if (this.currentPage.id == 'calendar') {
+                while (i <= currentMonthNumber) {
+                    let tempUnix = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(i, 'month').startOf('month').unix()
+                        //this.calendarMonths.push(this.monthFormat(tempUnix))
+                    await createCalendar(tempUnix)
+                    i++
+                }
+            } else {
+                await createCalendar(this.selectedCalRange.start)
+            }
+            /*await createCalendar("full", this.selectedCalRange.start)
+            await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(1, 'month').startOf('month').unix())
+            await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
             this.totalCalendarMounted = true
-                //console.log("cal "+JSON.stringify(calendarJson))
+                //console.log("calendarData "+JSON.stringify(this.calendarData))
+            console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
+
+
 
             /* ---- 3: GET TRADES AND LOAD CHARTS ---- */
 
@@ -128,9 +156,9 @@ const chartsCalMixin = {
 
                 }
                 this.filteredTrades.sort(function(a, b) {
-                    return b.dateUnix - a.dateUnix
-                })
-                //console.log("filered trades " + JSON.stringify(this.filteredTrades))
+                        return b.dateUnix - a.dateUnix
+                    })
+                    //console.log("filered trades " + JSON.stringify(this.filteredTrades))
                 resolve()
             })
             if (this.currentPage.id == "videos") {
@@ -1001,7 +1029,7 @@ const chartsCalMixin = {
                 if (param1 == "barChartNegative10") {
                     const toRemove = ['null', 'undefined'];
                     var keyObject = _.omit(this.groups.patterns, toRemove)
-                    //console.log("filtered "+JSON.stringify(keyObject))
+                        //console.log("filtered "+JSON.stringify(keyObject))
                 }
                 if (param1 == "barChartNegative11") {
                     const toRemove = ['null', 'undefined'];
@@ -1039,10 +1067,10 @@ const chartsCalMixin = {
                     let pushRatio = true
                     if (param1 == "barChartNegative10") {
                         let pattern = this.patterns.find(item => item.objectId === key)
-                        //console.log("pattern name " + JSON.stringify(pattern))
-                        if (pattern){
+                            //console.log("pattern name " + JSON.stringify(pattern))
+                        if (pattern) {
                             yAxis.push(pattern.name) // unshift because I'm only able to sort timeframe ascending
-                        }else{
+                        } else {
                             pushRatio = false //this because I manage to remove pattern name from list, but the ratio is still calculated. So I need to mark it here
                         }
                         //console.log("yaxis "+JSON.stringify(yAxis))
