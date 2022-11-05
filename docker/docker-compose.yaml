@@ -8,7 +8,7 @@ services:
     restart: always
 
   parse-server:
-    image: parseplatform/parse-server
+    image: parseplatform/parse-server:latest
     ports:
       - '1337:1337'
     depends_on:
@@ -31,7 +31,7 @@ services:
     restart: always
 
   parse-dashboard:
-    image: parseplatform/parse-dashboard:4.2.0-alpha.4
+    image: parseplatform/parse-dashboard:latest
     ports:
       - '4040:4040'
     env_file: env.env

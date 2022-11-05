@@ -65,19 +65,19 @@ git clone https://github.com/Eleven-Trading/TradeNote.git
 #### 2. Modify the "< >" inside the env.env file to match your environment
 - <your_parse_app_id>: Set a random string as application ID, which will be used to connect to the Parse server (no spaces)
 - <your_parse_master_key>: Set a random string as application ID, which can be used to make root connections to the Parse server (no spaces)
-- <your_parse_server_ip>: This will be your Parse server URL. If you are installing TradeNote locally, then this is simply http://localhost and if you are installing remotely then it is the remote ip address of your server.
+- <your_tradenote_parse_server_ip>: This is the ip where you are installing TradeNote. If you are installing locally, then this is simply localhost and if you are installing remotely then it is the remote ip address of your server(and please update http(s) accordingly).
 - <your_parse_dashboard_user>: Parse comes with a dashboard where you can explore your data. Set username used for login into the Parse dashboard.
 - <your_parse_dashboard_password>: Set password used for login into the Parse dashboard.
 - <your_app_name>: Pick a name for your app e.g. TradeNote
 
 #### 3. Enter the cloned directory
 ```
-cd docker
+cd TradeNote
 ```
 #### 4. Build Docker image with your custom parameters (fill out "< >" with the information you sett in step 2)
 
 ```
-docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
+docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
 ```
 
 #### 5. Run up all the services
@@ -87,19 +87,21 @@ There are two options: you can run TradeNote with Parse Dashboard or without
 ##### 5a. Run TradeNote with parse-dashboard
    
 ```
-docker-compose up -d
+docker-compose -f docker/docker-compose.yaml up -d
 ```   
 
 ##### b. Run TradeNote without parse-dashboard.
   This may be interesting in certain cases when you're running TradeNote on Raspberry Pi.
 
 ```
-docker-compose -f docker-compose-without-dashboard.yaml up -d
+docker-compose -f docker/docker-compose-without-dashboard.yaml up -d
 ```
 
 #### 6. wait at least 1 minute for services up and data creation (IMPORTANT)
 
 #### 7. Register via http://<your_ip>:7777/register
+
+#### 8 (optional). view your data using the Parse dashboard via http://<your_tradenote_parse_server_ip>:4040
 
 
 ### Caprover
