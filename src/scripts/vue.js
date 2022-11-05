@@ -857,7 +857,7 @@ const vueApp = new Vue({
         },
 
         initParse() {
-            Parse.initialize("PARSE_INIT")
+            Parse.initialize("PARSE_APP_ID")
             Parse.serverURL = "PARSE_URL"
         },
         initQuill(param) {

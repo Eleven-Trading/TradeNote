@@ -57,52 +57,56 @@ During the installation process, Parse is installed via Docker. If you use [Capr
 
 ## Installation
 ### Docker
-1. Clone the repository
+#### 1. Clone the repository
 ```
 git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
-2. Enter the cloned directory
+
+#### 2. Modify the "< >" inside the env.env file to match your environment
+- <your_parse_app_id>: Set a random string as application ID, which will be used to connect to the Parse server (no spaces)
+- <your_parse_master_key>: Set a random string as application ID, which can be used to make root connections to the Parse server (no spaces)
+- <your_parse_server_ip>: This will be your Parse server URL. If you are installing TradeNote locally, then this is simply http://localhost and if you are installing remotely then it is the remote ip address of your server.
+- <your_parse_dashboard_user>: Parse comes with a dashboard where you can explore your data. Set username used for login into the Parse dashboard.
+- <your_parse_dashboard_password>: Set password used for login into the Parse dashboard.
+- <your_app_name>: Pick a name for your app e.g. TradeNote
+
+#### 3. Enter the cloned directory
 ```
 cd docker
 ```
-3. Build Docker image with your custom parameters
- - PARSE_INIT : your parse app id which is a random string.
- - PARSE_URL : your parse server url i.e. localhost if you're running TradeNote locally or your server IP if you're running TradeNote remotely.
-```
-docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_INIT=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
-```
-2. modify the env.env file to match your environment
-- <your_parse_app_id>: your parse app id which is a random string (same as point 3)
-- <your_parse_master_key>: enter a random string
-- <your_parse_server_ip>: your parse server url
-- <your_parse_dashboard_user>: username used for login into the Parse dashboard
-- <your_parse_dashboard_password>: password used for login into the Parse dashboard
-- <your_app_name>: pich a name for your app e.g. TradeNote
+#### 4. Build Docker image with your custom parameters (fill out "< >" with the information you sett in step 2)
 
-3. run all the services up
+```
+docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=<your_parse_server_url>
+```
 
-   3a. Run TradeNote with parse-dashboard
+#### 5. Run up all the services
+There are two options: you can run TradeNote with Parse Dashboard or without
+
+
+##### 5a. Run TradeNote with parse-dashboard
    
 ```
 docker-compose up -d
 ```   
 
-   3b. Run TradeNote without parse-dashboard.
+##### b. Run TradeNote without parse-dashboard.
   This may be interesting in certain cases when you're running TradeNote on Raspberry Pi.
 
 ```
 docker-compose -f docker-compose-without-dashboard.yaml up -d
 ```
 
-4. wait at least 1 minute for services up and data creation (IMPORTANT)
+#### 6. wait at least 1 minute for services up and data creation (IMPORTANT)
 
-5. Register via http://<your_ip>:7777/register
+#### 7. Register via http://<your_ip>:7777/register
+
 
 ### Caprover
 If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), you can deploy directly thanks to the existing captain-definition file.
 1. Install Parse from One-Click Apps
 2. Create an app in Caprover and in "App Configs" add the following variables: 
-   - PARSE_INIT : your parse app id
+   - PARSE_APP_ID : your parse app id
    - PARSE_URL : your parse server url
 3. Deploy TradeNote using the captain-definition file
 

@@ -70,11 +70,11 @@ function imagesFunction() {
 };
 
 function scriptsFunction() {
-    var PARSE_INIT, i = process.argv.indexOf("--PARSE_INIT");
+    var PARSE_APP_ID, i = process.argv.indexOf("--PARSE_APP_ID");
     if (i > -1) {
-        PARSE_INIT = process.argv[i + 1];
+        PARSE_APP_ID = process.argv[i + 1];
         //console.log("OKTA_BASE_URL is "+OKTA_BASE_URL)
-    } else { PARSE_INIT = '' }
+    } else { PARSE_APP_ID = '' }
 
     var PARSE_URL, i = process.argv.indexOf("--PARSE_URL");
     if (i > -1) {
@@ -83,7 +83,7 @@ function scriptsFunction() {
     
     
     return gulp.src(paths.scriptsPath.src, { allowEmpty: true })
-        .pipe(replace('PARSE_INIT', PARSE_INIT))
+        .pipe(replace('PARSE_APP_ID', PARSE_APP_ID))
         .pipe(replace('PARSE_URL', PARSE_URL))
         .pipe(gulp.dest(paths.scriptsPath.dest))
         .pipe(browserSync.stream());

@@ -3,7 +3,7 @@
 PARSEHOST=parse-server
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -14,7 +14,7 @@ curl -X POST \
   http://$PARSEHOST:1337/parse/schemas/cashJournal
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -25,7 +25,7 @@ curl -X POST \
   http://$PARSEHOST:1337/parse/schemas/journals
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -36,7 +36,7 @@ curl -X POST \
   http://$PARSEHOST:1337/parse/schemas/dailyInfos
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -47,7 +47,7 @@ curl -X POST \
   http://$PARSEHOST:1337/parse/schemas/playbooks
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -58,7 +58,7 @@ curl -X POST \
   http://$PARSEHOST:1337/parse/schemas/setupsEntries
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -78,7 +78,7 @@ curl -X POST \
 
 
 curl -X PUT \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -93,7 +93,7 @@ curl -X PUT \
 
 
 curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -112,7 +112,7 @@ curl -X POST \
 
 
   curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
@@ -129,7 +129,7 @@ curl -X POST \
 
 
   curl -X POST \
-  -H "X-Parse-Application-Id: $PARSE_INIT" \
+  -H "X-Parse-Application-Id: $PARSE_APP_ID" \
   -H "X-Parse-Master-Key: $PARSE_MASTER_KEY" \
   -H "Content-Type: application/json" \
   -d '
