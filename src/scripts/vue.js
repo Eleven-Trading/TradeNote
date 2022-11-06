@@ -332,19 +332,6 @@ const vueApp = new Vue({
                     label: "Profit Factor"
                 }
             ],
-            accounts: [{
-                    value: "all",
-                    label: "Live+Demo"
-                },
-                {
-                    value: "KHO88922",
-                    label: "Live"
-                },
-                {
-                    value: "KHO88922DEMO",
-                    label: "Demo"
-                }
-            ],
             grossNet: [{
                     value: "gross",
                     label: "Gross"

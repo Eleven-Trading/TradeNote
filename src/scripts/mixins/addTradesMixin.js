@@ -7,6 +7,7 @@ const addTradesMixin = {
             existingImports: [],
             includeFinancials: true,
             existingTradesArray: [],
+            tradeAccounts: [],
 
             cashJournals: {},
             executions: {},
@@ -330,11 +331,11 @@ const addTradesMixin = {
                 var x
                 for (const key of keys) {
                     let temp2 = {};
-                    temp2.account = this.tradesData[key].Account;
-
-                    /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
-                    //frDate = usDate.tz("Europe/Paris")
-                    console.log("date "+usDate+" and fr ")*/
+                    temp2.account = this.tradesData[key].Account
+                    if (!this.tradeAccounts.includes(this.tradesData[key].Account)) this.tradeAccounts.push(this.tradesData[key].Account)
+                        /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
+                        //frDate = usDate.tz("Europe/Paris")
+                        console.log("date "+usDate+" and fr ")*/
                     const dateArrayTD = this.tradesData[key]['T/D'].split('/');
                     const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
                     temp2.td = dayjs.tz(formatedDateTD, this.tradeTimeZone).unix()
@@ -1249,6 +1250,50 @@ const addTradesMixin = {
                 })
             }
 
+            checkTradeAccounts = async(param) => {
+                return new Promise(async(resolve, reject) => {
+                    console.log("trade Accounts " + this.tradeAccounts)
+                    console.log("current accounts " + JSON.stringify(this.currentUser.accounts))
+
+                    let updateTradeAccounts = async(param) => {
+                        const Object = Parse.Object.extend("_User");
+                        const query = new Parse.Query(Object);
+                        query.equalTo("objectId", this.currentUser.objectId);
+                        const results = await query.first();
+                        if (results) {
+                            results.set("accounts", param)
+                            await results.save() //very important to have await or else too quick to update
+                                //console.log("current accounts " + JSON.stringify(this.currentUser.accounts))
+
+                        } else {
+                            alert("Update query did not return any results")
+                        }
+                    }
+
+                    if (this.currentUser.accounts) {
+                        this.tradeAccounts.forEach(element => {
+                            let check = this.currentUser.accounts.find(x => x.value == element)
+                                //console.log("check "+JSON.stringify(check))
+                            if (!check) {
+                                let tempArray = this.currentUser.accounts
+                                let temp = {}
+                                temp.value = this.tradeAccounts[0]
+                                temp.label = this.tradeAccounts[0]
+                                tempArray.push(temp)
+                                updateTradeAccounts(tempArray)
+                            }
+                        });
+                    } else {
+                        let tempArray = []
+                        let temp = {}
+                        temp.value = this.tradeAccounts[0]
+                        temp.label = this.tradeAccounts[0]
+                        tempArray.push(temp)
+                        updateTradeAccounts(tempArray)
+                    }
+                })
+            }
+            checkTradeAccounts()
             if (Object.keys(this.cashJournals).length > 0) await uploadFunction("cashJournals")
             if (Object.keys(this.executions).length > 0) await uploadFunction("trades")
             this.refreshTrades()
@@ -1270,7 +1315,7 @@ const addTradesMixin = {
                 await this.initTab()
             }
             if (this.currentPage.id == "addTrades") {
-            window.location.href = "/dashboard"
+                window.location.href = "/dashboard"
             }
             //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
