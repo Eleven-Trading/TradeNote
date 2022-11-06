@@ -10,7 +10,7 @@ const tradesMixin = {
             this.dashboardChartsMounted = false
             this.spinnerSetupsUpdate = true
             this.eCharts("clear")
-            
+
             var filterJson = this.dateRange.filter(element => element.value == param)[0]
             this.selectedDateRange = filterJson
 
@@ -19,18 +19,18 @@ const tradesMixin = {
             temp.start = this.selectedDateRange.start
             temp.end = this.selectedDateRange.end
             this.selectedDateRangeCal = temp
-            console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
-            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal)) 
-            
+            console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
+            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal))
+
             this.getAllTrades(true)
         },
 
         inputDateRangeCal(param1, param2) {
-            let dateUnix = null 
-            if (param1 == "start"){
+            let dateUnix = null
+            if (param1 == "start") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
             }
-            if (param1 == "end"){
+            if (param1 == "end") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix()
             }
 
@@ -40,15 +40,15 @@ const tradesMixin = {
                 this.dashboardChartsMounted = false
                 this.spinnerSetupsUpdate = true
                 this.eCharts("clear")
-                localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage)) 
+                localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage))
                 this.getAllTrades(true)
             }
-            
+
             /* Check if start date before end date and vice versa */
             if (dateLocalStorage && param1 == "start" && dateLocalStorage.end > dateUnix) {
                 dateLocalStorage.start = dateUnix
                 this.selectedDateRangeCal = dateLocalStorage
-                console.log("selectedDateRangeCal "+JSON.stringify(this.selectedDateRangeCal))
+                console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
                 refresh()
             }
 
@@ -60,9 +60,9 @@ const tradesMixin = {
 
             /* Update selectedDateRange */
             let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
-            if(tempFilter.length > 0){
+            if (tempFilter.length > 0) {
                 this.selectedDateRange = tempFilter[0]
-            }else{
+            } else {
                 this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
             }
         },
@@ -135,7 +135,7 @@ const tradesMixin = {
                     selectedRange = this.selectedCalRange
                 }
 
-                
+
 
                 /*============= 2 - Check last date in parse db =============
 
@@ -144,7 +144,7 @@ const tradesMixin = {
 
                 let lastDateParse
 
-                (async() => {
+                    (async() => {
                     return new Promise(async(resolve, reject) => { //put return is very important or else it was not waiting for the promise
                         console.log(" -> Getting last date from ParseDB");
                         const Object = Parse.Object.extend("trades");
@@ -152,8 +152,10 @@ const tradesMixin = {
                         query.equalTo("user", Parse.User.current());
                         query.descending("dateUnix");
                         const results = await query.first()
-                        lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
-                        console.log("  --> Last date parse " + lastDateParse)
+                        if (results) {
+                            lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
+                            console.log("  --> Last date parse " + lastDateParse)
+                        }
                         resolve()
                     })
                 })()
@@ -312,7 +314,7 @@ const tradesMixin = {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 if (this.currentPage.id == "daily") await this.dailyModal()
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes()])
-                
+
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page
@@ -398,32 +400,35 @@ const tradesMixin = {
                     query.limit(1000000); // limit to at most 10 results
                     const results = await query.find();
                     console.timeEnd("  --> Execution time");
-                    console.log("  --> Size: " + this.formatBytes(JSON.stringify(results).length))
-                    this.allTrades = []
-                    this.threeMonthsTrades = []
-                        //this.allTrades = JSON.parse(JSON.stringify(results))
-                        //this.allTrades = JSON.parse(JSON.stringify(results))
-                    console.log(" -> Parsing data from ParseDB");
-                    this.spinnerSetupsUpdateText = "Parsing data from ParseDB"
 
-                    JSON.parse(JSON.stringify(results)).forEach(element => {
-                        if (element.dateUnix >= this.threeMonthsBack) {
-                            this.threeMonthsTrades.push(element)
+                    if (results.length > 0) {//here results is an array so we use lenght. Sometimees results is not array then we use if results simply
+                        console.log("  --> Size: " + this.formatBytes(JSON.stringify(results).length))
+                        this.allTrades = []
+                        this.threeMonthsTrades = []
+                            //this.allTrades = JSON.parse(JSON.stringify(results))
+                            //this.allTrades = JSON.parse(JSON.stringify(results))
+                        console.log(" -> Parsing data from ParseDB");
+                        this.spinnerSetupsUpdateText = "Parsing data from ParseDB"
+
+                        JSON.parse(JSON.stringify(results)).forEach(element => {
+                            if (element.dateUnix >= this.threeMonthsBack) {
+                                this.threeMonthsTrades.push(element)
+                            }
+                            this.allTrades.push(element)
+                        });
+                        //console.log("3 months back " + JSON.stringify(this.threeMonthsTrades))
+                        //console.log("all trades before "+JSON.stringify(this.allTrades))
+                        this.threeMonthsTrades.sort(function(a, b) {
+                            return a.dateUnix - b.dateUnix
+                        })
+
+                        if (param == 0 || param == 6) {
+                            console.log("has param")
+                            await this.saveAllTradesToIndexedDb(param)
+                        } else {
+                            console.log("no param")
+                            await Promise.all([this.saveAllTradesToIndexedDb(0), this.saveAllTradesToIndexedDb(6)])
                         }
-                        this.allTrades.push(element)
-                    });
-                    //console.log("3 months back " + JSON.stringify(this.threeMonthsTrades))
-                    //console.log("all trades before "+JSON.stringify(this.allTrades))
-                    this.threeMonthsTrades.sort(function(a, b) {
-                        return a.dateUnix - b.dateUnix
-                    })
-
-                    if (param == 0 || param == 6) {
-                        console.log("has param")
-                        await this.saveAllTradesToIndexedDb(param)
-                    } else {
-                        console.log("no param")
-                        await Promise.all([this.saveAllTradesToIndexedDb(0), this.saveAllTradesToIndexedDb(6)])
                     }
                     resolve()
                 })()
@@ -1232,6 +1237,7 @@ const tradesMixin = {
 
             for (let index = 1; index <= 1; index++) {
                 var chartId = 'pieChart' + index
+                console.log("chartId " + chartId)
                 if (param == "clear") {
                     echarts.init(document.getElementById(chartId)).clear()
                 }

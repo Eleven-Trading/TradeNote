@@ -134,7 +134,7 @@ const chartsCalMixin = {
             await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
             this.totalCalendarMounted = true
                 //console.log("calendarData "+JSON.stringify(this.calendarData))
-            console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
+            //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
 
 
 

@@ -31,6 +31,11 @@ const vueApp = new Vue({
             //General
             currentUser: null,
             pages: [{
+                    id: "registerSignup",
+                    name: "Login",
+                    icon: "uil uil-apps"
+                },
+                {
                     id: "dashboard",
                     name: "Dashboard",
                     icon: "uil uil-apps"
@@ -354,7 +359,7 @@ const vueApp = new Vue({
                 }
             ],
             selectedPosition: localStorage.getItem('selectedPosition'),
-            selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : [],
+            selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long","short"] : [],
             selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
             selectedRatio: localStorage.getItem('selectedRatio'),
             selectedAccount: localStorage.getItem('selectedAccount'),
@@ -533,9 +538,9 @@ const vueApp = new Vue({
         this.checkCurrentUser()
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
-        !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
-        console.log("selected accounts " + this.selectedAccounts)
-
+        if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length>0) {
+            !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
+        }
 
         this.cssTheme == "dark" ? this.cssColor87 = "rgba(255, 255, 255, 0.87)" : this.cssColor = "#333333"
         this.cssTheme == "dark" ? this.cssColor60 = "rgba(255, 255, 255, 0.60)" : this.cssColor = "#333333"
@@ -547,13 +552,10 @@ const vueApp = new Vue({
 
         /* we set the initial selectedDateRange based on selectedDateRangeCal */
         if (localStorage.getItem('selectedDateRangeCal')) {
-            console.log("this.selectedDateRangeCal.end " + this.selectedDateRangeCal.end)
             let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
             if (tempFilter.length > 0) {
-                console.log("range ok + " + JSON.stringify(tempFilter))
                 this.selectedDateRange = tempFilter[0]
             } else {
-                console.log("range not ok")
                 this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
             }
         }
@@ -561,7 +563,6 @@ const vueApp = new Vue({
         this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
-
         //this.currentPage = document.getElementsByTagName("main")[0].id
 
         await this.initIndexedDB()
@@ -1032,7 +1033,7 @@ const vueApp = new Vue({
                 if (this.currentUser) {
                     window.location.replace("/dashboard");
                 } else {
-                    console.log("Your are not logged")
+                    //console.log("Your are not logged")
                 }
             }
 
@@ -1067,6 +1068,37 @@ const vueApp = new Vue({
         logout() {
             Parse.User.logOut().then(() => {
                 Parse.User.current(); // this will now be null
+                localStorage.clear()
+                this.indexedOpenRequest = indexedDB.open("tradeNote", this.indexedDBVersion);
+                this.indexedOpenRequest.onsuccess = () => {
+
+                    // Clear all the data from the object store
+                    clearData();
+                };
+                const clearData = () => {
+                    // open a read/write db transaction, ready for clearing the data
+                    const transaction = this.indexedDB.transaction(["trades"], "readwrite");
+
+                    // report on the success of the transaction completing, when everything is done
+                    transaction.oncomplete = (event) => {
+                        console.log("Transaction completed")
+                    };
+
+                    transaction.onerror = (event) => {
+                        console.log("Transaction not opened due to error: " + transaction.error)
+                    };
+
+                    // create an object store on the transaction
+                    const objectStore = transaction.objectStore("trades");
+
+                    // Make a request to clear all the data out of the object store
+                    const objectStoreRequest = objectStore.clear();
+
+                    objectStoreRequest.onsuccess = (event) => {
+                        // report the success of our request
+                        console.log("Data clear successful")
+                    }
+                }
                 console.log("Logging out")
                 window.location.replace("/");
             });
