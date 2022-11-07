@@ -248,7 +248,9 @@ const addTradesMixin = {
                         }
                     });
                     let accountKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Account:")
+                    console.log ("account key "+accountKey)
                     let dealsKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Deals")
+                    console.log ("deals key "+dealsKey)
 
                     let accountJson = result[Object.keys(result)[0]][accountKey] // doit it this way instead of naming keys in case key names change
                     let account = [Object.values(accountJson)[1]][0].split(" ")[0]
@@ -1288,7 +1290,7 @@ const addTradesMixin = {
                         let temp = {}
                         temp.value = this.tradeAccounts[0]
                         temp.label = this.tradeAccounts[0]
-                        tempArray.push(temp)
+                            tempArray.push(temp)
                         updateTradeAccounts(tempArray)
                     }
                 })

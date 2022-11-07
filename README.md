@@ -74,10 +74,11 @@ git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 cd TradeNote
 ```
-#### 4. Build Docker image with your custom parameters (fill out "< >" with the information you sett in step 2)
+#### 4. Build the TradeNote Docker image with your custom parameters
+Fill out "< >" with the information you sett in step 2 and for < tag > insert the latest [tag](https://github.com/Eleven-Trading/TradeNote/tags "tag") number
 
 ```
-docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
+docker build -f docker/Dockerfile . -t tradenote:<tag> --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
 ```
 
 #### 5. Run up all the services
@@ -112,6 +113,33 @@ If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), yo
    - PARSE_URL : your parse server url
 3. Deploy TradeNote using the captain-definition file
 
+## Update
+### Docker
+#### 1. Clone the repository
+```
+git clone https://github.com/Eleven-Trading/TradeNote.git
+```
+
+#### 2. Enter the cloned directory
+```
+cd TradeNote
+```
+
+#### 3. Build the TradeNote Docker image with your custom parameters
+Fill out "< >" with the information you sett in step 2 and for < tag > insert the latest [tag](https://github.com/Eleven-Trading/TradeNote/tags "tag") number
+
+```
+docker build -f docker/Dockerfile . -t tradenote:<tag> --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
+```
+#### 3. Stop and remove container
+1. List of all containers using: `docker ps -a` and get the TradeNote container id
+2. Stop the TradeNote container: `docker stop <container_id>`
+3. Remove the TradeNote container: `docker rm <container_id>`
+
+#### 4. Run the new TradeNote Docker image (update < tag > with number from step 3)
+```
+docker run -d -p 7777:80 tradenote:<tag>
+```
 
 # Contribute
 I'm a trader and recreational developer. My days are very packed but I will do my best to answer your questions and update the code when needed. As such, do not hesitate to contact me if you would like to contribute and help improve this project. Things to work on and improve:
