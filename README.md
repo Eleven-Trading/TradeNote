@@ -49,7 +49,7 @@ With TradeNote you can keep a daily diary of your trading journey to work on you
 They say trading is like running a business so with TradeNote you can create a forecast so you can anticipate your P&L.
 
 
-# Installation and Upgrade
+# Installation, Upgrade and Backup
 ## Prerequisite
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
 1. The Parse server that does all the "heavy lifting"
@@ -83,10 +83,10 @@ git clone https://github.com/Eleven-Trading/TradeNote.git
 cd TradeNote
 ```
 #### 4_ Build the TradeNote Docker image with your custom parameters
-Fill out "< >" with the information you sett in step 2 and for < tag > insert the latest [tag](https://github.com/Eleven-Trading/TradeNote/tags "tag") number
+Fill out "< >" with the information you sett in step 2
 
 ```
-docker build -f docker/Dockerfile . -t tradenote:<tag> --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
+docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
 ```
 
 #### 5_ Run up all the services
@@ -132,20 +132,36 @@ cd TradeNote
 ```
 
 #### 3_ Build the TradeNote Docker image with your custom parameters
-Fill out "< >" with the information you sett in step 2 and for < tag > insert the latest [tag](https://github.com/Eleven-Trading/TradeNote/tags "tag") number
+Fill out "< >" with the information you sett in step 2
 
 ```
-docker build -f docker/Dockerfile . -t tradenote:<tag> --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
+docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
 ```
 #### 3_ Stop and remove container
-1. List of all containers using: `docker ps -a` and get the TradeNote container id
+1. List all containers `docker ps -a` and get the TradeNote container id
 2. Stop the TradeNote container: `docker stop <container_id>`
 3. Remove the TradeNote container: `docker rm <container_id>`
 
-#### 4_ Run the new TradeNote Docker image (update < tag > with number from step 3)
+#### 4_ Stop and remove image
+1. List all images `docker image ls` and get the TradeNote image id
+2. Remove the TradeNote image: `docker rmi <image_id>`
+
+#### 5_ Run the new TradeNote Docker image
 ```
-docker run -d -p 7777:80 tradenote:<tag>
+docker run -d -p 7777:80 tradenote:latest
 ```
+## Upgrade to new version
+### Persistant data
+During installation, mongoDB is runs with persistant data. This way, if you restart or update your mongoDB container, your data will not be lost.
+
+### Backup mongoDB
+Additionally, you can, and should, backup your database. 
+
+For convenience, here is an example using [s3cmd](https://s3tools.org/s3cmd "s3cmd") for backing up your database. As this is not part of the TradeNote projet, I will unfortunately not be able to provide support on this part. But you will find more information about this on google and stackoverflow. 
+1. Install [s3cmd](https://s3tools.org/s3cmd "s3cmd")
+2. Configure the s3cfg config file
+3. Run the [bash file](https://github.com/Eleven-Trading/TradeNote/blob/main/example_tradezero_file.csv "bash file") with the following 5 arguments: DATABASE_USER, DATABASE_PASSWORD, S3_BUCKET_NAME, S3_BUCKET_PATH, MONGO_DATABASE_NAME 
+
 
 # Contribute
 I'm a trader and recreational developer. My days are very packed but I will do my best to answer your questions and update the code when needed. As such, do not hesitate to contact me if you would like to contribute and help improve this project. Things to work on and improve:

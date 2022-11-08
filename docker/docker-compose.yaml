@@ -1,9 +1,11 @@
-version: '3.7'
+version: '3.8'
 services:
   parse-mongodb:
     image: mongo:4.4.15
     ports:
       - '27017:27017'
+    volumes: 
+      - /data/parse-mongodb
     env_file: env.env
     restart: always
 
@@ -17,7 +19,7 @@ services:
     restart: always
 
   tradenote:
-    image: tradenote
+    image: tradenote:latest
     ports:
       - '7777:80'
     depends_on:
