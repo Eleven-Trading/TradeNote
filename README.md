@@ -1,11 +1,11 @@
 
-<h3 align="center">TradeNote</h3>
-<h4 align="center">- Open Source Day Trading Journal -</h4>
+<h2 align="center">TradeNote</h2>
+<h4 align="center" style='margin-bottom:30px'>- Open Source Trading Journal -</h4>
 
 
 # The project
 ## About
-TraderVue and TraderSync are great and very powerful trading journals. However, most of these tools are very limited in terms of control and customisations (data control, privacy, UI&UX customization, etc.). Moreover, I was missing some essential features for improving my day trading, like having a diary.
+There are numerous great and very powerful trading journals out there. However, most of these tools are very limited in terms of control and customisations (data control, privacy, UI&UX customization, etc.). Moreover, I was missing some essential features for improving my day trading, like having a diary or taking and annotating screenshots.
 
 By creating and sharing TradeNote as an open source project, I hope to help other days traders like myself store, discover and recollect trade patterns so they can become and remain consistent and profitable traders.
 
@@ -34,8 +34,11 @@ TradeNote works best for intraday stocks and forex trading. However, you can als
 
 Please feel free to contribute if you want to see other brokers or vote for your broker via [Fider](https://fider.tradenote.co "Fider"). 
 
+## Buy me coffee
+If you like this project, don't hesitate to show me <s>the money</s> love ;)
+<a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-# Benefits
+# TradeNote
 TradeNote is divided in 3 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
 
 ### Measure
