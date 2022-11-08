@@ -64,13 +64,20 @@ TradeNote uses Parse for the following reasons:
 During the installation process, Parse is installed via Docker. If you use [Caprover](https://github.com/caprover/caprover "Caprover"), you can install Parse using One-Click Apps.
 
 ## Installation
+You can install and run TradeNote using docker (the most common) or [Caprover](https://github.com/caprover/caprover "Caprover") (the easiest in my opinion).
 ### Docker
 #### 1_ Clone the repository
 ```
 git clone https://github.com/Eleven-Trading/TradeNote.git
 ```
 
-#### 2_ Modify the "< >" inside the env.env file to match your environment
+#### 2_ Enter the cloned directory
+```
+cd TradeNote
+```
+
+#### 3_ Modify the env.env file 
+Modify the "< >" inside the env.env file to match your environment
 - <your_parse_app_id>: Set a random string as application ID, which will be used to connect to the Parse server (no spaces)
 - <your_parse_master_key>: Set a random string as application ID, which can be used to make root connections to the Parse server (no spaces)
 - <your_tradenote_parse_server_ip>: This is the ip where you are installing TradeNote. If you are installing locally, then this is simply localhost and if you are installing remotely then it is the remote ip address of your server(and please update http(s) accordingly).
@@ -78,11 +85,7 @@ git clone https://github.com/Eleven-Trading/TradeNote.git
 - <your_parse_dashboard_password>: Set password used for login into the Parse dashboard.
 - <your_app_name>: Pick a name for your app e.g. TradeNote
 
-#### 3_ Enter the cloned directory
-```
-cd TradeNote
-```
-#### 4_ Build the TradeNote Docker image with your custom parameters
+#### 4_ Build the TradeNote Docker image
 Fill out "< >" with the information you sett in step 2
 
 ```
@@ -104,20 +107,38 @@ docker-compose -f docker/docker-compose.yaml up -d
 docker-compose -f docker/docker-compose-without-dashboard.yaml up -d
 ```
 
-#### 6_ wait at least 1 minute for services up and data creation (IMPORTANT)
+#### 6_ Wait at least 1 minute
+Wait for services up and data creation (IMPORTANT)
 
-#### 7_ Register via http://<your_tradenote_parse_server_ip>:7777/register
+#### 7_ Register a user
+Visit `http://<your_tradenote_parse_server_ip>:7777/register` to register a TradeNote user. Use any email and set a password
 
-#### 8_ (optional) View your data using the Parse dashboard via http://<your_tradenote_parse_server_ip>:4040
+#### 8_ (Optional) Parse Dashboard
+You can view your all the data stored in mongoDB using the Parse dashboard via `http://<your_tradenote_parse_server_ip>:4040`
 
 
 ### Caprover
-If you are using [Caprover](https://github.com/caprover/caprover "Caprover"), you can deploy directly thanks to the existing captain-definition file.
-1. Install Parse from One-Click Apps
-2. Create an app in Caprover and in "App Configs" add the following variables: 
-   - PARSE_APP_ID : your parse app id
-   - PARSE_URL : your parse server url
-3. Deploy TradeNote using the captain-definition file
+
+#### 1_ Install Parse from One-Click Apps
+#### 2_ Create your TradeNote app
+#### 3_ Configure your TradeNote app
+Under App Configs tab
+   - Add environmental variables 
+      - PARSE_APP_ID : your parse app id, configured during step 1
+      - PARSE_URL : your parse server url, configured during step 1
+   - Add port mapping 
+      - Server Port: 7777
+      - Container Port: 80
+Hit Save or wait after deploying the app.
+
+#### 4_ Clone the repository
+```
+git clone https://github.com/Eleven-Trading/TradeNote.git
+```
+
+#### 4_ Create a TAR file from the directory
+#### 5_ Deploy
+Under Deployment tab, add your TAR file
 
 ## Upgrade to new version
 ### Docker
@@ -150,7 +171,18 @@ docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID
 ```
 docker run -d -p 7777:80 tradenote:latest
 ```
-## Upgrade to new version
+
+### Caprover
+#### 1_ Clone the repository
+```
+git clone https://github.com/Eleven-Trading/TradeNote.git
+```
+
+#### 2_ Create a TAR file from the directory
+#### 3_ Deploy
+Under Deployment tab, add your TAR file
+
+## Backup data
 ### Persistant data
 During installation, mongoDB is runs with persistant data. This way, if you restart or update your mongoDB container, your data will not be lost.
 
