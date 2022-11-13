@@ -15,13 +15,15 @@ const parseServer = new ParseServer({
     port: 7777
 });
 
+var trustProxy = true;
 var parseDashboard = new ParseDashboard({
     "apps": [{
         "serverURL": "/parse",
         "appId": process.env.APP_ID,
         "masterKey": process.env.MASTER_KEY,
         "appName": "TradeNote"
-    }]
+    }],
+    "trustProxy": 1
 });
 
 
