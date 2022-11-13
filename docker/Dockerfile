@@ -1,20 +1,9 @@
-FROM nginx:alpine
-RUN apk update && apk add nano npm wget bash --no-cache coreutils git
+FROM alpine
+RUN apk update && apk add nano npm nodejs wget bash --no-cache coreutils git
 RUN npm install --global gulp-cli
-RUN mkdir -p /usr/share/nginx/html/tmp/
-WORKDIR /usr/share/nginx/html/tmp/
+WORKDIR /app
 ADD ./ .
 RUN npm install
-ARG PARSE_APP_ID=${PARSE_APP_ID}
-ARG PARSE_URL=${PARSE_URL}
-RUN gulp prod --PARSE_APP_ID $PARSE_APP_ID --PARSE_URL $PARSE_URL
-RUN cp /usr/share/nginx/html/tmp/nginx.conf /etc/nginx/nginx.conf
-RUN cp -R /usr/share/nginx/html/tmp/dist/* /usr/share/nginx/html/
-WORKDIR /usr/share/nginx/html/
-RUN rm -r /usr/share/nginx/html/tmp
-
-RUN wget https://raw.githubusercontent.com/Eleven-Trading/TradeNote/main/docker/addclasses.sh -O /addclasses.sh
-#COPY docker/addclasses.sh /addclasses.sh
-RUN chmod +x /addclasses.sh
-
+RUN gulp prod
 EXPOSE 7777
+CMD ["npm", "start"]

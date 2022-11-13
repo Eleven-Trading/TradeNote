@@ -7,6 +7,7 @@ var log = require('fancy-log')
 var clean = require('gulp-clean')
 var fileinclude = require('gulp-file-include')
 var replace = require('gulp-replace')
+var nodemon = require('gulp-nodemon');
 
 /******** PATHS **********/
 var paths = {
@@ -30,8 +31,8 @@ var paths = {
         src: "src/*.html",
         dest: "dist/"
     },
-    manifestPath: {
-        src: "src/manifest.json",
+    classesPath: {
+        src: "src/requiredClasses.json",
         dest: "dist/"
     },
     swPath: {
@@ -100,10 +101,10 @@ function viewsFunction() {
         .pipe(browserSync.stream());
 };
 
-function manifestFunction() {
-    return gulp.src(paths.manifestPath.src, { allowEmpty: true })
-        .pipe(changed(paths.manifestPath.dest))
-        .pipe(gulp.dest(paths.manifestPath.dest))
+function classesFunction() {
+    return gulp.src(paths.classesPath.src, { allowEmpty: true })
+        .pipe(changed(paths.classesPath.dest))
+        .pipe(gulp.dest(paths.classesPath.dest))
         .pipe(browserSync.stream());
 };
 
@@ -129,7 +130,7 @@ function cleanDist() {
 
 /******** WATCH **********/
 
-// Gulp task to open the default web browser, serving static files
+/* Gulp task to open the default web browser, serving static files
 function browserInit() {
     browserSync.init({
         port: 3773,
@@ -163,7 +164,35 @@ function browserInit() {
         notify: false,
         injectChanges: false
     });
+};*/
+
+function nodemonServerInit(done) {
+    //livereload.listen();
+    nodemon({
+            script: 'index.js',
+            watch: ['index.js', paths.routesPath],
+        })
+        .on('start', function() {
+            console.log("starting nodemon")
+        })
+        .on('stop', function() {
+            console.log("stoping nodemon")
+        })
+        .on('change', function() {
+            console.log("changing nodemon")
+        });
 };
+
+
+function browserInit(done) {
+        browserSync.init({
+            proxy: 'localhost:7777', //c'est le port qui est sur server.js
+            open: true,
+            notify: false,
+            port: 8083, //c'est le port de browsersync, qui doit être différent du server.jsis
+            reloadDelay: 1000
+        })
+}
 
 
 function watch() {
@@ -173,15 +202,15 @@ function watch() {
     gulp.watch(paths.imagesPath.src, imagesFunction);
     gulp.watch(paths.scriptsPath.src, scriptsFunction);
     gulp.watch(paths.viewsPath.src, viewsFunction);
-    gulp.watch(paths.manifestPath.src, manifestFunction);
-    gulp.watch(paths.swPath.src, swFunction);
+    //gulp.watch(paths.classesPath.src, classesFunction);
+    //gulp.watch(paths.swPath.src, swFunction);
     gulp.watch(paths.partialsPath.src, viewsFunction);
     gulp.watch(paths.captainPath.src, captainFunction);
 }
 
 /******** GULP *********/
-var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, manifestFunction, swFunction, captainFunction);
-var build = gulp.parallel(prod, watch, browserInit); //run prod is necessary in case clean has beed done before
+var prod = gulp.parallel(cssFunction, iconsFunction, imagesFunction, scriptsFunction, viewsFunction, /*classesFunction, swFunction,*/ captainFunction);
+var build = gulp.parallel(prod, watch, nodemonServerInit, browserInit); //run prod is necessary in case clean has beed done before
 
 gulp.task('default', build);
 gulp.task('clean', cleanDist);

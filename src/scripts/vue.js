@@ -25,8 +25,264 @@ const vueApp = new Vue({
             screenType: null,
 
             //Login/Register
+            signingUp: false,
             registerForm: { username: null, password: null },
             loginForm: { username: null, password: null },
+            requiredClasses: [{
+                    className: "_User",
+                    fields: {
+                        avatar: {
+                            type: "File"
+                        },
+                        accounts: {
+                            type: "Array"
+                        }
+                    }
+                },
+                {
+                    className: "notes",
+                    fields: {
+                        note: {
+                            type: "String"
+                        },
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        date: {
+                            type: "Date"
+                        }
+                    }
+                },
+                {
+                    className: "trades",
+                    fields: {
+                        video: {
+                            type: "String"
+                        },
+                        videoName: {
+                            type: "String"
+                        },
+                        videoPoster: {
+                            type: "File"
+                        },
+                        blotter: {
+                            type: "Object"
+                        },
+                        pAndL: {
+                            type: "Object"
+                        },
+                        date: {
+                            type: "Date"
+                        },
+                        executions: {
+                            type: "Array"
+                        },
+                        trades: {
+                            type: "Array"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        videoDate: {
+                            type: "Date"
+                        },
+                        videoDateUnix: {
+                            type: "Number"
+                        },
+                        cashJournal: {
+                            type: "Object"
+                        }
+                    }
+                },
+                {
+                    className: "playbooks",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        playbook: {
+                            type: "String"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        date: {
+                            type: "Date"
+                        }
+                    }
+                },
+                {
+                    className: "patterns",
+                    fields: {
+                        name: {
+                            type: "String"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        date: {
+                            type: "Date"
+                        },
+                        side: {
+                            type: "String"
+                        },
+                        type: {
+                            type: "String"
+                        },
+                        note: {
+                            type: "String"
+                        },
+                        order: {
+                            type: "Number"
+                        }
+                    }
+                },
+                {
+                    className: "mistakes",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        name: {
+                            type: "String"
+                        },
+                        description: {
+                            type: "String"
+                        },
+                        order: {
+                            type: "Number"
+                        }
+                    }
+                },
+                {
+                    className: "cashJournals",
+                    fields: {
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        cashJournal: {
+                            type: "Object"
+                        },
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        date: {
+                            type: "Date"
+                        }
+                    }
+                },
+                {
+                    className: "dailyInfos",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        date: {
+                            type: "Date"
+                        },
+                        cashBalance: {
+                            type: "Number"
+                        },
+                        buyingPower: {
+                            type: "Number"
+                        }
+                    }
+                },
+                {
+                    className: "journals",
+                    fields: {
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        date: {
+                            type: "Date"
+                        },
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        journal: {
+                            type: "Object"
+                        }
+                    }
+                },
+                {
+                    className: "setupsEntries",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        side: {
+                            type: "String"
+                        },
+                        name: {
+                            type: "String"
+                        },
+                        original: {
+                            type: "File"
+                        },
+                        annotated: {
+                            type: "File"
+                        },
+                        originalBase64: {
+                            type: "String"
+                        },
+                        annotatedBase64: {
+                            type: "String"
+                        },
+                        maState: {
+                            type: "Object"
+                        },
+                        symbol: {
+                            type: "String"
+                        },
+                        date: {
+                            type: "Date"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        }
+                    }
+                },
+                {
+                    className: "patternsMistakes",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        pattern: {
+                            type: "Pointer",
+                            targetClass: "patterns"
+                        },
+                        mistake: {
+                            type: "Pointer",
+                            targetClass: "mistakes"
+                        },
+                        tradeUnixDate: {
+                            type: "Number"
+                        },
+                        tradeId: {
+                            type: "String"
+                        },
+                        note: {
+                            type: "String"
+                        }
+                    }
+                }
+            ],
 
             //General
             currentUser: null,
@@ -346,7 +602,7 @@ const vueApp = new Vue({
                 }
             ],
             selectedPosition: localStorage.getItem('selectedPosition'),
-            selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long","short"] : [],
+            selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long", "short"] : [],
             selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
             selectedRatio: localStorage.getItem('selectedRatio'),
             selectedAccount: localStorage.getItem('selectedAccount'),
@@ -522,10 +778,9 @@ const vueApp = new Vue({
     },
     created: async function() {
         this.initParse()
-        this.checkCurrentUser()
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
-        if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length>0) {
+        if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
             !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
         }
 
@@ -844,9 +1099,21 @@ const vueApp = new Vue({
 
         },
 
-        initParse() {
-            Parse.initialize("PARSE_APP_ID")
-            Parse.serverURL = "PARSE_URL"
+        initParse: async function(param1) {
+            return new Promise((resolve, reject) => {
+                console.log("\nINITIATING PARSE")
+                let path = window.location.pathname
+                let parse_app_id = localStorage.getItem('parse_app_id') ? localStorage.getItem('parse_app_id') : "";
+                let parse_url = "/parse"
+                console.log(" -> Parse id " + parse_app_id)
+
+                Parse.initialize(parse_app_id)
+                Parse.serverURL = parse_url
+
+                if ((parse_app_id == "") && path != "/" && path != "/register") window.location.replace("/")
+                if (parse_app_id != "") this.checkCurrentUser()
+                resolve()
+            })
         },
         initQuill(param) {
             console.log("param " + param)
@@ -1009,6 +1276,7 @@ const vueApp = new Vue({
         checkCurrentUser() {
             var path = window.location.pathname
             this.currentUser = JSON.parse(JSON.stringify(Parse.User.current()));
+
             if (path != "/" && path != "/register") {
                 if (this.currentUser) {
                     //console.log("Your are logged in " + JSON.stringify(this.currentUser) + " and id " + Parse.User.current().id)
@@ -1025,32 +1293,97 @@ const vueApp = new Vue({
             }
 
         },
+        getParseId: async function() {
+            return new Promise((resolve, reject) => {
+                console.log(" -> Getting App ID")
+                axios.post('/parseAppId')
+                    .then((response) => {
+                        //console.log(response);
+                        localStorage.setItem('parse_app_id', response.data)
+                        resolve(response)
+                    })
+                    .catch((error) => {
+                        console.log(" -> Error getting app id " + error)
+                        reject(error)
+                    });
+
+
+            })
+        },
+
+        updateSchema: async function() {
+            return new Promise((resolve, reject) => {
+                console.log(" -> Updating schema")
+                axios.post('/updateSchemas').then((response) => {
+                        console.log(response);
+                        resolve(response)
+                    })
+                    .catch((error) => {
+                        console.log("Error get app id " + error);
+                        reject(error)
+                    });
+            })
+        },
         login: async function() {
-            console.log("login inn")
-            try {
-                await Parse.User.logIn(this.loginForm.username, this.loginForm.password);
-                console.log("Hooray! You are logged in")
-                window.location.replace("/dashboard");
-            } catch (error) {
-                // Show the error message somewhere and let the user try again.
-                alert("Error: " + error.code + " " + error.message);
+            console.log("\nLOGIN")
+            this.signingUp = true
+            let parseId = await this.getParseId()
+            if (!parseId.data) {
+                alert("Missing App ID. Please make sure you entered correct App ID during runtime.")
+                return
+            }
+            let updateSchema = await this.updateSchema()
+            console.log("status " + updateSchema.status)
+            if (updateSchema.status == 200) {
+                await this.initParse()
+
+                try {
+                    await Parse.User.logIn(this.loginForm.username, this.loginForm.password)
+                    console.log("Hooray! You are logged in")
+                    this.signingUp = false
+                    window.location.replace("/dashboard");
+                } catch (error) {
+                    // Show the error message somewhere and let the user try again.
+                    this.signingUp = false
+                    alert("Error: " + error.code + " " + error.message);
+                }
+            } else {
+                this.signingUp = false
+                alert("Error updating schema " + updateSchema)
             }
         },
         register: async function() {
-            console.log("Register and username value " + this.registerForm.username)
-            const user = new Parse.User();
-            user.set("username", this.registerForm.username);
-            user.set("password", this.registerForm.password);
-            user.set("email", this.registerForm.username);
-
-            try {
-                await user.signUp();
-                console.log("Hooray! Let them use the app now")
-                window.location.replace("/");
-            } catch (error) {
-                // Show the error message somewhere and let the user try again.
-                alert("Error: " + error.code + " " + error.message);
+            console.log("\nREGISTER")
+            this.signingUp = true
+            let parseId = await this.getParseId()
+            if (!parseId.data) {
+                alert("Missing App ID. Please make sure you entered correct App ID during runtime.")
+                return
             }
+            let updateSchema = await this.updateSchema()
+            console.log("status " + updateSchema.status)
+            if (updateSchema.status == 200) {
+                await this.initParse()
+
+                const user = new Parse.User();
+                user.set("username", this.registerForm.username);
+                user.set("password", this.registerForm.password);
+                user.set("email", this.registerForm.username);
+
+                try {
+                    await user.signUp();
+                    console.log("Hooray! Let them use the app now")
+                    window.location.replace("/");
+                } catch (error) {
+                    // Show the error message somewhere and let the user try again.
+                    alert("Error: " + error.code + " " + error.message);
+                }
+            } else {
+                this.signingUp = false
+                alert("Error updating schema " + updateSchema)
+            }
+            /*
+             */
         },
         logout() {
             Parse.User.logOut().then(() => {
