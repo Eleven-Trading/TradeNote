@@ -23,7 +23,14 @@ var parseDashboard = new ParseDashboard({
         "masterKey": process.env.MASTER_KEY,
         "appName": "TradeNote"
     }],
-    "trustProxy": 1
+    "trustProxy": true,
+    "users": [
+        {
+          "user":process.env.PARSE_DASHBOARD_USER_ID,
+          "pass":process.env.PARSE_DASHBOARD_USER_PASSWORD
+        }
+      ],
+      "useEncryptedPasswords": false
 });
 
 
@@ -45,11 +52,12 @@ Parse.masterKey = process.env.MASTER_KEY
 //API
 
 app.post("/parseAppId", (req, res) => {
+    console.log("\nAPI : post APP ID")
     res.send(process.env.APP_ID)
 });
 
 app.post("/updateSchemas", async(req, res) => {
-    console.log("updateshemas")
+    console.log("\nAPI : post update schema")
 
     let rawdata = fs.readFileSync('requiredClasses.json');
     let schemasJson = JSON.parse(rawdata);
@@ -116,5 +124,5 @@ app.post("/updateSchemas", async(req, res) => {
 // SERVER
 const port = 7777;
 app.listen(port, function() {
-    console.log('TradeNote running on port ' + port + '.');
+    console.log('TradeNote running on port ' + port + ' with app ID '+process.env.APP_ID)
 });
