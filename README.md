@@ -15,7 +15,7 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 You can follow the project on [Discord](https://discord.gg/ZbHekKYb85 "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider").
 
 ## Built with
-The objective is to have a lightweight and fast website. As such, the website runs on static pages without any server, using VueJs, JS and HTML as well as [Parse](https://parseplatform.org/ "Parse") for its backend.
+The objective is to have a lightweight and fast website. As such, the website runs on static pages, using VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
 
 ## Note
 This project arose from a personal need and as such is most widely used (and tested) for intraday trades and using TradeZero Broker. However, I'm adding little by little other brokers. 
@@ -23,7 +23,8 @@ This project arose from a personal need and as such is most widely used (and tes
 ### Supported Brokers
 Currently, you can add trades from the following brokers
  - TradeZero
- - MetaTrader
+ - MetaTrader 5
+ - TD Ameritrade (comming soon)
 
 Please contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
@@ -36,7 +37,7 @@ Please feel free to contribute if you want to see other brokers or vote for your
 
 ## Buy me coffee
 If you like this project, don't hesitate to show me <s>the money</s> love ;)
-<a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+<p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
 
 # TradeNote
 TradeNote is divided in 3 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
@@ -54,136 +55,90 @@ They say trading is like running a business so with TradeNote you can create a f
 
 # Installation, Upgrade and Backup
 ## Prerequisite
+### MongoDB
+Your data will be stored on your terms, in a mongoDB database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
+
+### Side note : Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
 1. The Parse server that does all the "heavy lifting"
-2. A mongo database where the data is stored
-3. A dashboard for nicely displaying the mongo database
+2. A dashboard for nicely displaying the mongo database
 
 TradeNote uses Parse for the following reasons: 
 1. Manage the authentification (flow)
 2. Parse is a great framework for all API communications with the mongo database
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
-During the installation process, Parse is installed via Docker. If you use [Caprover](https://github.com/caprover/caprover "Caprover"), you can install Parse using One-Click Apps.
+During the installation process, Parse is automatically installed via Docker.
 
 ## Installation
-You can install and run TradeNote using docker (the most common) or [Caprover](https://github.com/caprover/caprover "Caprover") (the easiest in my opinion).
+You can install and run TradeNote using docker (the most common) or [Caprover](https://github.com/caprover/caprover "Caprover").
+
 ### Docker
-#### 1_ Clone the repository
-```
-git clone https://github.com/Eleven-Trading/TradeNote.git
-```
-
-#### 2_ Enter the cloned directory
-```
-cd TradeNote
-```
-
-#### 3_ Modify the env.env file 
-Modify the "< >" inside the env.env file to match your environment
-- <your_parse_app_id>: Set a random string as application ID, which will be used to connect to the Parse server (no spaces)
-- <your_parse_master_key>: Set a random string as application ID, which can be used to make root connections to the Parse server (no spaces)
-- <your_tradenote_parse_server_ip>: This is the ip where you are installing TradeNote. If you are installing locally, then this is simply localhost and if you are installing remotely then it is the remote ip address of your server(and please update http(s) accordingly).
-- <your_parse_dashboard_user>: Parse comes with a dashboard where you can explore your data. Set username used for login into the Parse dashboard.
-- <your_parse_dashboard_password>: Set password used for login into the Parse dashboard.
-- <your_app_name>: Pick a name for your app e.g. TradeNote
-
-#### 4_ Build the TradeNote Docker image
-Fill out "< >" with the information you sett in step 2
+#### 1_ Pull image
+Pull image from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 ```
-docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
+docker pull eleventrading/tradenote:<tag>
 ```
 
-#### 5_ Run up all the services
-Parse comes with a dashboard for visualizing the data stored in the MongoDB. However, some users, mainly using Raspberry PI, have reported the need to install without Parse dashboard. Therefore, there are two options.
+#### 2_ Run image
+Run the image with the following environment variables
+- <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. Simply replace < > with your information. You can use whatever name you like for you tradenote_database.
+- <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
+- <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
 
 
-##### 5a_ Run TradeNote with parse-dashboard
-   
+Optional :  You can visualize and manage your mongodb data in a dashboard provided by [Parse](https://github.com/parse-community "Parse").
+- <PARSE_DASHBOARD_USER_ID>: Set username used for login into the this dashboard.
+- <PARSE_DASHBOARD_USER_PASSWORD>: Set password used for login into the Parse dashboard.
+- <tag>: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
+
 ```
-docker-compose -f docker/docker-compose.yaml up -d
-```   
+docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e PARSE_DASHBOARD_USER_ID=<PARSE_DASHBOARD_USER_ID> -e PARSE_DASHBOARD_USER_PASSWORD=<PARSE_DASHBOARD_USER_PASSWORD> -p 7777:7777 eleventrading/tradenote:<tag>
 
-##### 5b_ Run TradeNote without parse-dashboard.
-```
-docker-compose -f docker/docker-compose-without-dashboard.yaml up -d
 ```
 
-#### 6_ Wait at least 1 minute
-Wait for services up and data creation (IMPORTANT)
+#### 3_ Register a user
+Visit `http://<your_server>:7777/register` to register a TradeNote user. Use any email and set a password
 
-#### 7_ Register a user
-Visit `http://<your_tradenote_parse_server_ip>:7777/register` to register a TradeNote user. Use any email and set a password
-
-#### 8_ (Optional) Parse Dashboard
-You can view your all the data stored in mongoDB using the Parse dashboard via `http://<your_tradenote_parse_server_ip>:4040`
+#### 4_ (Optional) Parse Dashboard
+You can view your all the data stored in mongoDB using the Parse dashboard via `http://<your_server>/parseDashboard`
 
 
 ### Caprover
 
-#### 1_ Install Parse from One-Click Apps
-#### 2_ Create your TradeNote app
-#### 3_ Configure your TradeNote app
+#### 1_ Configure your TradeNote app
 Under App Configs tab
-   - Add environmental variables 
-      - PARSE_APP_ID : your parse app id, configured during step 1
-      - PARSE_URL : your parse server url, configured during step 1
-   - Add port mapping 
-      - Server Port: 7777
-      - Container Port: 80
+   - <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. Simply replace < > with your information. You can use whatever name you like for you tradenote_database.
+- <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
+- <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
+
+
+Optional :  You can visualize and manage your mongodb data in a dashboard provided by [Parse](https://github.com/parse-community "Parse").
+- <PARSE_DASHBOARD_USER_ID>: Set username used for login into the this dashboard.
+- <PARSE_DASHBOARD_USER_PASSWORD>: Set password used for login into the Parse dashboard.
+
 Hit Save or wait after deploying the app.
 
-#### 4_ Clone the repository
-```
-git clone https://github.com/Eleven-Trading/TradeNote.git
-```
-
-#### 4_ Create a TAR file from the directory
-#### 5_ Deploy
-Under Deployment tab, add your TAR file
+#### 2_ Deploy
+Under deployment tab, enter image (method 6) from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 ## Upgrade to new version
 ### Docker
-#### 1_ Clone the repository
-```
-git clone https://github.com/Eleven-Trading/TradeNote.git
-```
-
-#### 2_ Enter the cloned directory
-```
-cd TradeNote
-```
-
-#### 3_ Build the TradeNote Docker image with your custom parameters
-Fill out "< >" with the information you sett in step 2
-
-```
-docker build -f docker/Dockerfile . -t tradenote:latest --build-arg PARSE_APP_ID=<your_parse_app_id> --build-arg PARSE_URL=http://<your_tradenote_parse_server_ip>:1337/parse
-```
-#### 3_ Stop and remove container
+#### 1_ Stop and remove container
 1. List all containers `docker ps -a` and get the TradeNote container id
 2. Stop the TradeNote container: `docker stop <container_id>`
 3. Remove the TradeNote container: `docker rm <container_id>`
 
-#### 4_ Stop and remove image
+#### 2_ Stop and remove image
 1. List all images `docker image ls` and get the TradeNote image id
 2. Remove the TradeNote image: `docker rmi <image_id>`
 
-#### 5_ Run the new TradeNote Docker image
-```
-docker run -d -p 7777:80 tradenote:latest
-```
+#### 3_ Pull and Run (see Installation)
+
 
 ### Caprover
-#### 1_ Clone the repository
-```
-git clone https://github.com/Eleven-Trading/TradeNote.git
-```
-
-#### 2_ Create a TAR file from the directory
-#### 3_ Deploy
-Under Deployment tab, add your TAR file
+#### 1_ Deploy new image (method 6)
 
 ## Backup data
 ### Persistant data
