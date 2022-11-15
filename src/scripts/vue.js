@@ -650,6 +650,10 @@ const vueApp = new Vue({
                 {
                     value: "metaTrader",
                     label: "MetaTrader"
+                },
+                {
+                    value: "tdAmeritrade",
+                    label: "TD Ameritrade"
                 }
             ],
             selectedBroker: localStorage.getItem('selectedBroker'),
