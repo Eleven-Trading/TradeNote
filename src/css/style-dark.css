@@ -978,3 +978,24 @@ h4 {
     float: left;
     margin-right: 0.5rem;
 }
+
+/* SHEPHERD */
+
+.shepherd-modal-overlay-container.shepherd-modal-is-visible {
+    opacity: 0.85;
+}
+
+.shepherd-button{
+    background-color: var(--blue-color);
+}
+
+.shepherd-button:hover{
+    background: var(--blue-active-color) !important;
+}
+
+.exitButton{
+    background-color: var(--grey-color) !important;
+}
+.exitButton:hover{
+    background-color: var(--dark-grey) !important;
+}

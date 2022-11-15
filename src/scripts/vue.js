@@ -778,7 +778,10 @@ const vueApp = new Vue({
     },
     created: async function() {
         this.initParse()
-
+        if (this.currentUser && !this.currentUser.guidedTour) {
+            //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
+            this.initShepherd()
+        }
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
             !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
@@ -1114,6 +1117,303 @@ const vueApp = new Vue({
                 if (parse_app_id != "") this.checkCurrentUser()
                 resolve()
             })
+        },
+        initShepherd() {
+            const tour = new Shepherd.Tour({
+                useModalOverlay: true,
+                defaultStepOptions: {
+                    classes: 'tour-guide',
+                    scrollTo: true,
+                    useModalOverlay: true,
+                    /*when: {
+                        show() {
+                            const currentStepElement = shepherd.currentStep.el;
+                            const header = currentStepElement.querySelector('.shepherd-header');
+                            const progress = document.createElement('span');
+                            progress.style['margin-right'] = '15px';
+                            progress.innerText = `${shepherd.steps.indexOf(shepherd.currentStep) + 1}/${shepherd.steps.length}`;
+                            header.insertBefore(progress, currentStepElement.querySelector('.shepherd-cancel-icon'));
+                        }
+                    }*/
+                }
+            });
+
+            tour.addSteps([{
+                    id: 'step1',
+                    text: 'Welcome onboard. This guided tutorial will show you how TradeNote works.',
+                    buttons: [{
+                        text: 'Exit',
+                        action: tour.complete,
+                        classes: 'exitButton'
+                    }, {
+                        text: 'Next',
+                        action: tour.next
+                    }]
+                }, {
+                    id: 'step2',
+                    text: "In the side menu, you can navigate all TradeNote pages.",
+                    attachTo: {
+                        element: '#step2',
+                        on: 'right-start'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        },
+                        {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ],
+                    popperOptions: {
+                        modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
+                    }
+                },
+                {
+                    id: 'step3',
+                    text: 'The dashboard shows all your main metrics.',
+                    attachTo: {
+                        element: '#step3',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ]
+                },
+                {
+                    id: 'step4',
+                    text: 'Calendar displays a calendar view of your daily trades.',
+                    attachTo: {
+                        element: '#step4',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ]
+                },
+                {
+                    id: 'step5',
+                    text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a tab where you can see your daily journal entry (see below), all your trades and a blotter of your trades per symbol.</p><p>For each trade, you can click on the line to add a note per trade, a pattern and a mistake. Currently, patterns and mistakes must be first added manually in the Parse Dashboard.</p>',
+                    attachTo: {
+                        element: '#step5',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ]
+                },
+                {
+                    id: 'step6',
+                    text: 'Journal is where you can see and edit your daily journals.',
+                    attachTo: {
+                        element: '#step6',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ],
+                    popperOptions: {
+                        modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
+                    }
+                },
+                {
+                    id: 'step7',
+                    text: 'Setups show all your screenshots of setups and entries.',
+                    attachTo: {
+                        element: '#step7',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ]
+                },
+                {
+                    id: 'step8',
+                    text: 'Playbook is where you can see and edit your (yearly) playbook.',
+                    attachTo: {
+                        element: '#step8',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ]
+                },
+                {
+                    id: 'step9',
+                    text: 'Forecast displays your estimated P&L (experimental feature).',
+                    attachTo: {
+                        element: '#step9',
+                        on: 'right'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ],
+                    popperOptions: {
+                        modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
+                    }
+                },
+                {
+                    id: 'step10',
+                    text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Share Per Trade (APPSPT) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
+                    attachTo: {
+                        element: '#step10',
+                        on: 'bottom'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ],
+                    popperOptions: {
+                        modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
+                    }
+                },
+                {
+                    id: 'step11',
+                    text: "<p>Click here to add trades, journal entries, setups or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Journal is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in this case). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
+                    attachTo: {
+                        element: '#step11',
+                        on: 'bottom'
+                    },
+                    buttons: [{
+                            text: 'Exit',
+                            action: tour.complete,
+                            classes: 'exitButton'
+                        }, {
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Next',
+                            action: tour.next
+                        }
+                    ],
+                    popperOptions: {
+                        modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
+                    }
+                },
+                {
+                    id: 'step12',
+                    text: "That's it. You are now ready to use TradeNote. You can come back to this tutorial at any time by clicking 'Tutorial' in the sub-menu here.",
+                    attachTo: {
+                        element: '#step12',
+                        on: 'bottom'
+                    },
+                    buttons: [{
+                            text: 'Back',
+                            action: tour.back
+                        },
+                        {
+                            text: 'Done',
+                            action: tour.complete
+                        }
+                    ]
+                }
+
+            ])
+
+            tour.start();
+
+            Shepherd.on("complete", async() => {
+                console.log("Tour complete")
+                const Object = Parse.Object.extend("User");
+                const query = new Parse.Query(Object);
+                query.equalTo("objectId", this.currentUser.objectId);
+                const results = await query.first();
+                if (results) {
+                    await results.set("guidedTour", true)
+                    results.save().then(() => {
+                        console.log(" -> Updated user")
+                    })
+                } else {
+                    console.log("  --> Could not find user. This is a problem")
+                }
+
+            })
+
         },
         initQuill(param) {
             console.log("param " + param)

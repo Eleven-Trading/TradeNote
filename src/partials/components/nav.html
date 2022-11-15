@@ -10,7 +10,7 @@
     <div class="col-6 ms-auto text-end">
         <div class="row">
             <div class="col align-self-end">
-                <button class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button id="step11" class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="uil uil-plus me-2"></i>Add</button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>
@@ -28,7 +28,7 @@
 
                 </ul>
             </div>
-            <div class="col-1">
+            <div id="step12" class="col-1">
                 <a v-if="currentUser.hasOwnProperty('avatar')" class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" v-bind:src="currentUser.avatar.url"/></a>
                 <a v-else class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -42,6 +42,10 @@
                         <a class="dropdown-item" href="settings">
                             <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
                     </li>-->
+                    <li>
+                        <a class="dropdown-item" v-on:click="initShepherd()">
+                            <i class="uil uil-question-circle me-2"></i>Tutorial</a>
+                    </li>
                     <li>
                         <a class="dropdown-item" v-on:click="refreshTrades()">
                             <i class="uil uil-sync me-2"></i>Refresh Data</a>

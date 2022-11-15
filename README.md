@@ -56,7 +56,7 @@ They say trading is like running a business so with TradeNote you can create a f
 # Installation, Upgrade and Backup
 ## Prerequisite
 ### MongoDB
-Your data will be stored on your terms, in a mongoDB database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
+Your data will be stored on your terms, in a [mongoDB](https://hub.docker.com/_/mongo "mongoDB") database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
 
 ### Side note : Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :

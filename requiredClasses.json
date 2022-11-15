@@ -35,6 +35,9 @@
             "accounts": {
                 "type": "Array",
                 "required": false
+            },
+            "guidedTour": {
+                "type": "Boolean"
             }
         },
         "classLevelPermissions": {
