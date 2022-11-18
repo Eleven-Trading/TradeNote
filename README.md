@@ -54,11 +54,12 @@ They say trading is like running a business so with TradeNote you can create a f
 
 
 # Installation, Upgrade and Backup
-## Prerequisite
+
+## Docker
 ### MongoDB
 Your data will be stored on your terms, in a [MongoDB](https://hub.docker.com/_/mongo "MongoDB") database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
 
-If you do not have an existing MongoDB, you can install MongoDB on a user-defined bridge with following steps
+If you already have an existing MongoDB running and want to use it, you can skip this step. Otherwise, you can install MongoDB on a user-defined bridge with following steps
 #### 1_ Create network
 ```
 docker network create tradenote-net
@@ -68,30 +69,14 @@ docker network create tradenote-net
 docker pull mongo:latest
 ```
 #### 3_ Run MongoDB
-Run the image with the following environment variables
-- <MONGO_INITDB_ROOT_USERNAME>: Username for authenticating to the MongoDB database.
-- <MONGO_INITDB_ROOT_PASSWORD>: Password for authenticating to the MongoDB database.
 ```
 docker run -e MONGO_INITDB_ROOT_USERNAME=<MONGO_INITDB_ROOT_USERNAME> -e MONGO_INITDB_ROOT_PASSWORD=<MONGO_INITDB_ROOT_PASSWORD> -v mongo_data:/data/db -p 27017:27017 --name tradenote-mongo --net tradenote-net -d mongo:latest
 ```
+Run the image with the following environment variables
+- <MONGO_INITDB_ROOT_USERNAME>: Username for authenticating to the MongoDB database.
+- <MONGO_INITDB_ROOT_PASSWORD>: Password for authenticating to the MongoDB database.
 
-
-### Side note : Parse
-This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
-1. The Parse server that does all the "heavy lifting"
-2. A dashboard for nicely displaying the mongo database
-
-TradeNote uses Parse for the following reasons: 
-1. Manage the authentification (flow)
-2. Parse is a great framework for all API communications with the mongo database
-3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
-
-During the installation process, Parse is automatically installed via Docker.
-
-## Installation
-You can install and run TradeNote using docker (the most common) or [Caprover](https://github.com/caprover/caprover "Caprover").
-
-### Docker
+### TradeNote
 #### 1_ Pull image
 Pull image from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
@@ -100,6 +85,9 @@ docker pull eleventrading/tradenote:<tag>
 ```
 
 #### 2_ Run image
+```
+docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
+```
 Run the image with the following environment variables
 - <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. 
    - <mongo_url>: Enter one of the following information : 
@@ -109,41 +97,20 @@ Run the image with the following environment variables
    - <tradenote_database>: You can use whatever name you like for your  tradenote database. 
 - <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
 - <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
+- < TAG >: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
-
-Optional :  You can visualize and manage your mongodb data in a dashboard provided by [Parse](https://github.com/parse-community "Parse").
-- <PARSE_DASHBOARD_USER_ID>: Set username used for login into the this dashboard.
-- <PARSE_DASHBOARD_USER_PASSWORD>: Set password used for login into the Parse dashboard.
-- <tag>: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
-
-```
-docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e PARSE_DASHBOARD_USER_ID=<PARSE_DASHBOARD_USER_ID> -e PARSE_DASHBOARD_USER_PASSWORD=<PARSE_DASHBOARD_USER_PASSWORD> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<tag>
-```
 
 #### 3_ Register a user
 Visit `http://<your_server>:7777/register` to register a TradeNote user. Use any email and set a password
 
-#### 4_ (Optional) Parse Dashboard
-You can view your all the data stored in mongoDB using the Parse dashboard via `http://<your_server>/parseDashboard`
+### Side note : Parse
+This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
+1. Manage the authentification (flow)
+2. Parse is a great framework for all API communications with the mongo database
+3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
+During the installation process, Parse server is automatically installed via Docker. If you wish to visualize your raw MongoDB data, you can use a tool [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
 
-### Caprover
-
-#### 1_ Configure your TradeNote app
-Under App Configs tab
-   - <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. Simply replace < > with your information. You can use whatever name you like for you tradenote_database.
-- <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
-- <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
-
-
-Optional :  You can visualize and manage your mongodb data in a dashboard provided by [Parse](https://github.com/parse-community "Parse").
-- <PARSE_DASHBOARD_USER_ID>: Set username used for login into the this dashboard.
-- <PARSE_DASHBOARD_USER_PASSWORD>: Set password used for login into the Parse dashboard.
-
-Hit Save or wait after deploying the app.
-
-#### 2_ Deploy
-Under deployment tab, enter image (method 6) from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 ## Upgrade to new version
 ### Docker
@@ -159,8 +126,6 @@ Under deployment tab, enter image (method 6) from [DockerHub](https://hub.docker
 #### 3_ Pull and Run (see Installation)
 
 
-### Caprover
-#### 1_ Deploy new image (method 6)
 
 ## Backup data
 ### Persistant data

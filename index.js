@@ -23,20 +23,13 @@ var parseDashboard = new ParseDashboard({
         "masterKey": process.env.MASTER_KEY,
         "appName": "TradeNote"
     }],
-    "trustProxy": true,
-    "users": [
-        {
-          "user":process.env.PARSE_DASHBOARD_USER_ID,
-          "pass":process.env.PARSE_DASHBOARD_USER_PASSWORD
-        }
-      ],
-      "useEncryptedPasswords": false
+    "trustProxy": true
 });
 
 
 // EXPRESS USE
 app.use('/parse', parseServer);
-app.use('/parseDashboard', parseDashboard);
+if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
 app.use(express.static('dist', {
     extensions: ['html', 'htm'],
 }))
@@ -124,5 +117,5 @@ app.post("/updateSchemas", async(req, res) => {
 // SERVER
 const port = 7777;
 app.listen(port, function() {
-    console.log('TradeNote running on port ' + port + ' with app ID '+process.env.APP_ID)
+    console.log('TradeNote running on port ' + port + ' with app ID ' + process.env.APP_ID)
 });
