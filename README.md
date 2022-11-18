@@ -24,7 +24,7 @@ This project arose from a personal need and as such is most widely used (and tes
 Currently, you can add trades from the following brokers
  - TradeZero
  - MetaTrader 5
- - TD Ameritrade (comming soon)
+ - TD Ameritrade
 
 Please contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
@@ -56,7 +56,25 @@ They say trading is like running a business so with TradeNote you can create a f
 # Installation, Upgrade and Backup
 ## Prerequisite
 ### MongoDB
-Your data will be stored on your terms, in a [mongoDB](https://hub.docker.com/_/mongo "mongoDB") database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
+Your data will be stored on your terms, in a [MongoDB](https://hub.docker.com/_/mongo "MongoDB") database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
+
+If you do not have an existing MongoDB, you can install MongoDB on a user-defined bridge with following steps
+#### 1_ Create network
+```
+docker network create tradenote-net
+```
+#### 2_ Pull image
+```
+docker pull mongo:latest
+```
+#### 3_ Run MongoDB
+Run the image with the following environment variables
+- <MONGO_INITDB_ROOT_USERNAME>: Username for authenticating to the MongoDB database.
+- <MONGO_INITDB_ROOT_PASSWORD>: Password for authenticating to the MongoDB database.
+```
+docker run -e MONGO_INITDB_ROOT_USERNAME=<MONGO_INITDB_ROOT_USERNAME> -e MONGO_INITDB_ROOT_PASSWORD=<MONGO_INITDB_ROOT_PASSWORD> -v mongo_data:/data/db -p 27017:27017 --name tradenote-mongo --net tradenote-net -d mongo:latest
+```
+
 
 ### Side note : Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework. Parse is composed of 3 parts :
@@ -83,7 +101,12 @@ docker pull eleventrading/tradenote:<tag>
 
 #### 2_ Run image
 Run the image with the following environment variables
-- <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. Simply replace < > with your information. You can use whatever name you like for you tradenote_database.
+- <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. 
+   - <mongo_url>: Enter one of the following information : 
+      - If you have followed the above MongoDB installation process and created a network (in the example tradenote-net), simply use the container name.
+      - If you have an existing MongoDB running on a local network, you can either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
+      - If you have an existing MongoDB on a remote network, simply use the remote IP address
+   - <tradenote_database>: You can use whatever name you like for your  tradenote database. 
 - <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
 - <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
 
@@ -94,8 +117,7 @@ Optional :  You can visualize and manage your mongodb data in a dashboard provid
 - <tag>: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 ```
-docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e PARSE_DASHBOARD_USER_ID=<PARSE_DASHBOARD_USER_ID> -e PARSE_DASHBOARD_USER_PASSWORD=<PARSE_DASHBOARD_USER_PASSWORD> -p 7777:7777 eleventrading/tradenote:<tag>
-
+docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e PARSE_DASHBOARD_USER_ID=<PARSE_DASHBOARD_USER_ID> -e PARSE_DASHBOARD_USER_PASSWORD=<PARSE_DASHBOARD_USER_PASSWORD> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<tag>
 ```
 
 #### 3_ Register a user
