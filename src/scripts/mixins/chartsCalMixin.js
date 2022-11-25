@@ -46,9 +46,12 @@ const chartsCalMixin = {
             /* ---- 2: CREATE CALENDAR ---- */
             console.log(" -> Creating calendar dates")
             const createCalendar = async(param1, param2) => {
-                console.log("param 1 "+param1)
+                //console.log("param 1 "+param1)
                 return new Promise(async(resolve, reject) => {
-                    let calendarizeData = calendarize(dayjs.unix(param1).format("YYYY-MM-DD"), 1) // this creates calendar date numbers needed for a table calendar
+                    let dateForCalendarize = new Date(param1*1000) // as per docs https://github.com/lukeed/calendarize/, calendarize casts to date so Instead of using string I have to use date or else used the node / user timezone instead of the timezone set in param 1 earlier 
+                    //console.log(" date for calendarize "+dateForCalendarize)
+                    let calendarizeData = calendarize(dateForCalendarize, 1) // this creates calendar date numbers needed for a table calendar
+                    //console.log("calendarizeData "+calendarizeData)
                     let calendarJson = {}
                     let month = dayjs.unix(param1).get('month') + 1 //starts at 0
                     let year = dayjs.unix(param1).get('year')
@@ -80,17 +83,19 @@ const chartsCalMixin = {
                     }
 
                     calendarizeData.forEach((element, index) => {
+                        //console.log("element "+element)
                         calendarJson[index] = []
-                        element.forEach((element) => {
-                            // 1- Create a calendar date from each element (calendar number)
-                            var elementDate = year + "/" + month + "/" + element
+                        element.forEach((element2) => {
+                            // 1- Create a calendar date from each element2 (calendar number)
+                            var elementDate = year + "/" + month + "/" + element2
                             var elementDateUnix = dayjs(elementDate).unix()
+                            //console.log("element2  "+element2)
 
                             // 2- Create data for each calendar box
                             let tempData = {}
                             tempData.month = this.monthFormat(param1) // day number of the month
                             //console.log("month "+tempData.month)
-                            tempData.day = element // day number of the month
+                            tempData.day = element2 // day number of the month
                             tempData.dateUnix = elementDateUnix // date in unix
 
                             //Using allTrades and not filteredTrades because we do not want calendar to be filtered
@@ -98,11 +103,12 @@ const chartsCalMixin = {
 
                             let trade = calTrade.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
 
-                            if (trade.length && element != 0) { //Check also if not null because day in date cannot be 0
+                            if (trade.length && element2 != 0) { //Check also if not null because day in date cannot be 0
                                 tempData.pAndL = trade[0].pAndL
                             } else {
                                 tempData.pAndL = []
                             }
+                            //console.log("tempData "+JSON.stringify(tempData))
                             calendarJson[index].push(tempData)
 
                         })
@@ -110,6 +116,7 @@ const chartsCalMixin = {
                     })
                     if (param1 == this.selectedCalRange.start) {
                         this.calendarData = calendarJson
+                        //console.log("calendarData "+JSON.stringify(this.calendarData))
                     } else {
                         this.miniCalendarsData.push(calendarJson)
                     }

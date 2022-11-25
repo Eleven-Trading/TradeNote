@@ -17,9 +17,9 @@ const playbookMixin = {
     methods: {
         playbookDateInput: function(param) {
             //console.log(" param "+param)
-            this.playbookUpdate.dateUnix = dayjs.tz(param, "America/New_York").unix()
-            this.playbookUpdate.date = dayjs(param, "America/New_York").format("YYYY-MM-DD")
-            this.playbookUpdate.dateDateFormat = new Date(dayjs(param, "America/New_York").format("YYYY-MM-DD"))
+            this.playbookUpdate.dateUnix = dayjs.tz(param, this.tradeTimeZone).unix()
+            this.playbookUpdate.date = dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD")
+            this.playbookUpdate.dateDateFormat = new Date(dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD"))
             console.log(" -> playbookDateUnix " + this.playbookUpdate.dateUnix+" and date "+this.playbookUpdate.date)
         },
         getPlaybooks: async function(param) {

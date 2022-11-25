@@ -45,9 +45,9 @@ const journalslMixin = {
         },
         journalDateInput: function(param) {
             console.log(" param " + param)
-            this.journalUpdate.dateUnix = dayjs.tz(param, "America/New_York").unix()
-            this.journalUpdate.date = dayjs(param, "America/New_York").format("YYYY-MM-DD")
-            this.journalUpdate.dateDateFormat = new Date(dayjs(param, "America/New_York").format("YYYY-MM-DD"))
+            this.journalUpdate.dateUnix = dayjs.tz(param, this.tradeTimeZone).unix()
+            this.journalUpdate.date = dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD")
+            this.journalUpdate.dateDateFormat = new Date(dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD"))
             //console.log(" -> journalDateUnix " + this.journalUpdate.dateUnix + " and date " + this.journalUpdate.date)
                 //console.log("journalUpdate " + JSON.stringify(this.journalUpdate))
         },

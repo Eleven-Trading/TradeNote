@@ -120,8 +120,8 @@ const entriesMixin = {
             }
             this.entry.date = event
             console.log("entry date (local time, i.e. New York time) " + this.entry.date)
-            this.entry.dateUnix = dayjs.tz(this.entry.date, "America/New_York").unix()
-            console.log("unix " + dayjs.tz(this.entry.date, "America/New_York").unix()) // we SPECIFY that it's New york time
+            this.entry.dateUnix = dayjs.tz(this.entry.date, this.tradeTimeZone).unix()
+            console.log("unix " + dayjs.tz(this.entry.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
         },
 
         saveEntry: async function() {
@@ -134,7 +134,7 @@ const entriesMixin = {
             this.loadingSpinner = true
             this.loadingSpinnerText = "Uploading entry ..."
             if (!this.editingEntry || (this.editingEntry && this.dateEntryEdited)) {
-                this.entry.dateUnix = dayjs.tz(this.entry.date, "America/New_York").unix() // we SPECIFY that it's New york time
+                this.entry.dateUnix = dayjs.tz(this.entry.date, this.tradeTimeZone).unix() // we SPECIFY that it's New york time
             }
             if (this.editingEntry && !this.dateEntryEdited) {
                 //we do nothing
@@ -193,7 +193,7 @@ const entriesMixin = {
                             results.set("annotatedBase64", this.entry.annotatedBase64)
                             results.set("maState", this.entry.maState)
                             if (this.dateEntryEdited) {
-                                results.set("date", new Date(dayjs.tz(this.entry.date, "America/New_York").format("YYYY-MM-DDTHH:mm:ss")))
+                                results.set("date", new Date(dayjs.tz(this.entry.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                                 results.set("dateUnix", Number(this.entry.dateUnix))
                             }
                             results.save().then(() => {
@@ -219,7 +219,7 @@ const entriesMixin = {
                                     object.set("originalBase64", this.entry.originalBase64)
                                     object.set("annotatedBase64", this.entry.annotatedBase64)
                                     object.set("maState", this.entry.maState)
-                                    object.set("date", new Date(dayjs.tz(this.entry.date, "America/New_York").format("YYYY-MM-DDTHH:mm:ss")))
+                                    object.set("date", new Date(dayjs.tz(this.entry.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                                     object.set("dateUnix", Number(this.entry.dateUnix))
 
                                     object.setACL(new Parse.ACL(Parse.User.current()));
