@@ -12,7 +12,7 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
 ## Dicsussions and Feeback
-You can follow the project on [Discord](https://discord.gg/ZbHekKYb85 "Discord") and suggest and vote for new features via [Fider](https://fider.tradenote.co "Fider").
+You can follow the project, get support and suggest new features on [Discord](https://discord.gg/ZbHekKYb85 "Discord").
 
 ## Built with
 The objective is to have a lightweight and fast website. As such, the website runs on static pages, using VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
@@ -33,7 +33,6 @@ Alternatively, you can use the [example file](https://github.com/Eleven-Trading/
 ### Type of trades
 TradeNote works best for intraday stocks and forex trading. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
-Please feel free to contribute if you want to see other brokers or vote for your broker via [Fider](https://fider.tradenote.co "Fider"). 
 
 ## Buy me coffee
 If you like this project, don't hesitate to show me <s>the money</s> love ;)
