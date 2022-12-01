@@ -30,6 +30,7 @@ var parseDashboard = new ParseDashboard({
 // EXPRESS USE
 app.use('/parse', parseServer);
 if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
+
 app.use(express.static('dist', {
     extensions: ['html', 'htm'],
 }))
@@ -47,6 +48,15 @@ Parse.masterKey = process.env.MASTER_KEY
 app.post("/parseAppId", (req, res) => {
     console.log("\nAPI : post APP ID")
     res.send(process.env.APP_ID)
+});
+
+app.post("/posthog", (req, res) => {
+    console.log("\nAPI : posthog")
+    if (process.env.ANALYTICS_OFF){
+        res.send("off")    
+    }else{
+        res.send("phc_FxkjH1O898jKu0yiELC3aWKda3vGov7waGN0weU5kw0")
+    }
 });
 
 app.post("/updateSchemas", async(req, res) => {

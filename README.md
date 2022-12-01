@@ -102,7 +102,8 @@ Run the image with the following environment variables
 #### 3_ Register a user
 Visit `http://<your_server>:7777/register` to register a TradeNote user. Use any email and set a password
 
-### Side note : Parse
+### Side note
+#### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
 1. Manage the authentification (flow)
 2. Parse is a great framework for all API communications with the mongo database
@@ -110,6 +111,8 @@ This project uses [Parse](https://github.com/parse-community "Parse") as its bac
 
 During the installation process, Parse server is automatically installed via Docker. If you wish to visualize your raw MongoDB data, you can use a tool [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
 
+#### PostHog
+This projects uses [PostHog](https://github.com/PostHog/posthog "PostHog") as its product analytics suite to collect <u>anonymous</u> analytics about TradeNote installations and page views. This helps me better understand if and how people are using TradeNote and evaluate the outreach of my project. If you want to opt-out of this program, you can simply add `-e ANALYTICS_OFF=true` when running the docker image. 
 
 ## Upgrade to new version
 ### Docker
