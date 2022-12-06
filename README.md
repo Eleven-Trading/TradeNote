@@ -25,6 +25,8 @@ Currently, you can add trades from the following brokers
  - TradeZero
  - MetaTrader 5
  - TD Ameritrade
+ - TradeStation
+ - Interactive Brokers
 
 Please contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
