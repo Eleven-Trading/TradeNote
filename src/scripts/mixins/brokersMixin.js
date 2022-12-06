@@ -17,10 +17,14 @@ const brokersMixin = {
                     value: "tdAmeritrade",
                     label: "TD Ameritrade"
                 },
-                /*{
+                {
                     value: "tradeStation",
                     label: "TradeStation"
-                }*/
+                },
+                {
+                    value: "interactiveBrokers",
+                    label: "Interactive Brokers"
+                }
             ],
             selectedBroker: localStorage.getItem('selectedBroker'),
         }
@@ -29,6 +33,8 @@ const brokersMixin = {
     watch: {},
 
     methods: {
+        //"T/D": "month/day/2022",
+
         /****************************
          * TRADEZERO
          ****************************/
@@ -282,12 +288,145 @@ const brokersMixin = {
                     //console.log("to sheet " + JSON.stringify(toSheet))
                     //3 - Now that we have a proper excel sheet, we create json with correct keys
                 let toJson = XLSX.utils.sheet_to_json(toSheet)
-                console.log("to sheet " + JSON.stringify(toJson))
-                    //console.log("csv "+csv)
-                    /*let papaParse = Papa.parse(csv, { header: true })
-                        //we need to recreate the JSON with proper date format + we simplify
-                    this.tradesData = JSON.parse(JSON.stringify(papaParse.data))
-                    console.log("tradesData " + JSON.stringify(this.tradesData))*/
+                    //console.log("to sheet " + JSON.stringify(toJson))
+                this.tradesData = []
+
+                toJson.forEach(element => {
+                    if (element["Order Status"] == "Filled") {
+                        console.log("element " + JSON.stringify(element))
+                        let temp = {}
+                        temp.Account = element.Account.toString()
+
+                        let tempDate = element.Entered.split(" ")[0]
+                        let newDate = tempDate.split("/")[0] + "/" + tempDate.split("/")[1] + "/20" + tempDate.split("/")[2]
+
+                        temp["T/D"] = newDate
+                        temp["S/D"] = newDate
+                        temp.Currency = "USD"
+                        temp.Type = "0"
+                        if (element.Type == "Buy") {
+                            temp.Side = "B"
+                        }
+                        if (element.Type == "Buy to Cover") {
+                            temp.Side = "BC"
+                        }
+                        if (element.Type == "Sell") {
+                            temp.Side = "S"
+                        }
+                        if (element.Type == "Sell Short") {
+                            temp.Side = "SS"
+                        }
+                        temp.Symbol = element.Symbol.trim()
+                        temp.Qty = element["Qty Filled"].toString()
+                        temp.Price = element["Filled Price"].toString()
+
+                        let tempTime = element.Entered.split(" ")[1]
+                        let tempTimeAMPM = element.Entered.split(" ")[2]
+                        let tempHour = Number(tempTime.split(":")[0])
+                        let newTime
+                        if (tempTimeAMPM == "PM" && tempHour != 12) {
+                            tempHour = tempHour + 12
+                            newTime = tempHour + ":" + tempTime.split(":")[1] + ":" + tempTime.split(":")[2]
+                        } else {
+                            newTime = tempTime
+                        }
+
+                        temp["Exec Time"] = newTime
+
+                        temp.Comm = element.Commission.toString()
+                        temp.SEC = "0"
+                        temp.TAF = "0"
+                        temp.NSCC = "0"
+                        temp.Nasdaq = "0"
+                        temp["ECN Remove"] = "0"
+                        temp["ECN Add"] = "0"
+                        if (temp.Side == "B" || temp.Side == "BC") {
+                            temp["Gross Proceeds"] = (-element["Qty Filled"] * element["Filled Price"]).toString()
+                            temp["Net Proceeds"] = ((-element["Qty Filled"] * element["Filled Price"]) - element.Commission).toString()
+
+                        } else {
+                            temp["Gross Proceeds"] = (element["Qty Filled"] * element["Filled Price"]).toString()
+                            temp["Net Proceeds"] = ((element["Qty Filled"] * element["Filled Price"]) - element.Commission).toString()
+                        }
+
+                        temp["Clr Broker"] = ""
+                        temp.Liq = ""
+                        temp.Note = ""
+                            //console.log("temp "+JSON.stringify(temp))
+                        this.tradesData.push(temp)
+                    }
+                });
+                console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                resolve()
+            })
+        },
+
+        /****************************
+         * INTERACTIVE BROKERS
+         ****************************/
+        brokerInteractiveBrokers: async function(param) {
+            return new Promise(async(resolve, reject) => {
+                this.tradesData = []
+                let papaParse = Papa.parse(param, { header: true })
+                    //we need to recreate the JSON with proper date format + we simplify
+                //console.log("papaparse " + JSON.stringify(papaParse.data))
+                papaParse.data.forEach(element => {
+                    if (element.ClientAccountID) {
+                        //console.log("element " + JSON.stringify(element))
+                        let temp = {}
+                        temp.Account = element.ClientAccountID
+                        //console.log("element.TradeDate. " + element.TradeDate)
+                        let tempYear = element.TradeDate.slice(0, 4)
+                        let tempMonth = element.TradeDate.slice(4, 6)
+                        let tempDay = element.TradeDate.slice(6, 8)
+                        let newDate = tempMonth + "/" + tempDay + "/" + tempYear
+
+                        temp["T/D"] = newDate
+                        temp["S/D"] = newDate
+                        temp.Currency = element.CurrencyPrimary
+                        temp.Type = "0"
+                        if (element["Buy/Sell"] == "BUY") {
+                            temp.Side = "B"
+                        }
+                        if (element["Buy/Sell"] == "BUY COVER") {
+                            temp.Side = "BC"
+                        }
+                        if (element["Buy/Sell"] == "SELL") {
+                            temp.Side = "S"
+                        }
+                        if (element["Buy/Sell"] == "SELL SHORT") {
+                            temp.Side = "SS"
+                        }
+                        temp.Symbol = element.Symbol.split(" ")[0]
+                        temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString(): element.Quantity
+                        temp.Price = element.Price
+
+                        let tempEntryYear = element.OrderTime.split(";")[0].slice(0, 4)
+                        let tempEntryMonth = element.OrderTime.split(";")[0].slice(4, 6)
+                        let tempEntryDay = element.OrderTime.split(";")[0].slice(6, 8)
+                        let tempEntryHour = element.OrderTime.split(";")[1].slice(0, 2)
+                        let tempEntryMinutes = element.OrderTime.split(";")[1].slice(2, 4)
+                        let tempEntrySeconds = element.OrderTime.split(";")[1].slice(4, 6)
+
+                        temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
+
+                        temp.Comm = (-Number(element.Commission)).toString()
+                        temp.SEC = "0"
+                        temp.TAF = "0"
+                        temp.NSCC = "0"
+                        temp.Nasdaq = "0"
+                        temp["ECN Remove"] = "0"
+                        temp["ECN Add"] = "0"
+                        temp["Gross Proceeds"] = element.Proceeds
+                        temp["Net Proceeds"] = element.NetCash
+                        temp["Clr Broker"] = ""
+                        temp.Liq = ""
+                        temp.Note = ""
+                            //console.log("temp "+JSON.stringify(temp))
+                        this.tradesData.push(temp)
+                    }
+                });
+                console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
                 resolve()
             })
         },

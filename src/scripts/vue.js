@@ -1779,9 +1779,6 @@ const vueApp = new Vue({
         dateNumberFormat(param) {
             return Number(Math.trunc(param)) //we have to use /1000 and not unix because or else does not take into account tz
         },
-        /*dateFormat(param) {
-            return dayjs.unix(param).format("DD MMMM YYYY")
-        },*/
         dateCalFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("YYYY-MM-DD")
         },

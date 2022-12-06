@@ -265,6 +265,15 @@ const addTradesMixin = {
                 await this.brokerTradeStation(fileInput)
             }
 
+            /****************************
+             * INTERACTIVE BROKERS
+             ****************************/
+             if (this.selectedBroker == "interactiveBrokers") {
+                console.log(" -> Interactive Brokers")
+                let fileInput = await readAsText(files)
+                await this.brokerInteractiveBrokers(fileInput)
+            }
+
             create()
         },
 
@@ -415,7 +424,7 @@ const addTradesMixin = {
                             if (tempExec.side == "S") { //occasionnaly, Tradezero inverts trades and starts by accounting the sell even though it's a long possition
                                 temp7.strategy = "long"
                                     //console.log("Symbol " + key2 + " is sold and long")
-                                console.log("   -> Symbol " + key2 + " is accounted as sell before buy on date " + this.dateFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("   -> Symbol " + key2 + " is accounted as sell before buy on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedLong = true
                                 temp7.buyQuantity = 0
                                 temp7.sellQuantity = tempExec.quantity;
@@ -428,7 +437,7 @@ const addTradesMixin = {
                             }
                             if (tempExec.side == "BC") { //occasionnaly, Tradezero invertes trades
                                 temp7.strategy = "short"
-                                console.log("   ->Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.dateFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("   ->Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedShort = true
                                 temp7.buyQuantity = tempExec.quantity;
                                 temp7.sellQuantity = 0
