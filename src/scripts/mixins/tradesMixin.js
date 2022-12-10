@@ -26,6 +26,7 @@ const tradesMixin = {
         },
 
         inputDateRangeCal(param1, param2) {
+            console.log("param1 "+param1+", param2 "+param2)
             let dateUnix = null
             if (param1 == "start") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()

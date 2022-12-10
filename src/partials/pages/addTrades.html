@@ -129,7 +129,6 @@
                             </thead>
                             <tbody>
                                 <tr v-for="blot in blotter[index]">
-
                                     <td>{{blot.symbol}}</td>
                                     <td>{{blot.buyQuantity + blot.sellQuantity}}</td>
                                     <td v-bind:class="[blot.grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(blot.grossProceeds).toFixed(2)}}</td>
@@ -143,7 +142,7 @@
                                 </tr>
                                 <tr v-if="index !=null" class="sumRow">
                                     <td>All</td>
-                                    <td>{{pAndL[index].buyQuantity + pAndL[index].sellQuantity}}</td>
+                                    <td>{{pAndL[index].buyQuantity}}</td>
                                     <td v-bind:class="[pAndL[index].grossProceeds>0 ? 'greenTrade' : 'redTrade']">{{(pAndL[index].grossProceeds).toFixed(2)}}</td>
                                     <td>{{(pAndL[index].commission).toFixed(2)}}</td>
                                     <td>{{(pAndL[index].fees).toFixed(2)}}</td>

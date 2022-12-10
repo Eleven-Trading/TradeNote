@@ -83,6 +83,7 @@ const addTradesMixin = {
                         console.log("key " + key)
                         let temp2 = {};
                         temp2.account = this.cashJournalsData[key].Account
+                        temp2.broker = this.selectedBroker
                         temp2.name = this.cashJournalsData[key].Name
                         temp2.currency = this.cashJournalsData[key].Currency
 
@@ -290,6 +291,7 @@ const addTradesMixin = {
                 for (const key of keys) {
                     let temp2 = {};
                     temp2.account = this.tradesData[key].Account
+                    temp2.broker = this.selectedBroker
                     if (!this.tradeAccounts.includes(this.tradesData[key].Account)) this.tradeAccounts.push(this.tradesData[key].Account)
                         /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
                         //frDate = usDate.tz("Europe/Paris")
@@ -305,11 +307,11 @@ const addTradesMixin = {
                     temp2.currency = this.tradesData[key].Currency;
                     temp2.type = this.tradesData[key].Type;
                     temp2.side = this.tradesData[key].Side;
-                    temp2.symbol = this.tradesData[key].Symbol;
-                    temp2.quantity = parseInt(this.tradesData[key].Qty);
+                    temp2.symbol = this.tradesData[key].Symbol.replace(".", "_")
+                    temp2.quantity = parseFloat(this.tradesData[key].Qty);
                     temp2.price = parseFloat(this.tradesData[key].Price);
                     temp2.execTime = dayjs.tz(formatedDateTD + " " + this.tradesData[key]['Exec Time'], this.tradeTimeZone).unix()
-                    tempId = "e" + temp2.execTime + "_" + temp2.symbol + "_" + temp2.side;
+                    tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
                     // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                     if (tempId != lastId) {
                         x = 1
@@ -357,7 +359,7 @@ const addTradesMixin = {
 
 
 
-                //console.log('executions ' + JSON.stringify(this.executions))
+                console.log('executions ' + JSON.stringify(this.executions))
                 console.log(" -> Created");
                 resolve()
             })
@@ -411,33 +413,34 @@ const addTradesMixin = {
                                 //console.log("   -> ID " + temp7.id)
                             newIds.push(temp7.id)
                             temp7.account = tempExec.account;
+                            temp7.broker = tempExec.broker
                             temp7.td = tempExec.td;
                             temp7.currency = tempExec.currency;
                             temp7.type = tempExec.type;
                             temp7.side = tempExec.side;
                             if (tempExec.side == "B") {
                                 temp7.strategy = "long"
-                                console.log("   -> Symbol " + key2 + " is bought and long")
+                                console.log("   --> Symbol " + key2 + " is bought and long")
                                 temp7.buyQuantity = tempExec.quantity;
                                 temp7.sellQuantity = 0
                             }
                             if (tempExec.side == "S") { //occasionnaly, Tradezero inverts trades and starts by accounting the sell even though it's a long possition
                                 temp7.strategy = "long"
                                     //console.log("Symbol " + key2 + " is sold and long")
-                                console.log("   -> Symbol " + key2 + " is accounted as sell before buy on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("   --> Symbol " + key2 + " is accounted as sell before buy on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedLong = true
                                 temp7.buyQuantity = 0
                                 temp7.sellQuantity = tempExec.quantity;
                             }
                             if (tempExec.side == "SS") {
                                 temp7.strategy = "short"
-                                console.log("   -> Symbol " + key2 + " is sold and short")
+                                console.log("   --> Symbol " + key2 + " is sold and short")
                                 temp7.buyQuantity = 0
                                 temp7.sellQuantity = tempExec.quantity;
                             }
                             if (tempExec.side == "BC") { //occasionnaly, Tradezero invertes trades
                                 temp7.strategy = "short"
-                                console.log("   ->Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("   --> Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedShort = true
                                 temp7.buyQuantity = tempExec.quantity;
                                 temp7.sellQuantity = 0
@@ -520,7 +523,7 @@ const addTradesMixin = {
                                 .id;
 
                         } else if (newTrade == false) { //= concatenating trade
-                            console.log(" -> Concatenating trade for symbole " + tempExec.symbol + " and strategy " + temp7.strategy)
+                            console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + temp7.strategy)
                                 //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
 
                             if (temp7.strategy == "long") {
@@ -582,7 +585,7 @@ const addTradesMixin = {
                                 .trade = temp7.id
 
                             if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
-                                //console.log(" -> Closing position")
+                                console.log("  --> Position closed")
                                 temp7.exitPrice = tempExec.price;
                                 temp7.exitTime = tempExec.execTime;
                                 /*if (temp7.exitTime >= this.startTimeUnix) {
