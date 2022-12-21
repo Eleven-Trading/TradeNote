@@ -28,9 +28,11 @@ Currently, you can add trades from the following brokers
  - TradeStation
  - Interactive Brokers
 
+Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/ "brokers folder") to see the export format for you broker.
+
 Please contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
-Alternatively, you can use the [example file](https://github.com/Eleven-Trading/TradeNote/blob/main/example_tradezero_file.csv "example file") and adapt it to your export file.
+Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
 
 ### Type of trades
 TradeNote works best for intraday stocks and forex trading. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.

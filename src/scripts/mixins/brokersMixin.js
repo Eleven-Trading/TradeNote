@@ -2,8 +2,8 @@ const brokersMixin = {
     data() {
         return {
             brokers: [{
-                    value: "csvTemplate",
-                    label: "CSV Template"
+                    value: "template",
+                    label: "Template"
                 },
                 {
                     value: "tradeZero",

@@ -226,7 +226,7 @@ const addTradesMixin = {
                 await this.createExecutions()
                 await this.createTrades()
                 await this.createBlotter()
-                await this.filterExisting("trades")
+                //await this.filterExisting("trades")
                 await this.createPnL()
             }
 
