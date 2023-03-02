@@ -204,7 +204,8 @@ const brokersMixin = {
                 console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
                 console.log("cashBalanceJsonArray "+JSON.stringify(cashBalanceJsonArray))
                 console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))*/
-                //console.log("count cashBalanceJsonArray " +Object.keys(cashBalanceJsonArray).length)
+                console.log("count cashBalanceJsonArray " +Object.keys(cashBalanceJsonArray).length)
+                console.log("count accountTradeHistoryJsonArray " +Object.keys(accountTradeHistoryJsonArray).length)
                 if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
                     alert("Cash Balance Json is different from Account Trade History Json")
                     return

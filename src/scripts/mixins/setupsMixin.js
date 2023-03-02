@@ -55,7 +55,7 @@ const setupsMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
-                query.limit(param ? param : 10000); // limit to at most 10 results
+                query.limit(param ? param : 20);
                 this.setups = []
                 const results = await query.find();
                 this.setups = JSON.parse(JSON.stringify(results))

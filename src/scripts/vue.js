@@ -886,7 +886,7 @@ const vueApp = new Vue({
 
     },
 
-    mounted() {
+    mounted: async function() {
         /*console.log("\nDATE EXPLORATION")
         console.log(" -> Guessing timezone "+dayjs.tz.guess())
         //console.log(" -> Current date "+dayjs())
@@ -923,6 +923,7 @@ const vueApp = new Vue({
         var itemToEditId = sessionStorage.getItem('editItemId')
         if (this.currentPage.id == "addTrades") {
             this.initStepper()
+            await this.getExistingTradesArray()
         }
 
         this.tagArray()

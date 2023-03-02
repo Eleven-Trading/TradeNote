@@ -10,6 +10,7 @@
         <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
             <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value ==  selectedBroker">{{item.label}}</option>
         </select>
+        
         <!-- ============ STEPPER INIT ============ -->
         <div id="addStepper" class="bs-stepper">
             <div class="bs-stepper-header">
@@ -102,7 +103,12 @@
                         <input type="checkbox" v-model="includeFinancials" v-on:click="includeFinancials = !includeFinancials">
                         <span class="slider round"></span>
                     </label>-->
+                    
                     <h4 class="mt-3">Trades</h4>
+                    <!--<div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="duplicatedImports" checked>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Filter duplicated imports</label>
+                    </div>-->
                     <div class="mt-3 input-group mb-3">
                         <input id="tradesInput" type="file" v-on:change="importTrades($event)"/>
                     </div>

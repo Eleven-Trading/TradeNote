@@ -1,6 +1,7 @@
 const addTradesMixin = {
     data() {
         return {
+            gotExistingTradesArray: false,
             cashJournalsData: null,
             tradesData: null,
             tempExecutions: [],
@@ -196,9 +197,16 @@ const addTradesMixin = {
             this.loadingSpinner = true
             this.loadingSpinnerText = "Importing file ..."
             let files = e.target.files || e.dataTransfer.files;
-
-            if (!files.length)
+            console.log(" got existing " + this.gotExistingTradesArray)
+            if (!files.length) {
+                this.loadingSpinner = false
                 return;
+            }
+            if (!this.gotExistingTradesArray) {
+                this.loadingSpinner = false
+                alert("You loaded your file too quickly. Please refresh page, allow couple of seconds for background job to run and try again.")
+                return;
+            }
 
             const readAsText = async(param) => {
                 return new Promise(async(resolve, reject) => {
@@ -226,14 +234,14 @@ const addTradesMixin = {
                 await this.createExecutions()
                 await this.createTrades()
                 await this.createBlotter()
-                //await this.filterExisting("trades")
+                await this.filterExisting("trades")
                 await this.createPnL()
             }
 
             /****************************
              * TRADEZERO
              ****************************/
-            if (this.selectedBroker == "tradeZero" || this.selectedBroker == "csvTemplate") {
+            if (this.selectedBroker == "tradeZero" || this.selectedBroker == "template") {
                 console.log(" -> TradeZero / Template")
                 let fileInput = await readAsText(files)
                 await this.brokerTradeZero(fileInput)
@@ -269,7 +277,7 @@ const addTradesMixin = {
             /****************************
              * INTERACTIVE BROKERS
              ****************************/
-             if (this.selectedBroker == "interactiveBrokers") {
+            if (this.selectedBroker == "interactiveBrokers") {
                 console.log(" -> Interactive Brokers")
                 let fileInput = await readAsText(files)
                 await this.brokerInteractiveBrokers(fileInput)
@@ -585,7 +593,7 @@ const addTradesMixin = {
                                 .trade = temp7.id
 
                             if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
-                                console.log("  --> Position closed")
+                                console.log("   ---> Position CLOSED")
                                 temp7.exitPrice = tempExec.price;
                                 temp7.exitTime = tempExec.execTime;
                                 /*if (temp7.exitTime >= this.startTimeUnix) {
@@ -644,6 +652,8 @@ const addTradesMixin = {
                                     //console.log("temp2 is " + JSON.stringify(temp2))
                                     //console.log(" -> trade concat finished")
                                     //console.log(tradesCount+" trades for symbol "+key2)
+                            } else {
+                                console.log("   ---> Position OPEN")
                             }
                         } else {
                             console.log("nothing for key " + key2)
@@ -681,8 +691,12 @@ const addTradesMixin = {
                 console.log("\nFILTERING EXISTING")
                 this.loadingSpinnerText = "Filtering existing"
                     // We can only filter at this point because trades depend on executions. So, once trades are created, we can filter out existing trades
-                await this.getExistingTradesArray(param)
-                    //console.log("existing array "+JSON.stringify(this.existingTradesArray)+" and count "+this.existingTradesArray.length)
+
+                //await this.getExistingTradesArray(param) => Here, I no longer call it here but on page load, so it's quicker to load
+
+                //console.log("existing array "+JSON.stringify(this.existingTradesArray)+" and count "+this.existingTradesArray.length)
+                /* I have to rename and make specific caser for existingTradesArray => existingCashJournalsArray
+                
                 if (param == "cashJournals") {
                     this.existingTradesArray.forEach(element => {
                         if (this.cashJournals.hasOwnProperty(element)) {
@@ -692,7 +706,8 @@ const addTradesMixin = {
                     });
                     this.cashJournals = _.omit(this.cashJournals, this.existingTradesArray)
                     console.log("cashJournal " + JSON.stringify(this.cashJournals))
-                }
+                } */
+
                 if (param == "trades") {
                     this.existingTradesArray.forEach(element => {
                         if (this.executions.hasOwnProperty(element)) {
@@ -1121,18 +1136,22 @@ const addTradesMixin = {
             })
         },
 
-        getExistingTradesArray: async function(param) {
-
-            const Object = Parse.Object.extend(param);
-            const query = new Parse.Query(Object);
-            query.equalTo("user", Parse.User.current());
-            query.limit(1000000); // limit to at most 1M results
-            const results = await query.find();
-            for (let i = 0; i < results.length; i++) {
-                const object = results[i];
-                //console.log("unix time "+ object.get('dateUnix'));
-                this.existingTradesArray.push(object.get('dateUnix'))
-            }
+        getExistingTradesArray: async function() {
+            console.log(" -> Filtering existing trades")
+            return new Promise(async(resolve, reject) => {
+                const Object = Parse.Object.extend("trades");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current());
+                query.limit(1000000); // limit to at most 1M results
+                const results = await query.find();
+                for (let i = 0; i < results.length; i++) {
+                    const object = results[i];
+                    //console.log("unix time "+ object.get('dateUnix'));
+                    this.existingTradesArray.push(object.get('dateUnix'))
+                }
+                this.gotExistingTradesArray = true
+                console.log(" -> Finished filtering existing trades")
+            })
         },
 
         /* ---- 4: UPLOAD TO PARSE TRADES  ---- */
