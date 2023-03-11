@@ -773,6 +773,7 @@ const vueApp = new Vue({
             //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
             this.initShepherd()
         }
+
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
             !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
@@ -802,6 +803,7 @@ const vueApp = new Vue({
         //this.currentPage = document.getElementsByTagName("main")[0].id
 
         await this.initIndexedDB()
+
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
             await this.getAllTrades(true)
             await this.initTab("dashboard")
@@ -811,7 +813,6 @@ const vueApp = new Vue({
             await this.getAllTrades(true)
             await this.initPopover()
             await this.initTab("daily")
-
         }
 
         if (this.currentPage.id == "journal") {
@@ -1031,7 +1032,7 @@ const vueApp = new Vue({
                                 }, e.__SV = 1)
                             }(document, window.posthog || []);
                             posthog.init(response.data, { api_host: 'https://eu.posthog.com' })
-                        }else{
+                        } else {
                             console.log(" -> Analytics Off")
                         }
                         resolve()
@@ -1044,17 +1045,22 @@ const vueApp = new Vue({
         },
 
         initTab(param) {
-            let showId
-            let showType
-            let showNumber
-
-            let hideId
-            let hideType
-            let hideNumber
+            let idCurrent
+            let idPrevious
+            let hideCurrentTab = false
+            let idCurrentType
+            let idCurrentNumber
+            let idPreviousType
+            let idPreviousNumber
+            let htmlIdCurrent
+            let htmlIdPrevious
+            let firstTimeClick
 
             var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
-            console.log("list " + triggerTabList)
             var self = this // this is needed or else could not call function inside eventlistener
+
+            console.log("INIT TAB for " + param)
+
             triggerTabList.forEach((triggerEl) => {
                 /*var tabTrigger = new bootstrap.Tab(triggerEl)
                 triggerEl.addEventListener('click', function(event) {
@@ -1064,6 +1070,7 @@ const vueApp = new Vue({
                 })*/
                 if (param == "dashboard") {
                     // GET TAB ID THAT IS CLICKED
+                    console.log(" -> triggerTabList Dashboard")
                     triggerEl.addEventListener('shown.bs.tab', (event) => {
                         //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                         this.selectedDashTab = event.target.getAttribute('id')
@@ -1077,75 +1084,59 @@ const vueApp = new Vue({
                 if (param == "daily") {
                     // GET TAB ID THAT IS CLICKED
 
-
-                    /*triggerEl.addEventListener('show.bs.tab', (event) => {                        
-                        showId = event.target.getAttribute('id')
-                        showType = showId.split('-')[0]
-                        showNumber = showId.split('-')[1]
-                        //console.log(" clickedNav tab "+clickedNav)
-                    })
-                    
-                    triggerEl.addEventListener('hide.bs.tab', (event) => {
-                        console.log(" Hide id "+event.target.getAttribute('id'))
-                        //clickedTab = true
-                        id = event.target.getAttribute('id')
-                        type = id.split('-')[0]
-                        number = id.split('-')[1]
-                        //console.log(" clickedNav tab "+clickedNav)
-                    })*/
+                    //console.log(" -> triggerTabList Daily")
 
                     triggerEl.addEventListener('click', (event) => {
-                        console.log("1- hideId " + hideId)
-                        showId = event.target.getAttribute('id')
-                        showType = showId.split('-')[0]
-                        showNumber = showId.split('-')[1]
 
-                        if (showId != hideId && hideId != undefined) {
-                            //console.log(" -> Clicking on new tab New tab, with showId " + showId + ", hideId " + hideId)
-                            console.log(" --> Hiding previous tab content")
-                            hideType = hideId.split('-')[0]
-                            hideNumber = hideId.split('-')[1]
-                            $("#" + hideType + "Nav-" + hideNumber).removeClass('d-block')
-                            $("#" + hideType + "Nav-" + hideNumber).removeClass('d-none')
 
-                            hideId = showId
+                        if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
+                        
+                        idCurrent = event.target.getAttribute('id')
+                        
+                        if (idPrevious == undefined) {
+                            firstTimeClick = true
+                            idPrevious = idCurrent //on page load, first time we click
+                            hideCurrentTab = !hideCurrentTab // this is counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
+
                         }
 
-                        if (showId != undefined && showId == hideId) {
-                            const elTab = document.querySelector("#" + showId);
-                            const elContent = document.querySelector("#" + showType + "Nav-" + showNumber);
+                        //console.log(" -> id Current: " + idCurrent + " and previous: " + idPrevious)
 
-                            if (elContent.classList.contains('d-none')) { //if is hidden -> Show
-                                $("#" + showType + "Nav-" + showNumber).addClass('d-block')
-                                $("#" + showType + "Nav-" + showNumber).removeClass('d-none')
-                                $("#" + showId).addClass('active')
-                            } else if (elContent.classList.contains('d-block')) { //if open -> Hide
-                                $("#" + showType + "Nav-" + showNumber).addClass('d-none')
-                                $("#" + showType + "Nav-" + showNumber).removeClass('d-block')
-                                $("#" + showId).removeClass('active')
-                            } else { //its a new tab click we add d-block
-                                $("#" + showType + "Nav-" + showNumber).addClass('d-block')
+                        idCurrentType = idCurrent.split('-')[0]
+                        idCurrentNumber = idCurrent.split('-')[1]
+                        idPreviousType = idPrevious.split('-')[0]
+                        idPreviousNumber = idPrevious.split('-')[1]
+                        htmlIdCurrent = "#" + idCurrentType + "Nav-" + idCurrentNumber
+                        htmlIdPrevious = "#" + idPreviousType + "Nav-" + idPreviousNumber
+
+                        if (idCurrent == idPrevious) {
+
+                            hideCurrentTab = !hideCurrentTab
+
+                            //console.log(" hide tab ? " + hideCurrentTab)
+
+
+
+                            if (hideCurrentTab) { //hide content
+
+                                $(htmlIdCurrent).removeClass('show')
+                                $(htmlIdCurrent).removeClass('active')
+                                $("#" + idCurrent).removeClass('active')
+                            } else { //show content
+                                $(htmlIdCurrent).addClass('show')
+                                $(htmlIdCurrent).addClass('active')
+                                $("#" + idCurrent).addClass('active')
                             }
-                            //console.log("3- hideId " + hideId)
+
+
+
+                        } else {
+                            hideCurrentTab = false
+                            // in this case, we have click on another tab so we need to "reset" the previsous tab 
+                            $(htmlIdPrevious).removeClass('show')
+                            $(htmlIdPrevious).removeClass('active')
+                            $("#" + idPrevious).removeClass('active')
                         }
-
-                        if (hideId == undefined) {
-                            console.log(" -> Clicking on new tab and hideId is undefined")
-                            hideId = showId
-                                //console.log("4- hideId " + hideId)
-                        }
-
-
-                        //console.log("showId " + showId + ", hideId " + hideId)
-                        //console.log("showId " + typeof showId)
-
-
-
-
-
-
-
-
 
                     })
                 }

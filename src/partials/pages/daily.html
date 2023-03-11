@@ -17,7 +17,7 @@
     </div>
 
     <!-- added v-if instead v-show because need to wait for patterns to load -->
-    <div v-if="!spinnerSetupsUpdate" class="col-12 col-xl-8">
+    <div v-show="!spinnerSetupsUpdate" class="col-12 col-xl-8"> <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
             <div class="col-12">
                 <div class="dailyCard">
