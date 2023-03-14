@@ -90,10 +90,10 @@
                         <td id="videoTd">
                             <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
                             <span v-if="trade.videoStart&&trade.videoEnd">
-                                <i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="viewModalVideos(true, index)" class="pointerClass fab fa-youtube"></i>
+                                <i data-bs-toggle="modal" data-bs-target="#tradesModal" v-on:click="viewModalVideos(true, index)" class="pointerClass fab fa-youtube"></i>
                             </span>
                             <span v-else>
-                                <i data-bs-toggle="modal" data-bs-target="#videoModal" v-on:click="viewModalVideos(false, index)" class="pointerClass uil uil-diary-alt"></i>
+                                <i data-bs-toggle="modal" data-bs-target="#tradesModal" v-on:click="viewModalVideos(false, index)" class="pointerClass uil uil-diary-alt"></i>
                             </span>
                         </td>
                         <td>{{trade.symbol}}</td>
@@ -115,7 +115,7 @@
     </div>
 
     <!-- ============ VIDEO MODAL ============ -->
-    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="tradesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">

@@ -1,6 +1,8 @@
 <!-- Line 1 : Date and P&L -->
+<!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
+
 <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-    <div class="col-auto">{{createdDateFormat(daily.dateUnix)}}</div>
+    <div class="col-auto">{{createdDateFormat(daily.dateUnix)}}<i v-on:click="updateDailySatisfaction(daily.dateUnix, true)" v-bind:class="[daily.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1']"></i><i v-on:click="updateDailySatisfaction(daily.dateUnix, false)" v-bind:class="[daily.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down']"></i></div>
     <div class="col-auto ms-auto">P&L(n): <span v-bind:class="[daily.pAndL[amountCase+'Proceeds']>0 ? 'greenTrade' : 'redTrade']">{{twoDecCurrencyFormat(daily.pAndL[amountCase+'Proceeds'])}}</span></div>
 </div>
 

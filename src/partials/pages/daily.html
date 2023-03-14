@@ -17,7 +17,8 @@
     </div>
 
     <!-- added v-if instead v-show because need to wait for patterns to load -->
-    <div v-show="!spinnerSetupsUpdate" class="col-12 col-xl-8"> <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
+    <div v-show="!spinnerSetupsUpdate" class="col-12 col-xl-8">
+        <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
             <div class="col-12">
                 <div class="dailyCard">
@@ -48,7 +49,7 @@
     </div>
 
     <!-- ============ VIDEO MODAL ============ -->
-    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="tradesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -101,53 +102,67 @@
                         </table>
                     </div>
 
-                    <!-- *** Setup *** -->
+                    <!-- *** VARIABLES *** -->
                     <div class="mt-1 mb-2 row align-items-center ms-1 me-1 tradeSetup">
-
-                        <!-- Setup Inputs -->
                         <div class="col-12">
                             <div class="row">
-                                <div class="col-7">
+                                <!-- First line -->
+                                <div class="col-12">
                                     <div class="row">
-                                        <div class="col-7">
+                                        
+                                        <!-- Satisfaction -->
+                                        <div class="col-1">
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)" v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)!=-1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
+                                            
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)" v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)!=-1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                        </div>
+
+                                        <!-- Patterns -->
+                                        <div class="col-5">
                                             <select v-on:change="tradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="item in patterns" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name + ' - '+ item.side + ' | '+ item.type}}</option>
                                             </select>
                                         </div>
+
+                                        <!-- Mistakes -->
                                         <div class="col-5">
                                             <select v-on:change="tradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in mistakes" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">{{item.name}}</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="row mt-1">
-                                        <div class="col-12">
-                                           <textarea class="form-control" placeholder="note" id="floatingTextarea" v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''" v-on:input="tradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id)"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-show="spinnerSetups" class="col-5">
-                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
-                                    <span>{{spinnerSetupsText}}</span>
-                                </div>
-                                <div class="col-5" v-show="!spinnerSetups">
-                                    <div class="row">
-                                        <div class="col-2">
+
+                                        <!-- Delete -->
+                                        <div class="col-1">
                                             <i v-on:click="deletePatternMistake(daily.dateUnix, daily.trades[videosArrayIndex].id)" class="ps-2 uil uil-trash-alt pointerClass" ></i>
                                         </div>
-
-                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)" class="col-5">
+                                    </div>
+                                </div>
+                                
+                                <!-- Second line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <textarea class="form-control" placeholder="note" id="floatingTextarea" v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''" v-on:input="tradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id)"></textarea>
+                                        </div>
+                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex-1)" class="col-2">
                                             <button class="btn btn-outline-primary btn-sm ms-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex-1].videoStart&&daily.trades[videosArrayIndex-1].videoEnd ? true : false, videosArrayIndex-1, '')" v-bind:disabled="spinnerSetups==true">
                                                 <i class="fa fa-chevron-left me-2"></i>Back</button>
                                         </div>
-                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto col-5">
+                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto col-2">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2" v-on:click="viewModalVideosDaily(daily.trades[videosArrayIndex+1].videoStart&&daily.trades[videosArrayIndex+1].videoEnd ? true : false, videosArrayIndex+1, '')" v-bind:disabled="spinnerSetups==true">Next<i class="fa fa-chevron-right ms-2"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Spinner -->
+                                <div v-show="spinnerSetups" class="col-12">
+                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                    <span>{{spinnerSetupsText}}</span>
+                                </div>
+
                             </div>
                         </div>
                     </div>

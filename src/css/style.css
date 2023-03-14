@@ -289,11 +289,11 @@ img.navbar-brand {
 
 /*=================== VIDEO ===================*/
 
-#videoModal .modal-xl {
+#tradesModal .modal-xl {
     min-width: 70%;
 }
 
-#videoModal .modal-dialog {
+#tradesModal .modal-dialog {
     margin-top: 5px;
 }
 

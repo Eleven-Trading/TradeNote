@@ -9,15 +9,23 @@ const dailyMixin = {
             spinnerSetupsUpdateText: null,
             patterns: [],
             mistakes: [],
+
+            tradeSatisfaction: null,
+            tradeSatisfactionId: null,
+            tradeSatisfactionDateUnix: null,
+            tradeSatisfactionChanged: null,
+            tradeSatisfactionArray: [],
+
             tradeSetup: {
                 pattern: null,
                 mistake: null,
                 note: null,
             },
             tradeSetupChanged: false,
-            indexedDBtoUpdate: false,
             tradeSetupDateUnix: null,
-            tradeSetupId: null
+            tradeSetupId: null,
+
+            indexedDBtoUpdate: false,
         }
     },
     watch: {
@@ -26,6 +34,27 @@ const dailyMixin = {
         },
     },
     methods: {
+        autoComplete() {
+            //https://github.com/gch1p/bootstrap-5-autocomplete
+            const field = document.getElementById('providers');
+            new Autocomplete(field, {
+                data: [{ name: "entry1", text: "The first entry" }, { name: "entry2", text: "The second entry" }],
+                label: "name",
+                value: "text",
+                maximumItems: 5,
+                threshold: 0,
+                highlightClass: 'text-blue',
+                onSelectItem: ({ label, value }) => {
+                    console.log("user selected:", label, value);
+                    /*this.renderMessage += 1
+                    this.selectedProvider.id = value
+                    this.selectedProvider.label = label
+                    console.log(" -> Used auto complet and selected provider " + JSON.stringify(this.selectedProvider))
+                    this.getCategory()*/
+                }
+            });
+        },
+
         getPatterns: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting Patterns");
@@ -53,9 +82,34 @@ const dailyMixin = {
                 query.limit(1000000); // limit to at most 10 results
                 this.mistakes = []
                 const results = await query.find();
+
                 this.mistakes = JSON.parse(JSON.stringify(results))
                     //console.log(" -> Setups " + JSON.stringify(this.patterns))
                 resolve()
+            })
+        },
+
+        getTradesSatisfaction: async function() {
+            return new Promise(async(resolve, reject) => {
+                console.log(" -> Getting Trade Satisfactions");
+                const Object = Parse.Object.extend("satisfactions");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current());
+                query.exists("tradeId") /// this is how we differentiate daily from trades satisfaction records
+                query.limit(1000000); // limit to at most 10 results
+                this.tradeSatisfactionArray = []
+                const results = await query.find();
+                for (let i = 0; i < results.length; i++) {
+                    let temp = {}
+                    const object = results[i];
+                    temp.id = object.get('tradeId') 
+                    temp.satisfaction = object.get('satisfaction') 
+                    this.tradeSatisfactionArray.push(temp)
+                  }
+                console.log(" -> Trades satisfaction " + JSON.stringify(this.tradeSatisfactionArray))
+
+                resolve()
+
             })
         },
 
@@ -75,6 +129,22 @@ const dailyMixin = {
                 //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
             this.tradeSetupChanged = true
             this.indexedDBtoUpdate = true
+
+        },
+
+        tradeSatisfactionChange: async function(param1, param2, param3, param4) {
+
+            this.tradeSatisfactionId = param1
+            this.tradeSatisfaction = param2
+            this.tradeSatisfactionDateUnix = param3
+                //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
+            this.tradeSatisfactionChanged = true
+            this.indexedDBtoUpdate = true
+
+            await this.updateTradeSatisfaction()
+            await this.updateTrades()
+            await this.getTradesSatisfaction()
+            this.tradeSatisfactionChanged = false
 
         },
 
@@ -107,6 +177,7 @@ const dailyMixin = {
                 await this.updatePatternsMistakes()
                 await this.updateTrades()
             }
+            
             this.tradeSetupChanged = false
             await (this.hasVideo = false)
             await (this.resetSetup())
@@ -139,6 +210,8 @@ const dailyMixin = {
                 console.log(" -> Trade has No setup in DB")
                 this.tradeId = null
             }*/
+
+            //Before going next or back, check if Satisfaction or Pattern already exists in Parse DB
 
             const Object = Parse.Object.extend("patternsMistakes");
             const query = new Parse.Query(Object);
@@ -268,20 +341,20 @@ const dailyMixin = {
 
 
         dailyModal: async function() {
-            let myModalEl = document.getElementById('videoModal')
+            let myModalEl = document.getElementById('tradesModal')
             myModalEl.addEventListener('hide.bs.modal', async(event) => {
-                console.log("daily hidden")
+                    console.log("daily hidden")
 
-                if (this.indexedDBtoUpdate) {
-                    if (this.tradeSetupChanged) {
-                        await this.updatePatternsMistakes()
-                        await this.updateTrades()
+                    if (this.indexedDBtoUpdate) {
+                        if (this.tradeSetupChanged) {
+                            await this.updatePatternsMistakes()
+                            await this.updateTrades()
+                        }
+                        await this.updateIndexedDB()
+
                     }
-                    await this.updateIndexedDB()
-
-                }
-                this.indexedDBtoUpdate = false
-            }, {once: true})//it was firing multiple times here... don't know why
+                    this.indexedDBtoUpdate = false
+                }, { once: true }) //it was firing multiple times here... don't know why
         },
 
         resetSetup() {
@@ -351,10 +424,10 @@ const dailyMixin = {
                                 console.log('Failed to create new object, with error code: ' + error.message);
                             })
                     }
-                    
+
                 }
                 resolve()
-                
+
 
             })
         },
@@ -366,7 +439,7 @@ const dailyMixin = {
             this.spinnerSetups = true
             this.tradeSetupChanged = true
             this.indexedDBtoUpdate = true
-            console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeSetupId)
+            //console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeSetupId)
 
             if (this.tradeSetupId != null) {
                 console.log(" -> Deleting patterns mistakes")
@@ -392,7 +465,96 @@ const dailyMixin = {
             this.spinnerSetups = false
         },
 
-        updateTrades: async function(param3) {
+        updateDailySatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: tradeUnixDate ; param4: tradeId
+            console.log("\nUPDATING OR SAVING SATISFACTIONS IN PARSE")
+            console.log(" param 1 " + param1)
+            return new Promise(async(resolve, reject) => {
+                this.spinnerSetups = true
+
+                const Object = Parse.Object.extend("satisfactions");
+                const query = new Parse.Query(Object);
+                query.equalTo("dateUnix", param1)
+                query.doesNotExist("tradeId") /// this is how we differentiate daily from trades satisfaction records
+                const results = await query.first();
+                if (results) {
+                    console.log(" -> Updating satisfaction")
+                    this.spinnerSetupsText = "Updating"
+                    results.set("satisfaction", param2)
+
+                    results.save()
+                        .then(async() => {
+                            console.log(' -> Updated satisfaction with id ' + results.id)
+                                //this.spinnerSetupsText = "Updated setup"
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                        })
+                } else {
+                    console.log(" -> Saving satisfaction")
+                    this.spinnerSetupsText = "Saving"
+
+                    const object = new Object();
+                    object.set("user", Parse.User.current())
+                    object.set("dateUnix", param1)
+                    object.set("satisfaction", param2)
+                    object.setACL(new Parse.ACL(Parse.User.current()));
+                    object.save()
+                        .then(async(object) => {
+                            console.log(' -> Added new satisfaction with id ' + object.id)
+                                //this.spinnerSetupsText = "Added new setup"
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                        })
+                }
+
+                await this.updateTradesDailySatisfaction(param1, param2)
+                resolve()
+
+
+            })
+        },
+
+        updateTradeSatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: tradeUnixDate ; param4: tradeId
+            console.log("\nUPDATING OR SAVING TRADES SATISFACTION IN PARSE")
+            return new Promise(async(resolve, reject) => {
+                const Object = Parse.Object.extend("satisfactions");
+                const query = new Parse.Query(Object);
+                query.equalTo("tradeId", this.tradeSatisfactionId)
+                const results = await query.first();
+                if (results) {
+                    console.log(" -> Updating satisfaction")
+                    results.set("satisfaction", this.tradeSatisfaction)
+
+                    results.save()
+                        .then(async() => {
+                            console.log(' -> Updated satisfaction with id ' + results.id + " to " + this.tradeSatisfaction)
+                                //this.spinnerSetupsText = "Updated setup"
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                        })
+                } else {
+                    console.log(" -> Saving satisfaction")
+
+                    const object = new Object();
+                    object.set("user", Parse.User.current())
+                    object.set("dateUnix", this.tradeSatisfactionDateUnix)
+                    object.set("tradeId", this.tradeSatisfactionId)
+                    object.set("satisfaction", this.tradeSatisfaction)
+                    object.setACL(new Parse.ACL(Parse.User.current()));
+                    object.save()
+                        .then(async(object) => {
+                            console.log(' -> Added new satisfaction with id ' + object.id)
+                                //this.spinnerSetupsText = "Added new setup"
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                        })
+                }
+                resolve()
+
+
+            })
+        },
+
+        updateTradesDailySatisfaction: async function(param1, param2) {
             //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
             //this.spinnerSetupsText = "Updating trades"
             //query trade to update
@@ -400,38 +562,22 @@ const dailyMixin = {
             return new Promise(async(resolve, reject) => {
                 const Object = Parse.Object.extend("trades");
                 const query = new Parse.Query(Object);
-                query.equalTo("dateUnix", this.tradeSetupDateUnix)
+                query.equalTo("dateUnix", param1)
                 const results = await query.first();
                 if (results) {
-                    //console.log("result from query " + JSON.stringify(results))
-                    var objectResults = JSON.parse(JSON.stringify(results))
-                    var arrayTrades = objectResults.trades
-                    var tradeIndex = arrayTrades.findIndex(f => f.id == this.tradeSetupId)
-                    console.log(" -> Updating trade with id " + this.tradeSetupId)
-                    if (param3 == true) { //Delete == true
-                        arrayTrades[tradeIndex].setup = {}
-                    } else {
-                        arrayTrades[tradeIndex].setup = {
-                            pattern: this.tradeSetup.pattern,
-                            mistake: this.tradeSetup.mistake,
-                            note: this.tradeSetup.note
-                        }
-                    }
-                    //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
-                    results.set("trades", arrayTrades)
+                    results.set("satisfaction", param2)
                     results.save().then(async() => {
                         console.log(' -> Updated trades with id ' + results.id)
-                            //await (this.spinnerSetupsText = "Updated trade")
                         this.spinnerSetups = false
+                        await this.updateIndexedDB()
                         resolve()
-
                     })
                 } else {
                     alert("Update query did not return any results")
                     this.spinnerSetups = false
                     resolve()
                 }
-                
+
             })
         },
 
@@ -480,7 +626,64 @@ const dailyMixin = {
                 await (this.spinnerSetupsUpdate = false)
                 resolve()
             })
-        }
+        },
+        updateTrades: async function(param3) {
+            //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
+            //this.spinnerSetupsText = "Updating trades"
+            //query trade to update
+            //console.log("date unix "+param1+" is type "+typeof(this.videoToLoad)+" and trade id "+param)
+            return new Promise(async(resolve, reject) => {
+                const Object = Parse.Object.extend("trades");
+                const query = new Parse.Query(Object);
+                if (this.tradeSetupChanged) {
+                    query.equalTo("dateUnix", this.tradeSetupDateUnix)
+                }
+                if (this.tradeSatisfactionChanged) {
+                    query.equalTo("dateUnix", this.tradeSatisfactionDateUnix)
+                }
+                const results = await query.first();
+                if (results) {
+                    //console.log("result from query " + JSON.stringify(results))
+                    var objectResults = JSON.parse(JSON.stringify(results))
+                    var arrayTrades = objectResults.trades
+                    let id
+                    if (this.tradeSetupChanged) id = this.tradeSetupId
+                    if (this.tradeSatisfactionChanged) id = this.tradeSatisfactionId
+                    var tradeIndex = arrayTrades.findIndex(f => f.id == id)
+                    console.log(" -> Updating trade with id " + id)
+                    if (param3 == true) { //Delete == true
+                        arrayTrades[tradeIndex].setup = {}
+                    } else {
+                        if (this.tradeSetupChanged) {
+                            console.log("  --> Updating setup")
+                            arrayTrades[tradeIndex].setup = {
+                                pattern: this.tradeSetup.pattern,
+                                mistake: this.tradeSetup.mistake,
+                                note: this.tradeSetup.note
+                            }
+                        }
+                        if (this.tradeSatisfactionChanged) {
+                            console.log("  --> Updating satisfaction")
+                            arrayTrades[tradeIndex].satisfaction = this.tradeSatisfaction
+                        }
+                    }
+                    //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
+                    results.set("trades", arrayTrades)
+                    results.save().then(async() => {
+                        console.log(' -> Updated trades with id ' + results.id)
+                            //await (this.spinnerSetupsText = "Updated trade")
+                        this.spinnerSetups = false
+                        resolve()
+
+                    })
+                } else {
+                    alert("Update query did not return any results")
+                    this.spinnerSetups = false
+                    resolve()
+                }
+
+            })
+        },
 
 
     }
