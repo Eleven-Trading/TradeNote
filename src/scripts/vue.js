@@ -95,6 +95,9 @@ const vueApp = new Vue({
                         },
                         cashJournal: {
                             type: "Object"
+                        },
+                        satisfaction: {
+                            type: "Boolean"
                         }
                     }
                 },
@@ -279,6 +282,24 @@ const vueApp = new Vue({
                         },
                         note: {
                             type: "String"
+                        }
+                    }
+                },
+                {
+                    className: "satisfactions",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        tradeId: {
+                            type: "String"
+                        },
+                        satisfaction: {
+                            type: "Boolean"
                         }
                     }
                 }

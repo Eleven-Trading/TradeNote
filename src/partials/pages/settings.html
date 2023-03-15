@@ -3,11 +3,13 @@
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <button class="nav-link" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</button>
             <button class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-setups" type="button" role="tab" aria-controls="nav-setups" aria-selected="false">Setups</button>
-            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-mis" type="button" role="tab" aria-controls="nav-misc" aria-selected="false">Misc</button>
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
+        <!-- PROFILE -->
         <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
+        
+        <!-- SETUPS -->
         <div class="tab-pane fade show active" id="nav-setups" role="tabpanel" aria-labelledby="nav-profile-tab">
 
             <div class="row mt-3">
@@ -66,21 +68,20 @@
                 <table class="table">
                     <thead class="thead-dark">
                         <tr>
-                            <th scope="col">Pattern</th>
-                            <th scope="col">Entrypoints</th>
-                            <th scope="col">Description</th>
+                            <th scope="col" class="col-md-4">Pattern</th>
+                            <th scope="col" class="col-md-6">Description</th>
+                            <th scope="col" class="col-md-1">active</th>
+                            <th scope="col" class="col-md-1"></th>
                         </tr>
                     </thead>
-                    <tbody class="txt-small" v-for="setup in patternsEntrypoints">
+                    <tbody class="txt-small" v-for="pattern in patterns">
                         <tr>
-                            <td v-bind:rowspan="setup.entrypoints.length">{{setup.name}}</td>
-                            <td>{{setup.entrypoints[0].name}}</td>
-                            <td>{{setup.entrypoints[0].description}}</td>
+                            <td>{{pattern.name}}</td>
+                            <td>{{pattern.description}}</td>
+                            <td>{{pattern.active}}</td>
+                            <td><i class="uil uil-edit-alt editItem pointerClass" v-on:click="editPattern(pattern.objectId)"></i></td>
                         </tr>
-                        <tr v-if="setup.entrypoints.length>1" v-for="entrypoint in setup.entrypoints.slice(1,setup.entrypoints.length)">
-                            <td>{{entrypoint.name}}</td>
-                            <td>{{entrypoint.description}}</td>
-                        </tr>
+
                     </tbody>
                 </table>
             </div>
