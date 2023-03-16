@@ -109,11 +109,11 @@
                                 <!-- First line -->
                                 <div class="col-12">
                                     <div class="row">
-                                        
+
                                         <!-- Satisfaction -->
                                         <div class="col-1">
                                             <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)" v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)!=-1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
-                                            
+
                                             <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)" v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)!=-1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
@@ -139,8 +139,21 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Second line -->
+                                <!-- Third line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="Stop Loss" v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)!=-1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].stopLoss : ''" v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="MAE Price" v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)!=-1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].maePrice : ''" v-on:change="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="MFE Price" v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)!=-1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].mfePrice : ''" v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Third line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <div class="row">
                                         <div class="col-8">

@@ -7,15 +7,9 @@ const dailyMixin = {
             spinnerSetupsText: null,
             spinnerSetupsUpdate: false,
             spinnerSetupsUpdateText: null,
+            
             patterns: [],
             mistakes: [],
-
-            tradeSatisfaction: null,
-            tradeSatisfactionId: null,
-            tradeSatisfactionDateUnix: null,
-            tradeSatisfactionChanged: null,
-            tradeSatisfactionArray: [],
-
             tradeSetup: {
                 pattern: null,
                 mistake: null,
@@ -24,6 +18,22 @@ const dailyMixin = {
             tradeSetupChanged: false,
             tradeSetupDateUnix: null,
             tradeSetupId: null,
+
+            tradeSatisfaction: null,
+            tradeSatisfactionId: null,
+            tradeSatisfactionDateUnix: null,
+            tradeSatisfactionChanged: null,
+            tradeSatisfactionArray: [],
+
+            excursions: [],
+            excursion: {
+                stopLoss: null,
+                maePrice: null,
+                mfePrice: null
+            },
+            tradeExcursionChanged: false, 
+            tradeExcursionDateUnix: null,
+            tradeExcursionId: null,
 
             indexedDBtoUpdate: false,
         }
@@ -51,6 +61,7 @@ const dailyMixin = {
                 resolve()
             })
         },
+
         getMistakes: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting Mistakes");
@@ -90,6 +101,23 @@ const dailyMixin = {
 
                 resolve()
 
+            })
+        },
+
+        getExcursions: async function() {
+            return new Promise(async(resolve, reject) => {
+                console.log("\nGETTING EXCURSIONS")
+                const Object = Parse.Object.extend("excursions");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current());
+                query.ascending("order");
+                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                query.limit(1000000); // limit to at most 10 results
+                this.excursions = []
+                const results = await query.find();
+                this.excursions = JSON.parse(JSON.stringify(results))
+                //console.log(" -> excursions " + JSON.stringify(this.excursions))
+                resolve()
             })
         },
 
@@ -353,8 +381,86 @@ const dailyMixin = {
         /**************
          * EXCURSION
         ***************/
+        tradeExcursionChange(param1, param2, param3, param4) {
+            console.log("param 1: " + param1 + " param2: " + param2, ", param3: "+param3+", param4: "+param4)
+            if (param2 == "stopLoss") {
+                this.excursion.stopLoss = parseFloat(param1)
+                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice
+                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice
+            }
+            if (param2 == "maePrice") {
+                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss
+                this.excursion.maePrice = parseFloat(param1)
+                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice
+            }
+            if (param2 == "mfePrice") {
+                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss
+                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice
+                this.excursion.mfePrice = parseFloat(param1)
+            }
+            this.tradeExcursionDateUnix = param3
+            this.tradeExcursionId = param4
+            console.log("Excursion has changed: " + JSON.stringify(this.excursion))
+            this.tradeExcursionChanged = true
+            this.indexedDBtoUpdate = true
+
+        },
+
+        updateExcursions: async function(param1, param2, param3, param4) { //param1 : trade unixDate ; param2 : trade id inside trade array (gotten from daily.trades[videosArrayIndex].id and then later as this.tradeId), param3: value; param4: pattern or mistake
+            console.log("\nUPDATING OR SAVING EXCURSIONS IN PARSE DB")
+            return new Promise(async(resolve, reject) => {
+
+                if (this.excursion.stopLoss != null || this.excursion.maePrice != null || this.excursion.mfePrice != null) {
+                    //console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + param2)
+                    this.spinnerSetups = true
+                        //this.tradeSetupChanged = true
+                    const Object = Parse.Object.extend("excursions");
+                    const query = new Parse.Query(Object);
+                    query.equalTo("tradeId", this.tradeExcursionId)
+                    const results = await query.first();
+                    if (results) {
+                        console.log(" -> Updating excursions")
+                        this.spinnerSetupsText = "Updating"
+                        results.set("stopLoss", this.excursion.stopLoss == null || this.excursion.stopLoss == '' ? null : this.excursion.stopLoss)
+                        results.set("maePrice", this.excursion.maePrice == null || this.excursion.maePrice == '' ? null : this.excursion.maePrice)
+                        results.set("mfePrice", this.excursion.mfePrice == null || this.excursion.mfePrice == '' ? null : this.excursion.mfePrice)
+
+                        results.save()
+                            .then(async() => {
+                                console.log(' -> Updated excursions with id ' + results.id)
+                                    //this.spinnerSetupsText = "Updated setup"
+                            }, (error) => {
+                                console.log('Failed to create new object, with error code: ' + error.message);
+                            })
+                    } else {
+                        console.log(" -> Saving excursions")
+                        this.spinnerSetupsText = "Saving"
+
+                        const object = new Object();
+                        object.set("user", Parse.User.current())
+                        object.set("stopLoss", this.excursion.stopLoss == null || this.excursion.stopLoss == '' ? null : this.excursion.stopLoss)
+                        object.set("maePrice", this.excursion.maePrice == null || this.excursion.maePrice == '' ? null : this.excursion.maePrice)
+                        object.set("mfePrice", this.excursion.mfePrice == null || this.excursion.mfePrice == '' ? null : this.excursion.mfePrice)
+
+                        object.set("dateUnix", this.tradeExcursionDateUnix)
+                        object.set("tradeId", this.tradeExcursionId)
+                        object.setACL(new Parse.ACL(Parse.User.current()));
+                        object.save()
+                            .then(async(object) => {
+                                console.log(' -> Added new excursion with id ' + object.id)
+                                    //this.spinnerSetupsText = "Added new setup"
+                                this.tradeId = this.tradeExcursionId // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+                            }, (error) => {
+                                console.log('Failed to create new object, with error code: ' + error.message);
+                            })
+                    }
+
+                }
+                resolve()
 
 
+            })
+        },
         /**************
          * COMMON
         ***************/
@@ -365,10 +471,20 @@ const dailyMixin = {
                 await this.updatePatternsMistakes()
                 await this.updateTrades()
             }
+
+            if (!param3 && this.tradeExcursionChanged) {
+                await this.updateExcursions()
+                await this.updateTrades()
+                await this.getExcursions()
+            }
+
             this.tradeSetupChanged = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
+            this.tradeExcursionChanged = false
             
-            await (this.hasVideo = false)
             await (this.resetSetup())
+            await (this.resetExcursion())
+
+            await (this.hasVideo = false)
             this.modalVideosOpen = false
             this.modalVideosOpen = true
             this.videosArrayIndex = param2 //VideoToLoad = the full video to get/load. videosArrayIndex = part, determined by start and end time, of the video (to load)
@@ -419,11 +535,14 @@ const dailyMixin = {
             let myModalEl = document.getElementById('tradesModal')
             myModalEl.addEventListener('hide.bs.modal', async(event) => {
                     console.log(" -> Trades modal hidden with indexDBUpdate "+this.indexedDBtoUpdate+" and setup changed "+this.tradeSetupChanged)
-
                     if (this.indexedDBtoUpdate) {
 
                         if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
                             await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
+                        }
+                        if (this.tradeExcursionChanged) { //in the case excursion changed but did not click on next 
+                            await Promise.all([this.updateExcursions(), this.updateTrades()])
+                            await this.getExcursions()
                         }
 
                         await this.updateIndexedDB()
@@ -580,6 +699,17 @@ const dailyMixin = {
         },
 
 
+        resetExcursion() {
+            console.log(" -> Resetting excursion")
+                //we need to reset the setup variable each time
+            this.excursion = {
+                stopLoss: null,
+                maePrice: null,
+                mfePrice: null,
+            }
+        },
+
+
         updateTrades: async function(param3) {
             //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
             //this.spinnerSetupsText = "Updating trades"
@@ -589,12 +719,17 @@ const dailyMixin = {
             return new Promise(async(resolve, reject) => {
                 const Object = Parse.Object.extend("trades");
                 const query = new Parse.Query(Object);
+                
                 if (this.tradeSetupChanged) {
                     query.equalTo("dateUnix", this.tradeSetupDateUnix)
                 }
                 if (this.tradeSatisfactionChanged) {
                     query.equalTo("dateUnix", this.tradeSatisfactionDateUnix)
                 }
+                if (this.tradeExcursionChanged) {
+                    query.equalTo("dateUnix", this.tradeExcursionDateUnix)
+                }
+
                 const results = await query.first();
                 if (results) {
                     //console.log("result from query " + JSON.stringify(results))
@@ -603,6 +738,8 @@ const dailyMixin = {
                     let id
                     if (this.tradeSetupChanged) id = this.tradeSetupId
                     if (this.tradeSatisfactionChanged) id = this.tradeSatisfactionId
+                    if (this.tradeExcursionChanged) id = this.tradeExcursionId
+
                     var tradeIndex = arrayTrades.findIndex(f => f.id == id)
                     console.log(" -> Updating trade with id " + id)
                     if (param3 == true) { //Delete == true
@@ -620,6 +757,15 @@ const dailyMixin = {
                             console.log("  --> Updating satisfaction")
                             arrayTrades[tradeIndex].satisfaction = this.tradeSatisfaction
                         }
+                        if (this.tradeExcursionChanged) {
+                            console.log("  --> Updating excursion")
+                            arrayTrades[tradeIndex].excursion = {
+                                stopLoss: this.excursion.stopLoss,
+                                maePrice: this.excursion.maePrice,
+                                mfePrice: this.excursion.mfePrice
+                            }
+                        }
+
                     }
                     //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
                     results.set("trades", arrayTrades)

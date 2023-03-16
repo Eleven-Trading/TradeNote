@@ -302,6 +302,30 @@ const vueApp = new Vue({
                             type: "Boolean"
                         }
                     }
+                },
+                {
+                    className: "excursions",
+                    fields: {
+                        user: {
+                            type: "Pointer",
+                            targetClass: "_User"
+                        },
+                        tradeId: {
+                            type: "String"
+                        },
+                        dateUnix: {
+                            type: "Number"
+                        },
+                        stopLoss: {
+                            type: "Number"
+                        },
+                        maePrice: {
+                            type: "Number"
+                        },
+                        mfePrice: {
+                            type: "Number"
+                        }
+                    }
                 }
             ],
 
@@ -835,6 +859,7 @@ const vueApp = new Vue({
             await this.initPopover()
             await this.initTab("daily")
             await this.getTradesSatisfaction()
+            await this.getExcursions()
         }
 
         if (this.currentPage.id == "journal") {
