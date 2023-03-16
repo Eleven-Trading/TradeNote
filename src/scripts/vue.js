@@ -131,17 +131,14 @@ const vueApp = new Vue({
                         date: {
                             type: "Date"
                         },
-                        side: {
-                            type: "String"
-                        },
-                        type: {
-                            type: "String"
-                        },
-                        note: {
+                        description: {
                             type: "String"
                         },
                         order: {
                             type: "Number"
+                        },
+                        active: {
+                            type: "Boolean"
                         }
                     }
                 },
@@ -160,6 +157,9 @@ const vueApp = new Vue({
                         },
                         order: {
                             type: "Number"
+                        },
+                        active: {
+                            type: "Boolean"
                         }
                     }
                 },
@@ -834,6 +834,7 @@ const vueApp = new Vue({
             await this.getAllTrades(true)
             await this.initPopover()
             await this.initTab("daily")
+            await this.getTradesSatisfaction()
         }
 
         if (this.currentPage.id == "journal") {
@@ -898,6 +899,7 @@ const vueApp = new Vue({
 
         if (this.currentPage.id == "settings" || this.currentPage.id == "videos") {
             await this.getPatterns()
+            await this.getMistakes()
         }
 
         if (this.currentPage.id == "forecast") {

@@ -55,7 +55,7 @@
                     <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
                     <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
 
-                    <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#tradesModal"  v-on:click="viewModalVideosDaily(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
+                    <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#tradesModal"  v-on:click="clickTradesModal(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
                         <td>{{trade.symbol}}</td>
                         <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
                         <td>{{trade.side}}</td>

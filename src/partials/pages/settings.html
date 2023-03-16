@@ -1,70 +1,21 @@
 <div class="row mt-2">
     <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <button class="nav-link" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</button>
-            <button class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-setups" type="button" role="tab" aria-controls="nav-setups" aria-selected="false">Setups</button>
+            <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</button>
+            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-patterns" type="button" role="tab" aria-controls="nav-patterns" aria-selected="false">Patterns</button>
+            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-mistakes" type="button" role="tab" aria-controls="nav-mistakes" aria-selected="false">Mistakes</button>
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
         <!-- PROFILE -->
-        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
-        
-        <!-- SETUPS -->
-        <div class="tab-pane fade show active" id="nav-setups" role="tabpanel" aria-labelledby="nav-profile-tab">
+        <div class="tab-pane fade active show" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
 
-            <div class="row mt-3">
+        <!-- PATTERNS -->
+        <div class="tab-pane fade" id="nav-patterns" role="tabpanel" aria-labelledby="nav-profile-tab">
 
-                <!--=============== PATTERN ===============
-                <div class="row">
-                    <div class="col-4">
-                        <div class="row">
-                            <div class="col-4">
-                                <label class="form-label">Pattern</label>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" class="form-select" v-model="setup.patternName">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-8">
-                        <div class="row">
-                            <div class="col-3">
-                                <label class="form-label">Description</label>
-                            </div>
-                            <div class="col-9">
-                                <input type="text" class="form-select" v-model="setup.patternDescription">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="mt-3">
 
-                <!--=============== ENTRYPOINTS ===============
-                <div class="row mt-2">
-                    <div class="col-4">
-                        <div class="row">
-                            <div class="col-4">
-                                <label class="form-label">Entrypoint</label>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" class="form-select" v-model="setup.entrypointName">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-7">
-                        <div class="row">
-                            <div class="col-3">
-                                <label class="form-label">Description</label>
-                            </div>
-                            <div class="col-9">
-                                <input type="text" class="form-select" v-model="setup.entrypointDescription">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-1"></div>
-                </div>
-                <div class="mt-3 mb-3">
-                    <button type="button" v-on:click="uploadSetup" class="btn btn-success btn-lg">Save</button>
-                </div>-->
+                <!--=============== PATTERN ===============-->
                 <table class="table">
                     <thead class="thead-dark">
                         <tr>
@@ -76,14 +27,65 @@
                     </thead>
                     <tbody class="txt-small" v-for="pattern in patterns">
                         <tr>
-                            <td>{{pattern.name}}</td>
-                            <td>{{pattern.description}}</td>
-                            <td>{{pattern.active}}</td>
-                            <td><i class="uil uil-edit-alt editItem pointerClass" v-on:click="editPattern(pattern.objectId)"></i></td>
+                            <td><input v-if="patternToEdit == pattern.objectId" type="text" class="form-control" v-bind:value="pattern.name" v-on:input="updatePatternName = $event.target.value">
+                                <span v-else>{{pattern.name}}</span></td>
+                            <td><input v-if="patternToEdit == pattern.objectId" type="text" class="form-control" v-bind:value="pattern.description" v-on:input="updatePatternDescription = $event.target.value">
+                                <span v-else>{{pattern.description}}</span></td>
+                            <td>
+                                <span class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" v-bind:disabled="patternToEdit != pattern.objectId" v-bind:checked="pattern.active" v-on:change="updatePatternActive = !updatePatternActive">
+                                </span>
+                            </td>
+                            <td>
+                                <i v-if="patternToEdit == pattern.objectId" class="uil uil-save pointerClass" v-on:click="updateEditPattern"></i>
+                                <i v-else class="uil uil-edit-alt editItem pointerClass" v-on:click="editPattern(pattern)"></i>
+                            </td>
                         </tr>
-
                     </tbody>
                 </table>
+            </div>
+            <div class="mt-2 input-group">
+                <input type="text" class="form-control" v-on:input="newPatternName = $event.target.value" placeholder="Pattern">
+                <input type="text" class="form-control" v-on:input="newPatternDescription = $event.target.value" placeholder="Description">
+                <button type="button" v-on:click="saveNewPattern" class="btn btn-success">Add</button>
+            </div>
+        </div>
+        <!--=============== MISTAKE ===============-->
+        <div class="tab-pane fade" id="nav-mistakes" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <div class="mt-3">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col" class="col-md-4">Mistake</th>
+                            <th scope="col" class="col-md-6">Description</th>
+                            <th scope="col" class="col-md-1">active</th>
+                            <th scope="col" class="col-md-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="txt-small" v-for="mistake in mistakes">
+                        <tr>
+                            <td><input v-if="mistakeToEdit == mistake.objectId" type="text" class="form-control" v-bind:value="mistake.name" v-on:input="updateMistakeName = $event.target.value">
+                                <span v-else>{{mistake.name}}</span></td>
+                            <td><input v-if="mistakeToEdit == mistake.objectId" type="text" class="form-control" v-bind:value="mistake.description" v-on:input="updateMistakeDescription = $event.target.value">
+                                <span v-else>{{mistake.description}}</span></td>
+                            <td>
+                                <span class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" v-bind:disabled="mistakeToEdit != mistake.objectId" v-bind:checked="mistake.active" v-on:change="updateMistakeActive = !updateMistakeActive">
+                                </span>
+                            </td>
+                            <td>
+                                <i v-if="mistakeToEdit == mistake.objectId" class="uil uil-save pointerClass" v-on:click="updateEditMistake"></i>
+                                <i v-else class="uil uil-edit-alt editItem pointerClass" v-on:click="editMistake(mistake)"></i>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-2 input-group">
+                <input type="text" class="form-control" v-on:input="newMistakeName = $event.target.value" placeholder="Mistake">
+                <input type="text" class="form-control" v-on:input="newMistakeDescription = $event.target.value" placeholder="Description">
+                <button type="button" v-on:click="saveNewMistake" class="btn btn-success">Add</button>
+
             </div>
         </div>
         <div class="tab-pane fade" id="nav-misc" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>

@@ -313,7 +313,7 @@ const tradesMixin = {
             }
             if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
-                if (this.currentPage.id == "daily") await this.dailyModal()
+                if (this.currentPage.id == "daily") await this.listenHideTradesModal()
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes()])
 
                 this.spinnerSetupsUpdateText = "Loading Calendar"
