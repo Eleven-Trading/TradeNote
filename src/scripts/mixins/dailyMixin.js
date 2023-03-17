@@ -385,17 +385,17 @@ const dailyMixin = {
             console.log("param 1: " + param1 + " param2: " + param2, ", param3: "+param3+", param4: "+param4)
             if (param2 == "stopLoss") {
                 this.excursion.stopLoss = parseFloat(param1)
-                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice
-                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice
+                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice : null
+                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice : null
             }
             if (param2 == "maePrice") {
-                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss
+                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss : null
                 this.excursion.maePrice = parseFloat(param1)
-                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice
+                this.excursion.mfePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].mfePrice : null
             }
             if (param2 == "mfePrice") {
-                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss
-                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice
+                this.excursion.stopLoss = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].stopLoss : null
+                this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice : null
                 this.excursion.mfePrice = parseFloat(param1)
             }
             this.tradeExcursionDateUnix = param3

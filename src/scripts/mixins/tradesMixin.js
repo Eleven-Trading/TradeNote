@@ -26,7 +26,7 @@ const tradesMixin = {
         },
 
         inputDateRangeCal(param1, param2) {
-            console.log("param1 "+param1+", param2 "+param2)
+            console.log("param1 " + param1 + ", param2 " + param2)
             let dateUnix = null
             if (param1 == "start") {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
@@ -402,7 +402,7 @@ const tradesMixin = {
                     const results = await query.find();
                     console.timeEnd("  --> Execution time");
 
-                    if (results.length > 0) {//here results is an array so we use lenght. Sometimees results is not array then we use if results simply
+                    if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
                         console.log("  --> Size: " + this.formatBytes(JSON.stringify(results).length))
                         this.allTrades = []
                         this.threeMonthsTrades = []
@@ -1066,12 +1066,14 @@ const tradesMixin = {
             this.groups.patterns = _(temp1)
                 .groupBy(x => {
                     //in my first version pattern was a string id. Now pattern is an object. So we need to check this
-                    if (typeof(x.setup.pattern) == 'string') {
-                        return x.setup.pattern
+                    if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('pattern')) {
+                        if (typeof(x.setup.pattern) == 'string') {
+                            return x.setup.pattern
+                        }
+                        /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null && x.setup.pattern != undefined) {
+                            return x.setup.pattern
+                        }*/
                     }
-                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
-                        return x.setup.pattern
-                    }*/
                 })
                 .value()
                 //console.log("group by patterns " + JSON.stringify(this.groups.patterns))
@@ -1082,27 +1084,29 @@ const tradesMixin = {
             this.groups.patternTypes = _(temp1)
                 .groupBy(x => {
                     //in my first version pattern was a string id. Now pattern is an object. So we need to check this
-                    if (typeof(x.setup.pattern) == 'string') {
-                        //console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern)
-                        //console.log("patterns "+JSON.stringify(this.patterns))
-                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
-                        if (pattern != undefined && pattern.hasOwnProperty("type")) {
-                            let patternType = pattern.type
-                                //console.log("pattern type "+patternType)
-                            return patternType
-                        } else {
-                            return null
+                    if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('pattern')) {
+                        if (typeof(x.setup.pattern) == 'string') {
+                            //console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern)
+                            //console.log("patterns "+JSON.stringify(this.patterns))
+                            let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                            if (pattern != undefined && pattern.hasOwnProperty("type")) {
+                                let patternType = pattern.type
+                                    //console.log("pattern type "+patternType)
+                                return patternType
+                            } else {
+                                return null
+                            }
+
                         }
 
+                        /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                            console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
+                            let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                            let patternType = pattern
+                            console.log("pattern type "+patternType)
+                            //return patternType
+                        }*/
                     }
-
-                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
-                        console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
-                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
-                        let patternType = pattern
-                        console.log("pattern type "+patternType)
-                        //return patternType
-                    }*/
                 })
                 .value()
                 //console.log("group by pattern types " + JSON.stringify(this.groups.patternTypes))
@@ -1112,19 +1116,20 @@ const tradesMixin = {
              *******************/
             this.groups.mistakes = _(temp1)
                 .groupBy(x => {
+                    if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('mistake')) {
+                        if (typeof(x.setup.mistake) == 'string') {
+                            //console.log(" mistake id "+x.setup.mistake)
+                            return x.setup.mistake
+                        }
 
-                    if (typeof(x.setup.mistake) == 'string') {
-                        //console.log(" mistake id "+x.setup.mistake)
-                        return x.setup.mistake
+                        /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
+                            console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
+                            let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
+                            let patternType = pattern
+                            console.log("pattern type "+patternType)
+                            //return patternType
+                        }*/
                     }
-
-                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
-                        console.log(" patterns "+JSON.stringify(this.patterns[0].objectId)+" setupid "+x.setup.pattern.id)
-                        let pattern = this.patterns.find(item => item.objectId === x.setup.pattern)
-                        let patternType = pattern
-                        console.log("pattern type "+patternType)
-                        //return patternType
-                    }*/
                 })
                 .value()
                 //console.log("group by mistakes " + JSON.stringify(this.groups.mistakes))

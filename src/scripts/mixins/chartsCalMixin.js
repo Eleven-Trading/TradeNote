@@ -48,10 +48,10 @@ const chartsCalMixin = {
             const createCalendar = async(param1, param2) => {
                 //console.log("param 1 "+param1)
                 return new Promise(async(resolve, reject) => {
-                    let dateForCalendarize = new Date(param1*1000) // as per docs https://github.com/lukeed/calendarize/, calendarize casts to date so Instead of using string I have to use date or else used the node / user timezone instead of the timezone set in param 1 earlier 
-                    //console.log(" date for calendarize "+dateForCalendarize)
+                    let dateForCalendarize = new Date(param1 * 1000) // as per docs https://github.com/lukeed/calendarize/, calendarize casts to date so Instead of using string I have to use date or else used the node / user timezone instead of the timezone set in param 1 earlier 
+                        //console.log(" date for calendarize "+dateForCalendarize)
                     let calendarizeData = calendarize(dateForCalendarize, 1) // this creates calendar date numbers needed for a table calendar
-                    //console.log("calendarizeData "+calendarizeData)
+                        //console.log("calendarizeData "+calendarizeData)
                     let calendarJson = {}
                     let month = dayjs.unix(param1).get('month') + 1 //starts at 0
                     let year = dayjs.unix(param1).get('year')
@@ -89,12 +89,12 @@ const chartsCalMixin = {
                             // 1- Create a calendar date from each element2 (calendar number)
                             var elementDate = year + "/" + month + "/" + element2
                             var elementDateUnix = dayjs(elementDate).unix()
-                            //console.log("element2  "+element2)
+                                //console.log("element2  "+element2)
 
                             // 2- Create data for each calendar box
                             let tempData = {}
                             tempData.month = this.monthFormat(param1) // day number of the month
-                            //console.log("month "+tempData.month)
+                                //console.log("month "+tempData.month)
                             tempData.day = element2 // day number of the month
                             tempData.dateUnix = elementDateUnix // date in unix
 
@@ -116,7 +116,7 @@ const chartsCalMixin = {
                     })
                     if (param1 == this.selectedCalRange.start) {
                         this.calendarData = calendarJson
-                        //console.log("calendarData "+JSON.stringify(this.calendarData))
+                            //console.log("calendarData "+JSON.stringify(this.calendarData))
                     } else {
                         this.miniCalendarsData.push(calendarJson)
                     }
@@ -141,7 +141,7 @@ const chartsCalMixin = {
             await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
             this.totalCalendarMounted = true
                 //console.log("calendarData "+JSON.stringify(this.calendarData))
-            //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
+                //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
 
 
 
@@ -1091,7 +1091,11 @@ const chartsCalMixin = {
                         //console.log(" mistakes "+JSON.stringify(this.mistakes))
                         var mistakes = this.mistakes.find(item => item.objectId === key)
                             //console.log("mistakes "+mistakes)
-                        yAxis.push(mistakes.name) // unshift because I'm only able to sort timeframe ascending
+                        if (mistakes) {
+                            yAxis.push(mistakes.name) // unshift because I'm only able to sort timeframe ascending
+                        } else {
+                            pushRatio = false //not sure this is needed for mistake
+                        }
 
                     } else {
                         yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
