@@ -97,7 +97,7 @@ const dailyMixin = {
                     temp.satisfaction = object.get('satisfaction') 
                     this.tradeSatisfactionArray.push(temp)
                   }
-                console.log(" -> Trades satisfaction " + JSON.stringify(this.tradeSatisfactionArray))
+                //console.log(" -> Trades satisfaction " + JSON.stringify(this.tradeSatisfactionArray))
 
                 resolve()
 

@@ -28,7 +28,7 @@
 
                 </ul>
             </div>
-            <div id="step12" class="col-1">
+            <div id="step12" class="col-1" v-bind:key="renderProfile">
                 <a v-if="currentUser.hasOwnProperty('avatar')" class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" v-bind:src="currentUser.avatar.url"/></a>
                 <a v-else class="me" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><img class="profileImg" src="images/astronaut.png"/></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

@@ -1667,7 +1667,7 @@ const vueApp = new Vue({
         checkCurrentUser() {
             var path = window.location.pathname
             this.currentUser = JSON.parse(JSON.stringify(Parse.User.current()));
-
+            //console.log("Current user "+JSON.stringify(this.currentUser))
             if (path != "/" && path != "/register") {
                 if (this.currentUser) {
                     //console.log("Your are logged in " + JSON.stringify(this.currentUser) + " and id " + Parse.User.current().id)

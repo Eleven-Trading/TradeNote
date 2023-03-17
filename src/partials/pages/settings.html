@@ -8,7 +8,15 @@
     </nav>
     <div class="tab-content" id="nav-tabContent">
         <!-- PROFILE -->
-        <div class="tab-pane fade active show" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">...</div>
+        <div class="tab-pane fade active show" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">
+            <div class="mt-3">
+                <h5>Choose Profile picture</h5>
+                <input type="file" @change="uploadProfileAvatar"/>
+            </div>
+            <div class="mt-3 mb-3">
+                <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
+            </div>
+        </div>
 
         <!-- PATTERNS -->
         <div class="tab-pane fade" id="nav-patterns" role="tabpanel" aria-labelledby="nav-profile-tab">

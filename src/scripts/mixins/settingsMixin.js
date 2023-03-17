@@ -1,6 +1,9 @@
 const settingsMixin = {
     data() {
         return {
+            profileAvatar: null,
+            renderProfile: 0,
+
             patternToEdit: null,
             updatePatternName: null,
             updatePatternDescription: null,
@@ -18,15 +21,47 @@ const settingsMixin = {
             newMistakeDescription: null,
         }
     },
-    watch: {
-    },
+    watch: {},
     methods: {
+        /* PROFILE */
+        uploadProfileAvatar: async function(event) {
+            const file = event.target.files[0];
+            this.profileAvatar = file
+        },
+
+        updateProfile: async function() {
+            return new Promise(async(resolve, reject) => {
+                console.log("\nUPDATING PROFILE")
+
+                const Object = Parse.Object.extend("_User");
+                const query = new Parse.Query(Object);
+                query.equalTo("objectId", this.currentUser.objectId);
+                const results = await query.first();
+                if (results) {
+                    const parseFile = new Parse.File("avatar", this.profileAvatar);
+                    results.set("avatar", parseFile)
+                    await results.save().then(async () =>{ //very important to have await or else too quick to update
+                        await this.checkCurrentUser()
+                        await (this.renderProfile +=1)
+                        console.log(" -> Profile updated")
+                    })
+                    //
+                } else {
+                    alert("Update query did not return any results")
+                }
+
+                resolve()
+            })
+        },
+
+        /* PATTERN MISTAKES */
+
         editPattern(param) {
             this.patternToEdit = param.objectId
             this.updatePatternName = param.name
             this.updatePatternDescription = param.description
             this.updatePatternActive = param.active
-            
+
             //console.log("patternToEdit " + this.patternToEdit + ", name " + this.updatePatternName + ", desc " + this.updatePatternDescription+" and active "+this.updatePatternActive)
         },
 
@@ -35,7 +70,7 @@ const settingsMixin = {
             this.updateMistakeName = param.name
             this.updateMistakeDescription = param.description
             this.updateMistakeActive = param.active
-            
+
             //console.log("mistakeToEdit " + this.mistakeToEdit + ", name " + this.updateMistakeName + ", desc " + this.updateMistakeDescription+" and active "+this.updateMistakeActive)
         },
 
@@ -126,7 +161,7 @@ const settingsMixin = {
                 object.set("active", true)
                 object.setACL(new Parse.ACL(Parse.User.current()));
                 object.save()
-                    .then(async (object) => {
+                    .then(async(object) => {
                         console.log(' -> Added new pattern with id ' + object.id)
                         await this.getPatterns()
                     }, (error) => {
@@ -150,7 +185,7 @@ const settingsMixin = {
                 object.set("active", true)
                 object.setACL(new Parse.ACL(Parse.User.current()));
                 object.save()
-                    .then(async (object) => {
+                    .then(async(object) => {
                         console.log(' -> Added new mistake with id ' + object.id)
                         await this.getMistakes()
                     }, (error) => {
