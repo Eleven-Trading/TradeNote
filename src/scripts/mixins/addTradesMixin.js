@@ -759,13 +759,19 @@ const addTradesMixin = {
 
                                     let tempEndOfDayTimeIndex = ohlcvSymbol.t.indexOf(time)
                                     let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
-                                    let endOfDayTime = ohlcvSymbol.t[endOfDayTimeIndex]
 
                                     //console.log(" -> End of day time " + endOfDayTime)
-
+                                    
+                                    let tempMfe = {}
                                     //check is same timeframe
                                     if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
                                         console.log("   ---> Trade is in same 1mn timeframe")
+
+                                        tempMfe.tradeId = temp7.id
+                                        tempMfe.dateUnix = tempExec.td
+                                        tempMfe.mfePrice = initEntryPrice
+                                        this.mfePrices.push(tempMfe)
+
                                     } else {
                                         //we get the MFE price by iterating between entry and exit and then between exit up until price hits / equals entryprice, and at the latest the endOfDayTime
                                         let priceDifference
@@ -817,7 +823,6 @@ const addTradesMixin = {
                                         temp7.excursions.maePrice = null
                                         temp7.excursions.mfePrice = mfePrice
 
-                                        let tempMfe = {}
                                         tempMfe.tradeId = temp7.id
                                         tempMfe.dateUnix = tempExec.td
                                         tempMfe.mfePrice = mfePrice
