@@ -1,7 +1,7 @@
 const addTradesMixin = {
     data() {
         return {
-            gotExistingTradesArray: false,
+            gotExistingTradesArray: false, ///CHANGE before prod
             cashJournalsData: null,
             tradesData: null,
             tempExecutions: [],
@@ -17,7 +17,11 @@ const addTradesMixin = {
             pAndL: {},
             videos: {},
             inputToShow: [],
-            financials: [],
+
+            tradedSymbols: [],
+            tradedStartDate: null,
+            ohlcv: [],
+            mfePrices: [],
         }
     },
 
@@ -232,6 +236,9 @@ const addTradesMixin = {
             const create = async() => {
                 await this.createTempExecutions()
                 await this.createExecutions()
+                if (this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') {
+                    await this.getOHLCV()
+                }
                 await this.createTrades()
                 await this.createBlotter()
                 await this.filterExisting("trades")
@@ -345,6 +352,17 @@ const addTradesMixin = {
                     temp2.trade = null;
 
                     this.tempExecutions.push(temp2);
+
+                    if (!this.tradedSymbols.includes(temp2.symbol)) {
+                        this.tradedSymbols.push(temp2.symbol)
+                    }
+                    if (this.tradedStartDate == null) {
+                        console.log("td type " + typeof + temp2.td)
+                        this.tradedStartDate = temp2.td
+                    } else if (temp2.td < this.tradedStartDate) {
+                        this.tradedStartDate = temp2.td
+                    }
+                    console.log(" -> Trade start date " + this.tradedStartDate)
                 }
                 //console.log("temp " + JSON.stringify(temp))
                 console.log(" -> Created temp executions");
@@ -367,8 +385,41 @@ const addTradesMixin = {
 
 
 
-                console.log('executions ' + JSON.stringify(this.executions))
+                //console.log('executions ' + JSON.stringify(this.executions))
                 console.log(" -> Created");
+                resolve()
+            })
+        },
+
+        getOHLCV: async function() {
+            return new Promise(async(resolve, reject) => {
+                console.log("\nGETTING OHLCV")
+                this.loadingSpinnerText = "Getting OHLCV"
+                const asyncLoop = async() => {
+                    for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that asyn needs to be for instead of foreach
+                        let temp = {}
+                        temp.symbol = this.tradedSymbols[i]
+
+                        await axios.get("https://finnhub.io/api/v1/stock/candle?symbol=" + temp.symbol + "&resolution=1&from=" + this.tradedStartDate + "&to=" + dayjs().unix() + "&token=" + this.currentUser.finnhubApiKey)
+                            .then((response) => {
+                                //console.log(" -> data +" + response.data);
+                                //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
+                                temp.ohlcv = response.data
+                                this.ohlcv.push(temp)
+                                    //console.log(" -> ohlcv " + JSON.stringify(this.ohlcv))
+                            })
+                            .catch(function(error) {
+
+                                console.log(error);
+                            })
+                            .finally(function() {
+                                // always executed
+                            })
+
+
+                    }
+                }
+                await asyncLoop()
                 resolve()
             })
         },
@@ -403,12 +454,14 @@ const addTradesMixin = {
                     var netLossCount = 0
                     var tradesCount = 0
                     let temp7 = {}
+                    let initEntryTime
+                    let initEntryPrice
 
                     for (const tempExec of tempExecs) {
                         //console.log("tempExec " + JSON.stringify(tempExec));
                         //console.log("doing key "+key2)
                         if (newTrade == true) { //= new trade
-                            console.log(" -> New trade for symbol " + tempExec.symbol)
+                            console.log("\n -> New trade for symbol " + tempExec.symbol)
                             newTrade = false
                             var invertedLong = false
                             var invertedShort = false
@@ -428,35 +481,37 @@ const addTradesMixin = {
                             temp7.side = tempExec.side;
                             if (tempExec.side == "B") {
                                 temp7.strategy = "long"
-                                console.log("   --> Symbol " + key2 + " is bought and long")
+                                console.log("  --> Symbol " + key2 + " is bought and long")
                                 temp7.buyQuantity = tempExec.quantity;
                                 temp7.sellQuantity = 0
                             }
                             if (tempExec.side == "S") { //occasionnaly, Tradezero inverts trades and starts by accounting the sell even though it's a long possition
                                 temp7.strategy = "long"
                                     //console.log("Symbol " + key2 + " is sold and long")
-                                console.log("   --> Symbol " + key2 + " is accounted as sell before buy on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("  --> Symbol " + key2 + " is accounted as sell before buy on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedLong = true
                                 temp7.buyQuantity = 0
                                 temp7.sellQuantity = tempExec.quantity;
                             }
                             if (tempExec.side == "SS") {
                                 temp7.strategy = "short"
-                                console.log("   --> Symbol " + key2 + " is sold and short")
+                                console.log("  --> Symbol " + key2 + " is sold and short")
                                 temp7.buyQuantity = 0
                                 temp7.sellQuantity = tempExec.quantity;
                             }
                             if (tempExec.side == "BC") { //occasionnaly, Tradezero invertes trades
                                 temp7.strategy = "short"
-                                console.log("   --> Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
+                                console.log("  --> Symbol " + key2 + " is accounted as buy cover before short sell on date " + this.chartFormat(tempExec.td) + " at " + this.timeFormat(tempExec.execTime))
                                 invertedShort = true
                                 temp7.buyQuantity = tempExec.quantity;
                                 temp7.sellQuantity = 0
                             }
                             temp7.symbol = tempExec.symbol;
                             temp7.entryTime = tempExec.execTime;
+                            initEntryTime = tempExec.execTime
                             temp7.exitTime = 0
-                            temp7.entryPrice = tempExec.price;
+                            temp7.entryPrice = tempExec.price
+                            initEntryPrice = tempExec.price
                             temp7.exitPrice = 0
                                 /*if (temp7.entryTime >= this.startTimeUnix) {
                                     temp7.videoStart = temp7.entryTime - this.startTimeUnix
@@ -646,12 +701,143 @@ const addTradesMixin = {
                                     //console.log("temp not null for "+key2)
 
 
+
+                                /*****
+                                 * GETTING MFE PRICE
+                                 *****/
+
+                                if ((this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                                    console.log("  --> Getting MFE Price")
+                                    let ohlcvSymbol = this.ohlcv[this.ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
+                                        //todo exclude if trade in same minute timeframe
+
+                                    //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
+                                    let tempStartIndex = ohlcvSymbol.t.findIndex(n => n >= initEntryTime)
+                                    let tempEndIndex = ohlcvSymbol.t.findIndex(n => n >= temp7.exitTime) //findIndex returns the first element
+                                    let tempStartTime = ohlcvSymbol.t[tempStartIndex]
+                                    let tempEndTime = ohlcvSymbol.t[tempEndIndex]
+
+                                    let startIndex
+                                    let endIndex
+                                    let startTime
+                                    let endTime
+
+                                    if (tempStartTime == initEntryTime) {
+                                        startIndex = tempStartIndex + 1
+                                        startTime = ohlcvSymbol.t[startIndex]
+                                    } else {
+                                        startIndex = tempStartIndex
+                                        startTime = ohlcvSymbol.t[tempStartIndex]
+                                    }
+
+                                    if (tempEndTime == temp7.exitTime) {
+                                        endIndex = tempEndIndex
+                                        endTime = tempEndTime
+                                    } else {
+                                        endIndex = tempEndIndex - 1
+                                        endTime = ohlcvSymbol.t[tempEndIndex - 1]
+                                    }
+
+                                    //console.log(" -> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
+                                    //console.log(" -> EntryTime " + initEntryTime + " and start time " + startTime)
+                                    //console.log(" -> ExitTime " + temp7.exitTime + " and end time " + endTime)
+
+                                    //End of day index
+                                    //iterate from exit time and check if same day and <= 4 hour
+                                    let endTimeOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
+                                    let i = tempEndIndex - 1;
+                                    let timeDayOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
+                                    let timeHour = dayjs(endTime * 1000).tz(this.tradeTimeZone).get('hour')
+                                    let time
+                                    while (i < ohlcvSymbol.t.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
+                                        time = ohlcvSymbol.t[i]
+                                        timeDayOfWeek = dayjs(time * 1000).tz(this.tradeTimeZone).day()
+                                        timeHour = dayjs(time * 1000).tz(this.tradeTimeZone).get('hour')
+                                            //console.log("time: "+time+", timeDayOfWeek "+timeDayOfWeek+" and hour "+timeHour)
+                                        i++;
+                                    }
+
+                                    let tempEndOfDayTimeIndex = ohlcvSymbol.t.indexOf(time)
+                                    let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
+                                    let endOfDayTime = ohlcvSymbol.t[endOfDayTimeIndex]
+
+                                    //console.log(" -> End of day time " + endOfDayTime)
+
+                                    //check is same timeframe
+                                    if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
+                                        console.log("   ---> Trade is in same 1mn timeframe")
+                                    } else {
+                                        //we get the MFE price by iterating between entry and exit and then between exit up until price hits / equals entryprice, and at the latest the endOfDayTime
+                                        let priceDifference
+                                        let mfePrice = initEntryPrice
+
+                                        if (temp7.strategy == "long") {
+                                            priceDifference = temp7.exitPrice - initEntryPrice
+                                        }
+                                        if (temp7.strategy == "short") {
+                                            priceDifference = initEntryPrice - temp7.exitPrice
+                                        }
+
+                                        console.log("   ---> Iterating between entry price and exit price")
+                                        for (let i = startIndex; i <= endIndex; i++) {
+                                            //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
+                                            if (temp7.strategy == "long" && ohlcvSymbol.h[i] > temp7.exitPrice && ohlcvSymbol.h[i] > mfePrice) mfePrice = ohlcvSymbol.h[i]
+                                            if (temp7.strategy == "short" && ohlcvSymbol.l[i] < temp7.exitPrice && ohlcvSymbol.l[i] < mfePrice) mfePrice = ohlcvSymbol.l[i]
+
+                                        }
+                                        //console.log(" -> Price difference "+priceDifference)
+                                        if (initEntryPrice != temp7.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
+                                            console.log("   ---> Iterating between exit price and up until price hits / equals entry price")
+                                            let i = endIndex
+                                            let ohlcvSymbolPrice
+                                            temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol.h[endIndex] : ohlcvSymbolPrice = ohlcvSymbol.l[endIndex]
+
+                                            while (i <= endOfDayTimeIndex && (temp7.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
+                                                temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol.h[i] : ohlcvSymbolPrice = ohlcvSymbol.l[i]
+                                                    //console.log("  -> Symbol Price " + ohlcvSymbolPrice + ", init price " + initEntryPrice + " and mfe price " + mfePrice)
+                                                if (temp7.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
+                                                if (temp7.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
+                                                i++
+
+                                            }
+                                        }
+                                        if (temp7.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
+                                        if (temp7.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
+
+                                        console.log("    ----> " + temp7.strategy + " stratgy with entry at " + initEntryTime + " @ " + initEntryPrice + " -> exit at " + temp7.exitTime + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
+                                            //if short, MFE price = if price is lower than MFE
+                                            //if long, MFE = if price is higher than MFE
+
+
+
+
+                                        //add excursion to temp2
+                                        temp7.excursions = {}
+                                        temp7.excursions.stopLoss = null
+                                        temp7.excursions.maePrice = null
+                                        temp7.excursions.mfePrice = mfePrice
+
+                                        let tempMfe = {}
+                                        tempMfe.tradeId = temp7.id
+                                        tempMfe.dateUnix = tempExec.td
+                                        tempMfe.mfePrice = mfePrice
+                                        this.mfePrices.push(tempMfe)
+                                    }
+                                }
+
                                 temp2.push(temp7)
+
+
+                                /*****
+                                 * END GETTING MFE PRICE
+                                 *****/
+
                                 newTrade = true
                                 temp7 = {} // I need to reinitiate temp7 here or else when more than one trade per symbol it was adding up
                                     //console.log("temp2 is " + JSON.stringify(temp2))
                                     //console.log(" -> trade concat finished")
                                     //console.log(tradesCount+" trades for symbol "+key2)
+
                             } else {
                                 console.log("   ---> Position OPEN")
                             }
@@ -682,6 +868,33 @@ const addTradesMixin = {
                 //console.log(" -> Trades " + JSON.stringify(c))
                 this.trades = JSON.parse(JSON.stringify(c))
                     //console.log("Trades C " + JSON.stringify(this.trades))
+                resolve()
+            })
+        },
+
+        updateMfePrices: async function(param) {
+            return new Promise(async(resolve, reject) => {
+                console.log("  --> Updating excursion DB with MFE price")
+                this.loadingSpinnerText = "Updating MFE prices in excursions"
+                console.log(" MFE Prices "+JSON.stringify(this.mfePrices))
+                this.mfePrices.forEach(element => {
+                    console.log(" element "+element)
+                    const Object = Parse.Object.extend("excursions");
+                    const object = new Object();
+                    object.set("user", Parse.User.current())
+                    object.set("mfePrice", element.mfePrice)
+                    object.set("dateUnix", element.dateUnix)
+                    object.set("tradeId",element.tradeId)
+                    object.setACL(new Parse.ACL(Parse.User.current()));
+                    object.save()
+                        .then(async(object) => {
+                            console.log(' -> Added new excursion with id ' + object.id)
+                                //this.spinnerSetupsText = "Added new setup"
+                            this.tradeId = this.tradeExcursionId // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                        })
+                });
                 resolve()
             })
         },
@@ -932,11 +1145,6 @@ const addTradesMixin = {
                         temp10[key9][key10].netLossQuantity = sumNetLossQuantity;
                         temp10[key9][key10].netWinsCount = sumNetWinsCount;
                         temp10[key9][key10].netLossCount = sumNetLossCount;
-
-                        /*******************
-                         * Financials
-                         *******************/
-                        //temp10[key9][key10].financials = tempExecs[0].financials
 
                     }
 
@@ -1276,6 +1484,7 @@ const addTradesMixin = {
             checkTradeAccounts()
             if (Object.keys(this.cashJournals).length > 0) await uploadFunction("cashJournals")
             if (Object.keys(this.executions).length > 0) await uploadFunction("trades")
+            if (Object.keys(this.mfePrices).length > 0) await this.updateMfePrices()
             this.refreshTrades()
 
         },

@@ -36,6 +36,9 @@ const vueApp = new Vue({
                         },
                         accounts: {
                             type: "Array"
+                        },
+                        finnhubApiKey: {
+                            type: "String"
                         }
                     }
                 },
@@ -848,7 +851,6 @@ const vueApp = new Vue({
         //this.currentPage = document.getElementsByTagName("main")[0].id
 
         await this.initIndexedDB()
-
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
             await this.getAllTrades(true)
             await this.initTab("dashboard")
@@ -974,7 +976,6 @@ const vueApp = new Vue({
             this.initStepper()
             await this.getExistingTradesArray()
         }
-
         this.tagArray()
         this.initWheelEvent()
 

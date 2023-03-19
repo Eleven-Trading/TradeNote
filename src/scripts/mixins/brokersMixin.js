@@ -43,7 +43,7 @@ const brokersMixin = {
                 let papaParse = Papa.parse(param, { header: true })
                     //we need to recreate the JSON with proper date format + we simplify
                 this.tradesData = JSON.parse(JSON.stringify(papaParse.data))
-                console.log("tradesData " + JSON.stringify(this.tradesData))
+                //console.log("tradesData " + JSON.stringify(this.tradesData))
                 resolve()
             })
         },

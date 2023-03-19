@@ -3,6 +3,7 @@ const settingsMixin = {
         return {
             profileAvatar: null,
             renderProfile: 0,
+            finnhubApiKey: null,
 
             patternToEdit: null,
             updatePatternName: null,
@@ -29,6 +30,7 @@ const settingsMixin = {
             this.profileAvatar = file
         },
 
+
         updateProfile: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nUPDATING PROFILE")
@@ -38,14 +40,18 @@ const settingsMixin = {
                 query.equalTo("objectId", this.currentUser.objectId);
                 const results = await query.first();
                 if (results) {
-                    const parseFile = new Parse.File("avatar", this.profileAvatar);
-                    results.set("avatar", parseFile)
-                    await results.save().then(async () =>{ //very important to have await or else too quick to update
-                        await this.checkCurrentUser()
-                        await (this.renderProfile +=1)
-                        console.log(" -> Profile updated")
-                    })
-                    //
+                    if (this.profileAvatar != null) {
+                        const parseFile = new Parse.File("avatar", this.profileAvatar);
+                        results.set("avatar", parseFile)
+                    }
+                    if (this.finnhubApiKey != null) results.set("finnhubApiKey", this.finnhubApiKey)
+                    
+                    await results.save().then(async() => { //very important to have await or else too quick to update
+                            await this.checkCurrentUser()
+                            await (this.renderProfile += 1)
+                            console.log(" -> Profile updated")
+                        })
+                        //
                 } else {
                     alert("Update query did not return any results")
                 }
@@ -55,7 +61,6 @@ const settingsMixin = {
         },
 
         /* PATTERN MISTAKES */
-
         editPattern(param) {
             this.patternToEdit = param.objectId
             this.updatePatternName = param.name

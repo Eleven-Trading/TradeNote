@@ -7,18 +7,26 @@
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
-        <!-- PROFILE -->
+        <!--=============== PROFILE ===============-->
         <div class="tab-pane fade active show" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">
+            <!-- Picture -->
             <div class="mt-3">
                 <h5>Choose Profile picture</h5>
                 <input type="file" @change="uploadProfileAvatar"/>
             </div>
+
+            <!-- Finnhub API Key -->
+            <div class="mt-3">
+                <h5>Insert your Finnhub API Key</h5>
+                <input type="text" :value="currentUser.finnhubApiKey" @input="finnhubApiKey = $event.target.value"/>
+            </div>
+
             <div class="mt-3 mb-3">
                 <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
             </div>
         </div>
 
-        <!-- PATTERNS -->
+        <!--=============== PATTERNS ===============-->
         <div class="tab-pane fade" id="nav-patterns" role="tabpanel" aria-labelledby="nav-profile-tab">
 
             <div class="mt-3">
