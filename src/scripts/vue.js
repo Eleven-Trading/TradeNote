@@ -498,6 +498,9 @@ const vueApp = new Vue({
             ],
             toggleAP: localStorage.getItem('toggleAP'),
             dailyInfos: {},
+            grossMfeR: null,
+            netMfeR: null,
+            profitAnalysis: {},
 
             //Filter
             filtersOpen: false,

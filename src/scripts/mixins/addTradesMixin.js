@@ -454,9 +454,10 @@ const addTradesMixin = {
                     var netLossCount = 0
                     var tradesCount = 0
                     let temp7 = {}
+                    
                     let initEntryTime
                     let initEntryPrice
-
+                    
                     for (const tempExec of tempExecs) {
                         //console.log("tempExec " + JSON.stringify(tempExec));
                         //console.log("doing key "+key2)

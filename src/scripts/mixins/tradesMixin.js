@@ -5,7 +5,7 @@ const tradesMixin = {
             this.eCharts("clear")
             this.getAllTrades(true)
         },
-
+        //Date : periode
         inputDateRange(param) {
             this.dashboardChartsMounted = false
             this.spinnerSetupsUpdate = true
@@ -25,6 +25,7 @@ const tradesMixin = {
             this.getAllTrades(true)
         },
 
+        //Date : calendar
         inputDateRangeCal(param1, param2) {
             console.log("param1 " + param1 + ", param2 " + param2)
             let dateUnix = null
@@ -77,6 +78,7 @@ const tradesMixin = {
             this.getAllTrades(true)
         },
 
+        //daily, weekly, monthly
         inputTimeFrame(param) {
             this.selectedTimeFrame = param
             localStorage.setItem('selectedTimeFrame', this.selectedTimeFrame)
@@ -302,10 +304,12 @@ const tradesMixin = {
 
             if (this.currentPage.id == "dashboard") {
                 this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
-                await Promise.all([this.getPatterns(), this.getMistakes()])
                 await this.prepareTrades()
+                await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
+                await (this.dashboardIdMounted = true)
                 await (this.spinnerSetupsUpdate = false)
-                console.log(" -> Building charts")
+                
+                console.log("\nBUILDING CHARTS")
                 await (this.renderData += 1)
                 await this.eCharts("init")
                 await (this.dashboardChartsMounted = true)
@@ -483,7 +487,7 @@ const tradesMixin = {
         ***************************************/
 
         prepareTrades: async function() {
-            console.log(" -> Creating totals")
+            console.log("\nPREPARING TRADES")
 
             /* Variables */
             var totalQuantity = 0
@@ -718,8 +722,7 @@ const tradesMixin = {
             temp2.avgNetSharePLLoss = -(totalNetSharePLLoss / totalNetLossCount)
 
             this.totals = temp2
-                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
-            this.dashboardIdMounted = true
+            //console.log(" -> TOTALS " + JSON.stringify(this.totals))
 
 
             /*============= 2- RECREATING TOTALS BY DATE =============
@@ -1299,8 +1302,137 @@ const tradesMixin = {
             /*for (let index = 1; index <= 1; index++) {
                 echarts.init(document.getElementById('boxPlotChart' + index)).clear()
             }*/
+        },
+
+        /***************************************
+         * GETTING AND CALCULATING MFE
+         ***************************************/
+        //get data from excursions db
+        calculateProfitAnalysis: async function(param) {
+            console.log("\nCALCULATING PROFIT ANALYSIS")
+            return new Promise(async (resolve, reject) => {
+                console.log(" -> Getting MFE Prices")
+                const Object = Parse.Object.extend("excursions");
+                const query = new Parse.Query(Object);
+                query.equalTo("user", Parse.User.current())
+                query.greaterThanOrEqualTo("dateUnix", this.selectedDateRangeCal.start)
+                query.lessThanOrEqualTo("dateUnix", this.selectedDateRangeCal.end)
+                query.ascending("order");
+                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                query.limit(1000000); // limit to at most 10 results
+                let mfePricesArray = []
+                const results = await query.find();
+                mfePricesArray = JSON.parse(JSON.stringify(results))
+                //console.log("  --> MFE prices "+mfePricesArray)
+
+                /*console.log(" -> Getting average quantity")
+                let averageQuantity = this.totals.quantity / 2 / this.totals.trades
+                console.log("  --> Average quantity "+averageQuantity)*/
+
+                console.log(" -> Calculating risk&reward and MFE")
+                //console.log(" -> Calculating gross and net Average Win Per Share")
+                this.profitAnalysis.grossAvWinPerShare = (this.totals.grossSharePLWins/this.totals.grossWinsCount)
+                this.profitAnalysis.netAvWinPerShare = (this.totals.netSharePLWins/this.totals.netWinsCount)
+                //console.log("  --> Gross average win per share "+grossAvWinPerShare+" and net "+netAvWinPerShare)
+
+                //console.log(" -> Calculating gross and net Average Loss Per Share")
+                this.profitAnalysis.grossAvLossPerShare = (-this.totals.grossSharePLLoss/this.totals.grossLossCount)
+                this.profitAnalysis.netAvLossPerShare = (-this.totals.netSharePLLoss/this.totals.netLossCount)
+                //console.log("  --> Gross Average Loss Per Share "+grossAvLossPerShare+" and net "+netAvLossPerShare)
+
+                //console.log(" -> Calculating gross and net Highest Win Per Share")
+                this.profitAnalysis.grossHighWinPerShare = this.totals.highGrossSharePLWin
+                this.profitAnalysis.netHighWinPerShare = this.totals.highNetSharePLWin
+                //console.log("  --> Gross Highest Win Per Share "+grossHighWinPerShare+" and net stop loss "+netHighWinPerShare)
+
+                //console.log(" -> Calculating gross and net Highest Loss Per Share")
+                this.profitAnalysis.grossHighLossPerShare = -this.totals.highGrossSharePLLoss
+                this.profitAnalysis.netHighLossPerShare = -this.totals.highNetSharePLLoss
+                //console.log("  --> Gross Highest Loss Per Share "+grossHighLossPerShare+" and net stop loss "+netHighLossPerShare)
+
+                //console.log(" -> Calculating gross and net R")
+                this.profitAnalysis.grossR = this.profitAnalysis.grossAvWinPerShare/this.profitAnalysis.grossAvLossPerShare
+                this.profitAnalysis.netR = this.profitAnalysis.netAvWinPerShare/this.profitAnalysis.netAvLossPerShare
+                console.log("  --> Gross R "+this.profitAnalysis.grossR+" and net R "+this.profitAnalysis.netR)
+
+                //console.log(" -> Calculating gross and net mfe R")
+                //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades.trades))
+                let grossMfeRArray = []
+                let netMfeRArray = []
+
+                mfePricesArray.forEach(element => {
+                    //console.log(" element "+JSON.stringify(element))
+                    let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
+                    let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
+                    let tradeEntryPrice = trade.entryPrice
+                    let entryMfeDiff
+                    trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
+                    let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
+                    //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
+                    grossMfeRArray.push(grossMfeR)
+                    let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
+                    netMfeRArray.push(netMfeR)
+                })
+                //console.log("  --> Gross mfeArray "+grossMfeRArray+" and net "+netMfeRArray)
+
+                //console.log(" -> Getting gross and net win rate")
+                let grossWin = this.totals.probGrossWins
+                let netWin = this.totals.probNetWins
+                //console.log("  --> Gross win "+grossWin+" and net win "+netWin)
+
+                //console.log(" -> Calculating gross and net current expected return")
+                let grossCurrExpectReturn = this.profitAnalysis.grossR * grossWin
+                let netCurrExpectReturn = this.profitAnalysis.netR * netWin
+                //console.log("  --> Gross current expected return "+grossCurrExpectReturn+" and net "+netCurrExpectReturn)
+                
+                //console.log(" -> Calculating mfe expected return")
+                const takeProfitRLevels = []
+                for (let index = 1; index <= 20; index +=0.5) {
+                    takeProfitRLevels.push(index)
+                    
+                }
+
+                let profitTakingAnalysis = []
+                let grossMfeRArrayLength = grossMfeRArray.length
+                let netMfeRArrayLength = netMfeRArray.length
+                let previousGrossExpectReturn = 0
+                let previousNetExpectReturn = 0
+                let tempGrossMfeR
+                let tempGrossExpectedReturn = 0
+                let tempNetMfeR
+                let tempNetExpectedReturn = 0
+                takeProfitRLevels.forEach(element => {
+                    let temp = {}
+                    let occurenceGross = grossMfeRArray.filter(x => x >= element).length
+                    let occurenceNet = netMfeRArray.filter(x => x >= element).length
+                    temp.rLevel = element
+                    temp.winRateGross = occurenceGross / grossMfeRArrayLength
+                    temp.grossExpectReturn = temp.winRateGross * element
+                    temp.winRateNet = occurenceNet / netMfeRArrayLength
+                    temp.netExpectReturn = temp.winRateNet * element
+                    if (temp.grossExpectReturn > previousGrossExpectReturn){
+                        previousGrossExpectReturn = temp.grossExpectReturn
+                        tempGrossMfeR = element
+                        tempGrossExpectedReturn = temp.grossExpectReturn
+                    } 
+                    if (temp.netExpectReturn > previousNetExpectReturn) {
+                        previousNetExpectReturn = temp.netExpectReturn
+                        tempNetMfeR = element
+                        tempNetExpectedReturn = temp.netExpectReturn
+                    }
+                    profitTakingAnalysis.push(temp)
+                });
+                //console.log("  --> Profit Taking Analysis "+JSON.stringify(profitTakingAnalysis))
+                //console.table(profitTakingAnalysis)
+                if (tempGrossExpectedReturn > grossCurrExpectReturn) this.profitAnalysis.grossMfeR = tempGrossMfeR
+                if (tempNetExpectedReturn > netCurrExpectReturn) this.profitAnalysis.netMfeR = tempNetMfeR
+                
+                console.log("  --> Gross MFE "+this.profitAnalysis.grossMfeR+" and net "+this.profitAnalysis.netMfeR)
+
+                console.log("  --> Profit analysis "+JSON.stringify(this.profitAnalysis))
+                resolve()
+            })
         }
-
-
+        //recreate table with take profit analysis
     }
 }

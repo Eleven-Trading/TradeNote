@@ -8,11 +8,15 @@
             </span>
         </div>
         <div v-show="filtersOpen" class="row text-center align-items-center">
+            
+            <!-- Date : periode -->
             <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'dashboard'">
                 <select v-on:input="inputDateRange($event.target.value)" class="form-select">
                     <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
                 </select>
             </div>
+
+            <!-- Date : calendar -->
             <div class="col-12 col-lg-8 mt-1 mt-lg-0 mb-1" v-show="currentPage.id == 'dashboard'">
                 <div class="row">
                     <div class="col-5">
@@ -36,12 +40,14 @@
                 </ul>
             </div>
 
+            <!-- Gross/Net -->
             <div class="col-6 col-lg-2">
                 <select v-on:input="inputGrossNet($event.target.value)" class="form-select">
                     <option v-for="item in grossNet" v-bind:value="item.value" v-bind:selected="item.value ==  selectedGrossNet">{{item.label}}</option>
                 </select>
             </div>
 
+            <!-- Positions -->
             <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id == 'dashboard'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">

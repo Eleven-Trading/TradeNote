@@ -105,23 +105,32 @@
                                 </div>-->
                                 <div v-if="dashboardIdMounted" class="row">
                                     <div class="col-12 mb-3">
-                                        <h4 class="titleWithDesc">{{((totals[amountCase+'SharePLWins']/totals[amountCase+'WinsCount'])/-(totals[amountCase+'SharePLLoss']/totals[amountCase+'LossCount'])).toFixed(2)}}</h4>
-                                        <span class="dashInfoTitle">Risk&Reward Ratio</span>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h4 class="titleWithDesc">{{(profitAnalysis[amountCase+'R']).toFixed(2)}}</h4>
+                                                <span class="dashInfoTitle">Risk&Reward Ratio</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <h4 class="titleWithDesc">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</h4>
+                                                <span class="dashInfoTitle">MFE Risk&Reward</span>
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(totals[amountCase+'SharePLWins']/totals[amountCase+'WinsCount'])}}</h6>
+                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvWinPerShare'])}}</h6>
                                         <span class="dashInfoTitle">Average Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(-totals[amountCase+'SharePLLoss']/totals[amountCase+'LossCount'])}}</h6>
+                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvLossPerShare'])}}</h6>
                                         <span class="dashInfoTitle">Average Loss Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(totals['high'+amountCapital+'SharePLWin'])}}</h6>
+                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighWinPerShare'])}}</h6>
                                         <span class="dashInfoTitle">Highest Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(-totals['high'+amountCapital+'SharePLLoss'])}}</h6>
+                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighLossPerShare'])}}</h6>
                                         <span class="dashInfoTitle">Highest Loss Per Share</span>
                                     </div>
                                 </div>
