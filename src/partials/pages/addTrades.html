@@ -10,7 +10,7 @@
         <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
             <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value ==  selectedBroker">{{item.label}}</option>
         </select>
-        
+
         <!-- ============ STEPPER INIT ============ -->
         <div id="addStepper" class="bs-stepper">
             <div class="bs-stepper-header">
@@ -95,15 +95,18 @@
                 <!-- STEP 2 - Trades -->
                 <div id="step2" class="content">
                     <!--@@include('components/stepperPrevious.html')-->
-                    <span v-show="Object.keys(executions).length > 0||Object.keys(cashJournals).length > 0">@@include('components/stepperNext.html')</span>
+                    <div>
+                        <span v-show="Object.keys(executions).length > 0||Object.keys(cashJournals).length > 0">@@include('components/stepperNext.html')</span>
                     @@include('components/cancelAdd.html')    
-                    
-                    <!--<label>Include Financials</label>
-                    <label class="switch">
-                        <input type="checkbox" v-model="includeFinancials" v-on:click="includeFinancials = !includeFinancials">
-                        <span class="slider round"></span>
-                    </label>-->
-                    
+                    </div>
+                    <!--<label>Auto upload MFE prices</label>-->
+                    <div class="mt-4" v-show="currentUser.finnhubApiKey">
+                        <div class="form-check form-switch">
+                            <label>Upload automatically MFE prices</label>
+                            <input class="form-check-input" type="checkbox" role="switch" v-model="uploadMfePrices" v-on:click="uploadMfePrices = !uploadMfePrices">
+                        </div>
+
+                    </div>
                     <h4 class="mt-3">Trades</h4>
                     <!--<div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" role="switch" id="duplicatedImports" checked>

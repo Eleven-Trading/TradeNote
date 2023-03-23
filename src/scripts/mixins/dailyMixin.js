@@ -144,7 +144,7 @@ const dailyMixin = {
 
         },
 
-        updatePatternsMistakes: async function(param1, param2, param3, param4) { //param1 : trade unixDate ; param2 : trade id inside trade array (gotten from daily.trades[videosArrayIndex].id and then later as this.tradeId), param3: value; param4: pattern or mistake
+        updatePatternsMistakes: async function() {
             console.log("\nUPDATING OR SAVING SETUPS IN PATTERNS MISTAKE PARSE DB")
             return new Promise(async(resolve, reject) => {
 

@@ -22,6 +22,7 @@ const addTradesMixin = {
             tradedStartDate: null,
             ohlcv: [],
             mfePrices: [],
+            uploadMfePrices: true,
         }
     },
 
@@ -707,7 +708,7 @@ const addTradesMixin = {
                                  * GETTING MFE PRICE
                                  *****/
 
-                                if ((this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                                if ((this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') && this.uploadMfePrices && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                                     console.log("  --> Getting MFE Price")
                                     let ohlcvSymbol = this.ohlcv[this.ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                                         //todo exclude if trade in same minute timeframe
