@@ -40,7 +40,7 @@
                         <th scope="col">Side</th>
                         <th scope="col">Time</th>
                         <th scope="col">Price</th>
-                        <th scope="col">Duration</th>
+                        <!--<th scope="col">Duration</th>-->
                         <th scope="col">P&L/Sh(g)</th>
                         <th scope="col">P&L(n)</th>
                         <th scope="col">Pattern</th>
@@ -61,7 +61,7 @@
                         <td>{{trade.side}}</td>
                         <td>{{timeFormat(trade.entryTime)}}</td>
                         <td>{{(trade.entryPrice).toFixed(2)}}</td>
-                        <td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>
+                        <!--<td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null&&patterns.filter(x => x.objectId == trade.setup.pattern)[0]!=undefined">

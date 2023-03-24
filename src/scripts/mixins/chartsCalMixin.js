@@ -1562,5 +1562,101 @@ const chartsCalMixin = {
                 resolve()
             })
         },
+
+        scatterChart(param1) { //chart ID, winShare, lossShare, page
+            console.log(" param1 " + param1)
+            return new Promise((resolve, reject) => {
+                //console.log("  --> " + param1)
+                //console.log("para 2 " + param2 + " and 3 " + param3)
+                let myChart = echarts.init(document.getElementById(param1));
+                let dataArray = []
+
+                this.filteredTrades.forEach(element => {
+                    //console.log("element "+JSON.stringify(element))
+                    element.trades.forEach(el => {
+                        if (param1 == "scatterChart1") {
+                            if (el[this.selectedGrossNet + 'Status'] == 'win') {
+                                let temp = []
+                                    //console.log(" -> Win element "+JSON.stringify(el))
+                                temp.push(this.timeFormat(el.entryTime))
+                                temp.push(el[this.selectedGrossNet + 'SharePLWins'])
+                                temp.push(el[this.selectedGrossNet + 'Wins'])
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).hour())
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).minute())
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).second())
+                                dataArray.push(temp)
+                            }
+                        }
+                        if (param1 == "scatterChart2") {
+                            if (el[this.selectedGrossNet + 'Status'] == 'loss') {
+                                let temp = []
+                                    //console.log(" -> Win element "+JSON.stringify(el))
+                                temp.push(this.timeFormat(el.entryTime))
+                                temp.push(el[this.selectedGrossNet + 'SharePLLoss'])
+                                temp.push(-el[this.selectedGrossNet + 'Loss'])
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).hour())
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).minute())
+                                temp.push(dayjs(el.entryTime * 1000).tz(this.tradeTimeZone).second())
+                                dataArray.push(temp)
+                            }
+                        }
+
+
+                    });
+                });
+                //console.log("current hour "+)
+                //console.log(" -> Data array " + dataArray)
+
+                let sortedArray = dataArray.sort((a, b) => a[5] - b[5]).sort((a, b) => a[4] - b[4]).sort((a, b) => a[3] - b[3])
+
+                console.log(" -> Sorted array " + sortedArray)
+
+                option = {
+                    grid: {
+                        left: '8%',
+                        top: '10%'
+                    },
+                    xAxis: {
+                        type: 'category',
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitLine: {
+                            lineStyle: {
+                                type: 'solid',
+                                color: this.cssColor38
+                            }
+                        },
+                        axisLabel: {
+                            formatter: (params) => {
+                                return params.toFixed(2)
+                            }
+                        },
+                    },
+                    series: {
+                        data: sortedArray,
+                        type: 'scatter',
+                        symbolSize: function(data) {
+                            return Math.sqrt(data[2])
+                        },
+                        emphasis: {
+                            focus: 'series',
+                            label: {
+                                show: true,
+                                formatter: (param) => {
+                                    return this.thousandCurrencyFormat(param.data[2])
+                                },
+                                position: 'top'
+                            }
+                        },
+                        itemStyle: {
+                            color: '#35C4FE',
+                        }
+                    }
+                };
+                myChart.setOption(option);
+                resolve()
+            })
+        },
     }
 }

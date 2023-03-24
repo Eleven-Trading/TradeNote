@@ -220,6 +220,20 @@
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'timeTab' ? 'active show' : '')" id="timeNav" role="tabpanel" aria-labelledby="nav-time-tab">
                 <div class="col-12">
                     <div class="row">
+                        <!-- SCATTER WINS -->
+                        <div class="col-12">
+                            <div class="dailyCard">
+                                <h6>Scatter Wins</h6>
+                                <div v-bind:key="renderData" id="scatterChart1" class="chartClass"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="dailyCard">
+                                <h6>Scatter Losses</h6>
+                                <div v-bind:key="renderData" id="scatterChart2" class="chartClass"></div>
+                            </div>
+                        </div>
 
                         <!-- GROUP BY TIMEFRAME -->
                         <div class="col-12 col-xl-4 mb-3">
@@ -256,6 +270,7 @@
                                 <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
