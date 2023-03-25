@@ -1,7 +1,7 @@
 <div class="row mt-2">
     <div class="col-xl-3 col-sm-6 col-12 mb-3" v-for="(screenshot, index) in screenshots">
         <div class="dailyCard">
-                <img class="img-fluid screenshotImg" v-bind:src="screenshot.annotated" v-on:click="screenshotIndex = index+1" data-bs-toggle="modal" data-bs-target="#tradesModal">
+                <img class="img-fluid screenshotImg" v-bind:src="screenshot.annotated" v-on:click="screenshotIndex = index+1" data-bs-toggle="modal" data-bs-target="#screenshotModal">
             <div class="mt-1">
                 <p v-html="screenshot.comment"></p>
             </div>
@@ -16,7 +16,7 @@
 </div>
 
 <!-- ============ VIDEO MODAL ============ -->
-<div class="modal fade" id="tradesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="screenshotModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-lg">
     <div class="modal-content">
         <div v-if="screenshotIndex" class="modal-body">
