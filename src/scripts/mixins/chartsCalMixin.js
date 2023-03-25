@@ -1609,7 +1609,7 @@ const chartsCalMixin = {
 
                 let sortedArray = dataArray.sort((a, b) => a[5] - b[5]).sort((a, b) => a[4] - b[4]).sort((a, b) => a[3] - b[3])
 
-                console.log(" -> Sorted array " + sortedArray)
+                //console.log(" -> Sorted array " + sortedArray)
 
                 option = {
                     grid: {

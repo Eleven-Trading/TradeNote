@@ -974,11 +974,16 @@ const tradesMixin = {
              *******************/
             this.groups.timeframe = _(temp1)
                 .groupBy(x => {
-                    var secondTimeFrame = 30
+                    var secondTimeFrame = this.timeFrame
                     var msTimeFrame = secondTimeFrame * 60 * 1000; /*ms*/
+                    
                     //console.log("entry time " + dayjs.unix(x.entryTime).format("HH:mm"))
+                    //console.log(" -> Entrytime "+x.entryTime)
+                    let entryTF = Math.floor(x.entryTime / secondTimeFrame) * secondTimeFrame
+                    //console.log("  --> entryTF "+entryTF)
                     var entryTimeTF = dayjs(Math.floor((+dayjs.unix(x.entryTime)) / msTimeFrame) * msTimeFrame);
-                    return entryTimeTF.format("HH:mm")
+                    //console.log("  --> entryTimeTF "+entryTimeTF)
+                    return entryTimeTF.tz(this.tradeTimeZone).format("HH:mm")
                 })
                 .toPairs()
                 .sortBy(0)
@@ -1288,7 +1293,7 @@ const tradesMixin = {
                 }
             }
 
-            let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 11, 15] // This way here because I took out some charts
+            let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 15] // This way here because I took out some charts
             indexes.forEach(index => {
                 var chartId = 'barChartNegative' + index
                 if (param == "clear") {
@@ -1333,7 +1338,7 @@ const tradesMixin = {
                 let mfePricesArray = []
                 const results = await query.find();
                 mfePricesArray = JSON.parse(JSON.stringify(results))
-                    //console.log("  --> MFE prices "+mfePricesArray)
+                //console.log("  --> MFE prices array "+JSON.stringify(mfePricesArray))
 
                 /*console.log(" -> Getting average quantity")
                 let averageQuantity = this.totals.quantity / 2 / this.totals.trades
@@ -1439,7 +1444,7 @@ const tradesMixin = {
 
                 console.log("  --> Gross MFE " + this.profitAnalysis.grossMfeR + " and net " + this.profitAnalysis.netMfeR)
 
-                console.log("  --> Profit analysis " + JSON.stringify(this.profitAnalysis))
+                //console.log("  --> Profit analysis " + JSON.stringify(this.profitAnalysis))
                 resolve()
             })
         },

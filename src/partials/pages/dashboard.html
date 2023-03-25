@@ -15,6 +15,7 @@
 
         <div class="tab-content" id="nav-tabContent">
 
+            <!-- ============ OVERVIEW ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'overviewTab' ? 'active show' : '')" id="overviewNav" role="tabpanel" aria-labelledby="nav-overview-tab">
                 <!-- ============ LINE 2: ID CARDS ============ -->
                 <div class="col-12">
@@ -111,7 +112,7 @@
                                                 <span class="dashInfoTitle">Risk&Reward Ratio</span>
                                             </div>
                                             <div class="col-6">
-                                                <h4 class="titleWithDesc">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</h4>
+                                                <h4 class="titleWithDesc"><span v-if="profitAnalysis.lenght > 0">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</span><span v-else>null</span></h4>
                                                 <span class="dashInfoTitle">MFE Risk&Reward</span>
                                             </div>
                                         </div>
@@ -216,24 +217,11 @@
                 </div>
 
             </div>
-
+            
+            <!-- ============ TIME ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'timeTab' ? 'active show' : '')" id="timeNav" role="tabpanel" aria-labelledby="nav-time-tab">
                 <div class="col-12">
                     <div class="row">
-                        <!-- SCATTER WINS -->
-                        <div class="col-12">
-                            <div class="dailyCard">
-                                <h6>Scatter Wins</h6>
-                                <div v-bind:key="renderData" id="scatterChart1" class="chartClass"></div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="dailyCard">
-                                <h6>Scatter Losses</h6>
-                                <div v-bind:key="renderData" id="scatterChart2" class="chartClass"></div>
-                            </div>
-                        </div>
 
                         <!-- GROUP BY TIMEFRAME -->
                         <div class="col-12 col-xl-4 mb-3">
@@ -270,11 +258,28 @@
                                 <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
                             </div>
                         </div>
+
+                        <!-- SCATTER WINS -->
+                        <div class="col-12">
+                            <div class="dailyCard">
+                                <h6>Scatter Wins</h6>
+                                <div v-bind:key="renderData" id="scatterChart1" class="chartClass"></div>
+                            </div>
+                        </div>
                         
+                        <!-- SCATTER LOSSES -->
+                        <div class="col-12">
+                            <div class="dailyCard">
+                                <h6>Scatter Losses</h6>
+                                <div v-bind:key="renderData" id="scatterChart2" class="chartClass"></div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
+            <!-- ============ TRADES ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'tradesTab' ? 'active show' : '')" id="tradesNav" role="tabpanel" aria-labelledby="nav-trades-tab">
                 <div class="col-12">
                     <div class="row">
@@ -304,6 +309,7 @@
                 </div>
             </div>
 
+            <!-- ============ SETUPS ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'setupsTab' ? 'active show' : '')" id="setupsNav" role="tabpanel" aria-labelledby="nav-setups-tab">
                 <div class="col-12">
                     <div class="row">
@@ -318,7 +324,7 @@
                                 <div v-bind:key="renderData" id="barChartNegative10" class="chartClass"></div>
                             </div>
                         </div>
-                        <!-- GROUP BY PATTERN TYPE -->
+                        <!-- GROUP BY PATTERN TYPE
                         <div class="col-12 col-xl-4 mb-3">
                             <div class="dailyCard">
                                 <h6>Group by Pattern Type</h6>
@@ -327,7 +333,7 @@
                                 </div>
                                 <div v-bind:key="renderData" id="barChartNegative11" class="chartClass"></div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- GROUP BY MISTAKES -->
                         <div class="col-12 col-xl-4 mb-3">
@@ -344,6 +350,7 @@
                 </div>
             </div>
 
+            <!-- ============ FINANCIALS ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'financialsTab' ? 'active show' : '')" id="financialsNav" role="tabpanel" aria-labelledby="nav-financials-tab">
                 <div class="col-12">
                     <div class="row">
@@ -394,6 +401,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

@@ -501,6 +501,7 @@ const vueApp = new Vue({
             grossMfeR: null,
             netMfeR: null,
             profitAnalysis: {},
+            timeFrame: 15,
 
             //Filter
             filtersOpen: false,
@@ -1111,7 +1112,7 @@ const vueApp = new Vue({
             var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
             var self = this // this is needed or else could not call function inside eventlistener
 
-            console.log("INIT TAB for " + param)
+            console.log("\nINIT TAB for " + param)
 
             triggerTabList.forEach((triggerEl) => {
                 /*var tabTrigger = new bootstrap.Tab(triggerEl)
@@ -1122,7 +1123,7 @@ const vueApp = new Vue({
                 })*/
                 if (param == "dashboard") {
                     // GET TAB ID THAT IS CLICKED
-                    console.log(" -> triggerTabList Dashboard")
+                    //console.log(" -> triggerTabList Dashboard")
                     triggerEl.addEventListener('shown.bs.tab', (event) => {
                         //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                         this.selectedDashTab = event.target.getAttribute('id')
