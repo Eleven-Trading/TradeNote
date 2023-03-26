@@ -894,7 +894,8 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "playbook") {
-            this.getPlaybooks()
+            await this.getPlaybooks()
+            await this.initPopover()
         }
         let itemToEditId = sessionStorage.getItem('editItemId')
 
@@ -1655,6 +1656,9 @@ const vueApp = new Vue({
                 }
                 if (this.currentPage.id == "journal") {
                     this.deleteJournal()
+                }
+                if (this.currentPage.id == "playbook") {
+                    this.deletePlaybook()
                 }
             });
 
