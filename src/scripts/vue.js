@@ -870,6 +870,7 @@ const vueApp = new Vue({
 
         if (this.currentPage.id == "journal") {
             await this.getJournals(30)
+            await this.initPopover()
         }
 
         if (this.currentPage.id == "entries") {
@@ -1651,6 +1652,9 @@ const vueApp = new Vue({
                 }
                 if (this.currentPage.id == "entries") {
                     this.deleteEntry()
+                }
+                if (this.currentPage.id == "journal") {
+                    this.deleteJournal()
                 }
             });
 

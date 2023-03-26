@@ -140,6 +140,27 @@ const journalslMixin = {
                         console.log('Failed to create new object, with error code: ' + error.message);
                     });
             }
-        }
+        },
+
+        deleteJournal: async function(param1, param2) {
+            //console.log("selected item " + this.selectedItem)
+            console.log("\nDELETING JOURNAL ENTRY")
+            const Object = Parse.Object.extend("journals");
+            const query = new Parse.Query(Object);
+            query.equalTo("objectId", this.selectedItem);
+            const results = await query.first();
+
+            if (results) {
+                await results.destroy()
+                    //document.location.reload()
+                await this.getJournals()
+                await (this.renderData += 1)
+                await this.initPopover()
+                this.selectedItem = null
+
+            } else {
+                alert("There was a problem with the query")
+            }
+        },
     }
 }
