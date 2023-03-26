@@ -110,7 +110,7 @@ const playbookMixin = {
         },
 
         deletePlaybook: async function(param1, param2) {
-            console.log("selected item " + this.selectedItem)
+            //console.log("selected item " + this.selectedItem)
             console.log("\nDELETING PLAYBOOK ENTRY")
             const Object = Parse.Object.extend("playbooks");
             const query = new Parse.Query(Object);
