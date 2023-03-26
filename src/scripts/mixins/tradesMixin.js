@@ -1327,6 +1327,7 @@ const tradesMixin = {
             console.log("\nCALCULATING PROFIT ANALYSIS")
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting MFE Prices")
+                console.log(" -> Start "+this.dateCalFormat(this.selectedDateRangeCal.start)+" and end "+this.dateCalFormat(this.selectedDateRangeCal.end))
                 const Object = Parse.Object.extend("excursions");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current())
@@ -1335,11 +1336,11 @@ const tradesMixin = {
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.limit(1000000); // limit to at most 10 results
-                let mfePricesArray = []
+                this.mfePricesArray = []
+                this.profitAnalysis = {}
                 const results = await query.find();
-                mfePricesArray = JSON.parse(JSON.stringify(results))
-                //console.log("  --> MFE prices array "+JSON.stringify(mfePricesArray))
-
+                this.mfePricesArray = JSON.parse(JSON.stringify(results))
+                //console.log("  --> MFE prices array "+JSON.stringify(this.mfePricesArray))
                 /*console.log(" -> Getting average quantity")
                 let averageQuantity = this.totals.quantity / 2 / this.totals.trades
                 console.log("  --> Average quantity "+averageQuantity)*/
@@ -1375,7 +1376,7 @@ const tradesMixin = {
                 let grossMfeRArray = []
                 let netMfeRArray = []
 
-                mfePricesArray.forEach(element => {
+                this.mfePricesArray.forEach(element => {
                         //console.log(" element "+JSON.stringify(element))
                         let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
                         let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
@@ -1461,9 +1462,9 @@ const tradesMixin = {
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.limit(1000000); // limit to at most 10 results
-                let mfePricesArray = []
+                this.mfePricesArray = []
                 const results = await query.find();
-                mfePricesArray = JSON.parse(JSON.stringify(results))
+                this.mfePricesArray = JSON.parse(JSON.stringify(results))
                     //console.log("  --> MFE prices "+mfePricesArray)
                 resolve()
             })

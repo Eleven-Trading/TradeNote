@@ -501,6 +501,7 @@ const vueApp = new Vue({
             grossMfeR: null,
             netMfeR: null,
             profitAnalysis: {},
+            mfePricesArray: [],
             timeFrame: 15,
 
             //Filter
