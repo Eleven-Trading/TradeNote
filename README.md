@@ -118,7 +118,7 @@ docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY
 Run the image with the following environment variables
 - <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. 
    - <mongo_url>: Enter one of the following information : 
-      - If you have followed the above MongoDB installation process and created a network (in the example tradenote-net), simply use the container name.
+      - If you have followed the above MongoDB installation process and created a network ("tradenote-net"), simply use the container name ("tradenote-mongo").
       - If you have an existing MongoDB running on a local network, you can either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
       - If you have an existing MongoDB on a remote network, simply use the remote IP address
    - <tradenote_database>: You can use whatever name you like for your  tradenote database. 
