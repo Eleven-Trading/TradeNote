@@ -43,17 +43,41 @@ If you like this project, don't hesitate to show me <s>the money</s> love ;)
 <p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
 
 # TradeNote
-TradeNote is divided in 3 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
+TradeNote is divided in 2 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
 
 ### Measure
 TradeNote offers a dashboard, daily view and calendar view so you can measure your progress. You can easily filter your trades by month or date range.
+
+#### Dashboard
+![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
+
+#### Daily Page
+On daily page you can see your trades per day. You can add pattern, mistake and note to each of you trades. Moreover, you can specify your satisfaction with the trade (for example if you followed or not your rules) with thumbs up or down. 
+
+![Add Trade Information](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.04.03.png "Add Trade Information")
+![Daily Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.05.34.png "Daily Page")
 
 
 ### Reflect
 With TradeNote you can keep a daily diary of your trading journey to work on your trader psychology as well as add annotated screenshots of interesting setups or your entries. You can also write your (yearly) playbook.
 
-### Anticipate
-They say trading is like running a business so with TradeNote you can create a forecast so you can anticipate your P&L.
+#### Journal Page
+Besides notes for every trade, you can journal every day your trading journey. 
+
+![Add Journal Entry](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.41.png "Add Journal Entry")
+
+![Journal Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.53.png "Journal Page")
+
+#### Setups Page
+Upload screenshots of you trades ("Entry" option) or simply an interesting setup you have identified ("Setup" option) and make annotations for further analysis.
+
+![Add Setup](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.02.png "Add Setup")
+
+![Setups Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Setups Page")
+
+
+
+
 
 
 # Installation, Upgrade and Backup

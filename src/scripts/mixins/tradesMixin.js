@@ -201,7 +201,8 @@ const tradesMixin = {
                             //console.log("dataExistsInIndexedDB "+dataExistsInIndexedDB)
                             //this.spinnerSetupsUpdateText = "Getting trades - data exists is "+dataExistsInIndexedDB
 
-                        if (dataExistsInIndexedDB) {
+                        if (dataExistsInIndexedDB && this.threeMonthsTrades.length > 0) {
+                            console.log("  --> Three Months Trades "+JSON.stringify(this.threeMonthsTrades))
                             lastDateLocal = this.threeMonthsTrades[this.threeMonthsTrades.length - 1].dateUnix
                             console.log("  --> threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
                         }
@@ -233,7 +234,7 @@ const tradesMixin = {
                         let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
                         this.spinnerSetupsUpdateText = "Getting trades - data exists is " + dataExistsInIndexedDB
 
-                        if (dataExistsInIndexedDB) {
+                        if (dataExistsInIndexedDB && this.allTrades.length > 0) {
                             lastDateLocal = this.allTrades[this.allTrades.length - 1].dateUnix
                             console.log("  --> allTrades size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.allTrades)]).size))
                         }
