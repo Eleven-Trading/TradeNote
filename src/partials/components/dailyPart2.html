@@ -46,7 +46,7 @@
                         <th scope="col">Pattern</th>
                         <th scope="col">Mistake</th>
                         <th scope="col">Note</th>
-                        <th scope="col">Video</th>
+                        <!--<th scope="col">Video</th>-->
                         <th scope="col"></th>
                     </tr>
                 </thead>
@@ -64,28 +64,29 @@
                         <!--<td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
+                        
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null&&patterns.filter(x => x.objectId == trade.setup.pattern)[0]!=undefined">
-                            {{JSON.parse(JSON.stringify(patterns.filter(x => x.objectId == trade.setup.pattern)[0])).name}}
+                            {{(JSON.parse(JSON.stringify(patterns.filter(x => x.objectId == trade.setup.pattern)[0])).name).substr(0,15)+"..."}}
                         </td>
                         <td v-else>
-                            <i class="uil uil-times-square"></i>
+                            <!--<i class="uil uil-times-square"></i>-->
                         </td>
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('mistake')&&trade.setup.mistake != null&&mistakes.filter(x => x.objectId == trade.setup.mistake)[0]!=undefined">
-                            {{JSON.parse(JSON.stringify(mistakes.filter(x => x.objectId == trade.setup.mistake)[0])).name}}
+                            {{(JSON.parse(JSON.stringify(mistakes.filter(x => x.objectId == trade.setup.mistake)[0])).name).substr(0,15)+"..."}}
                         </td>
                         <td v-else>
-                            <i class="uil uil-times-square"></i>
+                            <!--<i class="uil uil-times-square"></i>-->
                         </td>
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('note')&&trade.setup.note != null">
-                            {{trade.setup.note}}
+                            {{(trade.setup.note).substr(0,15)+"..."}}
                         </td>
                         <td v-else>
-                            <i class="uil uil-times-square"></i>
+                            <!--<i class="uil uil-times-square"></i>-->
                         </td>
-                        <td id="videoTd">
-                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content"> -->
+                        <!--<td id="videoTd">
+                            <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content">
                             <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-times-square']"></i>
-                        </td>
+                        </td>-->
                         <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true"><i class="greenTrade uil uil-thumbs-up"></i></td>
                         <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false"><i class="redTrade uil uil-thumbs-down"></i></td>
                         <td v-else></td>
