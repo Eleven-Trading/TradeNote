@@ -108,30 +108,30 @@
                                     <div class="col-12 mb-3">
                                         <div class="row">
                                             <div class="col-6">
-                                                <h4 class="titleWithDesc">{{(profitAnalysis[amountCase+'R']).toFixed(2)}}</h4>
+                                                <h4 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'R'])">{{(profitAnalysis[amountCase+'R']).toFixed(2)}}</span><span v-else>-</span></h4>
                                                 <span class="dashInfoTitle">Risk&Reward Ratio</span>
                                             </div>
                                             <div class="col-6">
-                                                <h4 class="titleWithDesc"><span v-if="mfePricesArray.length>0">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</span><span v-else>null</span></h4>
+                                                <h4 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'MfeR']!=null">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</span><span v-else>-</span></h4>
                                                 <span class="dashInfoTitle">MFE Risk&Reward</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvWinPerShare'])}}</h6>
+                                        <h6 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'AvWinPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvWinPerShare'])}}</span><span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Average Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvLossPerShare'])}}</h6>
+                                        <h6 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'AvLossPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvLossPerShare'])}}</span><span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Average Loss Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighWinPerShare'])}}</h6>
+                                        <h6 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'HighWinPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighWinPerShare'])}}</span><span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Highest Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighLossPerShare'])}}</h6>
+                                        <h6 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'HighLossPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighLossPerShare'])}}</span><span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Highest Loss Per Share</span>
                                     </div>
                                 </div>
