@@ -666,6 +666,7 @@ const vueApp = new Vue({
             renderData1: 0, //this is for updating DOM
             renderData2: 0,
             renderingCharts: true, // this is for spinner
+            firstTimeSelectedAccounts: false,
 
             //DAILY
             curMonthTrades: [],
@@ -829,7 +830,11 @@ const vueApp = new Vue({
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
-            !localStorage.getItem('selectedAccounts') ? this.selectedAccounts.push(this.currentUser.accounts[0].value) && localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value) : ''
+            if (!localStorage.getItem('selectedAccounts')) {
+                this.selectedAccounts.push(this.currentUser.accounts[0].value)
+                localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value)
+                this.firstTimeSelectedAccounts = true
+            }
         }
 
         this.cssTheme == "dark" ? this.cssColor87 = "rgba(255, 255, 255, 0.87)" : this.cssColor = "#333333"
@@ -838,19 +843,23 @@ const vueApp = new Vue({
             //we create the selectedDate and Calendar range
             /*this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'thisMonth')[0]*/
 
-        this.selectedDateRangeCal = localStorage.getItem('selectedDateRangeCal') ? JSON.parse(localStorage.getItem('selectedDateRangeCal')) : { "start": this.dateRange.filter(element => element.value == 'thisMonth')[0].start, "end": this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
-
+        this.selectedDateRangeCal = localStorage.getItem('selectedDateRangeCal') ? JSON.parse(localStorage.getItem('selectedDateRangeCal')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
+        //console.log(" -> Selected date range cal "+JSON.stringify(this.selectedDateRangeCal))
         /* we set the initial selectedDateRange based on selectedDateRangeCal */
-        if (localStorage.getItem('selectedDateRangeCal')) {
+        if (this.selectedDateRangeCal) {
+            //console.log(" -> Filtering date range")
             let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
             if (tempFilter.length > 0) {
                 this.selectedDateRange = tempFilter[0]
             } else {
+                console.log(" -> Custom range in vue")
                 this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
             }
         }
+        //console.log(" -> Selected date range "+JSON.stringify(this.selectedDateRange))
 
         this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
+        //console.log(" -> Selected cal range "+JSON.stringify(this.selectedCalRange))
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         //this.currentPage = document.getElementsByTagName("main")[0].id
@@ -1010,10 +1019,15 @@ const vueApp = new Vue({
         },
 
         selectedAccounts: function() {
-            console.log("selectedAccounts " + this.selectedAccounts + " type " + typeof(JSON.stringify(this.selectedAccounts)))
-            localStorage.setItem('selectedAccounts', this.selectedAccounts)
-            this.inputAccounts()
-                //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
+            if (this.firstTimeSelectedAccounts) { // Do not fire the first time 
+                this.firstTimeSelectedAccounts = !this.firstTimeSelectedAccounts
+            } else {
+                //console.log("selectedAccounts " + this.selectedAccounts + " type " + typeof(JSON.stringify(this.selectedAccounts)))
+                localStorage.setItem('selectedAccounts', this.selectedAccounts)
+                this.inputAccounts()
+                    //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
+            }
+
         },
 
         selectedPositions: function() {
@@ -1146,9 +1160,9 @@ const vueApp = new Vue({
 
 
                         if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
-                        
+
                         idCurrent = event.target.getAttribute('id')
-                        
+
                         if (idPrevious == undefined) {
                             firstTimeClick = true
                             idPrevious = idCurrent //on page load, first time we click
@@ -1188,7 +1202,7 @@ const vueApp = new Vue({
 
                         } else {
                             hideCurrentTab = false
-                            // in this case, we have click on another tab so we need to "reset" the previsous tab 
+                                // in this case, we have click on another tab so we need to "reset" the previsous tab 
                             $(htmlIdPrevious).removeClass('show')
                             $(htmlIdPrevious).removeClass('active')
                             $("#" + idPrevious).removeClass('active')
@@ -1207,7 +1221,7 @@ const vueApp = new Vue({
                 let path = window.location.pathname
                 let parse_app_id = localStorage.getItem('parse_app_id') ? localStorage.getItem('parse_app_id') : "";
                 let parse_url = "/parse"
-                console.log(" -> Parse id " + parse_app_id)
+                //console.log(" -> Parse id " + parse_app_id)
 
                 Parse.initialize(parse_app_id)
                 Parse.serverURL = parse_url

@@ -1564,7 +1564,7 @@ const chartsCalMixin = {
         },
 
         scatterChart(param1) { //chart ID, winShare, lossShare, page
-            console.log(" param1 " + param1)
+            //console.log(" param1 " + param1)
             return new Promise((resolve, reject) => {
                 //console.log("  --> " + param1)
                 //console.log("para 2 " + param2 + " and 3 " + param3)
