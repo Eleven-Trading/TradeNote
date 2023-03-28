@@ -37,6 +37,8 @@ Alternatively, you can use the [template](https://github.com/Eleven-Trading/Trad
 ### Type of trades
 TradeNote works best for intraday stocks and forex trading. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
+### Upcoming features
+You can see upcoming features on [Trello](https://trello.com/b/GOqJSF2v/tradenote "Trello").
 
 ## Buy me coffee
 If you like this project, don't hesitate to show me <s>the money</s> love ;)
