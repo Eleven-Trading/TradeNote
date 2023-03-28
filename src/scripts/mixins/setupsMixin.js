@@ -49,33 +49,37 @@ const setupsMixin = {
         }
     },
     mounted: async function() {
-        window.addEventListener('scroll', () => {
-            //console.log(window.scrollY) //scrolled from top
-            //console.log(window.innerHeight) //visible part of screen
-            if (window.scrollY + window.innerHeight >=
-                document.documentElement.scrollHeight) {
-                console.log(" -> Load new images")
-                this.getSetupsEntries()
-            }
-        })
+        if (this.currentPage.id == "setups") {
+            window.addEventListener('scroll', () => {
+                //console.log(window.scrollY) //scrolled from top
+                //console.log(window.innerHeight) //visible part of screen
+                if (window.scrollY + window.innerHeight >=
+                    document.documentElement.scrollHeight) {
+                    if (this.currentPage.id == "setups") {
+                        console.log(" -> Load new images")
+                        this.getSetupsEntries()
+                    }
+                }
+            })
+        }
     },
     methods: {
         getSetupsEntries: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting Setups and entries");
-                console.log(" -> setupsEntriesPagination "+this.setupsEntriesPagination);
+                console.log(" -> setupsEntriesPagination " + this.setupsEntriesPagination);
                 const Object = Parse.Object.extend("setupsEntries");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
                 query.limit(this.setupsEntriesQueryLimit);
                 query.skip(this.setupsEntriesPagination)
-                //this.setups = []
+                    //this.setups = []
                 const results = await query.find();
                 this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
                     //console.log(" -> Setups " + JSON.stringify(this.setups))
                 this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
-                console.log(" -> setupsEntriesPagination "+this.setupsEntriesPagination);
+                console.log(" -> setupsEntriesPagination " + this.setupsEntriesPagination);
                 resolve()
             })
         },

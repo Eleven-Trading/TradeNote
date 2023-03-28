@@ -3,7 +3,7 @@
     <div class="dailyCard">
         <div>
             <span v-if="!filtersOpen" v-on:click="filtersOpen = !filtersOpen" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
-            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3">{{selectedAccounts.toString()}} | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} |  {{selectedDateRange.label}} | {{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}} | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} | {{selectedRatio.toUpperCase()}}</span>
+            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3">{{selectedDateRange.label}} | <span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span><span v-else>Accounts: {{selectedAccounts.toString()}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
             <span v-else v-on:click="filtersOpen = !filtersOpen" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
             </span>
         </div>
@@ -30,6 +30,7 @@
                 </div>
             </div>
 
+            <!-- Accounts -->
             <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id == 'dashboard'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Accounts <span class="dashInfoTitle">({{selectedAccounts.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
@@ -58,6 +59,7 @@
                 </ul>
             </div>
 
+            <!-- Timeframe -->
             <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="currentPage.id == 'dashboard'">
                 <select v-on:input="inputTimeFrame($event.target.value)" class="form-select">
                     <option v-for="item in timeFrames" v-bind:value="item.value" v-bind:selected="item.value ==  selectedTimeFrame">{{item.label}}</option>

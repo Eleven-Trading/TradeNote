@@ -19,7 +19,7 @@ const tradesMixin = {
             temp.start = this.selectedDateRange.start
             temp.end = this.selectedDateRange.end
             this.selectedDateRangeCal = temp
-            //console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
+                //console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
             localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal))
 
             this.getAllTrades(true)
@@ -261,7 +261,7 @@ const tradesMixin = {
                 //console.log(" -> Getting trades from " + dayjs.unix(selectedRange.start).format("DD/MM/YY") + " to " + dayjs.unix(selectedRange.end).format("DD/MM/YY"))
                 console.log(" -> Filtering trades")
                 this.spinnerSetupsUpdateText = "Getting trades - Filtering trades"
-                //console.log("Range (Date or Call) start " + selectedRange.start + " Range (Date or Call) end " + selectedRange.end)
+                    //console.log("Range (Date or Call) start " + selectedRange.start + " Range (Date or Call) end " + selectedRange.end)
 
                 this.filteredTrades = []
                 let loopTrades = (param1) => {
@@ -1258,7 +1258,7 @@ const tradesMixin = {
 
             for (let index = 1; index <= 1; index++) {
                 var chartId = 'pieChart' + index
-                //console.log("chartId " + chartId)
+                    //console.log("chartId " + chartId)
                 if (param == "clear") {
                     echarts.init(document.getElementById(chartId)).clear()
                 }
@@ -1334,7 +1334,7 @@ const tradesMixin = {
             console.log("\nCALCULATING PROFIT ANALYSIS")
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting MFE Prices")
-                //console.log(" -> Start " + this.dateCalFormat(this.selectedDateRangeCal.start) + " and end " + this.dateCalFormat(this.selectedDateRangeCal.end))
+                    //console.log(" -> Start " + this.dateCalFormat(this.selectedDateRangeCal.start) + " and end " + this.dateCalFormat(this.selectedDateRangeCal.end))
                 const Object = Parse.Object.extend("excursions");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current())
@@ -1351,7 +1351,7 @@ const tradesMixin = {
                     /*console.log(" -> Getting average quantity")
                     let averageQuantity = this.totals.quantity / 2 / this.totals.trades
                     console.log("  --> Average quantity "+averageQuantity)*/
-                //console.log(" totals "+JSON.stringify(this.totals))
+                    //console.log(" totals "+JSON.stringify(this.totals))
                 if (JSON.stringify(this.totals) != '{}') {
                     console.log(" -> Calculating risk&reward and MFE")
                         //console.log(" -> Calculating gross and net Average Win Per Share")
@@ -1388,16 +1388,22 @@ const tradesMixin = {
                             if (this.filteredTrades.length > 0) {
                                 //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
                                 let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
-
-                                let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
-                                let tradeEntryPrice = trade.entryPrice
-                                let entryMfeDiff
-                                trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
-                                let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
-                                    //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
-                                grossMfeRArray.push(grossMfeR)
-                                let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
-                                netMfeRArray.push(netMfeR)
+                                    //console.log(" tradeFilter "+JSON.stringify(tradeFilter))
+                                if (tradeFilter != undefined) {
+                                    //console.log(" tradeFilter " + JSON.stringify(tradeFilter))
+                                    let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
+                                    if (trade != undefined) {
+                                        //console.log(" -> Trade " + JSON.stringify(trade))
+                                        let tradeEntryPrice = trade.entryPrice
+                                        let entryMfeDiff
+                                        trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
+                                        let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
+                                            //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
+                                        grossMfeRArray.push(grossMfeR)
+                                        let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
+                                        netMfeRArray.push(netMfeR)
+                                    }
+                                }
                             }
                         })
                         //console.log("  --> Gross mfeArray "+grossMfeRArray+" and net "+netMfeRArray)
@@ -1457,7 +1463,7 @@ const tradesMixin = {
                     if (tempNetExpectedReturn > netCurrExpectReturn) this.profitAnalysis.netMfeR = tempNetMfeR
 
                     console.log("  --> Gross MFE " + this.profitAnalysis.grossMfeR + " and net " + this.profitAnalysis.netMfeR)
-                    //console.log("  --> Profit analysis " + JSON.stringify(this.profitAnalysis))
+                        //console.log("  --> Profit analysis " + JSON.stringify(this.profitAnalysis))
                 }
 
                 resolve()
