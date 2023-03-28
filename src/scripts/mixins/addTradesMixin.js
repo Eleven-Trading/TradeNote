@@ -235,7 +235,9 @@ const addTradesMixin = {
             }
 
             const create = async() => {
-                await this.createTempExecutions()
+                await this.createTempExecutions().catch((error) => {
+                    alert("Error in upload file (" + error + ")")
+                })
                 await this.createExecutions()
                 if (this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') {
                     await this.getOHLCV()
@@ -252,7 +254,7 @@ const addTradesMixin = {
             if (this.selectedBroker == "tradeZero" || this.selectedBroker == "template") {
                 console.log(" -> TradeZero / Template")
                 let fileInput = await readAsText(files)
-                await this.brokerTradeZero(fileInput)
+                await this.brokerTradeZero(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
             /****************************
@@ -261,7 +263,7 @@ const addTradesMixin = {
             if (this.selectedBroker == "metaTrader5") {
                 console.log(" -> MetaTrader 5")
                 let fileInput = await readAsArrayBuffer(files)
-                await this.brokerMetaTrader5(fileInput)
+                await this.brokerMetaTrader5(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
             /****************************
@@ -270,7 +272,7 @@ const addTradesMixin = {
             if (this.selectedBroker == "tdAmeritrade") {
                 console.log(" -> TD Ameritrade")
                 let fileInput = await readAsText(files)
-                await this.brokerTdAmeritrade(fileInput)
+                await this.brokerTdAmeritrade(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
             /****************************
@@ -279,7 +281,7 @@ const addTradesMixin = {
             if (this.selectedBroker == "tradeStation") {
                 console.log(" -> Trade Station")
                 let fileInput = await readAsArrayBuffer(files)
-                await this.brokerTradeStation(fileInput)
+                await this.brokerTradeStation(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
             /****************************
@@ -288,7 +290,7 @@ const addTradesMixin = {
             if (this.selectedBroker == "interactiveBrokers") {
                 console.log(" -> Interactive Brokers")
                 let fileInput = await readAsText(files)
-                await this.brokerInteractiveBrokers(fileInput)
+                await this.brokerInteractiveBrokers(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
             create()
@@ -305,68 +307,73 @@ const addTradesMixin = {
                 var lastId
                 var x
                 for (const key of keys) {
-                    let temp2 = {};
-                    temp2.account = this.tradesData[key].Account
-                    temp2.broker = this.selectedBroker
-                    if (!this.tradeAccounts.includes(this.tradesData[key].Account)) this.tradeAccounts.push(this.tradesData[key].Account)
-                        /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
-                        //frDate = usDate.tz("Europe/Paris")
-                        console.log("date "+usDate+" and fr ")*/
-                    const dateArrayTD = this.tradesData[key]['T/D'].split('/');
-                    const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
-                    temp2.td = dayjs.tz(formatedDateTD, this.tradeTimeZone).unix()
+                    try {
+                        let temp2 = {};
+                        temp2.account = this.tradesData[key].Account
+                        temp2.broker = this.selectedBroker
+                        if (!this.tradeAccounts.includes(this.tradesData[key].Account)) this.tradeAccounts.push(this.tradesData[key].Account)
+                            /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
+                            //frDate = usDate.tz("Europe/Paris")
+                            console.log("date "+usDate+" and fr ")*/
+                        const dateArrayTD = this.tradesData[key]['T/D'].split('/');
+                        const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
+                        temp2.td = dayjs.tz(formatedDateTD, this.tradeTimeZone).unix()
 
-                    const dateArraySD = this.tradesData[key]['S/D'].split('/');
-                    const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
-                    temp2.sd = dayjs.tz(formatedDateSD, this.tradeTimeZone).unix()
+                        const dateArraySD = this.tradesData[key]['S/D'].split('/');
+                        const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
+                        temp2.sd = dayjs.tz(formatedDateSD, this.tradeTimeZone).unix()
 
-                    temp2.currency = this.tradesData[key].Currency;
-                    temp2.type = this.tradesData[key].Type;
-                    temp2.side = this.tradesData[key].Side;
-                    temp2.symbol = this.tradesData[key].Symbol.replace(".", "_")
-                    temp2.quantity = parseFloat(this.tradesData[key].Qty);
-                    temp2.price = parseFloat(this.tradesData[key].Price);
-                    temp2.execTime = dayjs.tz(formatedDateTD + " " + this.tradesData[key]['Exec Time'], this.tradeTimeZone).unix()
-                    tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
-                    // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
-                    if (tempId != lastId) {
-                        x = 1
-                        temp2.id = tempId + "_" + x
-                        lastId = tempId
-                            //console.log("last id "+lastId)
-                    } else {
-                        x++
-                        temp2.id = tempId + "_" + x
+                        temp2.currency = this.tradesData[key].Currency;
+                        temp2.type = this.tradesData[key].Type;
+                        temp2.side = this.tradesData[key].Side;
+                        temp2.symbol = this.tradesData[key].Symbol.replace(".", "_")
+                        temp2.quantity = parseFloat(this.tradesData[key].Qty);
+                        temp2.price = parseFloat(this.tradesData[key].Price);
+                        temp2.execTime = dayjs.tz(formatedDateTD + " " + this.tradesData[key]['Exec Time'], this.tradeTimeZone).unix()
+                        tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
+                        // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
+                        if (tempId != lastId) {
+                            x = 1
+                            temp2.id = tempId + "_" + x
+                            lastId = tempId
+                                //console.log("last id "+lastId)
+                        } else {
+                            x++
+                            temp2.id = tempId + "_" + x
+                        }
+                        temp2.commission = parseFloat(this.tradesData[key].Comm);
+                        temp2.sec = parseFloat(this.tradesData[key].SEC);
+                        temp2.taf = parseFloat(this.tradesData[key].TAF);
+                        temp2.nscc = parseFloat(this.tradesData[key].NSCC);
+                        temp2.nasdaq = parseFloat(this.tradesData[key].Nasdaq);
+                        temp2.ecnRemove = parseFloat(this.tradesData[key]['ECN Remove']);
+                        temp2.ecnAdd = parseFloat(this.tradesData[key]['ECN Add']);
+                        temp2.grossProceeds = parseFloat(this.tradesData[key]['Gross Proceeds']);
+                        temp2.netProceeds = parseFloat(this.tradesData[key]['Net Proceeds']);
+                        temp2.clrBroker = this.tradesData[key]['Clr Broker'];
+                        temp2.liq = this.tradesData[key].Liq;
+                        temp2.note = this.tradesData[key].Note;
+                        temp2.trade = null;
+
+                        this.tempExecutions.push(temp2);
+
+                        if (!this.tradedSymbols.includes(temp2.symbol)) {
+                            this.tradedSymbols.push(temp2.symbol)
+                        }
+                        if (this.tradedStartDate == null) {
+                            //console.log("td type " + typeof + temp2.td)
+                            this.tradedStartDate = temp2.td
+                        } else if (temp2.td < this.tradedStartDate) {
+                            this.tradedStartDate = temp2.td
+                        }
+                        console.log(" -> Trade start date " + this.tradedStartDate)
+                            //console.log("temp " + JSON.stringify(temp))
+                        console.log(" -> Created temp executions");
+                    } catch (error) {
+                        console.log("  --> ERROR " + error)
+                        reject(error)
                     }
-                    temp2.commission = parseFloat(this.tradesData[key].Comm);
-                    temp2.sec = parseFloat(this.tradesData[key].SEC);
-                    temp2.taf = parseFloat(this.tradesData[key].TAF);
-                    temp2.nscc = parseFloat(this.tradesData[key].NSCC);
-                    temp2.nasdaq = parseFloat(this.tradesData[key].Nasdaq);
-                    temp2.ecnRemove = parseFloat(this.tradesData[key]['ECN Remove']);
-                    temp2.ecnAdd = parseFloat(this.tradesData[key]['ECN Add']);
-                    temp2.grossProceeds = parseFloat(this.tradesData[key]['Gross Proceeds']);
-                    temp2.netProceeds = parseFloat(this.tradesData[key]['Net Proceeds']);
-                    temp2.clrBroker = this.tradesData[key]['Clr Broker'];
-                    temp2.liq = this.tradesData[key].Liq;
-                    temp2.note = this.tradesData[key].Note;
-                    temp2.trade = null;
-
-                    this.tempExecutions.push(temp2);
-
-                    if (!this.tradedSymbols.includes(temp2.symbol)) {
-                        this.tradedSymbols.push(temp2.symbol)
-                    }
-                    if (this.tradedStartDate == null) {
-                        console.log("td type " + typeof + temp2.td)
-                        this.tradedStartDate = temp2.td
-                    } else if (temp2.td < this.tradedStartDate) {
-                        this.tradedStartDate = temp2.td
-                    }
-                    console.log(" -> Trade start date " + this.tradedStartDate)
                 }
-                //console.log("temp " + JSON.stringify(temp))
-                console.log(" -> Created temp executions");
                 resolve()
             })
         },
@@ -455,10 +462,10 @@ const addTradesMixin = {
                     var netLossCount = 0
                     var tradesCount = 0
                     let temp7 = {}
-                    
+
                     let initEntryTime
                     let initEntryPrice
-                    
+
                     for (const tempExec of tempExecs) {
                         //console.log("tempExec " + JSON.stringify(tempExec));
                         //console.log("doing key "+key2)
@@ -763,9 +770,9 @@ const addTradesMixin = {
                                     let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
 
                                     //console.log(" -> End of day time " + endOfDayTime)
-                                    
+
                                     let tempMfe = {}
-                                    //check is same timeframe
+                                        //check is same timeframe
                                     if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
                                         console.log("   ---> Trade is in same 1mn timeframe")
 
@@ -883,15 +890,15 @@ const addTradesMixin = {
             return new Promise(async(resolve, reject) => {
                 console.log("  --> Updating excursion DB with MFE price")
                 this.loadingSpinnerText = "Updating MFE prices in excursions"
-                console.log(" MFE Prices "+JSON.stringify(this.mfePrices))
+                console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
                 this.mfePrices.forEach(element => {
-                    console.log(" element "+element)
+                    console.log(" element " + element)
                     const Object = Parse.Object.extend("excursions");
                     const object = new Object();
                     object.set("user", Parse.User.current())
                     object.set("mfePrice", element.mfePrice)
                     object.set("dateUnix", element.dateUnix)
-                    object.set("tradeId",element.tradeId)
+                    object.set("tradeId", element.tradeId)
                     object.setACL(new Parse.ACL(Parse.User.current()));
                     object.save()
                         .then(async(object) => {
