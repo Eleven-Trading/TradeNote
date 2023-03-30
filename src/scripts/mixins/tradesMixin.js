@@ -1,28 +1,19 @@
 const tradesMixin = {
     methods: {
-        inputAccounts() {
-            this.dashboardChartsMounted = false
-            this.eCharts("clear")
-            this.getAllTrades(true)
-        },
         //Date : periode
         inputDateRange(param) {
-            this.dashboardChartsMounted = false
-            this.spinnerSetupsUpdate = true
-            this.eCharts("clear")
+            //Filter to find the value of date range
+            var filterJson = this.periodRange.filter(element => element.value == param)[0]
+            this.selectedPeriodRange = filterJson
+                //console.log(" -> Input range: Selected Date Range "+JSON.stringify(this.selectedPeriodRange))
 
-            var filterJson = this.dateRange.filter(element => element.value == param)[0]
-            this.selectedDateRange = filterJson
-
-            /*Now we update selectedDateRangeCal*/
+            //Created selected Date range calendar mode
             let temp = {}
-            temp.start = this.selectedDateRange.start
-            temp.end = this.selectedDateRange.end
-            this.selectedDateRangeCal = temp
-                //console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
-            localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedDateRangeCal))
+            temp.start = this.selectedPeriodRange.start
+            temp.end = this.selectedPeriodRange.end
+            this.selectedDateRange = temp
+                //console.log(" -> Input range : Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
-            this.getAllTrades(true)
         },
 
         //Date : calendar
@@ -36,87 +27,126 @@ const tradesMixin = {
                 dateUnix = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix()
             }
 
-            let dateLocalStorage = JSON.parse(localStorage.getItem('selectedDateRangeCal'))
-
-            const refresh = () => {
-                this.dashboardChartsMounted = false
-                this.spinnerSetupsUpdate = true
-                this.eCharts("clear")
-                localStorage.setItem('selectedDateRangeCal', JSON.stringify(dateLocalStorage))
-                this.getAllTrades(true)
-            }
+            let dateLocalStorage = JSON.parse(localStorage.getItem('selectedDateRange'))
 
             /* Check if start date before end date and vice versa */
             if (dateLocalStorage && param1 == "start" && dateLocalStorage.end > dateUnix) {
                 dateLocalStorage.start = dateUnix
-                this.selectedDateRangeCal = dateLocalStorage
-                console.log("selectedDateRangeCal " + JSON.stringify(this.selectedDateRangeCal))
-                refresh()
+                this.selectedDateRange = dateLocalStorage
+                    //console.log("selectedDateRange " + JSON.stringify(this.selectedDateRange))
+
             }
 
             if (dateLocalStorage && param1 == "end" && dateLocalStorage.start < dateUnix) {
                 dateLocalStorage.end = dateUnix
-                this.selectedDateRangeCal = dateLocalStorage
-                refresh()
+                this.selectedDateRange = dateLocalStorage
             }
 
-            /* Update selectedDateRange */
-            let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
+            /* Update selectedPeriodRange */
+            let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
             if (tempFilter.length > 0) {
-                this.selectedDateRange = tempFilter[0]
+                this.selectedPeriodRange = tempFilter[0]
             } else {
                 console.log(" -> Custom range in trades mixin")
-                this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
+                this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
             }
         },
 
-        inputPositions() {
-            if (this.currentPage.id == "dashboard") {
-                this.dashboardChartsMounted = false
-                this.spinnerSetupsUpdate = true
-                this.eCharts("clear")
-            }
+        inputMonth(param1) {
+            //console.log(" param1 " + param1)
+            let temp = {}
+            temp.start = dayjs.tz(param1, this.tradeTimeZone).unix()
+            temp.end = dayjs.tz(param1, this.tradeTimeZone).endOf("month").unix()
+            this.selectedMonth = temp
+                //console.log(" -> Selected Month "+JSON.stringify(this.selectedMonth))
+        },
+
+        //Calendar : last or next month arrows
+        monthLastNext(param) {
+            this.selectedMonth.start = dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
+                /* reuse just created .start because we only show one month at a time */
+            this.selectedMonth.end = dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).endOf('month').unix()
+                //console.log("this.selectedMonth.start " + this.selectedMonth.start+" this.selectedMonth.end " + this.selectedMonth.end)
+            localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
             this.getAllTrades(true)
         },
 
-        //daily, weekly, monthly
-        inputTimeFrame(param) {
-            this.selectedTimeFrame = param
-            localStorage.setItem('selectedTimeFrame', this.selectedTimeFrame)
-            console.log(" -> Building charts")
-            this.lineChart("lineChart1")
-            this.lineBarChart("lineBarChart1")
-            this.barChart("barChart1")
-            this.barChart("barChart2")
+        filtersClick() {
+            this.filtersOpen = !this.filtersOpen
+                //console.log(" -> Filters click: Selected Period Range " + JSON.stringify(this.selectedPeriodRange))
+                //console.log(" -> Filters click: Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
+
+            if (!this.filtersOpen) { //It's like clicking cancel of not saving so we remove data / go back to old data 
+
+                /* Restore Selected Date range cal */
+                this.selectedDateRange = JSON.parse(localStorage.getItem('selectedDateRange'))
+                    //console.log(" -> Filters click (close): Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
+
+                /* Restore Selected Period range */
+                var filterJson = this.periodRange.filter(element => element.start == this.selectedDateRange.start)[0]
+                    //console.log(" filter json "+JSON.stringify(filterJson))
+                if (filterJson != undefined) {
+                    this.selectedPeriodRange = filterJson
+                } else {
+                    console.log(" -> Custom range in trades mixin")
+                    this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
+                }
+                //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(this.selectedPeriodRange))
+
+                /* Restore temp selected accounts */
+                this.selectedAccounts = localStorage.getItem('selectedAccounts').split(",")
+                    //console.log(" Selected accounts " + this.selectedAccounts)
+
+                /* Restore gross net */
+                this.selectedGrossNet = localStorage.getItem('selectedGrossNet')
+                    //console.log(" Selected accounts " + this.selectedAccounts)
+
+                /* Restore temp selected accounts */
+                this.selectedPositions = localStorage.getItem('selectedPositions').split(",")
+                    //console.log(" Selected positions " + this.selectedPositions)
+
+                this.selectedTimeFrame = localStorage.getItem('selectedTimeFrame')
+                    //console.log(" Selected timeframe " + this.selectedTimeFrame)
+
+                this.selectedRatio = localStorage.getItem('selectedRatio')
+                    //console.log(" Selected ratio " + this.selectedRatio)
+
+                this.selectedMonth = JSON.parse(localStorage.getItem('selectedMonth'))
+                    //console.log(" Selected Month " + JSON.stringify(this.selectedMonth))
+            }
         },
 
-        inputRatio(param) {
-            this.selectedRatio = param
-            localStorage.setItem('selectedRatio', param)
-            if (param = !"profitRatio") {
-                this.eCharts("barChart")
-            }
-            this.eCharts("barChartNegative")
+        saveFilter() {
 
-        },
+            //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
-        inputGrossNet(param) {
-            if (this.currentPage.id == "dashboard") {
-                this.dashboardChartsMounted = false
-                this.spinnerSetupsUpdate = true
-                this.eCharts("clear")
-            }
+            localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
 
-            this.selectedGrossNet = param
+            localStorage.setItem('selectedAccounts', this.selectedAccounts)
+
             localStorage.setItem('selectedGrossNet', this.selectedGrossNet)
-            this.amountCase = param
-            this.amountCapital = param.charAt(0).toUpperCase() + param.slice(1)
+            this.amountCase = this.selectedGrossNet
+            this.amountCapital = this.selectedGrossNet.charAt(0).toUpperCase() + this.selectedGrossNet.slice(1)
+
+            localStorage.setItem('selectedPositions', this.selectedPositions)
+
+            localStorage.setItem('selectedTimeFrame', this.selectedTimeFrame)
+
+            localStorage.setItem('selectedRatio', this.selectedRatio)
+
+            if (this.currentPage.id == "daily") {
+                localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
+            }
+
             this.getAllTrades(true)
         },
 
-        getAllTrades: async function(param) {
+        getAllTrades: async function(param, param2) {
             console.log("\nGETTING TRADES")
-                //console.log("this.selectedDateRange "+this.selectedDateRange)
+                //console.log("this.selectedPeriodRange "+this.selectedPeriodRange)
+            if (this.currentPage.id == "dashboard") {
+                this.eCharts("clear")
+            }
             this.dashboardChartsMounted = false
             this.spinnerSetupsUpdate = true
             this.dashboardIdMounted = false
@@ -129,18 +159,18 @@ const tradesMixin = {
 
                 /*============= 1- Get selected date range =============*/
 
-                if (!localStorage.getItem('selectedCalRange')) {
-                    localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
+                if (!localStorage.getItem('selectedMonth')) {
+                    localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
                 }
 
-                if (!localStorage.getItem('selectedDateRangeCal')) {
-                    localStorage.setItem('selectedDateRangeCal', JSON.stringify(this.selectedCalRange))
+                if (!localStorage.getItem('selectedDateRange')) {
+                    localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedMonth))
                 }
 
                 if (this.currentPage.id == "dashboard") {
-                    selectedRange = this.selectedDateRangeCal
+                    selectedRange = this.selectedDateRange
                 } else {
-                    selectedRange = this.selectedCalRange
+                    selectedRange = this.selectedMonth
                 }
 
 
@@ -264,13 +294,14 @@ const tradesMixin = {
                     //console.log("Range (Date or Call) start " + selectedRange.start + " Range (Date or Call) end " + selectedRange.end)
 
                 this.filteredTrades = []
+                this.filteredTradesTrades = []
                 let loopTrades = (param1) => {
                     param1.forEach(element => {
-                        let temp = _.omit(element, ["trades"])
+                        let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                         temp.trades = []
                         element.trades.forEach(element => {
                             //console.log(" element "+JSON.stringify(element))
-                            /* Here we do not .tz because it's done at source, in dateRange variable (vue.js) */
+                            /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
 
                             /* For specific pages, we only show per month, so we limit end date */
                             if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
@@ -280,6 +311,8 @@ const tradesMixin = {
                             /* We use if here but then conditional inside to check all possibilities */
                             if ((selectedRange.start === 0 && selectedRange.end === 0 ? element.entryTime >= selectedRange.start : element.entryTime >= selectedRange.start && element.entryTime < selectedRange.end) && this.selectedPositions.includes(element.strategy) /*(this.selectedPosition != "all" ? element.strategy == this.selectedPosition : element.strategy)*/ && /*(this.selectedAccount != "all" ? element.account == this.selectedAccount : element.account)*/ this.selectedAccounts.includes(element.account)) {
                                 temp.trades.push(element)
+                                this.filteredTradesTrades.push(element)
+                                    //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
                             }
                         });
                         /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
@@ -289,6 +322,9 @@ const tradesMixin = {
                     });
                 }
 
+                this.filteredTrades.sort(function(a, b) {
+                    return b.dateUnix - a.dateUnix
+                })
                 /* If all dates selected, we use allTrades */
                 if (selectedRange.start == 0 && selectedRange.end == 0) {
                     loopTrades(this.allTrades)
@@ -305,6 +341,18 @@ const tradesMixin = {
                         loopTrades(this.allTrades)
                     }
                 }
+                //console.log(" -> Filtered trades of trades "+JSON.stringify(this.filteredTradesTrades))
+                await this.createBlotter(param)
+                await this.createPnL()
+                    //console.log(" Blotter "+JSON.stringify(this.blotter))
+                    //console.log(" P and L "+JSON.stringify(this.pAndL))
+                keys = Object.keys(this.pAndL)
+                for (const key of keys) {
+                    let index = this.filteredTrades.findIndex(obj => obj.dateUnix == key)
+                    this.filteredTrades[index].pAndL = this.pAndL[key]
+                    this.filteredTrades[index].blotter = this.blotter[key]
+                }
+                //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
             }
 
             /*============= 5 - Render data, charts, totals =============*/
@@ -332,8 +380,50 @@ const tradesMixin = {
                 /*In dashboard, filter is dependant on the filter input on top of page
                  * In daily, filter is dependant on the calendar -> charts are loaded after and inside calendar in this case
                  */
-                this.loadCalendar(undefined, selectedRange)
+                await (this.spinnerSetupsUpdate = false)
+                //Rendering double line chart
+                //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
+                await this.filteredTrades.forEach(el => {
+                    //console.log(" date "+el.dateUnix)
+                    var chartId = 'doubleLineChart' + el.dateUnix
+                    var chartDataGross = []
+                    var chartDataNet = []
+                    var chartCategories = []
+                    el.trades.forEach(element => {
+                        var proceeds = Number((element.grossProceeds).toFixed(2))
+                            //console.log("proceeds "+proceeds)
+                        var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
+                        if (chartDataGross.length == 0) {
+                            chartDataGross.push(proceeds)
+                        } else {
+                            chartDataGross.push(chartDataGross.slice(-1).pop() + proceeds)
+                        }
 
+                        if (chartDataNet.length == 0) {
+                            chartDataNet.push(proceedsNet)
+                        } else {
+                            chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
+                        }
+                        chartCategories.push(this.hourMinuteFormat(element.exitTime))
+                            //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
+                        this.doubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
+                    });
+                })
+
+                //Rendering pie chart
+                await this.filteredTrades.forEach(el => {
+                    var chartId = "pieChart" + el.dateUnix
+                    var probWins = (el.pAndL[this.amountCase + 'WinsCount'] / el.pAndL.trades)
+                    var probLoss = (el.pAndL[this.amountCase + 'LossCount'] / el.pAndL.trades)
+                        //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
+                        //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
+                        //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
+                    this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
+                })
+
+                this.loadCalendar(undefined, selectedRange)
+                await (this.renderingCharts = false)
+                await (this.spinnerSetupsUpdate = false)
             }
 
 
@@ -1334,14 +1424,14 @@ const tradesMixin = {
             console.log("\nCALCULATING PROFIT ANALYSIS")
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting MFE Prices")
-                    //console.log(" -> Start " + this.dateCalFormat(this.selectedDateRangeCal.start) + " and end " + this.dateCalFormat(this.selectedDateRangeCal.end))
+                    //console.log(" -> Start " + this.dateCalFormat(this.selectedDateRange.start) + " and end " + this.dateCalFormat(this.selectedDateRange.end))
                 const Object = Parse.Object.extend("excursions");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current())
-                query.greaterThanOrEqualTo("dateUnix", this.selectedDateRangeCal.start)
-                query.lessThanOrEqualTo("dateUnix", this.selectedDateRangeCal.end)
+                query.greaterThanOrEqualTo("dateUnix", this.selectedDateRange.start)
+                query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.ascending("order");
-                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(1000000); // limit to at most 10 results
                 this.mfePricesArray = []
                 this.profitAnalysis = {}
@@ -1477,10 +1567,10 @@ const tradesMixin = {
                 const Object = Parse.Object.extend("satisfactions");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current())
-                query.greaterThanOrEqualTo("dateUnix", this.selectedDateRangeCal.start)
-                query.lessThanOrEqualTo("dateUnix", this.selectedDateRangeCal.end)
+                query.greaterThanOrEqualTo("dateUnix", this.selectedDateRange.start)
+                query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.ascending("order");
-                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(1000000); // limit to at most 10 results
                 this.mfePricesArray = []
                 const results = await query.find();

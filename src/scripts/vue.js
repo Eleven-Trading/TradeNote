@@ -458,6 +458,7 @@ const vueApp = new Vue({
             allTrades: [],
             threeMonthsTrades: [],
             filteredTrades: [],
+            filteredTradesTrades: [],
             dashboardChartsMounted: false,
             dashboardIdMounted: false,
             totalCalendarMounted: false,
@@ -506,7 +507,7 @@ const vueApp = new Vue({
 
             //Filter
             filtersOpen: false,
-            dateRange: [{
+            periodRange: [{
                     value: "all",
                     label: "All",
                     start: 0,
@@ -603,9 +604,9 @@ const vueApp = new Vue({
                     end: -1
                 },
             ],
+            selectedPeriodRange: {},
             selectedDateRange: {},
-            selectedDateRangeCal: {},
-            selectedCalRange: {},
+            selectedMonth: {},
             positions: [{
                     value: "long",
                     label: "Long"
@@ -649,10 +650,10 @@ const vueApp = new Vue({
                     value: "net",
                     label: "Net"
                 },
-                {
+                /*{
                     value: "netFees",
                     label: "Net Fees"
-                }
+                }*/
             ],
             selectedPosition: localStorage.getItem('selectedPosition'),
             selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long", "short"] : [],
@@ -660,6 +661,7 @@ const vueApp = new Vue({
             selectedRatio: localStorage.getItem('selectedRatio'),
             selectedAccount: localStorage.getItem('selectedAccount'),
             selectedAccounts: localStorage.getItem('selectedAccounts') ? localStorage.getItem('selectedAccounts').split(",") : [],
+            tempSelectedAccounts: [],
             selectedGrossNet: localStorage.getItem('selectedGrossNet'),
             renderData: 0, //this is for updating DOM
             renderData0: 0,
@@ -836,30 +838,31 @@ const vueApp = new Vue({
                 this.firstTimeSelectedAccounts = true
             }
         }
+        this.tempSelectedAccounts = this.selectedAccounts
 
         this.cssTheme == "dark" ? this.cssColor87 = "rgba(255, 255, 255, 0.87)" : this.cssColor = "#333333"
         this.cssTheme == "dark" ? this.cssColor60 = "rgba(255, 255, 255, 0.60)" : this.cssColor = "#333333"
         this.cssTheme == "dark" ? this.cssColor38 = "rgba(255, 255, 255, 0.38)" : this.cssColor = "#333333"
             //we create the selectedDate and Calendar range
-            /*this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : this.dateRange.filter(element => element.value == 'thisMonth')[0]*/
+            /*this.selectedPeriodRange = localStorage.getItem('selectedPeriodRange') ? JSON.parse(localStorage.getItem('selectedPeriodRange')) : this.periodRange.filter(element => element.value == 'thisMonth')[0]*/
 
-        this.selectedDateRangeCal = localStorage.getItem('selectedDateRangeCal') ? JSON.parse(localStorage.getItem('selectedDateRangeCal')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
-        //console.log(" -> Selected date range cal "+JSON.stringify(this.selectedDateRangeCal))
-        /* we set the initial selectedDateRange based on selectedDateRangeCal */
-        if (this.selectedDateRangeCal) {
+        this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : { start: this.periodRange.filter(element => element.value == 'thisMonth')[0].start, end: this.periodRange.filter(element => element.value == 'thisMonth')[0].end }
+        //console.log(" -> Selected date range cal "+JSON.stringify(this.selectedDateRange))
+        /* we set the initial selectedPeriodRange based on selectedDateRange */
+        if (this.selectedDateRange) {
             //console.log(" -> Filtering date range")
-            let tempFilter = this.dateRange.filter(element => element.start == this.selectedDateRangeCal.start && element.end == this.selectedDateRangeCal.end)
+            let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
             if (tempFilter.length > 0) {
-                this.selectedDateRange = tempFilter[0]
+                this.selectedPeriodRange = tempFilter[0]
             } else {
                 console.log(" -> Custom range in vue")
-                this.selectedDateRange = this.dateRange.filter(element => element.start == -1)[0]
+                this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
             }
         }
-        //console.log(" -> Selected date range "+JSON.stringify(this.selectedDateRange))
+        //console.log(" -> Selected date range "+JSON.stringify(this.selectedPeriodRange))
 
-        this.selectedCalRange = localStorage.getItem('selectedCalRange') ? JSON.parse(localStorage.getItem('selectedCalRange')) : { start: this.dateRange.filter(element => element.value == 'thisMonth')[0].start, end: this.dateRange.filter(element => element.value == 'thisMonth')[0].end }
-        //console.log(" -> Selected cal range "+JSON.stringify(this.selectedCalRange))
+        this.selectedMonth = localStorage.getItem('selectedMonth') ? JSON.parse(localStorage.getItem('selectedMonth')) : { start: this.periodRange.filter(element => element.value == 'thisMonth')[0].start, end: this.periodRange.filter(element => element.value == 'thisMonth')[0].end }
+        //console.log(" -> Selected cal range "+JSON.stringify(this.selectedMonth))
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         //this.currentPage = document.getElementsByTagName("main")[0].id
@@ -1018,23 +1021,23 @@ const vueApp = new Vue({
             //console.log("watch finviz "+this.includeFinancials)
         },
 
-        selectedAccounts: function() {
+        /*selectedAccounts: function() {
+            console.log(" watch selected accounts "+this.selectedAccounts)
             if (this.firstTimeSelectedAccounts) { // Do not fire the first time 
                 this.firstTimeSelectedAccounts = !this.firstTimeSelectedAccounts
             } else {
                 //console.log("selectedAccounts " + this.selectedAccounts + " type " + typeof(JSON.stringify(this.selectedAccounts)))
-                localStorage.setItem('selectedAccounts', this.selectedAccounts)
                 this.inputAccounts()
                     //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
             }
 
-        },
+        },*/
 
-        selectedPositions: function() {
+        /*selectedPositions: function() {
             localStorage.setItem('selectedPositions', this.selectedPositions)
             this.inputPositions()
                 //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
-        },
+        },*/
 
     },
     methods: {

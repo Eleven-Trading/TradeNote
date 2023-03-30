@@ -58,8 +58,8 @@ const journalslMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
-                //query.greaterThanOrEqualTo("dateUnix", this.selectedDateRange.start)
-                    //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.greaterThanOrEqualTo("dateUnix", this.selectedPeriodRange.start)
+                    //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(param ? param : 10000); // limit to at most 10 results
                 this.journals = []
                 const results = await query.find();

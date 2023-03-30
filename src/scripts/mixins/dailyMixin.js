@@ -52,7 +52,7 @@ const dailyMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
-                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(1000000); // limit to at most 10 results
                 this.patterns = []
                 const results = await query.find();
@@ -69,7 +69,7 @@ const dailyMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
-                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(1000000); // limit to at most 10 results
                 this.mistakes = []
                 const results = await query.find();
@@ -111,7 +111,7 @@ const dailyMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
-                //query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
                 query.limit(1000000); // limit to at most 10 results
                 this.excursions = []
                 const results = await query.find();
@@ -791,8 +791,8 @@ const dailyMixin = {
             return new Promise(async(resolve, reject) => {
                 await (this.spinnerSetupsUpdate = true)
                 await (this.spinnerSetupsUpdateText = "Updating trades in IndexedDB")
-                //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedCalRange.start "+this.selectedCalRange.start)
-                if (this.threeMonthsBack <= this.selectedCalRange.start) {
+                //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedMonth.start "+this.selectedMonth.start)
+                if (this.threeMonthsBack <= this.selectedMonth.start) {
                     console.log("3 months")
                     await this.getTradesFromDb(6)
                 } else {

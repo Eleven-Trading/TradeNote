@@ -874,7 +874,7 @@ const addTradesMixin = {
 
                 }
 
-                //console.log("temp2 "+JSON.stringify(temp2))
+                console.log("temp2 "+JSON.stringify(temp2))
                 var c = _
                     .chain(temp2)
                     .orderBy(["entryTime"], ["asc"])
@@ -949,23 +949,37 @@ const addTradesMixin = {
             })
         },
 
-        createBlotter: async function() {
+        createBlotter: async function(param) {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING BLOTTER BY SYMBOL")
                 this.loadingSpinnerText = "Creating blotter"
                     //based on trades
-                objectZ = this.trades
+                let objectZ
+                if (param) {
+                    console.log("param "+param)
+                    let temp = _
+                    .chain(this.filteredTradesTrades)
+                    .orderBy(["entryTime"], ["asc"])
+                    .groupBy("td")
+                    objectZ =  JSON.parse(JSON.stringify(temp))
+                    //console.log(" temp "+JSON.stringify(temp))
+                } else {
+                    objectZ = this.trades
+                    //console.log(" this trades "+JSON.stringify(this.trades))
+                }
+
                 const keys9 = Object.keys(objectZ);
                 var temp10 = {}
                 for (const key9 of keys9) {
                     temp10[key9] = {}
                     var tempExecs = objectZ[key9]
-                        //console.log("tempExecs9 " + JSON.stringify(tempExecs));
+                    //console.log("tempExecs9 " + JSON.stringify(tempExecs));
                     var z = _
                         .chain(tempExecs)
                         .orderBy(["entryTime"], ["asc"])
-                        .groupBy("symbol");
+                        .groupBy("symbol")
                     let objectY = JSON.parse(JSON.stringify(z))
+                    //console.log("objectY "+JSON.stringify(objectY))
                     const keys10 = Object.keys(objectY);
                     for (const key10 of keys10) {
                         //console.log("key 10 " + key10)

@@ -2,17 +2,19 @@
 <div id="step10" class="col-12 mb-3">
     <div class="dailyCard">
         <div>
-            <span v-if="!filtersOpen" v-on:click="filtersOpen = !filtersOpen" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
-            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3">{{selectedDateRange.label}} | <span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span><span v-else>Accounts: {{selectedAccounts.toString()}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
-            <span v-else v-on:click="filtersOpen = !filtersOpen" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
+            <span v-if="!filtersOpen" v-on:click="filtersClick" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
+            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3"><span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span>
+                <span v-else>Accounts: {{selectedAccounts.toString()}}</span><span v-show="currentPage.id == 'dashboard'">| {{selectedPeriodRange.label}}</span><span v-show="currentPage.id == 'daily'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span><span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span></span>
+            <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
             </span>
         </div>
+        
+        
         <div v-show="filtersOpen" class="row text-center align-items-center">
-            
             <!-- Date : periode -->
             <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'dashboard'">
                 <select v-on:input="inputDateRange($event.target.value)" class="form-select">
-                    <option v-for="item in dateRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedDateRange.value">{{item.label}}</option>
+                    <option v-for="item in periodRange" v-bind:value="item.value" v-bind:selected="item.value ==  selectedPeriodRange.value">{{item.label}}</option>
                 </select>
             </div>
 
@@ -20,18 +22,20 @@
             <div class="col-12 col-lg-8 mt-1 mt-lg-0 mb-1" v-show="currentPage.id == 'dashboard'">
                 <div class="row">
                     <div class="col-5">
-                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRangeCal.start)" v-bind:selected="selectedDateRangeCal.start" v-on:input="inputDateRangeCal('start', $event.target.value)"/>
+                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRange.start)" v-bind:selected="selectedDateRange.start" v-on:input="inputDateRangeCal('start', $event.target.value)"/>
                     </div>
-                    <div class="col-2"><i class="uil uil-angle-right-b"></i></div>
+                    <div class="col-2">
+                        <i class="uil uil-angle-right-b"></i>
+                    </div>
                     <div class="col-5">
-                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRangeCal.end)" v-bind:selected="selectedDateRangeCal.end" v-on:input="inputDateRangeCal('end', $event.target.value)">
+                        <input type="date" class="form-control" v-bind:value="dateCalFormat(selectedDateRange.end)" v-bind:selected="selectedDateRange.end" v-on:input="inputDateRangeCal('end', $event.target.value)">
                         <div class="row"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Accounts -->
-            <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id == 'dashboard'">
+            <div class="col-6 col-lg-4 dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Accounts <span class="dashInfoTitle">({{selectedAccounts.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in currentUser.accounts" class="form-check">
@@ -41,15 +45,20 @@
                 </ul>
             </div>
 
+            <!-- Month -->
+            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'daily'">
+                <input type="month" class="form-control" v-bind:value="dateCalFormatMonth(selectedMonth.start)" v-bind:selected="selectedMonth.start"  v-on:input="inputMonth($event.target.value)">
+            </div>
+
             <!-- Gross/Net -->
             <div class="col-6 col-lg-2">
-                <select v-on:input="inputGrossNet($event.target.value)" class="form-select">
+                <select v-on:input="selectedGrossNet = $event.target.value" class="form-select">
                     <option v-for="item in grossNet" v-bind:value="item.value" v-bind:selected="item.value ==  selectedGrossNet">{{item.label}}</option>
                 </select>
             </div>
 
             <!-- Positions -->
-            <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id == 'dashboard'">
+            <div class="col-6 col-lg-2 dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in positions" class="form-check">
@@ -61,18 +70,20 @@
 
             <!-- Timeframe -->
             <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="currentPage.id == 'dashboard'">
-                <select v-on:input="inputTimeFrame($event.target.value)" class="form-select">
+                <select v-on:input="selectedTimeFrame = $event.target.value" class="form-select">
                     <option v-for="item in timeFrames" v-bind:value="item.value" v-bind:selected="item.value ==  selectedTimeFrame">{{item.label}}</option>
                 </select>
             </div>
 
+            <!-- Ratio -->
             <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="currentPage.id == 'dashboard'">
-                <select v-on:input="inputRatio($event.target.value)" class="form-select">
+                <select v-on:input="selectedRatio = $event.target.value" class="form-select">
                     <option v-for="item in ratios" v-bind:value="item.value" v-bind:selected="item.value ==  selectedRatio">{{item.label}}</option>
                 </select>
             </div>
-            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'daily'">
-                 <input type="month" class="form-control" v-bind:value="dateCalFormatMonth(selectedCalRange.start)" v-on:input="loadCalendar('filter', $event.target.value)">
+
+            <div class="col-12 text-center">
+                <button class="btn btn-success btn-sm mt-2" v-on:click="saveFilter">Filter</button>
             </div>
         </div>
     </div>

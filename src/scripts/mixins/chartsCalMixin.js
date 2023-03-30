@@ -8,42 +8,6 @@ const chartsCalMixin = {
             this.miniCalendarsData = []
             this.calendarMonths = []
 
-            if (this.currentPage.id == "daily" ||  this.currentPage.id == 'calendar') {
-                calCumulatedParam = parseInt(localStorage.getItem('calCumulatedParamDaily'))
-            }
-            if (this.currentPage.id == "videos") {
-                calCumulatedParam = parseInt(localStorage.getItem('calCumulatedParamVideos'))
-            }
-
-            /* ---- 1: GET CALENDAR DATES ---- */
-            console.log(" -> Getting calendar dates")
-            await new Promise((resolve, reject) => {
-
-                if (param == undefined) {
-                    param = 0
-                }
-
-                if (param == "filter") {
-                    let temp = {}
-                    temp.start = dayjs.tz(param2, this.tradeTimeZone).unix()
-                    temp.end = dayjs.tz(param2, this.tradeTimeZone).endOf("month").unix()
-                    this.selectedCalRange = temp
-                    console.log("selectedCalRange " + JSON.stringify(this.selectedCalRange))
-                    localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
-                } else {
-                    /* contrary to filtered trades in tradesMixin, here we need to .tz because we are recreating date */
-
-                    this.selectedCalRange.start = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
-                        /* reuse just created .start because we only show one month at a time */
-                    this.selectedCalRange.end = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).endOf('month').unix()
-                        //console.log("this.selectedCalRange.start " + this.selectedCalRange.start+" this.selectedCalRange.end " + this.selectedCalRange.end)
-                    localStorage.setItem('selectedCalRange', JSON.stringify(this.selectedCalRange))
-                }
-                resolve()
-
-            })
-
-            /* ---- 2: CREATE CALENDAR ---- */
             console.log(" -> Creating calendar dates")
             const createCalendar = async(param1, param2) => {
                 //console.log("param 1 "+param1)
@@ -57,7 +21,7 @@ const chartsCalMixin = {
                     let year = dayjs.unix(param1).get('year')
                     let calTrade
 
-                    if (this.threeMonthsBack <= param1) {
+                    /*if (this.threeMonthsBack <= param1) {
                         if (this.threeMonthsTrades.length > 0) {
                             console.log(" -> Getting existing variable")
                             calTrade = this.threeMonthsTrades
@@ -80,8 +44,8 @@ const chartsCalMixin = {
                             }
                             calTrade = this.allTrades
                         }
-                    }
-
+                    }*/
+                    
                     calendarizeData.forEach((element, index) => {
                         //console.log("element "+element)
                         calendarJson[index] = []
@@ -101,7 +65,7 @@ const chartsCalMixin = {
                             //Using allTrades and not filteredTrades because we do not want calendar to be filtered
                             //console.log("selectedRange "+param1.start)
 
-                            let trade = calTrade.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
+                            let trade = this.filteredTrades.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
 
                             if (trade.length && element2 != 0) { //Check also if not null because day in date cannot be 0
                                 tempData.pAndL = trade[0].pAndL
@@ -114,7 +78,7 @@ const chartsCalMixin = {
                         })
 
                     })
-                    if (param1 == this.selectedCalRange.start) {
+                    if (param1 == this.selectedMonth.start) {
                         this.calendarData = calendarJson
                             //console.log("calendarData "+JSON.stringify(this.calendarData))
                     } else {
@@ -124,103 +88,25 @@ const chartsCalMixin = {
                 })
             }
 
-            let currentMonthNumber = dayjs(this.selectedCalRange.start * 1000).month()
+            console.log(" -> Creating calendar")
+            let currentMonthNumber = dayjs(this.selectedMonth.start * 1000).month()
             let i = 0
             if (this.currentPage.id == 'calendar') {
                 while (i <= currentMonthNumber) {
-                    let tempUnix = dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(i, 'month').startOf('month').unix()
+                    let tempUnix = dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).subtract(i, 'month').startOf('month').unix()
                         //this.calendarMonths.push(this.monthFormat(tempUnix))
                     await createCalendar(tempUnix)
                     i++
                 }
             } else {
-                await createCalendar(this.selectedCalRange.start)
+                await createCalendar(this.selectedMonth.start)
             }
-            /*await createCalendar("full", this.selectedCalRange.start)
-            await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(1, 'month').startOf('month').unix())
-            await createCalendar("mini", dayjs.tz(this.selectedCalRange.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
+            /*await createCalendar("full", this.selectedMonth.start)
+            await createCalendar("mini", dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).subtract(1, 'month').startOf('month').unix())
+            await createCalendar("mini", dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
             this.totalCalendarMounted = true
                 //console.log("calendarData "+JSON.stringify(this.calendarData))
                 //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
-
-
-
-            /* ---- 3: GET TRADES AND LOAD CHARTS ---- */
-
-            //In dashboard, filter is dependant on the filter input on top of page
-            //In daily, filter is dependant on the calendar
-
-            //await 1 : create filtered trades
-            await new Promise((resolve, reject) => {
-                //console.log("all " + JSON.stringify(this.allTrades))
-                if (param != 0) {
-                    console.log("start " + this.selectedCalRange.start)
-                    if (this.threeMonthsBack <= this.selectedCalRange.start) {
-                        this.filteredTrades = this.threeMonthsTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
-                    } else {
-                        this.filteredTrades = this.allTrades.filter(f => f.dateUnix >= this.selectedCalRange.start && f.dateUnix < this.selectedCalRange.end);
-                    }
-
-                }
-                this.filteredTrades.sort(function(a, b) {
-                        return b.dateUnix - a.dateUnix
-                    })
-                    //console.log("filered trades " + JSON.stringify(this.filteredTrades))
-                resolve()
-            })
-            if (this.currentPage.id == "videos") {
-                await this.checkVideo()
-            }
-
-            // If you want await, you then need a promise. Await can only be placed inside async function
-
-            //await 2 : re-render DOM in order to create new charts
-            //await (this.renderData += 1)
-            if (this.currentPage.id == "daily") {
-                await (this.spinnerSetupsUpdate = false)
-                //Rendering double line chart
-                //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
-                await this.filteredTrades.forEach(el => {
-                    //console.log(" date "+el.dateUnix)
-                    var chartId = 'doubleLineChart' + el.dateUnix
-                    var chartDataGross = []
-                    var chartDataNet = []
-                    var chartCategories = []
-                    el.trades.forEach(element => {
-                        var proceeds = Number((element.grossProceeds).toFixed(2))
-                            //console.log("proceeds "+proceeds)
-                        var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
-                        if (chartDataGross.length == 0) {
-                            chartDataGross.push(proceeds)
-                        } else {
-                            chartDataGross.push(chartDataGross.slice(-1).pop() + proceeds)
-                        }
-
-                        if (chartDataNet.length == 0) {
-                            chartDataNet.push(proceedsNet)
-                        } else {
-                            chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
-                        }
-                        chartCategories.push(this.hourMinuteFormat(element.exitTime))
-                            //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
-                        this.doubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
-                    });
-                })
-
-                //Rendering pie chart
-                await this.filteredTrades.forEach(el => {
-                    var chartId = "pieChart" + el.dateUnix
-                    var probWins = (el.pAndL[this.amountCase + 'WinsCount'] / el.pAndL.trades)
-                    var probLoss = (el.pAndL[this.amountCase + 'LossCount'] / el.pAndL.trades)
-                        //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
-                        //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
-                        //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
-                    this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
-                })
-
-            }
-            await (this.renderingCharts = false)
-            await (this.spinnerSetupsUpdate = false)
 
         },
 

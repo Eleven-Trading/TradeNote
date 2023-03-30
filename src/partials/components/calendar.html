@@ -1,13 +1,13 @@
 <div class="col-12">
     <div class="row">
         <div class="col-2">
-            <i class="uil uil-angle-left-b pointerClass" v-on:click="loadCalendar(-1)"></i>
+            <i class="uil uil-angle-left-b pointerClass" v-on:click="monthLastNext(-1)"></i>
         </div>
         <div class="col-8">
-            {{monthFormat(selectedCalRange.start)}}
+            {{monthFormat(selectedMonth.start)}}
         </div>
         <div class="col-2">
-            <i class="uil uil-angle-right-b pointerClass" v-on:click="loadCalendar(+1)"></i>
+            <i class="uil uil-angle-right-b pointerClass" v-on:click="monthLastNext(1)"></i>
         </div>
     </div>
 </div>
