@@ -874,7 +874,7 @@ const addTradesMixin = {
 
                 }
 
-                console.log("temp2 "+JSON.stringify(temp2))
+                //console.log("temp2 "+JSON.stringify(temp2))
                 var c = _
                     .chain(temp2)
                     .orderBy(["entryTime"], ["asc"])

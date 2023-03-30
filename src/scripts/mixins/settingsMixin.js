@@ -111,7 +111,8 @@ const settingsMixin = {
                         this.patternToEdit = null
                     })
                     //console.log("Patterns "+JSON.stringify(this.patterns))
-
+                    localStorage.removeItem("selectedPatterns")
+                    localStorage.removeItem("selectedMistakes")
 
             }
         },

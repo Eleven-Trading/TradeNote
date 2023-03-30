@@ -57,7 +57,7 @@ const dailyMixin = {
                 this.patterns = []
                 const results = await query.find();
                 this.patterns = JSON.parse(JSON.stringify(results))
-                    //console.log(" -> Patterns " + JSON.stringify(this.patterns))
+                //console.log(" -> Patterns " + JSON.stringify(this.patterns))
                 resolve()
             })
         },

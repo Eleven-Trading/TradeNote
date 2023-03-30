@@ -661,7 +661,8 @@ const vueApp = new Vue({
             selectedRatio: localStorage.getItem('selectedRatio'),
             selectedAccount: localStorage.getItem('selectedAccount'),
             selectedAccounts: localStorage.getItem('selectedAccounts') ? localStorage.getItem('selectedAccounts').split(",") : [],
-            tempSelectedAccounts: [],
+            selectedPatterns: localStorage.getItem('selectedPatterns') ? localStorage.getItem('selectedPatterns').split(",") : [],
+            selectedMistakes: localStorage.getItem('selectedMistakes') ? localStorage.getItem('selectedMistakes').split(",") : [],
             selectedGrossNet: localStorage.getItem('selectedGrossNet'),
             renderData: 0, //this is for updating DOM
             renderData0: 0,
@@ -823,12 +824,16 @@ const vueApp = new Vue({
 
     },
     created: async function() {
+        this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         this.initParse()
         this.initPostHog()
         if (this.currentUser && !this.currentUser.guidedTour) {
             //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
             this.initShepherd()
         }
+
+        await Promise.all([this.getPatterns(), this.getMistakes()])
+        
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
@@ -838,7 +843,29 @@ const vueApp = new Vue({
                 this.firstTimeSelectedAccounts = true
             }
         }
-        this.tempSelectedAccounts = this.selectedAccounts
+
+        if (!localStorage.getItem('selectedPatterns')) {
+
+            console.log(" -> No patterns in local storage")
+            this.selectedPatterns.push("void")
+            this.patterns.filter(obj => obj.active == true).forEach(element => {
+                //console.log(" pattern id " + element.objectId)
+                this.selectedPatterns.push(element.objectId)
+            });
+
+            localStorage.setItem('selectedPatterns', this.selectedPatterns)
+        }
+        
+        if (!localStorage.getItem('selectedMistakes')) {
+            //await Promise.all([this.getPatterns(), this.getMistakes()])
+            console.log(" -> No mistakes in local storage")
+            this.selectedMistakes.push("void")
+            this.mistakes.filter(obj => obj.active == true).forEach(element => {
+                //console.log(" mistake id " + element.objectId)
+                this.selectedMistakes.push(element.objectId)
+            });
+            localStorage.setItem('selectedMistakes', this.selectedMistakes)
+        }
 
         this.cssTheme == "dark" ? this.cssColor87 = "rgba(255, 255, 255, 0.87)" : this.cssColor = "#333333"
         this.cssTheme == "dark" ? this.cssColor60 = "rgba(255, 255, 255, 0.60)" : this.cssColor = "#333333"
@@ -847,8 +874,8 @@ const vueApp = new Vue({
             /*this.selectedPeriodRange = localStorage.getItem('selectedPeriodRange') ? JSON.parse(localStorage.getItem('selectedPeriodRange')) : this.periodRange.filter(element => element.value == 'thisMonth')[0]*/
 
         this.selectedDateRange = localStorage.getItem('selectedDateRange') ? JSON.parse(localStorage.getItem('selectedDateRange')) : { start: this.periodRange.filter(element => element.value == 'thisMonth')[0].start, end: this.periodRange.filter(element => element.value == 'thisMonth')[0].end }
-        //console.log(" -> Selected date range cal "+JSON.stringify(this.selectedDateRange))
-        /* we set the initial selectedPeriodRange based on selectedDateRange */
+            //console.log(" -> Selected date range cal "+JSON.stringify(this.selectedDateRange))
+            /* we set the initial selectedPeriodRange based on selectedDateRange */
         if (this.selectedDateRange) {
             //console.log(" -> Filtering date range")
             let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
@@ -862,12 +889,13 @@ const vueApp = new Vue({
         //console.log(" -> Selected date range "+JSON.stringify(this.selectedPeriodRange))
 
         this.selectedMonth = localStorage.getItem('selectedMonth') ? JSON.parse(localStorage.getItem('selectedMonth')) : { start: this.periodRange.filter(element => element.value == 'thisMonth')[0].start, end: this.periodRange.filter(element => element.value == 'thisMonth')[0].end }
-        //console.log(" -> Selected cal range "+JSON.stringify(this.selectedMonth))
+            //console.log(" -> Selected cal range "+JSON.stringify(this.selectedMonth))
 
-        this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         //this.currentPage = document.getElementsByTagName("main")[0].id
 
+
         await this.initIndexedDB()
+
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
             await this.getAllTrades(true)
             await this.initTab("dashboard")
@@ -943,17 +971,15 @@ const vueApp = new Vue({
             await sessionStorage.removeItem('editItemId');
         }
 
-        if (this.currentPage.id == "settings" || this.currentPage.id == "videos") {
-            await this.getPatterns()
-            await this.getMistakes()
-        }
-
         if (this.currentPage.id == "forecast") {
             await this.getScenarios()
             await this.createForecast()
             await this.linesChartForecast()
         }
 
+        if (this.currentPage.id == "settings") {
+            await Promise.all([this.getPatterns(), this.getMistakes()])
+        }
     },
 
     mounted: async function() {
@@ -1224,7 +1250,7 @@ const vueApp = new Vue({
                 let path = window.location.pathname
                 let parse_app_id = localStorage.getItem('parse_app_id') ? localStorage.getItem('parse_app_id') : "";
                 let parse_url = "/parse"
-                //console.log(" -> Parse id " + parse_app_id)
+                    //console.log(" -> Parse id " + parse_app_id)
 
                 Parse.initialize(parse_app_id)
                 Parse.serverURL = parse_url

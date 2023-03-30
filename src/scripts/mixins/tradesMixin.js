@@ -116,6 +116,13 @@ const tradesMixin = {
 
                 this.selectedMonth = JSON.parse(localStorage.getItem('selectedMonth'))
                     //console.log(" Selected Month " + JSON.stringify(this.selectedMonth))
+
+                /* Restore selected patterns */
+                this.selectedPatterns = localStorage.getItem('selectedPatterns').split(",")
+                //console.log(" Selected patterns " + this.selectedPatterns)
+
+                this.selectedMistakes = localStorage.getItem('selectedMistakes').split(",")
+                //console.log(" Selected mistakes " + this.selectedMistakes)
             }
         },
 
@@ -142,6 +149,10 @@ const tradesMixin = {
             if (this.currentPage.id == "daily") {
                 localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
             }
+
+            localStorage.setItem('selectedPatterns', this.selectedPatterns)
+            
+            localStorage.setItem('selectedMistakes', this.selectedMistakes)
 
             await this.getAllTrades(true)
 
@@ -314,9 +325,42 @@ const tradesMixin = {
                             if (this.currentPage.id == "daily" || this.currentPage.id == "videos" ||  this.currentPage.id == "calendar") {
                                 selectedRange.end = dayjs(selectedRange.start * 1000).add(1, "month").unix()
                             }
-
+                            //console.log( " setup pattern "+this.selectedPatterns.includes(element.setup.pattern))
                             /* We use if here but then conditional inside to check all possibilities */
-                            if ((selectedRange.start === 0 && selectedRange.end === 0 ? element.entryTime >= selectedRange.start : element.entryTime >= selectedRange.start && element.entryTime < selectedRange.end) && this.selectedPositions.includes(element.strategy) /*(this.selectedPosition != "all" ? element.strategy == this.selectedPosition : element.strategy)*/ && /*(this.selectedAccount != "all" ? element.account == this.selectedAccount : element.account)*/ this.selectedAccounts.includes(element.account)) {
+                            let pattern
+                            let mistake
+                            // We need to include patterns and mistakes that are void or null
+                            if (element.hasOwnProperty('setup')) {
+                                if (element.setup.pattern == null) {
+                                    pattern = "void"
+                                } else {
+                                    // If they are not null, it may happen that the pattern or mistake has been deleted. So we make sure to search for pattern that are only in the filtered array. Or else, we include them using void. 
+                                    if (this.selectedPatterns.includes(element.setup.pattern)) {
+                                        pattern = element.setup.pattern
+                                    } else {
+                                        pattern = "void"
+                                    }
+
+                                }
+
+                                if (element.setup.mistake == null) {
+                                    mistake = "void"
+                                } else {
+                                    if (this.selectedMistakes.includes(element.setup.mistake)) {
+                                        mistake = element.setup.mistake
+                                    } else {
+                                        mistake = "void"
+                                    }
+                                }
+                            } else {
+                                pattern = "void"
+                                mistake = "void"
+                            }
+                            
+                            //console.log(" selected patterns "+this.selectedPatterns)
+                            //console.log(" pattern "+pattern)
+
+                            if ((selectedRange.start === 0 && selectedRange.end === 0 ? element.entryTime >= selectedRange.start : element.entryTime >= selectedRange.start && element.entryTime < selectedRange.end) && this.selectedPositions.includes(element.strategy) && this.selectedAccounts.includes(element.account) && this.selectedPatterns.includes(pattern) && this.selectedMistakes.includes(mistake)) {
                                 temp.trades.push(element)
                                 this.filteredTradesTrades.push(element)
                                     //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
@@ -329,9 +373,6 @@ const tradesMixin = {
                     });
                 }
 
-                this.filteredTrades.sort(function(a, b) {
-                        return b.dateUnix - a.dateUnix
-                    })
                     /* If all dates selected, we use allTrades */
                 if (selectedRange.start == 0 && selectedRange.end == 0) {
                     loopTrades(this.allTrades)
@@ -360,14 +401,19 @@ const tradesMixin = {
                     this.filteredTrades[index].blotter = this.blotter[key]
                 }
                 //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
+                this.filteredTrades.sort((a, b) => {
+                    return b.dateUnix - a.dateUnix
+                })
             }
 
             /*============= 5 - Render data, charts, totals =============*/
-
+            
             if (this.currentPage.id == "dashboard") {
                 this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
                 await this.prepareTrades()
-                await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
+                //await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
+                //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
+                await this.calculateProfitAnalysis()
                 await (this.dashboardIdMounted = true)
                 await (this.spinnerSetupsUpdate = false)
 
@@ -380,8 +426,8 @@ const tradesMixin = {
             if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 if (this.currentPage.id == "daily") await this.listenHideTradesModal()
-                await Promise.all([this.addVideoStartEnd(), this.getJournals(), this.getPatterns(), this.getMistakes()])
-
+                await Promise.all([this.addVideoStartEnd(), this.getJournals()])
+                //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page

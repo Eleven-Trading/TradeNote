@@ -3,13 +3,24 @@
     <div class="dailyCard">
         <div>
             <span v-if="!filtersOpen" v-on:click="filtersClick" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
-            </span><span v-if="!filtersOpen" class="dashInfoTitle ms-3"><span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span>
-                <span v-else>Accounts: {{selectedAccounts.toString()}}</span><span v-show="currentPage.id == 'dashboard'">| {{selectedPeriodRange.label}}</span><span v-show="currentPage.id == 'daily'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span><span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span></span>
+            </span>
+            <span v-if="!filtersOpen" class="dashInfoTitle ms-3">
+                <span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span>
+                <span v-else>Accounts: {{selectedAccounts.toString()}}</span>
+                <span v-show="currentPage.id == 'dashboard'">| {{selectedPeriodRange.label}}<span v-show="selectedPeriodRange.value == 'custom'"> range</span></span>
+                <span v-show="currentPage.id == 'daily'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
+                <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
+                <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">| All patterns</span>
+                <span v-else>| Selected patterns</span>
+                <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">| All mistakes</span>
+                <span v-else>| Selected mistakes</span>
+
+            </span>
+
             <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
             </span>
         </div>
-        
-        
+
         <div v-show="filtersOpen" class="row text-center align-items-center">
             <!-- Date : periode -->
             <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'dashboard'">
@@ -80,6 +91,30 @@
                 <select v-on:input="selectedRatio = $event.target.value" class="form-select">
                     <option v-for="item in ratios" v-bind:value="item.value" v-bind:selected="item.value ==  selectedRatio">{{item.label}}</option>
                 </select>
+            </div>
+
+            <!-- Patterns -->
+            <div class="col-6 dropdown mt-1 mt-lg-1">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Patterns <span class="dashInfoTitle">({{selectedPatterns.length}})</span></button>
+                <ul class="dropdown-menu dropdownCheck">
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns"> Void
+                    <div v-for="item in patterns.filter(obj => obj.active == true)" class="form-check">
+                        <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedPatterns">
+                        {{item.name}}
+                    </div>
+                </ul>
+            </div>
+
+            <!-- Mistakes -->
+            <div class="col-6 dropdown mt-1 mt-lg-1">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Mistakes <span class="dashInfoTitle">({{selectedMistakes.length}})</span></button>
+                <ul class="dropdown-menu dropdownCheck">
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes"> Void                    
+                    <div v-for="item in mistakes.filter(obj => obj.active == true)" class="form-check">
+                        <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedMistakes">
+                        {{item.name}}
+                    </div>
+                </ul>
             </div>
 
             <div class="col-12 text-center">
