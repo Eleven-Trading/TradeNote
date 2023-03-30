@@ -1160,7 +1160,7 @@ const vueApp = new Vue({
                     //console.log(" -> triggerTabList Daily")
 
                     triggerEl.addEventListener('click', (event) => {
-
+                        //console.log(" click")
 
                         if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
 

@@ -62,13 +62,16 @@ const tradesMixin = {
         },
 
         //Calendar : last or next month arrows
-        monthLastNext(param) {
+        monthLastNext: async function(param) {
             this.selectedMonth.start = dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).add(param, 'month').startOf('month').unix()
                 /* reuse just created .start because we only show one month at a time */
             this.selectedMonth.end = dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).endOf('month').unix()
                 //console.log("this.selectedMonth.start " + this.selectedMonth.start+" this.selectedMonth.end " + this.selectedMonth.end)
             localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
-            this.getAllTrades(true)
+            await this.getAllTrades(true)
+            if (this.currentPage.id == "daily") {
+                await this.initTab("daily") // Only for daily else was causing multiple fires in dashboard
+            }
         },
 
         filtersClick() {
@@ -116,8 +119,10 @@ const tradesMixin = {
             }
         },
 
-        saveFilter() {
-
+        saveFilter: async function() {
+            if (this.currentPage.id == "dashboard") {
+                this.eCharts("clear")
+            }
             //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
             localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
@@ -138,15 +143,17 @@ const tradesMixin = {
                 localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
             }
 
-            this.getAllTrades(true)
+            await this.getAllTrades(true)
+
+            if (this.currentPage.id == "daily") {
+                await this.initTab("daily") // Only for daily else was causing multiple fires in dashboard
+            }
         },
 
         getAllTrades: async function(param, param2) {
             console.log("\nGETTING TRADES")
                 //console.log("this.selectedPeriodRange "+this.selectedPeriodRange)
-            if (this.currentPage.id == "dashboard") {
-                this.eCharts("clear")
-            }
+
             this.dashboardChartsMounted = false
             this.spinnerSetupsUpdate = true
             this.dashboardIdMounted = false
@@ -323,9 +330,9 @@ const tradesMixin = {
                 }
 
                 this.filteredTrades.sort(function(a, b) {
-                    return b.dateUnix - a.dateUnix
-                })
-                /* If all dates selected, we use allTrades */
+                        return b.dateUnix - a.dateUnix
+                    })
+                    /* If all dates selected, we use allTrades */
                 if (selectedRange.start == 0 && selectedRange.end == 0) {
                     loopTrades(this.allTrades)
                 }
