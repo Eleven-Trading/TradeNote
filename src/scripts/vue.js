@@ -978,7 +978,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "settings") {
-            await Promise.all([this.getPatterns(), this.getMistakes()])
+            //await Promise.all([this.getPatterns(), this.getMistakes()])
         }
     },
 
@@ -1042,28 +1042,7 @@ const vueApp = new Vue({
     watch: {
         activeNav: function() {
             //console.log("nav " + this.activeNav + ' and type ' + typeof this.activeNav)
-        },
-        includeFinancials: function() {
-            //console.log("watch finviz "+this.includeFinancials)
-        },
-
-        /*selectedAccounts: function() {
-            console.log(" watch selected accounts "+this.selectedAccounts)
-            if (this.firstTimeSelectedAccounts) { // Do not fire the first time 
-                this.firstTimeSelectedAccounts = !this.firstTimeSelectedAccounts
-            } else {
-                //console.log("selectedAccounts " + this.selectedAccounts + " type " + typeof(JSON.stringify(this.selectedAccounts)))
-                this.inputAccounts()
-                    //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
-            }
-
-        },*/
-
-        /*selectedPositions: function() {
-            localStorage.setItem('selectedPositions', this.selectedPositions)
-            this.inputPositions()
-                //console.log("local storage "+localStorage.getItem('selectedAccounts')+" type "+typeof (localStorage.getItem('selectedAccounts'))+" split "+localStorage.getItem('selectedAccounts').split(",")+" type split "+typeof (localStorage.getItem('selectedAccounts').split(",")))
-        },*/
+        }
 
     },
     methods: {
@@ -1170,12 +1149,14 @@ const vueApp = new Vue({
                 if (param == "dashboard") {
                     // GET TAB ID THAT IS CLICKED
                     //console.log(" -> triggerTabList Dashboard")
-                    triggerEl.addEventListener('shown.bs.tab', (event) => {
+                    triggerEl.addEventListener('shown.bs.tab', async (event) => {
                         //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                         this.selectedDashTab = event.target.getAttribute('id')
-                        console.log("selected tab " + this.selectedDashTab)
+                        //console.log("selected tab " + this.selectedDashTab)
                         localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                        self.getAllTrades(false)
+                        //self.getAllTrades(false)
+                        await (this.renderData += 1)
+                        await this.eCharts("init")
                             //console.log("related" + event.relatedTarget) // previous active tab
                     })
                 }
