@@ -804,6 +804,7 @@ const vueApp = new Vue({
             patterns: [],
             entrypoints: [],
             mistakes: [],
+
         }
     },
     beforeCreate: async function() {
@@ -833,7 +834,7 @@ const vueApp = new Vue({
         }
 
         await Promise.all([this.getPatterns(), this.getMistakes()])
-        
+
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
@@ -855,7 +856,7 @@ const vueApp = new Vue({
 
             localStorage.setItem('selectedPatterns', this.selectedPatterns)
         }
-        
+
         if (!localStorage.getItem('selectedMistakes')) {
             //await Promise.all([this.getPatterns(), this.getMistakes()])
             console.log(" -> No mistakes in local storage")
@@ -902,11 +903,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
-            await this.getAllTrades(true)
-            await this.initPopover()
-            await this.initTab("daily")
-            await this.getTradesSatisfaction()
-            await this.getExcursions()
+            await Promise.all([this.initPopover(), this.initTab("daily"), this.getTradesSatisfaction(), this.getExcursions(), this.getAllTrades(true)])
         }
 
         if (this.currentPage.id == "journal") {
@@ -1149,12 +1146,12 @@ const vueApp = new Vue({
                 if (param == "dashboard") {
                     // GET TAB ID THAT IS CLICKED
                     //console.log(" -> triggerTabList Dashboard")
-                    triggerEl.addEventListener('shown.bs.tab', async (event) => {
+                    triggerEl.addEventListener('shown.bs.tab', async(event) => {
                         //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                         this.selectedDashTab = event.target.getAttribute('id')
-                        //console.log("selected tab " + this.selectedDashTab)
+                            //console.log("selected tab " + this.selectedDashTab)
                         localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                        //self.getAllTrades(false)
+                            //self.getAllTrades(false)
                         await (this.renderData += 1)
                         await this.eCharts("init")
                             //console.log("related" + event.relatedTarget) // previous active tab

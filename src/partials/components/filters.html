@@ -6,7 +6,7 @@
             </span>
             <span v-if="!filtersOpen" class="dashInfoTitle ms-3">
                 <span v-if="currentUser.accounts.length == selectedAccounts.length">All accounts</span>
-                <span v-else>Accounts: {{selectedAccounts.toString()}}</span>
+                <span v-else>Selected accounts</span>
                 <span v-show="currentPage.id == 'dashboard'">| {{selectedPeriodRange.label}}<span v-show="selectedPeriodRange.value == 'custom'"> range</span></span>
                 <span v-show="currentPage.id == 'daily'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
                 <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>

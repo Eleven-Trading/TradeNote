@@ -45,7 +45,7 @@ const setupsMixin = {
 
     watch: {
         setupUpdate: function() {
-            console.log("setup " + JSON.stringify(this.setup))
+            //console.log("setup " + JSON.stringify(this.setup))
         }
     },
     mounted: async function() {
@@ -64,22 +64,29 @@ const setupsMixin = {
         }
     },
     methods: {
-        getSetupsEntries: async function() {
+        getSetupsEntries: async function(param) {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting Setups and entries");
-                console.log(" -> setupsEntriesPagination " + this.setupsEntriesPagination);
+                //console.log(" -> setupsEntriesPagination (start)" + this.setupsEntriesPagination);
+                //console.log(" selected start date " + this.selectedMonth.start)
                 const Object = Parse.Object.extend("setupsEntries");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
-                query.limit(this.setupsEntriesQueryLimit);
-                query.skip(this.setupsEntriesPagination)
-                    //this.setups = []
+                if (param) { // if "full" false (case for daily page), then only certain limit. Else sull
+                    query.greaterThanOrEqualTo("dateUnix", this.selectedMonth.start)
+                    query.lessThanOrEqualTo("dateUnix", this.selectedMonth.end)
+                } else {
+                    query.limit(this.setupsEntriesQueryLimit);
+                    query.skip(this.setupsEntriesPagination)
+                }
+                //this.setups = []
                 const results = await query.find();
                 this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
                     //console.log(" -> Setups " + JSON.stringify(this.setups))
                 this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
-                console.log(" -> setupsEntriesPagination " + this.setupsEntriesPagination);
+                    //console.log(" -> setupsEntriesPagination (end)" + this.setupsEntriesPagination);
+                this.spinnerSetups = false //spinner for trades in daily
                 resolve()
             })
         },
@@ -108,7 +115,17 @@ const setupsMixin = {
             }
         },
 
-        setupImageUpload: async function(event) {
+        setupImageUpload: async function(event, param1, param2, param3) {
+            if (this.currentPage.id == "daily") {
+                this.tradeScreenshotChanged = true
+                this.indexedDBtoUpdate = true
+                this.dateSetupEdited = true
+
+                this.setup.dateUnix = param1
+                this.setup.symbol = param2
+                this.setup.side = param3
+
+            }
             const file = event.target.files[0];
 
             /* We convert to base64 so we can read src in markerArea */
@@ -126,6 +143,12 @@ const setupsMixin = {
         },
 
         setupMarkerArea() {
+            if (this.currentPage.id == "daily") {
+                this.tradeScreenshotChanged = true
+                this.indexedDBtoUpdate = true
+                this.dateSetupEdited = true
+
+            }
             //https://github.com/ailon/markerjs2#readme
             let markerAreaId = document.getElementById("setupDiv");
 
@@ -143,7 +166,7 @@ const setupsMixin = {
             markerArea.addRenderEventListener((imgURL, state) => {
                 this.setup.annotatedBase64 = imgURL
                 this.setup.maState = state
-                console.log("state " + JSON.stringify(this.setup.maState))
+                    //console.log("state " + JSON.stringify(this.setup.maState))
                 this.markerAreaOpen = false
                 this.renderData += 1
             })
@@ -163,44 +186,58 @@ const setupsMixin = {
                 this.dateSetupEdited = true
             }
             this.setup.date = event
-            console.log("setup date (local time, i.e. New York time) " + this.setup.date)
+                //console.log("setup date (local time, i.e. New York time) " + this.setup.date)
             this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
             console.log("unix " + dayjs.tz(this.setup.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
         },
 
         saveSetup: async function() {
             console.log("\nSAVING SETUP IMAGE")
-            if (this.markerAreaOpen == true) {
-                alert("Plaese save your setup annotation")
-                return
-            }
+                //console.log(" -> Setup to save " + JSON.stringify(this.setup))
+            return new Promise(async(resolve, reject) => {
+                if (this.markerAreaOpen == true) {
+                    alert("Please save your setup annotation")
+                    return
+                }
+                if (this.currentPage.id == "addSetup") {
+                    this.loadingSpinner = true
+                    this.loadingSpinnerText = "Uploading setup ..."
+                }
 
-            this.loadingSpinner = true
-            this.loadingSpinnerText = "Uploading setup ..."
+                if (this.currentPage.id == "daily") {
+                    this.spinnerSetups = true
+                }
 
-            if (!this.editingSetup || (this.editingSetup && this.dateSetupEdited)) {
-                this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
-            }
-            if (this.editingSetup && !this.dateSetupEdited) {
-                //we do nothing
-            }
+                if (this.currentPage.id == "addSetup") { //if daily, we do not edit dateUnix. It's already formated
+                    if (!this.editingSetup || (this.editingSetup && this.dateSetupEdited)) {
+                        this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
+                    }
+                }
+                if (this.editingSetup && !this.dateSetupEdited) {
+                    //we do nothing
+                }
 
-            //extension is created during setupImageUpload. So when edit, must create it here before upload
-            if (this.editingSetup) {
-                this.setup.extension = this.setup.originalBase64.substring(this.setup.originalBase64.indexOf('/') + 1, this.setup.originalBase64.indexOf(';base64'))
-            }
+                //extension is created during setupImageUpload. So when edit, must create it here before upload
+                if (this.editingSetup) {
+                    this.setup.extension = this.setup.originalBase64.substring(this.setup.originalBase64.indexOf('/') + 1, this.setup.originalBase64.indexOf(';base64'))
+                }
 
-            //console.log(" -> dateUnix " + this.setup.dateUnix)
+                //console.log(" -> dateUnix " + this.setup.dateUnix)
 
-            this.setup.name = this.setup.dateUnix + "_" + this.setup.symbol
-            console.log("name " + this.setup.name)
-            await this.uploadSetupScreenshotToParse().then()
+
+                this.setup.side ? this.setup.name = "t" + this.setup.dateUnix + "_" + this.setup.symbol + "_" + this.setup.side : this.setup.dateUnix + "_" + this.setup.symbol
+                    //console.log("name " + this.setup.name)
+
+                await this.uploadSetupScreenshotToParse()
+
+                resolve()
+            })
         },
 
         uploadSetupScreenshotToParse: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Uploading to database")
-                this.loadingSpinner = true
+
                 this.loadingSpinnerText = "Uploading Screenshot ..."
 
                 /* creating names, recreating files and new parse files */
@@ -234,68 +271,83 @@ const setupsMixin = {
                 //console.log("url orig " + this.setup.originalUrl + " annot " + this.setup.annotatedUrl)
                 if (results) {
                     console.log(" -> Updating")
-                    parseOriginalFile.save().then(() => {
-                        parseAnnotatedFile.save().then(() => {
-                            results.set("name", this.setup.name)
-                            results.set("symbol", this.setup.symbol)
-                            results.set("side", this.setup.side)
-                            results.set("original", parseOriginalFile)
-                            results.set("annotated", parseAnnotatedFile)
-                            results.set("originalBase64", this.setup.originalBase64)
-                            results.set("annotatedBase64", this.setup.annotatedBase64)
-                            results.set("maState", this.setup.maState)
-                            if (this.dateSetupEdited) {
-                                results.set("date", new Date(dayjs.tz(this.setup.dateUnix, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
-                                results.set("dateUnix", Number(this.setup.dateUnix))
-                            }
-                            results.save().then(() => {
-                                console.log(' -> Updated screenshot with id ' + results.id)
-                                window.location.href = "/setups"
-                            })
-                        })
-                    })
+                    await parseOriginalFile.save() // before I was using then. In that case it's possible to catch error. I had to change it to await because in daily trades it was triggering the rest of the functinos in clickTradesModal too fast
+                    await parseAnnotatedFile.save()
+                    results.set("name", this.setup.name)
+                    results.set("symbol", this.setup.symbol)
+                    results.set("side", this.setup.side)
+                    results.set("original", parseOriginalFile)
+                    results.set("annotated", parseAnnotatedFile)
+                    results.set("originalBase64", this.setup.originalBase64)
+                    results.set("annotatedBase64", this.setup.annotatedBase64)
+                    results.set("maState", this.setup.maState)
+                    if (this.dateSetupEdited) {
+                        results.set("date", new Date(dayjs.tz(this.setup.dateUnix, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
+                        results.set("dateUnix", Number(this.setup.dateUnix))
+                    }
+                    results.save().then(async() => {
+                        console.log(' -> Updated screenshot with id ' + results.id)
+                        if (this.currentPage.id == "addSetup") {
+                            window.location.href = "/setups"
+                        }
 
+                        if (this.currentPage.id == "daily") {
+                            await this.getSetupsEntries(true)
+                            const file =
+                                document.querySelector('.screenshotFile');
+                            file.value = '';
+                        }
+
+                        resolve()
+
+                    }, (error) => {
+                        console.log('Failed to update new object, with error code: ' + error.message);
+                        //window.location.href = "/setups"
+                    })
                     this.loadingSpinner = false
                 } else {
                     console.log(" -> Saving")
 
-                    parseOriginalFile.save().then(() => {
-                            parseAnnotatedFile.save().then(() => {
-                                    const object = new Object();
-                                    object.set("user", Parse.User.current())
-                                    object.set("name", this.setup.name)
-                                    object.set("symbol", this.setup.symbol)
-                                    object.set("side", this.setup.side)
-                                    object.set("original", parseOriginalFile)
-                                    object.set("annotated", parseAnnotatedFile)
-                                    object.set("originalBase64", this.setup.originalBase64)
-                                    object.set("annotatedBase64", this.setup.annotatedBase64)
-                                    object.set("maState", this.setup.maState)
-                                    object.set("date", new Date(dayjs.tz(this.setup.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
-                                    object.set("dateUnix", Number(this.setup.dateUnix))
+                    await parseOriginalFile.save()
+                    await parseAnnotatedFile.save()
+                    console.log(" -> Setup to upload " + JSON.stringify(this.setup))
+                    const object = new Object();
+                    object.set("user", Parse.User.current())
+                    object.set("name", this.setup.name)
+                    object.set("symbol", this.setup.symbol)
+                    object.set("side", this.setup.side)
+                    object.set("original", parseOriginalFile)
+                    object.set("annotated", parseAnnotatedFile)
+                    object.set("originalBase64", this.setup.originalBase64)
+                    object.set("annotatedBase64", this.setup.annotatedBase64)
+                    object.set("maState", this.setup.maState)
+                    object.set("date", new Date(dayjs.tz(this.setup.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
+                    object.set("dateUnix", Number(this.setup.dateUnix))
 
-                                    object.setACL(new Parse.ACL(Parse.User.current()));
+                    object.setACL(new Parse.ACL(Parse.User.current()));
 
-                                    object.save()
-                                        .then((object) => {
-                                            console.log(' -> Added new setup with id ' + object.id)
-                                            this.loadingSpinner = false
-                                            window.location.href = "/setups"
+                    object.save()
+                        .then(async(object) => {
+                            console.log(' -> Added new setup with id ' + object.id)
+                            if (this.currentPage.id == "addSetup") {
+                                window.location.href = "/setups"
+                            }
+                            if (this.currentPage.id == "daily") {
+                                await this.getSetupsEntries(true)
+                                const file =
+                                    document.querySelector('.screenshotFile');
+                                file.value = '';
+                            }
+                            resolve()
 
-                                        }, (error) => {
-                                            console.log('Failed to create new object, with error code: ' + error.message);
-                                            //window.location.href = "/setups"
-                                        });
-                                })
-                                .catch((error) => {
-                                    console.log("parse annotated file " + error)
-                                })
-                        })
-                        .catch((error) => {
-                            console.log("parse original file " + error)
-                        })
+
+                        }, (error) => {
+                            console.log('Failed to create new object, with error code: ' + error.message);
+                            //window.location.href = "/setups"
+                        });
+                    this.loadingSpinner = false
+
                 }
-                resolve()
             })
         },
 

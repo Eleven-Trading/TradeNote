@@ -7,7 +7,7 @@ const dailyMixin = {
             spinnerSetupsText: null,
             spinnerSetupsUpdate: false,
             spinnerSetupsUpdateText: null,
-            
+
             patterns: [],
             mistakes: [],
             tradeSetup: {
@@ -31,11 +31,14 @@ const dailyMixin = {
                 maePrice: null,
                 mfePrice: null
             },
-            tradeExcursionChanged: false, 
+            tradeExcursionChanged: false,
             tradeExcursionDateUnix: null,
             tradeExcursionId: null,
 
             indexedDBtoUpdate: false,
+
+            tradeScreenshotChanged: false,
+            tradesModal: null,
         }
     },
     watch: {
@@ -43,8 +46,13 @@ const dailyMixin = {
             //console.log("Watch tradeSetup " + JSON.stringify(this.tradeSetup))
         },
     },
+    mounted: async function() {
+        if (this.currentPage.id == "daily") {
+            this.tradesModal = new bootstrap.Modal("#tradesModal")
+        }
+    },
     methods: {
-        
+
         getPatterns: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting Patterns");
@@ -57,7 +65,7 @@ const dailyMixin = {
                 this.patterns = []
                 const results = await query.find();
                 this.patterns = JSON.parse(JSON.stringify(results))
-                //console.log(" -> Patterns " + JSON.stringify(this.patterns))
+                    //console.log(" -> Patterns " + JSON.stringify(this.patterns))
                 resolve()
             })
         },
@@ -93,10 +101,10 @@ const dailyMixin = {
                 for (let i = 0; i < results.length; i++) {
                     let temp = {}
                     const object = results[i];
-                    temp.id = object.get('tradeId') 
-                    temp.satisfaction = object.get('satisfaction') 
+                    temp.id = object.get('tradeId')
+                    temp.satisfaction = object.get('satisfaction')
                     this.tradeSatisfactionArray.push(temp)
-                  }
+                }
                 //console.log(" -> Trades satisfaction " + JSON.stringify(this.tradeSatisfactionArray))
 
                 resolve()
@@ -116,14 +124,14 @@ const dailyMixin = {
                 this.excursions = []
                 const results = await query.find();
                 this.excursions = JSON.parse(JSON.stringify(results))
-                //console.log(" -> excursions " + JSON.stringify(this.excursions))
+                    //console.log(" -> excursions " + JSON.stringify(this.excursions))
                 resolve()
             })
         },
 
         /**************
          * SETUP
-        ***************/
+         ***************/
 
         tradeSetupChange(param1, param2, param3, param4) {
             //console.log("param 1 " + param1 + " param2 " + param2)
@@ -215,7 +223,7 @@ const dailyMixin = {
             this.spinnerSetups = true
             this.tradeSetupChanged = true
             this.indexedDBtoUpdate = true
-            //console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeSetupId)
+                //console.log("trade setup " + JSON.stringify(this.tradeSetup) + " with ID " + this.tradeSetupId)
 
             if (this.tradeSetupId != null) {
                 console.log(" -> Deleting patterns mistakes")
@@ -224,7 +232,7 @@ const dailyMixin = {
                 query.equalTo("tradeId", this.tradeSetupId)
                 const results = await query.first();
                 if (results) {
-                    results.destroy().then(async () => {
+                    results.destroy().then(async() => {
                         console.log('  --> Deleted setup with id ' + results.id)
                         this.resetSetup()
                         await this.updateTrades(true)
@@ -243,7 +251,7 @@ const dailyMixin = {
 
         /**************
          * SATISFACTION
-        ***************/
+         ***************/
 
         updateDailySatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: tradeUnixDate ; param4: tradeId
             console.log("\nUPDATING OR SAVING SATISFACTIONS IN PARSE")
@@ -377,12 +385,12 @@ const dailyMixin = {
             })
         },
 
-        
+
         /**************
          * EXCURSION
-        ***************/
+         ***************/
         tradeExcursionChange(param1, param2, param3, param4) {
-            console.log("param 1: " + param1 + " param2: " + param2, ", param3: "+param3+", param4: "+param4)
+            console.log("param 1: " + param1 + " param2: " + param2, ", param3: " + param3 + ", param4: " + param4)
             if (param2 == "stopLoss") {
                 this.excursion.stopLoss = parseFloat(param1)
                 this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice : null
@@ -463,94 +471,137 @@ const dailyMixin = {
         },
         /**************
          * COMMON
-        ***************/
+         ***************/
 
         clickTradesModal: async function(param1, param2, param3) { //When we click on the video icon to view a video. Param1 : is video true/false, Param2: index of array; Param3: daily
             //console.log("param 1: " + param1 + " param2 " + param2 + " param3 " + param3 + " param 4 " + param4 + " param 5 " + param5)
-            if (!param3 && this.tradeSetupChanged) {
-                await this.updatePatternsMistakes()
-                await this.updateTrades()
-            }
-
-            if (!param3 && this.tradeExcursionChanged) {
-                await this.updateExcursions()
-                await this.updateTrades()
-                await this.getExcursions()
-            }
-
-            this.tradeSetupChanged = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
-            this.tradeExcursionChanged = false
-            
-            await (this.resetSetup())
-            await (this.resetExcursion())
-
-            await (this.hasVideo = false)
-            this.modalVideosOpen = false
-            this.modalVideosOpen = true
-            this.videosArrayIndex = param2 //VideoToLoad = the full video to get/load. videosArrayIndex = part, determined by start and end time, of the video (to load)
-
-            if (param1 == true) {
-                this.hasVideo = true
-            }
-
-            if (param3) {
-                this.daily = param3
-                if (param3.video) {
-                    await this.getVideo(param3.dateUnix, param2)
-                }
-            }
-            //console.log("Has video ? "+this.hasVideo)
-
-            //console.log("video array "+this.videosArrayIndex)
-            //console.log("param3 trades "+JSON.stringify(param3))
-            //console.log("daily trades " + JSON.stringify(this.daily.trades[param2]))
-            /*console.log("daily trades " + JSON.stringify(this.daily.trades[param2]))
-            if (Object.keys(this.daily.trades[param2].setup).length != 0) {
-                console.log(" -> Trade with ID " + this.daily.trades[param2].id + " has setup in DB. Let's get tradeSetup names")
-                this.tradeId = this.daily.trades[param2].id
-                this.tradeSetup = this.daily.trades[param2].setup
-                    //await this.getTradeSetupNames(this.daily.trades[param2].setup)
+            if (this.markerAreaOpen == true) {
+                alert("Please save your setup annotation")
+                return
             } else {
-                console.log(" -> Trade has No setup in DB")
-                this.tradeId = null
-            }*/
 
-            //Before going next or back, check if Satisfaction or Pattern already exists in Parse DB
 
-            const Object = Parse.Object.extend("patternsMistakes");
-            const query = new Parse.Query(Object);
-            query.equalTo("tradeId", this.daily.trades[param2].id)
-            const results = await query.first();
-            if (results) {
-                let resultsParse = JSON.parse(JSON.stringify(results))
-                    //console.log(" results "+JSON.stringify(resultsParse))
-                    //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
-                resultsParse.pattern != null ? this.tradeSetup.pattern = resultsParse.pattern.objectId : null
-                resultsParse.mistake != null ? this.tradeSetup.mistake = resultsParse.mistake.objectId : null
-                resultsParse.note != null || resultsParse.note != 'null' ? this.tradeSetup.note = resultsParse.note : null
+                if (param3) { //clicking on modal from daily page
+                    this.daily = param3
+                    if (param3.video) {
+                        await this.getVideo(param3.dateUnix, param2)
+                    }
+
+                } else {
+
+                }
+
+                if (!param3 && this.tradeSetupChanged) {
+                    await this.updatePatternsMistakes()
+                    await this.updateTrades()
+                }
+
+                if (!param3 && this.tradeExcursionChanged) {
+                    await this.updateExcursions()
+                    await this.updateTrades()
+                    await this.getExcursions()
+                }
+
+                if (!param3 && this.tradeScreenshotChanged) {
+                    await this.saveSetup()
+                }
+
+
+
+                let awaitClick = async() => {
+                    //console.log(" index "+param2)
+                    //console.log("daily "+JSON.stringify(param3))
+                    //console.log(" trade "+JSON.stringify(param3.trades[param2]))
+                    //console.log(" trade id "+param3.trades[param2].id)
+                    //console.log(" Find " + JSON.stringify(this.setups.find(obj => obj.name == this.daily.trades[param2].id)))
+                    if (this.setups.find(obj => obj.name == this.daily.trades[param2].id)) {
+
+                        this.setup = this.setups.find(obj => obj.name == this.daily.trades[param2].id)
+                    } else {
+                        this.setup = {
+                            "side": null,
+                            "type": null
+                        }
+                    }
+
+                    this.tradeSetupChanged = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
+                    this.tradeExcursionChanged = false
+                    this.tradeScreenshotChanged = false
+
+                    await (this.resetSetup())
+                    await (this.resetExcursion())
+
+                    await (this.hasVideo = false)
+                    this.modalVideosOpen = false
+                    this.modalVideosOpen = true
+                    this.videosArrayIndex = param2 //VideoToLoad = the full video to get/load. videosArrayIndex = part, determined by start and end time, of the video (to load)
+
+                    if (param1 == true) {
+                        this.hasVideo = true
+                    }
+
+                    //console.log("Has video ? "+this.hasVideo)
+
+                    //console.log("video array "+this.videosArrayIndex)
+                    //console.log("param3 trades "+JSON.stringify(param3))
+                    //console.log("daily trades " + JSON.stringify(this.daily.trades[param2]))
+                    /*console.log("daily trades " + JSON.stringify(this.daily.trades[param2]))
+                    if (Object.keys(this.daily.trades[param2].setup).length != 0) {
+                        console.log(" -> Trade with ID " + this.daily.trades[param2].id + " has setup in DB. Let's get tradeSetup names")
+                        this.tradeId = this.daily.trades[param2].id
+                        this.tradeSetup = this.daily.trades[param2].setup
+                            //await this.getTradeSetupNames(this.daily.trades[param2].setup)
+                    } else {
+                        console.log(" -> Trade has No setup in DB")
+                        this.tradeId = null
+                    }*/
+
+                    //Before going next or back, check if Satisfaction or Pattern already exists in Parse DB
+
+                    const Object = Parse.Object.extend("patternsMistakes");
+                    const query = new Parse.Query(Object);
+                    query.equalTo("tradeId", this.daily.trades[param2].id)
+                    const results = await query.first();
+                    if (results) {
+                        let resultsParse = JSON.parse(JSON.stringify(results))
+                            //console.log(" results "+JSON.stringify(resultsParse))
+                            //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
+                        resultsParse.pattern != null ? this.tradeSetup.pattern = resultsParse.pattern.objectId : null
+                        resultsParse.mistake != null ? this.tradeSetup.mistake = resultsParse.mistake.objectId : null
+                        resultsParse.note != null || resultsParse.note != 'null' ? this.tradeSetup.note = resultsParse.note : null
+                    }
+                }
+                await awaitClick()
             }
+
         },
 
-        listenHideTradesModal: async function() {
-            let myModalEl = document.getElementById('tradesModal')
-            myModalEl.addEventListener('hide.bs.modal', async(event) => {
-                    console.log(" -> Trades modal hidden with indexDBUpdate "+this.indexedDBtoUpdate+" and setup changed "+this.tradeSetupChanged)
-                    if (this.indexedDBtoUpdate) {
+        hideTradesModal: async function() {
+            if (this.markerAreaOpen == true) {
+                alert("Please save your setup annotation")
+                return
+            } else {
+                this.tradesModal.hide()
+                console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
+                if (this.indexedDBtoUpdate) {
 
-                        if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
-                            await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
-                        }
-                        if (this.tradeExcursionChanged) { //in the case excursion changed but did not click on next 
-                            await Promise.all([this.updateExcursions(), this.updateTrades()])
-                            await this.getExcursions()
-                        }
-
+                    if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
+                        await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
                         await this.updateIndexedDB()
-                        
-
                     }
-                    this.indexedDBtoUpdate = false
-                }, { once: true }) //it was firing multiple times here... don't know why
+                    if (this.tradeExcursionChanged) { //in the case excursion changed but did not click on next 
+                        await Promise.all([this.updateExcursions(), this.updateTrades()])
+                        await this.getExcursions()
+                        await this.updateIndexedDB()
+                    }
+                    if (this.tradeScreenshotChanged) {
+                        this.saveSetup()
+                    }
+
+
+                }
+                this.indexedDBtoUpdate = false
+            }
         },
 
         addVideoStartEnd: async function() {
@@ -575,7 +626,7 @@ const dailyMixin = {
                 resolve()
             })
         },
-        
+
         getVideo: async function(param1, param2) {
             return new Promise((resolve, reject) => {
                 console.log("\nGETTTING VIDEO URL FROM LOCAL OR REMOTE DB")
@@ -689,7 +740,7 @@ const dailyMixin = {
 
 
         resetSetup() {
-            console.log(" -> Resetting setup")
+            console.log(" -> Resetting tradeSetup")
                 //we need to reset the setup variable each time
             this.tradeSetup = {
                 pattern: null,
@@ -719,7 +770,7 @@ const dailyMixin = {
             return new Promise(async(resolve, reject) => {
                 const Object = Parse.Object.extend("trades");
                 const query = new Parse.Query(Object);
-                
+
                 if (this.tradeSetupChanged) {
                     query.equalTo("dateUnix", this.tradeSetupDateUnix)
                 }
@@ -784,7 +835,7 @@ const dailyMixin = {
 
             })
         },
-        
+
 
         updateIndexedDB: async function(param1) {
             console.log("\nUPDATING INDEXEDDB")
