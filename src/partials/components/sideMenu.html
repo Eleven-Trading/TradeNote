@@ -1,8 +1,8 @@
 <div class="col-2 logoDiv d-flex align-items-center justify-content-center">
     <span v-if="screenType == 'mobile'">
-        <a v-on:click="toggleMobileMenu">TradeNote</a>
+        <a v-on:click="toggleMobileMenu"><img src="images/sun_full_blue.png" class="logo me-2"/>TradeNote</a>
     </span>
-    <span v-else>TradeNote</span>
+    <span v-else><img src="images/sun_full_blue.png" class="logo me-2"/>TradeNote</span>
 </div>
 <div id="step2">
     <div class="sideMenuDiv">
@@ -31,8 +31,8 @@
     <div class="sideMenuDiv">
         <div class="sideMenuDivContent">
             <label class="fw-lighter mt-3">Reflect</label>
-            <a id="step6" v-bind:class="[currentPage.id === 'journal' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/journal">
-                <i class="uil uil-diary me-2"></i>Journal
+            <a id="step6" v-bind:class="[currentPage.id === 'diary' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/diary">
+                <i class="uil uil-diary me-2"></i>Diary
                 </a>
             <a id="step7" v-bind:class="[currentPage.id === 'setups' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/setups">
                 <i class="uil uil-layer-group me-2"></i>Setups

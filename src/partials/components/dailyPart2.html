@@ -1,35 +1,12 @@
 <div class="col-12 table-responsive">
     <nav>
         <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}</button>
+            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}
+                <!--({{daily[dashTab.id].length}})-->
+            </button>
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent">
-
-        <!-- JOURNALS TAB -->
-        <div class="tab-pane fade" v-bind:id="'journalsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
-            <div v-if="journals.findIndex(obj => obj.dateUnix==daily.dateUnix) != -1">
-                <p>
-                    <div class="row journalRow">
-                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                        <span class="col mb-2 ms-auto text-end">
-                            <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].objectId)"></i>
-                            <i v-on:click="selectedItem = note.id" class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true" data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover"></i>
-                        </span>
-                    </div>
-                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.positive"></span>
-                </p>
-                <p>
-                    <span class="dashInfoTitle">Negative aspect</span>
-                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.negative"></span>
-                </p>
-                <p>
-                    <span class="dashInfoTitle">Other</span>
-                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.other"></span>
-                </p>
-            </div>
-        </div>
-
         <!-- TRADES TAB -->
         <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
             <table class="table">
@@ -64,7 +41,7 @@
                         <!--<td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
-                        
+
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null&&patterns.filter(x => x.objectId == trade.setup.pattern)[0]!=undefined">
                             {{(JSON.parse(JSON.stringify(patterns.filter(x => x.objectId == trade.setup.pattern)[0])).name).substr(0,15)+"..."}}
                         </td>
@@ -87,8 +64,12 @@
                             <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content">
                             <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-times-square']"></i>
                         </td>-->
-                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true"><i class="greenTrade uil uil-thumbs-up"></i></td>
-                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false"><i class="redTrade uil uil-thumbs-down"></i></td>
+                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
+                            <i class="greenTrade uil uil-thumbs-up"></i>
+                        </td>
+                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
+                            <i class="redTrade uil uil-thumbs-down"></i>
+                        </td>
                         <td v-else></td>
                     </tr>
                 </tbody>
@@ -127,5 +108,39 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- SCREENSHOTS TAB -->
+        <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <div v-for="setup in setups.filter(obj => obj.dateUnixDay == daily.dateUnix)" class="">
+                <p v-if="setup.side" class="col mt-1">{{setup.symbol}} @ {{timeFormat(setup.dateUnix)}} ({{setup.side}})</p>
+                <p v-else class="col mt-1">{{setup.symbol}} @ {{hourMinuteFormat(setup.dateUnix)}}</p>
+                <img v-bind:id="setup.objectId" class="setupEntryImg mt-1 img-fluid" v-bind:src="setup.annotated.url"/>
+            </div>
+        </div>
+
+        <!-- JOURNALS TAB -->
+        <div class="tab-pane fade" v-bind:id="'journalsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+            <div v-if="journals.findIndex(obj => obj.dateUnix==daily.dateUnix) != -1">
+                <p>
+                    <div class="row journalRow">
+                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
+                        <span class="col mb-2 ms-auto text-end">
+                            <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].objectId)"></i>
+                            <i v-on:click="selectedItem = note.id" class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true" data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover"></i>
+                        </span>
+                    </div>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.positive"></span>
+                </p>
+                <p>
+                    <span class="dashInfoTitle">Negative aspect</span>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.negative"></span>
+                </p>
+                <p>
+                    <span class="dashInfoTitle">Other</span>
+                    <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.other"></span>
+                </p>
+            </div>
+        </div>
+
     </div>
 </div>

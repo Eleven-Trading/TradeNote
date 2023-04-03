@@ -404,6 +404,10 @@ img.navbar-brand {
     height: 40px;
 }
 
+img.logo {
+    height: 1.1rem;
+}
+
 .navbar {
     border-bottom: 1px solid var(--white-38);
     padding-right: 1.5rem;

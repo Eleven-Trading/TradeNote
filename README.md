@@ -63,8 +63,8 @@ On daily page you can see your trades per day. You can add pattern, mistake and 
 ### Reflect
 With TradeNote you can keep a daily diary of your trading journey to work on your trader psychology as well as add annotated screenshots of interesting setups or your entries. You can also write your (yearly) playbook.
 
-#### Journal Page
-Besides notes for every trade, you can journal every day your trading journey. 
+#### Diary Page
+Besides notes for every trade, you can record things related to your every day trading, like feelings, moods and emotions or more technical related issues like patterns, in order to make important discoveries.  
 
 ![Add Journal Entry](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.41.png "Add Journal Entry")
 

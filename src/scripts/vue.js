@@ -365,8 +365,8 @@ const vueApp = new Vue({
                     icon: "uil uil-clapper-board"
                 },
                 {
-                    id: "journal",
-                    name: "Journal",
+                    id: "diary",
+                    name: "Diary",
                     icon: "uil uil-diary"
                 },
                 {
@@ -683,11 +683,7 @@ const vueApp = new Vue({
             todayDate: null,
             todayMonth: null,
             todayYear: null,
-            dailyTabs: [{
-                    id: "journals",
-                    label: "Journal",
-                    target: "#journalsNav"
-                },
+            dailyTabs: [
                 {
                     id: "trades",
                     label: "Trades",
@@ -697,7 +693,17 @@ const vueApp = new Vue({
                     id: "blotter",
                     label: "Blotter",
                     target: "#blotterNav"
-                }
+                },
+                {
+                    id: "screenshots",
+                    label: "Screenshots",
+                    target: "#screenshotsNav"
+                },
+                {
+                    id: "diaries",
+                    label: "Diary",
+                    target: "#diariesNav"
+                },
             ],
             daily: null,
 
@@ -903,10 +909,11 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "daily" || this.currentPage.id == "videos") {
-            await Promise.all([this.initPopover(), this.initTab("daily"), this.getTradesSatisfaction(), this.getExcursions(), this.getAllTrades(true)])
+            await Promise.all([this.initPopover(), this.getTradesSatisfaction(), this.getExcursions(), this.getAllTrades(true)])
+            await this.initTab("daily")
         }
 
-        if (this.currentPage.id == "journal") {
+        if (this.currentPage.id == "diary") {
             await this.getJournals(30)
             await this.initPopover()
         }
@@ -1144,6 +1151,7 @@ const vueApp = new Vue({
                     //tabTrigger.show()
                 })*/
                 if (param == "dashboard") {
+                    //console.log(" click")
                     // GET TAB ID THAT IS CLICKED
                     //console.log(" -> triggerTabList Dashboard")
                     triggerEl.addEventListener('shown.bs.tab', async(event) => {
@@ -1676,7 +1684,7 @@ const vueApp = new Vue({
                 if (this.currentPage.id == "entries") {
                     this.deleteEntry()
                 }
-                if (this.currentPage.id == "journal") {
+                if (this.currentPage.id == "diary") {
                     this.deleteJournal()
                 }
                 if (this.currentPage.id == "playbook") {
@@ -1965,7 +1973,7 @@ const vueApp = new Vue({
 
         editItem(param) {
             sessionStorage.setItem('editItemId', param);
-            if (this.currentPage.id == "daily" || this.currentPage.id == "journal") {
+            if (this.currentPage.id == "daily" || this.currentPage.id == "diary") {
                 window.location.href = "/addJournal"
             }
             if (this.currentPage.id == "entries") {

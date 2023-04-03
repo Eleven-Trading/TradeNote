@@ -80,7 +80,7 @@ const setupsMixin = {
                     query.limit(this.setupsEntriesQueryLimit);
                     query.skip(this.setupsEntriesPagination)
                 }
-                //this.setups = []
+                this.setups = []
                 const results = await query.find();
                 this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
                     //console.log(" -> Setups " + JSON.stringify(this.setups))
@@ -126,6 +126,7 @@ const setupsMixin = {
                 this.setup.side = param3
 
             }
+            //console.log(" day unix "+ dayjs(this.setup.dateUnix*1000).tz(this.tradeTimeZone).startOf("day").unix())
             const file = event.target.files[0];
 
             /* We convert to base64 so we can read src in markerArea */
@@ -284,6 +285,7 @@ const setupsMixin = {
                     if (this.dateSetupEdited) {
                         results.set("date", new Date(dayjs.tz(this.setup.dateUnix, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                         results.set("dateUnix", Number(this.setup.dateUnix))
+                        results.set("dateUnixDay", dayjs(this.setup.dateUnix*1000).tz(this.tradeTimeZone).startOf("day").unix())
                     }
                     results.save().then(async() => {
                         console.log(' -> Updated screenshot with id ' + results.id)
@@ -310,7 +312,7 @@ const setupsMixin = {
 
                     await parseOriginalFile.save()
                     await parseAnnotatedFile.save()
-                    console.log(" -> Setup to upload " + JSON.stringify(this.setup))
+                    //console.log(" -> Setup to upload " + JSON.stringify(this.setup))
                     const object = new Object();
                     object.set("user", Parse.User.current())
                     object.set("name", this.setup.name)
@@ -323,6 +325,7 @@ const setupsMixin = {
                     object.set("maState", this.setup.maState)
                     object.set("date", new Date(dayjs.tz(this.setup.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                     object.set("dateUnix", Number(this.setup.dateUnix))
+                    object.set("dateUnixDay", dayjs(this.setup.dateUnix*1000).tz(this.tradeTimeZone).startOf("day").unix())
 
                     object.setACL(new Parse.ACL(Parse.User.current()));
 
