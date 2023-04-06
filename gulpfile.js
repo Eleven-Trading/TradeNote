@@ -128,43 +128,6 @@ function cleanDist() {
 };
 
 
-/******** WATCH **********/
-
-/* Gulp task to open the default web browser, serving static files
-function browserInit() {
-    browserSync.init({
-        port: 3773,
-        server: {
-            baseDir: "dist",
-            routes: {
-                "/": "dist/",
-                "/addNote": "dist/addNote.html",
-                "/addJournal": "dist/addJournal.html",
-                "/addEntry": "dist/addEntry.html",
-                "/addTrades": "dist/addTrades.html",
-                "/addSetup": "dist/addSetup.html",
-                "/daily": "dist/daily.html",
-                "/dashboard": "dist/dashboard.html",
-                "/calendar": "dist/calendar.html",
-                "/index": "dist/",
-                "/notes": "dist/notes.html",
-                "/register": "dist/register.html",
-                "/screenshots": "dist/screenshots.html",
-                "/videos": "dist/videos.html",
-                "/playbook": "dist/playbook.html",
-                "/settings": "dist/settings.html",
-                "/setups": "dist/setups.html",
-                "/journal": "dist/journal.html",
-                "/entries": "dist/entries.html",
-                "/forecast": "dist/forecast.html",
-                "/addPlaybook": "dist/addPlaybook.html",
-            }
-        },
-        open: true,
-        notify: false,
-        injectChanges: false
-    });
-};*/
 
 function nodemonServerInit(done) {
     //livereload.listen();

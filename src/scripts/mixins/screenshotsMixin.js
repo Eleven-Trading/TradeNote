@@ -1,4 +1,4 @@
-const setupsMixin = {
+const screenshotsMixin = {
     data() {
         return {
             expandedSetup: null,
@@ -31,11 +31,11 @@ const setupsMixin = {
                 },
                 {
                     value: "setup",
-                    label: "Setup"
+                    label: "General Setup"
                 },
                 {
                     value: "entry",
-                    label: "Entry"
+                    label: "Trade Entry"
                 }
             ],
             setupsEntriesQueryLimit: 6,
@@ -49,13 +49,13 @@ const setupsMixin = {
         }
     },
     mounted: async function() {
-        if (this.currentPage.id == "setups") {
+        if (this.currentPage.id == "screenshots") {
             window.addEventListener('scroll', () => {
                 //console.log(window.scrollY) //scrolled from top
                 //console.log(window.innerHeight) //visible part of screen
                 if (window.scrollY + window.innerHeight >=
                     document.documentElement.scrollHeight) {
-                    if (this.currentPage.id == "setups") {
+                    if (this.currentPage.id == "screenshots") {
                         console.log(" -> Load new images")
                         this.getSetupsEntries()
                     }
@@ -80,7 +80,11 @@ const setupsMixin = {
                     query.limit(this.setupsEntriesQueryLimit);
                     query.skip(this.setupsEntriesPagination)
                 }
-                this.setups = []
+                if (this.currentPage.id == "daily") {
+                    //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
+                    //However, on screenshots page, we need to add to setups on new image / page load on scroll
+                    this.setups = []
+                }
                 const results = await query.find();
                 this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
                     //console.log(" -> Setups " + JSON.stringify(this.setups))
@@ -200,16 +204,16 @@ const setupsMixin = {
                     alert("Please save your setup annotation")
                     return
                 }
-                if (this.currentPage.id == "addSetup") {
+                if (this.currentPage.id == "addScreenshot") {
                     this.loadingSpinner = true
-                    this.loadingSpinnerText = "Uploading setup ..."
+                    this.loadingSpinnerText = "Uploading screenshot ..."
                 }
 
                 if (this.currentPage.id == "daily") {
                     this.spinnerSetups = true
                 }
 
-                if (this.currentPage.id == "addSetup") { //if daily, we do not edit dateUnix. It's already formated
+                if (this.currentPage.id == "addScreenshot") { //if daily, we do not edit dateUnix. It's already formated
                     if (!this.editingSetup || (this.editingSetup && this.dateSetupEdited)) {
                         this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
                     }
@@ -285,12 +289,12 @@ const setupsMixin = {
                     if (this.dateSetupEdited) {
                         results.set("date", new Date(dayjs.tz(this.setup.dateUnix, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                         results.set("dateUnix", Number(this.setup.dateUnix))
-                        results.set("dateUnixDay", dayjs(this.setup.dateUnix*1000).tz(this.tradeTimeZone).startOf("day").unix())
+                        results.set("dateUnixDay", dayjs(this.setup.dateUnix * 1000).tz(this.tradeTimeZone).startOf("day").unix())
                     }
                     results.save().then(async() => {
                         console.log(' -> Updated screenshot with id ' + results.id)
-                        if (this.currentPage.id == "addSetup") {
-                            window.location.href = "/setups"
+                        if (this.currentPage.id == "addScreenshot") {
+                            window.location.href = "/screenshots"
                         }
 
                         if (this.currentPage.id == "daily") {
@@ -304,7 +308,7 @@ const setupsMixin = {
 
                     }, (error) => {
                         console.log('Failed to update new object, with error code: ' + error.message);
-                        //window.location.href = "/setups"
+                        //window.location.href = "/screenshots"
                     })
                     this.loadingSpinner = false
                 } else {
@@ -312,7 +316,7 @@ const setupsMixin = {
 
                     await parseOriginalFile.save()
                     await parseAnnotatedFile.save()
-                    //console.log(" -> Setup to upload " + JSON.stringify(this.setup))
+                        //console.log(" -> Setup to upload " + JSON.stringify(this.setup))
                     const object = new Object();
                     object.set("user", Parse.User.current())
                     object.set("name", this.setup.name)
@@ -325,15 +329,15 @@ const setupsMixin = {
                     object.set("maState", this.setup.maState)
                     object.set("date", new Date(dayjs.tz(this.setup.date, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                     object.set("dateUnix", Number(this.setup.dateUnix))
-                    object.set("dateUnixDay", dayjs(this.setup.dateUnix*1000).tz(this.tradeTimeZone).startOf("day").unix())
+                    object.set("dateUnixDay", dayjs(this.setup.dateUnix * 1000).tz(this.tradeTimeZone).startOf("day").unix())
 
                     object.setACL(new Parse.ACL(Parse.User.current()));
 
                     object.save()
                         .then(async(object) => {
                             console.log(' -> Added new setup with id ' + object.id)
-                            if (this.currentPage.id == "addSetup") {
-                                window.location.href = "/setups"
+                            if (this.currentPage.id == "addScreenshot") {
+                                window.location.href = "/screenshots"
                             }
                             if (this.currentPage.id == "daily") {
                                 await this.getSetupsEntries(true)
@@ -346,7 +350,7 @@ const setupsMixin = {
 
                         }, (error) => {
                             console.log('Failed to create new object, with error code: ' + error.message);
-                            //window.location.href = "/setups"
+                            //window.location.href = "/screenshots"
                         });
                     this.loadingSpinner = false
 

@@ -1,4 +1,4 @@
-const journalslMixin = {
+const diariesMixin = {
     data() {
         return {
             journal: {}, //this is first time or when load
@@ -95,7 +95,7 @@ const journalslMixin = {
                 if (this.currentPage.id == "daily") {
                     window.location.href = "/daily"
                 }
-                if (this.currentPage.id == "addJournal") {
+                if (this.currentPage.id == "addDiary") {
                     window.location.href = "/journal"
                 }
 

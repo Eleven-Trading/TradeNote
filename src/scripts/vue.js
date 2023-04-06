@@ -2,7 +2,7 @@ const vueApp = new Vue({
 
     components: {},
     el: '#vapp',
-    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, entriesMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin, journalslMixin, setupsMixin, forecastMixin, brokersMixin],
+    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, entriesMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin, diariesMixin, screenshotsMixin, forecastMixin, brokersMixin],
     data() {
         return {
             cssTheme: "dark",
@@ -400,8 +400,8 @@ const vueApp = new Vue({
                     icon: "uil uil-plus-circle"
                 },
                 {
-                    id: "addJournal",
-                    name: "Add Journal",
+                    id: "addDiary",
+                    name: "Add Diary",
                     icon: "uil uil-plus-circle"
                 },
                 {
@@ -410,14 +410,9 @@ const vueApp = new Vue({
                     icon: "uil uil-sliders-v-alt"
                 },
                 {
-                    id: "setups",
-                    name: "Setups",
-                    icon: "uil uil-layer-group"
-                },
-                {
-                    id: "addSetup",
-                    name: "Add Setup",
-                    icon: "uil uil-layer-group"
+                    id: "addScreenshot",
+                    name: "Add Screenshot",
+                    icon: "uil uil-image-v"
                 },
                 {
                     id: "entries",
@@ -923,17 +918,12 @@ const vueApp = new Vue({
             await this.initPopover()
         }
 
-        if (this.currentPage.id == "screenshots") {
-            await this.getScreenshots()
-            await this.initPopover()
-        }
-
         if (this.currentPage.id == "notes") {
             await this.getNotes()
             await this.initPopover()
         }
 
-        if (this.currentPage.id == "setups") {
+        if (this.currentPage.id == "screenshots") {
             await this.getSetupsEntries()
             await this.initPopover()
         }
@@ -950,7 +940,7 @@ const vueApp = new Vue({
             await sessionStorage.removeItem('editItemId');
         }
 
-        if (this.currentPage.id == "addJournal") {
+        if (this.currentPage.id == "addDiary") {
             await this.getJournalToEdit(itemToEditId)
             await this.initJournalJson()
             await Promise.all([this.initQuill(0), this.initQuill(1), this.initQuill(2)])
@@ -965,7 +955,7 @@ const vueApp = new Vue({
             await this.playbookDateInput(this.currentDate)
         }
 
-        if (this.currentPage.id == "addSetup") {
+        if (this.currentPage.id == "addScreenshot") {
             await this.getSetupToEdit(itemToEditId)
             await sessionStorage.removeItem('editItemId');
         }
@@ -1391,7 +1381,7 @@ const vueApp = new Vue({
                 },
                 {
                     id: 'step7',
-                    text: 'Setups show all your screenshots of setups and entries.',
+                    text: 'Screenshots: show all your screenshots of setups and entries.',
                     attachTo: {
                         element: '#step7',
                         on: 'right'
@@ -1481,7 +1471,7 @@ const vueApp = new Vue({
                 },
                 {
                     id: 'step11',
-                    text: "<p>Click here to add trades, journal entries, setups or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Journal is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in this case). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
+                    text: "<p>Click here to add trades, diary entries, screenshots or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Journal is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in this case). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
                     attachTo: {
                         element: '#step11',
                         on: 'bottom'
@@ -1563,12 +1553,12 @@ const vueApp = new Vue({
                     console.log("note " + this.note.note)
                 }
 
-                if (this.currentPage.id == "addSetup") {
+                if (this.currentPage.id == "addScreenshot") {
                     this.setupUpdate.checkList = document.querySelector(".ql-editor").innerHTML
                         //console.log("setup " + JSON.stringify(this.setupUpdate))
                 }
 
-                if (this.currentPage.id == "addJournal") {
+                if (this.currentPage.id == "addDiary") {
 
                     let elements = document.querySelectorAll(".ql-editor");
                     elements.forEach((input, index) => {
@@ -1678,7 +1668,7 @@ const vueApp = new Vue({
                 if (this.currentPage.id == "notes") {
                     this.deleteNote()
                 }
-                if (this.currentPage.id == "setups") {
+                if (this.currentPage.id == "screenshots") {
                     this.deleteSetup()
                 }
                 if (this.currentPage.id == "entries") {
@@ -1974,13 +1964,13 @@ const vueApp = new Vue({
         editItem(param) {
             sessionStorage.setItem('editItemId', param);
             if (this.currentPage.id == "daily" || this.currentPage.id == "diary") {
-                window.location.href = "/addJournal"
+                window.location.href = "/addDiary"
             }
             if (this.currentPage.id == "entries") {
                 window.location.href = "/addEntry"
             }
-            if (this.currentPage.id == "setups") {
-                window.location.href = "/addSetup"
+            if (this.currentPage.id == "screenshots") {
+                window.location.href = "/addScreenshot"
             }
             if (this.currentPage.id == "playbook") {
                 window.location.href = "/addPlaybook"
