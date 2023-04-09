@@ -24,6 +24,10 @@ const brokersMixin = {
                 {
                     value: "interactiveBrokers",
                     label: "Interactive Brokers"
+                },
+                {
+                    value: "heldentrader",
+                    label: "Heldentrader"
                 }
             ],
             selectedBroker: localStorage.getItem('selectedBroker'),
@@ -44,9 +48,9 @@ const brokersMixin = {
                     let papaParse = Papa.parse(param, { header: true })
                         //we need to recreate the JSON with proper date format + we simplify
                     this.tradesData = JSON.parse(JSON.stringify(papaParse.data))
-                        //console.log("tradesData " + JSON.stringify(this.tradesData))
+                    console.log("tradesData " + JSON.stringify(this.tradesData))
                 } catch (error) {
-                    console.log("  --> ERROR " + error)
+                    //console.log("  --> ERROR " + error)
                     reject(error)
                 }
                 resolve()
@@ -457,5 +461,84 @@ const brokersMixin = {
                 resolve()
             })
         },
-    }
+
+        /****************************
+         * HELDENTRADER
+         ****************************/
+        brokerHeldentrader: async function(param) {
+            return new Promise(async(resolve, reject) => {
+                    try {
+                        //console.log(" param " + param)
+                        let newCsv = [];
+                        let lines = param.split("\n");
+                        lines.forEach((item, i) => {
+                            if (i !== 0) newCsv.push(item);
+                        })
+
+                        newCsv = newCsv.join("\n");
+                        //console.log(newCsv);
+
+                    this.tradesData = []
+                    let papaParse = Papa.parse(newCsv, { header: true })
+                        //we need to recreate the JSON with proper date format + we simplify
+                    //console.log("papaparse " + JSON.stringify(papaParse.data))
+                        papaParse.data.forEach(element => {
+                            if (element.Account && element.Account != "Total") {
+                                //console.log("element " + JSON.stringify(element))
+                                let temp = {}
+                                temp.Account = element.Account
+                                //let tempDate = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYYTHH:mm:ss')
+                                //console.log(" tempDate "+tempDate)
+                                    //console.log("element.TradeDate. " + element.TradeDate)
+                                //let tempDate = element.Date.split(" ")[0]
+                                //let tempTime = element.Date.split(" ")[1]
+
+                                temp["T/D"] = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYY')
+                                temp["S/D"] = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYY')
+                                temp.Currency = "USD"
+                                temp.Type = "0"
+                                if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Buy") {
+                                    temp.Side = "B"
+                                }
+                                if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Sell") {
+                                    temp.Side = "SS"
+                                }
+                                if (!element["Client order ID"] && element.Operation == "Buy") {
+                                    temp.Side = "BC"
+                                }
+                                if (!element["Client order ID"] && element.Operation == "Sell") {
+                                    temp.Side = "S"
+                                }
+
+                                temp.Symbol = element.Instrument
+                                temp.Qty = element.Amount
+                                temp.Price = element.Price
+
+                                temp["Exec Time"] = dayjs(element.Date).tz(this.tradeTimeZone).format('HH:mm:ss')
+
+                                temp.Comm = element["Execution fee"]
+                                temp.SEC = "0"
+                                temp.TAF = "0"
+                                temp.NSCC = "0"
+                                temp.Nasdaq = "0"
+                                temp["ECN Remove"] = "0"
+                                temp["ECN Add"] = "0"
+                                temp["Gross Proceeds"] = element.Profit
+                                temp["Net Proceeds"] = (Number(temp["Gross Proceeds"]) - Number(element["Execution fee"])).toString()
+                                temp["Clr Broker"] = ""
+                                temp.Liq = ""
+                                temp.Note = ""
+                                    //console.log("temp "+JSON.stringify(temp))*/
+                                this.tradesData.push(temp)
+                            }
+                        })
+                        //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                } catch (error) {
+                    console.log("  --> ERROR " + error)
+                    reject(error)
+                }
+                resolve()
+            })
+    },
+}
 }

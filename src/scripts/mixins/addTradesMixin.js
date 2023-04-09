@@ -293,6 +293,15 @@ const addTradesMixin = {
                 await this.brokerInteractiveBrokers(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
+            /****************************
+             * HELDENTRADER
+             ****************************/
+            if (this.selectedBroker == "heldentrader") {
+                console.log(" -> Heldentrader")
+                let fileInput = await readAsText(files)
+                await this.brokerHeldentrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+            }
+
             create()
         },
 

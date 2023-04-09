@@ -96,7 +96,7 @@ const diariesMixin = {
                     window.location.href = "/daily"
                 }
                 if (this.currentPage.id == "addDiary") {
-                    window.location.href = "/journal"
+                    window.location.href = "/diary"
                 }
 
             }
