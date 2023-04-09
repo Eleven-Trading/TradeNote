@@ -490,11 +490,19 @@ const brokersMixin = {
                                 //let tempDate = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYYTHH:mm:ss')
                                 //console.log(" tempDate "+tempDate)
                                     //console.log("element.TradeDate. " + element.TradeDate)
-                                //let tempDate = element.Date.split(" ")[0]
-                                //let tempTime = element.Date.split(" ")[1]
+                                let tempDate = element.Date.split(" ")[0]
+                                let tempTime = element.Date.split(" ")[1]
+                                let tempDD = tempDate.split(".")[0]
+                                let tempMM = tempDate.split(".")[1]
+                                let tempYYYY = tempDate.split(".")[2]
 
-                                temp["T/D"] = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYY')
-                                temp["S/D"] = dayjs(element.Date).tz(this.tradeTimeZone).format('MM/DD/YYYY')
+                                //let tempTime = element.Date.split(" ")[1]
+                                
+                                let newTime = tempMM+"/"+tempDD+"/"+tempYYYY+" "+tempTime
+                                //console.log(" newTime "+newTime)
+                                temp["T/D"] = dayjs(newTime).tz(this.tradeTimeZone).format('MM/DD/YYYY')
+                                temp["S/D"] = dayjs(newTime).tz(this.tradeTimeZone).format('MM/DD/YYYY')
+                                //console.log("td "+temp["T/D"])
                                 temp.Currency = "USD"
                                 temp.Type = "0"
                                 if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Buy") {
@@ -514,7 +522,7 @@ const brokersMixin = {
                                 temp.Qty = element.Amount
                                 temp.Price = element.Price
 
-                                temp["Exec Time"] = dayjs(element.Date).tz(this.tradeTimeZone).format('HH:mm:ss')
+                                temp["Exec Time"] = dayjs(newTime).tz(this.tradeTimeZone).format('HH:mm:ss')
 
                                 temp.Comm = Number(-element["Execution fee"]).toString()
                                 temp.SEC = "0"
@@ -532,7 +540,7 @@ const brokersMixin = {
                                 this.tradesData.push(temp)
                             }
                         })
-                        console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                        //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
                 } catch (error) {
                     console.log("  --> ERROR " + error)
                     reject(error)
