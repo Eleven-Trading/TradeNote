@@ -516,7 +516,7 @@ const brokersMixin = {
 
                                 temp["Exec Time"] = dayjs(element.Date).tz(this.tradeTimeZone).format('HH:mm:ss')
 
-                                temp.Comm = element["Execution fee"]
+                                temp.Comm = Number(-element["Execution fee"]).toString()
                                 temp.SEC = "0"
                                 temp.TAF = "0"
                                 temp.NSCC = "0"
@@ -524,7 +524,7 @@ const brokersMixin = {
                                 temp["ECN Remove"] = "0"
                                 temp["ECN Add"] = "0"
                                 temp["Gross Proceeds"] = element.Profit
-                                temp["Net Proceeds"] = (Number(temp["Gross Proceeds"]) - Number(element["Execution fee"])).toString()
+                                temp["Net Proceeds"] = (Number(temp["Gross Proceeds"]) - Number(-element["Execution fee"])).toString()
                                 temp["Clr Broker"] = ""
                                 temp.Liq = ""
                                 temp.Note = ""
@@ -532,7 +532,7 @@ const brokersMixin = {
                                 this.tradesData.push(temp)
                             }
                         })
-                        //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                        console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
                 } catch (error) {
                     console.log("  --> ERROR " + error)
                     reject(error)
