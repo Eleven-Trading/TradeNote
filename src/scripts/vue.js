@@ -909,7 +909,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "diary") {
-            await this.getJournals(30)
+            await this.getJournals()
             await this.initPopover()
         }
 

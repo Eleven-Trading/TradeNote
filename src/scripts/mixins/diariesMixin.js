@@ -28,12 +28,28 @@ const diariesMixin = {
 
                 }
             ],
+            diaryQueryLimit: 10,
+            diaryPagination: 0
         }
     },
     watch: {
 
     },
-    mounted() {},
+    mounted() {
+        if (this.currentPage.id == "diary") {
+            window.addEventListener('scroll', () => {
+                //console.log(window.scrollY) //scrolled from top
+                //console.log(window.innerHeight) //visible part of screen
+                if (window.scrollY + window.innerHeight >=
+                    document.documentElement.scrollHeight) {
+                    if (this.currentPage.id == "diary") {
+                        console.log(" -> Load new diary entries")
+                        this.getJournals()
+                    }
+                }
+            })
+        }
+    },
     methods: {
         initJournalJson: async function(param) {
             return new Promise(async(resolve, reject) => {
@@ -48,7 +64,7 @@ const diariesMixin = {
             this.journalUpdate.dateUnix = dayjs.tz(param, this.tradeTimeZone).unix()
             this.journalUpdate.date = dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD")
             this.journalUpdate.dateDateFormat = new Date(dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD"))
-            //console.log(" -> journalDateUnix " + this.journalUpdate.dateUnix + " and date " + this.journalUpdate.date)
+                //console.log(" -> journalDateUnix " + this.journalUpdate.dateUnix + " and date " + this.journalUpdate.date)
                 //console.log("journalUpdate " + JSON.stringify(this.journalUpdate))
         },
         getJournals: async function(param) {
@@ -59,12 +75,24 @@ const diariesMixin = {
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
                 //query.greaterThanOrEqualTo("dateUnix", this.selectedPeriodRange.start)
-                    //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(param ? param : 10000); // limit to at most 10 results
-                this.journals = []
+                //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
+                if (param) { // if "full" false (case for daily page), then only certain limit. Else sull
+                    query.greaterThanOrEqualTo("dateUnix", this.selectedMonth.start)
+                    query.lessThanOrEqualTo("dateUnix", this.selectedMonth.end)
+                } else {
+                    query.limit(this.diaryQueryLimit);
+                    query.skip(this.diaryPagination)
+                }
                 const results = await query.find();
-                this.journals = JSON.parse(JSON.stringify(results))
-                //console.log(" -> Journals " + JSON.stringify(this.journals))
+
+                if (this.currentPage.id == "diary") {
+                    this.journals = this.journals.concat(JSON.parse(JSON.stringify(results)))
+                }else{
+                    this.journals = JSON.parse(JSON.stringify(results))
+                }
+                
+                    //console.log(" -> Journals " + JSON.stringify(this.journals))
+                this.diaryPagination = this.diaryPagination + this.diaryQueryLimit
                 resolve()
             })
         },

@@ -80,16 +80,18 @@ const screenshotsMixin = {
                     query.limit(this.setupsEntriesQueryLimit);
                     query.skip(this.setupsEntriesPagination)
                 }
+                const results = await query.find();
+
                 if (this.currentPage.id == "daily") {
                     //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
-                    this.setups = []
+                    this.setups = JSON.parse(JSON.stringify(results))
+                }else{
+                    this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
                 }
-                const results = await query.find();
-                this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
-                    //console.log(" -> Setups " + JSON.stringify(this.setups))
+                
                 this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
-                    //console.log(" -> setupsEntriesPagination (end)" + this.setupsEntriesPagination);
+
                 this.spinnerSetups = false //spinner for trades in daily
                 resolve()
             })

@@ -14,7 +14,7 @@
                     <tr>
                         <th scope="col">Symbol</th>
                         <th scope="col">Qty</th>
-                        <th scope="col">Side</th>
+                        <th scope="col">Entry</th>
                         <th scope="col">Time</th>
                         <th scope="col">Price</th>
                         <!--<th scope="col">Duration</th>-->
@@ -35,7 +35,7 @@
                     <tr v-for="(trade, index2) in daily.trades"  data-bs-toggle="modal" data-bs-target="#tradesModal"  v-on:click="clickTradesModal(trade.videoStart&&trade.videoEnd ? true : false, index2, daily)" class="pointerClass">
                         <td>{{trade.symbol}}</td>
                         <td>{{trade.buyQuantity+trade.sellQuantity}}</td>
-                        <td>{{trade.side}}</td>
+                        <td>{{trade.strategy.charAt(0).toUpperCase() + trade.strategy.slice(1)}}</td>
                         <td>{{timeFormat(trade.entryTime)}}</td>
                         <td>{{(trade.entryPrice).toFixed(2)}}</td>
                         <!--<td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>-->
@@ -118,25 +118,19 @@
             </div>
         </div>
 
-        <!-- JOURNALS TAB -->
-        <div class="tab-pane fade" v-bind:id="'journalsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
+        <!-- DIARY TAB -->
+        <div class="tab-pane fade" v-bind:id="'diariesNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
             <div v-if="journals.findIndex(obj => obj.dateUnix==daily.dateUnix) != -1">
-                <p>
-                    <div class="row journalRow">
-                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                        <span class="col mb-2 ms-auto text-end">
-                            <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].objectId)"></i>
-                            <i v-on:click="selectedItem = note.id" class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true" data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>" data-bs-toggle="popover" data-bs-placement="left" data-bs-content="Left popover"></i>
-                        </span>
-                    </div>
+                <p v-if="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.positive != '<p><br></p>'">
+                    <span  class="dashInfoTitle col mb-2">Positive aspect</span>
                     <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.positive"></span>
                 </p>
-                <p>
+                <p v-if="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.negative != '<p><br></p>'">
                     <span class="dashInfoTitle">Negative aspect</span>
                     <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.negative"></span>
                 </p>
-                <p>
-                    <span class="dashInfoTitle">Other</span>
+                <p v-if="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.other != '<p><br></p>'">
+                    <span class="dashInfoTitle">Observations</span>
                     <span v-html="journals[journals.findIndex(obj => obj.dateUnix==daily.dateUnix)].journal.other"></span>
                 </p>
             </div>
