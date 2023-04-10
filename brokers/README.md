@@ -1,5 +1,36 @@
 # Import instructions
-Different brokers have different export options so on this page you will find import instructions for some of the brokers supported by TradeNote
+Different brokers have different export options so on this page you will find import instructions for some of the brokers supported by TradeNote.
+
+You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker. Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
+
+## Template
+If you wish to adapt your export file to the template, below is the explanation for each of the columns. 
+- Account: your accound id or name
+- T/D: trade date in MM/DD/YYYY format
+- S/D: same as T/D, trade date in MM/DD/YYYY format
+- Currency: currency applied to the price of symbol
+- Type: not relevant. Put 0
+- Side: side of the execution
+    - B: Buy
+    - S: Sell
+    - SS: Short
+    - BC: Buy cover
+- Symbol: symbol
+- Qty: number of shares executed
+- Price: price of symbol
+- Exec Time: trade time in HH:mm:ss format
+- Comm: commissions. Must be a positive number
+- SEC: SEC fees. Put 0 if not applicable
+- TAF: TAF fees. Put 0 if not applicable
+- NSCC: NSCC fees. Put 0 if not applicable. 
+- Nasdaq: Nasdaq fees. Put 0 if not applicable
+- ECN Remove: not applicable. Put 0
+- ECN Add: not applicable. Put 0
+- Gross Proceeds
+- Net Proceeds: gross proceeds minus commissions and fees
+- Clr Broker: not applicable. Leave blank
+- Liq: not applicable. Leave blank
+- Note: not applicable. Leave blank
 
 ## Interactive Brokers
 ### Navigating to Flex Queries
