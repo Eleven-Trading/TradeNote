@@ -70,12 +70,12 @@ Besides notes for every trade, you can record things related to your every day t
 
 ![Journal Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.53.png "Journal Page")
 
-#### Setups Page
+#### Screenshots Page
 Upload screenshots of you trades ("Entry" option) or simply an interesting setup you have identified ("Setup" option) and make annotations for further analysis.
 
-![Add Setup](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.02.png "Add Setup")
+![Add Screenshot](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.02.png "Add Screenshots")
 
-![Setups Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Setups Page")
+![Screenshots Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Screenshots Page")
 
 
 
