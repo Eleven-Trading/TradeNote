@@ -28,14 +28,14 @@ Currently, you can add trades from the following brokers
  - TradeStation
  - Interactive Brokers
 
-Please look at the [brokers readme and folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/README.md "brokers readme and folder") to see the export format for you broker.
+Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the export format for you broker.
 
 You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
 Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
 
 ### Type of trades
-TradeNote works best for intraday stocks and forex trading. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
+TradeNote works best for intraday US stocks. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
 ### Upcoming features
 You can see upcoming features on [Trello](https://trello.com/b/GOqJSF2v/tradenote "Trello").
@@ -132,7 +132,7 @@ Run the image with the following environment variables
 #### 3_ First Steps
 1. Start by registering a user. Visit `http://<your_server>:7777/register` to register a TradeNote user. Use any email and set a password
 2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
-2. Import your trades. See the [brokers readme and folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/README.md "brokers readme and folder") for more information
+2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
 
 ### Side note
 #### Parse
