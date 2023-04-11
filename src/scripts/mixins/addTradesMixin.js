@@ -899,9 +899,9 @@ const addTradesMixin = {
             return new Promise(async(resolve, reject) => {
                 console.log("  --> Updating excursion DB with MFE price")
                 this.loadingSpinnerText = "Updating MFE prices in excursions"
-                console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
+                //console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
                 this.mfePrices.forEach(element => {
-                    console.log(" element " + element)
+                    //console.log(" element " + element)
                     const Object = Parse.Object.extend("excursions");
                     const object = new Object();
                     object.set("user", Parse.User.current())

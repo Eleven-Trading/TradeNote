@@ -678,8 +678,7 @@ const vueApp = new Vue({
             todayDate: null,
             todayMonth: null,
             todayYear: null,
-            dailyTabs: [
-                {
+            dailyTabs: [{
                     id: "trades",
                     label: "Trades",
                     target: "#tradesNav"
@@ -956,6 +955,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "addScreenshot") {
+            await this.getSetupsEntries()
             await this.getSetupToEdit(itemToEditId)
             await sessionStorage.removeItem('editItemId');
         }

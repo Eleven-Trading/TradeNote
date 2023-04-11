@@ -45,7 +45,7 @@ const chartsCalMixin = {
                             calTrade = this.allTrades
                         }
                     }*/
-                    
+
                     calendarizeData.forEach((element, index) => {
                         //console.log("element "+element)
                         calendarJson[index] = []

@@ -39,7 +39,9 @@ const screenshotsMixin = {
                 }
             ],
             setupsEntriesQueryLimit: 6,
-            setupsEntriesPagination: 0
+            setupsEntriesPagination: 0,
+            setupsEntriesNames: [],
+            patternsMistakes: [],
         }
     },
 
@@ -81,18 +83,41 @@ const screenshotsMixin = {
                     query.skip(this.setupsEntriesPagination)
                 }
                 const results = await query.find();
+                let parsedResult = JSON.parse(JSON.stringify(results))
+
+                parsedResult.forEach(element => {
+                    this.setupsEntriesNames.push(element.name)
+                });
 
                 if (this.currentPage.id == "daily") {
                     //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
-                    this.setups = JSON.parse(JSON.stringify(results))
-                }else{
-                    this.setups = this.setups.concat(JSON.parse(JSON.stringify(results)))
+                    this.setups = parsedResult
+                } else {
+                    this.setups = this.setups.concat(parsedResult)
                 }
-                
-                this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
 
+                this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
+                await this.getPatternsMistakes()
                 this.spinnerSetups = false //spinner for trades in daily
+                resolve()
+            })
+        },
+
+        getPatternsMistakes: async function(param) {
+            return new Promise(async(resolve, reject) => {
+                console.log(" -> Getting patternsMistakes");
+
+                //console.log(" -> setupsEntriesPagination (start)" + this.setupsEntriesPagination);
+                //console.log(" selected start date " + this.selectedMonth.start)
+                const Object = Parse.Object.extend("patternsMistakes");
+                const query = new Parse.Query(Object);
+                query.containedIn("tradeId", this.setupsEntriesNames);
+                const results = await query.find();
+
+                this.patternsMistakes = JSON.parse(JSON.stringify(results))
+                //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
+
                 resolve()
             })
         },
@@ -110,11 +135,24 @@ const screenshotsMixin = {
             const results = await query.first();
             if (results) {
                 this.setup = JSON.parse(JSON.stringify(results))
+
                 if (this.setup.side) {
                     this.setup.type = "entry"
                 } else {
                     this.setup.type = "setup"
                 }
+
+                let index = this.patternsMistakes.findIndex(obj => obj.tradeId==this.setup.name)
+                
+                if (this.patternsMistakes[index].hasOwnProperty('pattern') && this.patternsMistakes[index].pattern != null && this.patternsMistakes[index].pattern != undefined && this.patternsMistakes[index].pattern.hasOwnProperty('objectId')) this.setup.pattern = this.patternsMistakes[index].pattern.objectId
+
+                if (this.patternsMistakes[index].hasOwnProperty('mistake') && this.patternsMistakes[index].mistake != null && this.patternsMistakes[index].mistake != undefined && this.patternsMistakes[index].mistake.hasOwnProperty('objectId')) this.setup.mistake = this.patternsMistakes[index].mistake.objectId
+
+                //updating patterns and mistakes used in dailyMixin
+                this.tradeSetup.pattern = this.setup.pattern
+                this.tradeSetup.mistake = this.setup.mistake
+                this.tradeSetupId = this.setup.name
+                this.tradeSetupDateUnix = this.setup.dateUnixDay
 
             } else {
                 alert("Query did not return any results")
@@ -232,9 +270,12 @@ const screenshotsMixin = {
                 //console.log(" -> dateUnix " + this.setup.dateUnix)
 
 
-                this.setup.side ? this.setup.name = "t" + this.setup.dateUnix + "_" + this.setup.symbol + "_" + this.setup.side : this.setup.dateUnix + "_" + this.setup.symbol
+                this.setup.side ? this.setup.name = "t" + this.setup.dateUnix + "_" + this.setup.symbol + "_" + this.setup.side : this.setup.name = this.setup.dateUnix + "_" + this.setup.symbol
                     //console.log("name " + this.setup.name)
 
+                await this.hideTradesModal() //I reuse the function from dailyMixin, for storing patterns and mistakes
+                
+                //Upload screenshot
                 await this.uploadSetupScreenshotToParse()
 
                 resolve()

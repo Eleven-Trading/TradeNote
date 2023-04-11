@@ -15,8 +15,15 @@
                 </div>
                 <div class="col-12">
                     <div class="row mt-2 journalRow">
-                        <span v-if="setup.side" class="col mb-2">{{setup.symbol}} @ {{timeFormat(setup.dateUnix)}} ({{setup.side}})</span>
-                        <span v-else class="col mb-2">{{setup.symbol}} @ {{hourMinuteFormat(setup.dateUnix)}}</span>
+                        <span class="col mb-2 txt-small">{{setup.symbol}}
+                            <span v-if="setup.side"> | {{setup.side == 'SS' || setup.side == 'BC' ? 'Short' : 'Long'}} | {{timeFormat(setup.dateUnix)}}</span>
+                            <span v-else class="col mb-2"> | {{hourMinuteFormat(setup.dateUnix)}}</span>
+                            <span v-if="patternsMistakes.findIndex(obj => obj.tradeId==setup.name)>0">
+                                
+                                <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.name}}</span>
+                                
+                                <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.name}}</span></span>
+                        </span>
                         <span class="col mb-2 ms-auto text-end">
                             <i class="uil uil-expand-arrows-alt pointerClass me-4" v-on:click="expandedSetup = setup.objectId"></i>
                             <i class="uil uil-edit-alt editItem pointerClass" v-on:click="editItem(setup.objectId)"></i>
@@ -40,8 +47,10 @@
                     <img class="d-block w-100" v-bind:src="setup.annotated.url">
                     <div class="carousel-caption d-none d-md-block">
                         <h5>{{createdDateFormat(setup.dateUnix)}}</h5>
-                        <p v-if="setup.side" class="col mb-2">{{setup.symbol}} @ {{timeFormat(setup.dateUnix)}} ({{setup.side}})</p>
-                        <p v-else class="col mb-2">{{setup.symbol}} @ {{hourMinuteFormat(setup.dateUnix)}}</p>
+                        <p>{{setup.symbol}}
+                            <span v-if="setup.side"> | {{setup.side == 'SS' || setup.side == 'BC' ? 'Short' : 'Long'}} | {{timeFormat(setup.dateUnix)}}</span>
+                            <span v-else class="col mb-2"> | {{hourMinuteFormat(setup.dateUnix)}}</span>
+                            <span v-if="patternsMistakes.findIndex(obj => obj.tradeId==setup.name)>0 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.name != null"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.name}}</span></p>
                     </div>
                 </div>
             </div>

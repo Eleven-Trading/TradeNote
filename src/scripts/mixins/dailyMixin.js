@@ -134,7 +134,7 @@ const dailyMixin = {
          ***************/
 
         tradeSetupChange(param1, param2, param3, param4) {
-            //console.log("param 1 " + param1 + " param2 " + param2)
+            console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4)
             if (param2 == "pattern") {
                 this.tradeSetup.pattern = param1
             }
@@ -144,9 +144,12 @@ const dailyMixin = {
             if (param2 == "note") {
                 this.tradeSetup.note = param1
             }
-            this.tradeSetupDateUnix = param3
-            this.tradeSetupId = param4
-                //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
+            if (this.currentPage.id == "daily") {
+                this.tradeSetupDateUnix = param3
+                this.tradeSetupId = param4
+            } // else in Screenhsot mixin, we define them on edit
+
+            //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
             this.tradeSetupChanged = true
             this.indexedDBtoUpdate = true
 
@@ -581,7 +584,8 @@ const dailyMixin = {
                 alert("Please save your setup annotation")
                 return
             } else {
-                this.tradesModal.hide()
+                if (this.currentPage.id == "daily") this.tradesModal.hide()
+
                 console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
                 if (this.indexedDBtoUpdate) {
 
@@ -773,6 +777,7 @@ const dailyMixin = {
 
                 if (this.tradeSetupChanged) {
                     query.equalTo("dateUnix", this.tradeSetupDateUnix)
+                    console.log(" date unix " + this.tradeSetupDateUnix)
                 }
                 if (this.tradeSatisfactionChanged) {
                     query.equalTo("dateUnix", this.tradeSatisfactionDateUnix)
@@ -828,7 +833,11 @@ const dailyMixin = {
 
                     })
                 } else {
-                    alert("Update query did not return any results")
+                    if (this.currentPage.id == "daily") {
+
+                    } else {
+                        console.log(" -> Query in trades DB did not return any results")
+                    }
                     this.spinnerSetups = false
                     resolve()
                 }
