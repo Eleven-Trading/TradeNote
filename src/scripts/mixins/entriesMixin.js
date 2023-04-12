@@ -121,7 +121,7 @@ const entriesMixin = {
             this.entry.date = event
             console.log("entry date (local time, i.e. New York time) " + this.entry.date)
             this.entry.dateUnix = dayjs.tz(this.entry.date, this.tradeTimeZone).unix()
-            console.log("unix " + dayjs.tz(this.entry.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
+            //console.log("unix " + dayjs.tz(this.entry.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
         },
 
         saveEntry: async function() {

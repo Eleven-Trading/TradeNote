@@ -121,7 +121,7 @@
 
                                         <!-- Patterns -->
                                         <div class="col-5">
-                                            <select v-on:change="tradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
+                                            <select v-on:change="tradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)" class="form-select">
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="item in patterns.filter(r => r.active == true)" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">{{item.name}}</option>
                                             </select>
@@ -129,7 +129,7 @@
 
                                         <!-- Mistakes -->
                                         <div class="col-5">
-                                            <select v-on:change="tradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id)" class="form-select">
+                                            <select v-on:change="tradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)" class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in mistakes.filter(r => r.active == true)" v-bind:value="item.objectId" v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">{{item.name}}</option>
                                             </select>
@@ -159,7 +159,7 @@
 
                                 <!-- Third line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                    <textarea class="form-control" placeholder="note" id="floatingTextarea" v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''" v-on:input="tradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id)"></textarea>
+                                    <textarea class="form-control" placeholder="note" id="floatingTextarea" v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''" v-on:input="tradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"></textarea>
                                 </div>
 
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">

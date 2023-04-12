@@ -277,7 +277,10 @@ const vueApp = new Vue({
                             type: "Pointer",
                             targetClass: "mistakes"
                         },
-                        tradeUnixDate: {
+                        dateUnixDay: {
+                            type: "Number"
+                        },
+                        dateUnix: {
                             type: "Number"
                         },
                         tradeId: {
@@ -923,7 +926,7 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "screenshots") {
-            await this.getSetupsEntries()
+            await this.getScreenshots()
             await this.initPopover()
         }
 
@@ -955,8 +958,8 @@ const vueApp = new Vue({
         }
 
         if (this.currentPage.id == "addScreenshot") {
-            await this.getSetupsEntries()
-            await this.getSetupToEdit(itemToEditId)
+            await this.getScreenshots()
+            await this.getScreenshotToEdit(itemToEditId)
             await sessionStorage.removeItem('editItemId');
         }
 
@@ -1669,7 +1672,7 @@ const vueApp = new Vue({
                     this.deleteNote()
                 }
                 if (this.currentPage.id == "screenshots") {
-                    this.deleteSetup()
+                    this.deleteScreenshot()
                 }
                 if (this.currentPage.id == "entries") {
                     this.deleteEntry()

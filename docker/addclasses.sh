@@ -140,7 +140,7 @@ curl -X POST \
         "pattern": {"type": "Pointer", "targetClass":"patterns"},
         "mistake": {"type": "Pointer", "targetClass":"mistakes"},
         "note": {"type": "String"},
-        "tradeUnixDate": {"type": "Number"},
+        "dateUnixDay": {"type": "Number"},
         "tradeId": {"type": "String"}
       }
     }' \

@@ -8,7 +8,7 @@
                     </select>
                 </div>
                 <div class="col">
-                    <input type="datetime-local" v-bind:step="setup.type == 'setup' ? '' : '1'" class="form-control" v-bind:value="setup.hasOwnProperty('dateUnix') ? datetimeLocalFormat(setup.dateUnix) : currentDate" v-on:input="setupUpdateDate($event.target.value)"/>
+                    <input type="datetime-local" v-bind:step="setup.type == 'setup' ? '' : '1'" class="form-control" v-bind:value="setup.hasOwnProperty('dateUnix') ? datetimeLocalFormat(setup.dateUnix) : currentDate" v-on:input="screenshotUpdateDate($event.target.value)"/>
                 </div>
                 <div class="col">
                     <input type="text" class="form-control" v-bind:value="setup.hasOwnProperty('symbol') ? setup.symbol : ''" v-on:input="setup.symbol = $event.target.value" placeholder="Symbol"/>
@@ -54,6 +54,6 @@
     </p>
 
     <div class="mt-3 mb-3">
-        <button type="button" v-on:click="saveSetup" class="btn btn-success btn-sm">Submit</button>
+        <button type="button" v-on:click="saveScreenshot" class="btn btn-success btn-sm">Submit</button>
     </div>
 </div>

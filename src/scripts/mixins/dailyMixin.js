@@ -16,6 +16,7 @@ const dailyMixin = {
                 note: null,
             },
             tradeSetupChanged: false,
+            tradeSetupDateUnixDay: null,
             tradeSetupDateUnix: null,
             tradeSetupId: null,
 
@@ -88,6 +89,24 @@ const dailyMixin = {
             })
         },
 
+        getPatternsMistakes: async function(param) {
+            return new Promise(async(resolve, reject) => {
+                console.log(" -> Getting patternsMistakes");
+
+                //console.log(" -> screenshotsPagination (start)" + this.screenshotsPagination);
+                //console.log(" selected start date " + this.selectedMonth.start)
+                const Object = Parse.Object.extend("patternsMistakes");
+                const query = new Parse.Query(Object);
+                query.containedIn("tradeId", this.screenshotsNames);
+                const results = await query.find();
+
+                this.patternsMistakes = JSON.parse(JSON.stringify(results))
+                    //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
+
+                resolve()
+            })
+        },
+
         getTradesSatisfaction: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nGETTING SATISFACTION FOR EACH TRADE");
@@ -133,8 +152,8 @@ const dailyMixin = {
          * SETUP
          ***************/
 
-        tradeSetupChange(param1, param2, param3, param4) {
-            console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4)
+        tradeSetupChange(param1, param2, param3, param4, param5) {
+            console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
             if (param2 == "pattern") {
                 this.tradeSetup.pattern = param1
             }
@@ -145,8 +164,9 @@ const dailyMixin = {
                 this.tradeSetup.note = param1
             }
             if (this.currentPage.id == "daily") {
-                this.tradeSetupDateUnix = param3
+                this.tradeSetupDateUnixDay = param3
                 this.tradeSetupId = param4
+                this.tradeSetupDateUnix = param5
             } // else in Screenhsot mixin, we define them on edit
 
             //console.log("tradesetup in change " + JSON.stringify(this.tradeSetup))
@@ -156,7 +176,7 @@ const dailyMixin = {
         },
 
         updatePatternsMistakes: async function() {
-            console.log("\nUPDATING OR SAVING SETUPS IN PATTERNS MISTAKE PARSE DB")
+            console.log("\nUPDATING OR SAVING SETUPS IN PATTERNS MISTAKES PARSE DB")
             return new Promise(async(resolve, reject) => {
 
                 if (this.tradeSetup.pattern != null || this.tradeSetup.mistake != null || this.tradeSetup.note != null) {
@@ -167,6 +187,8 @@ const dailyMixin = {
                     const query = new Parse.Query(Object);
                     query.equalTo("tradeId", this.tradeSetupId)
                     const results = await query.first();
+
+                    //UPDATING
                     if (results) {
                         console.log(" -> Updating patterns mistakes")
                         this.spinnerSetupsText = "Updating"
@@ -181,7 +203,10 @@ const dailyMixin = {
                             }, (error) => {
                                 console.log('Failed to create new object, with error code: ' + error.message);
                             })
-                    } else {
+                    }
+
+                    //SAVING
+                    else {
                         console.log(" -> Saving patterns mistakes")
                         this.spinnerSetupsText = "Saving"
 
@@ -199,12 +224,13 @@ const dailyMixin = {
                             object.set("note", null)
                         }
 
-                        object.set("tradeUnixDate", this.tradeSetupDateUnix)
+                        object.set("dateUnixDay", this.tradeSetupDateUnixDay)
+                        object.set("dateUnix", this.tradeSetupDateUnix)
                         object.set("tradeId", this.tradeSetupId)
                         object.setACL(new Parse.ACL(Parse.User.current()));
                         object.save()
                             .then(async(object) => {
-                                console.log(' -> Added new setup with id ' + object.id)
+                                console.log('  --> Added new patterns mistake with id ' + object.id)
                                     //this.spinnerSetupsText = "Added new setup"
                                 this.tradeId = this.tradeSetupId // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
                             }, (error) => {
@@ -221,7 +247,7 @@ const dailyMixin = {
 
         deletePatternMistake: async function(param1, param2) {
             console.log("\nDELETING PATTERN MISTAKE")
-            this.tradeSetupDateUnix = param1
+            this.tradeSetupDateUnixDay = param1 // not used here but when when deleting trades (updateTrades(true))
             this.tradeSetupId = param2
             this.spinnerSetups = true
             this.tradeSetupChanged = true
@@ -236,9 +262,9 @@ const dailyMixin = {
                 const results = await query.first();
                 if (results) {
                     results.destroy().then(async() => {
-                        console.log('  --> Deleted setup with id ' + results.id)
+                        console.log('  --> Deleted patterns mistakes with id ' + results.id)
                         this.resetSetup()
-                        await this.updateTrades(true)
+                        await this.updateTrades(true) // delete = true
                     }, (error) => {
                         console.log('Failed to delete setup, with error code: ' + error.message);
                     });
@@ -256,7 +282,7 @@ const dailyMixin = {
          * SATISFACTION
          ***************/
 
-        updateDailySatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: tradeUnixDate ; param4: tradeId
+        updateDailySatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
             console.log("\nUPDATING OR SAVING SATISFACTIONS IN PARSE")
             console.log(" param 1 " + param1)
             return new Promise(async(resolve, reject) => {
@@ -347,7 +373,7 @@ const dailyMixin = {
 
         },
 
-        updateTradeSatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: tradeUnixDate ; param4: tradeId
+        updateTradeSatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
             console.log("\nUPDATING OR SAVING TRADES SATISFACTION IN PARSE")
             return new Promise(async(resolve, reject) => {
                 const Object = Parse.Object.extend("satisfactions");
@@ -506,7 +532,7 @@ const dailyMixin = {
                 }
 
                 if (!param3 && this.tradeScreenshotChanged) {
-                    await this.saveSetup()
+                    await this.saveScreenshot()
                 }
 
 
@@ -599,7 +625,7 @@ const dailyMixin = {
                         await this.updateIndexedDB()
                     }
                     if (this.tradeScreenshotChanged) {
-                        this.saveSetup()
+                        this.saveScreenshot()
                     }
 
 
@@ -776,8 +802,7 @@ const dailyMixin = {
                 const query = new Parse.Query(Object);
 
                 if (this.tradeSetupChanged) {
-                    query.equalTo("dateUnix", this.tradeSetupDateUnix)
-                    console.log(" date unix " + this.tradeSetupDateUnix)
+                    query.equalTo("dateUnix", this.tradeSetupDateUnixDay)
                 }
                 if (this.tradeSatisfactionChanged) {
                     query.equalTo("dateUnix", this.tradeSatisfactionDateUnix)

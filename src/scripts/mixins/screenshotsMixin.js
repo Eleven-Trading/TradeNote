@@ -1,7 +1,7 @@
 const screenshotsMixin = {
     data() {
         return {
-            expandedSetup: null,
+            expandedScreenshot: null,
             entrySide: [{
                     value: null,
                     label: "Side"
@@ -15,15 +15,15 @@ const screenshotsMixin = {
                     label: "Buy"
                 }
             ],
-            editingSetup: false,
-            dateSetupEdited: false,
+            editingScreenshot: false,
+            dateScreenshotEdited: false,
             setup: {
                 "side": null,
                 "type": null
             },
-            setupButton: false,
+            screenshotButton: false,
             setups: [],
-            setupIdToEdit: null,
+            screenshotIdToEdit: null,
             currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
             setupType: [{
                     value: null,
@@ -38,9 +38,9 @@ const screenshotsMixin = {
                     label: "Trade Entry"
                 }
             ],
-            setupsEntriesQueryLimit: 6,
-            setupsEntriesPagination: 0,
-            setupsEntriesNames: [],
+            screenshotsQueryLimit: 6,
+            screenshotsPagination: 0,
+            screenshotsNames: [],
             patternsMistakes: [],
         }
     },
@@ -59,17 +59,17 @@ const screenshotsMixin = {
                     document.documentElement.scrollHeight) {
                     if (this.currentPage.id == "screenshots") {
                         console.log(" -> Load new images")
-                        this.getSetupsEntries()
+                        this.getScreenshots()
                     }
                 }
             })
         }
     },
     methods: {
-        getSetupsEntries: async function(param) {
+        getScreenshots: async function(param) {
             return new Promise(async(resolve, reject) => {
-                console.log(" -> Getting Setups and entries");
-                //console.log(" -> setupsEntriesPagination (start)" + this.setupsEntriesPagination);
+                console.log(" -> Getting screenshots");
+                //console.log(" -> screenshotsPagination (start)" + this.screenshotsPagination);
                 //console.log(" selected start date " + this.selectedMonth.start)
                 const Object = Parse.Object.extend("setupsEntries");
                 const query = new Parse.Query(Object);
@@ -79,14 +79,14 @@ const screenshotsMixin = {
                     query.greaterThanOrEqualTo("dateUnix", this.selectedMonth.start)
                     query.lessThanOrEqualTo("dateUnix", this.selectedMonth.end)
                 } else {
-                    query.limit(this.setupsEntriesQueryLimit);
-                    query.skip(this.setupsEntriesPagination)
+                    query.limit(this.screenshotsQueryLimit);
+                    query.skip(this.screenshotsPagination)
                 }
                 const results = await query.find();
                 let parsedResult = JSON.parse(JSON.stringify(results))
 
                 parsedResult.forEach(element => {
-                    this.setupsEntriesNames.push(element.name)
+                    this.screenshotsNames.push(element.name)
                 });
 
                 if (this.currentPage.id == "daily") {
@@ -97,38 +97,20 @@ const screenshotsMixin = {
                     this.setups = this.setups.concat(parsedResult)
                 }
 
-                this.setupsEntriesPagination = this.setupsEntriesPagination + this.setupsEntriesQueryLimit
+                this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
                 await this.getPatternsMistakes()
                 this.spinnerSetups = false //spinner for trades in daily
                 resolve()
             })
         },
 
-        getPatternsMistakes: async function(param) {
-            return new Promise(async(resolve, reject) => {
-                console.log(" -> Getting patternsMistakes");
-
-                //console.log(" -> setupsEntriesPagination (start)" + this.setupsEntriesPagination);
-                //console.log(" selected start date " + this.selectedMonth.start)
-                const Object = Parse.Object.extend("patternsMistakes");
-                const query = new Parse.Query(Object);
-                query.containedIn("tradeId", this.setupsEntriesNames);
-                const results = await query.find();
-
-                this.patternsMistakes = JSON.parse(JSON.stringify(results))
-                //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
-
-                resolve()
-            })
-        },
-
-        getSetupToEdit: async function(param) {
+        getScreenshotToEdit: async function(param) {
             if (!param) {
                 return
             }
-            this.editingSetup = true
-            this.setupIdToEdit = param
-                //console.log("setup to edit " + this.setupIdToEdit)
+            this.editingScreenshot = true
+            this.screenshotIdToEdit = param
+                //console.log("setup to edit " + this.screenshotIdToEdit)
             const Object = Parse.Object.extend("setupsEntries");
             const query = new Parse.Query(Object);
             query.equalTo("objectId", param);
@@ -142,8 +124,8 @@ const screenshotsMixin = {
                     this.setup.type = "setup"
                 }
 
-                let index = this.patternsMistakes.findIndex(obj => obj.tradeId==this.setup.name)
-                
+                let index = this.patternsMistakes.findIndex(obj => obj.tradeId == this.setup.name)
+
                 if (this.patternsMistakes[index].hasOwnProperty('pattern') && this.patternsMistakes[index].pattern != null && this.patternsMistakes[index].pattern != undefined && this.patternsMistakes[index].pattern.hasOwnProperty('objectId')) this.setup.pattern = this.patternsMistakes[index].pattern.objectId
 
                 if (this.patternsMistakes[index].hasOwnProperty('mistake') && this.patternsMistakes[index].mistake != null && this.patternsMistakes[index].mistake != undefined && this.patternsMistakes[index].mistake.hasOwnProperty('objectId')) this.setup.mistake = this.patternsMistakes[index].mistake.objectId
@@ -151,8 +133,6 @@ const screenshotsMixin = {
                 //updating patterns and mistakes used in dailyMixin
                 this.tradeSetup.pattern = this.setup.pattern
                 this.tradeSetup.mistake = this.setup.mistake
-                this.tradeSetupId = this.setup.name
-                this.tradeSetupDateUnix = this.setup.dateUnixDay
 
             } else {
                 alert("Query did not return any results")
@@ -163,7 +143,7 @@ const screenshotsMixin = {
             if (this.currentPage.id == "daily") {
                 this.tradeScreenshotChanged = true
                 this.indexedDBtoUpdate = true
-                this.dateSetupEdited = true
+                this.dateScreenshotEdited = true
 
                 this.setup.dateUnix = param1
                 this.setup.symbol = param2
@@ -191,7 +171,7 @@ const screenshotsMixin = {
             if (this.currentPage.id == "daily") {
                 this.tradeScreenshotChanged = true
                 this.indexedDBtoUpdate = true
-                this.dateSetupEdited = true
+                this.dateScreenshotEdited = true
 
             }
             //https://github.com/ailon/markerjs2#readme
@@ -226,18 +206,18 @@ const screenshotsMixin = {
             }
         },
 
-        setupUpdateDate(event) {
-            if (this.editingSetup) {
-                this.dateSetupEdited = true
+        screenshotUpdateDate(event) {
+            if (this.editingScreenshot) {
+                this.dateScreenshotEdited = true
             }
             this.setup.date = event
                 //console.log("setup date (local time, i.e. New York time) " + this.setup.date)
             this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
-            console.log("unix " + dayjs.tz(this.setup.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
+                //console.log("unix " + dayjs.tz(this.setup.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
         },
 
-        saveSetup: async function() {
-            console.log("\nSAVING SETUP IMAGE")
+        saveScreenshot: async function() {
+            console.log("\nSAVING SCREENSHOT")
                 //console.log(" -> Setup to save " + JSON.stringify(this.setup))
             return new Promise(async(resolve, reject) => {
                 if (this.markerAreaOpen == true) {
@@ -254,16 +234,16 @@ const screenshotsMixin = {
                 }
 
                 if (this.currentPage.id == "addScreenshot") { //if daily, we do not edit dateUnix. It's already formated
-                    if (!this.editingSetup || (this.editingSetup && this.dateSetupEdited)) {
+                    if (!this.editingScreenshot || (this.editingScreenshot && this.dateScreenshotEdited)) {
                         this.setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
                     }
                 }
-                if (this.editingSetup && !this.dateSetupEdited) {
+                if (this.editingScreenshot && !this.dateScreenshotEdited) {
                     //we do nothing
                 }
 
                 //extension is created during setupImageUpload. So when edit, must create it here before upload
-                if (this.editingSetup) {
+                if (this.editingScreenshot) {
                     this.setup.extension = this.setup.originalBase64.substring(this.setup.originalBase64.indexOf('/') + 1, this.setup.originalBase64.indexOf(';base64'))
                 }
 
@@ -273,16 +253,24 @@ const screenshotsMixin = {
                 this.setup.side ? this.setup.name = "t" + this.setup.dateUnix + "_" + this.setup.symbol + "_" + this.setup.side : this.setup.name = this.setup.dateUnix + "_" + this.setup.symbol
                     //console.log("name " + this.setup.name)
 
+                /*
+                UPDATE PATTERNS MISTAKES
+                //updating variables used in dailyMixin
+                //Pattern and mistake are already updated on change/input
+                */
+                this.tradeSetupId = this.setup.name
+                this.tradeSetupDateUnix = this.setup.dateUnix
+                this.tradeSetupDateUnixDay = dayjs(this.setup.dateUnix * 1000).tz(this.tradeTimeZone).startOf("day").unix()
                 await this.hideTradesModal() //I reuse the function from dailyMixin, for storing patterns and mistakes
-                
-                //Upload screenshot
-                await this.uploadSetupScreenshotToParse()
+
+                /* UPLOAD SCREENSHOT */
+                await this.uploadScreenshotToParse()
 
                 resolve()
             })
         },
 
-        uploadSetupScreenshotToParse: async function() {
+        uploadScreenshotToParse: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Uploading to database")
 
@@ -329,7 +317,7 @@ const screenshotsMixin = {
                     results.set("originalBase64", this.setup.originalBase64)
                     results.set("annotatedBase64", this.setup.annotatedBase64)
                     results.set("maState", this.setup.maState)
-                    if (this.dateSetupEdited) {
+                    if (this.dateScreenshotEdited) {
                         results.set("date", new Date(dayjs.tz(this.setup.dateUnix, this.tradeTimeZone).format("YYYY-MM-DDTHH:mm:ss")))
                         results.set("dateUnix", Number(this.setup.dateUnix))
                         results.set("dateUnixDay", dayjs(this.setup.dateUnix * 1000).tz(this.tradeTimeZone).startOf("day").unix())
@@ -341,7 +329,7 @@ const screenshotsMixin = {
                         }
 
                         if (this.currentPage.id == "daily") {
-                            await this.getSetupsEntries(true)
+                            await this.getScreenshots(true)
                             const file =
                                 document.querySelector('.screenshotFile');
                             file.value = '';
@@ -378,12 +366,12 @@ const screenshotsMixin = {
 
                     object.save()
                         .then(async(object) => {
-                            console.log(' -> Added new setup with id ' + object.id)
+                            console.log('  --> Added new screenshot with id ' + object.id)
                             if (this.currentPage.id == "addScreenshot") {
                                 window.location.href = "/screenshots"
                             }
                             if (this.currentPage.id == "daily") {
-                                await this.getSetupsEntries(true)
+                                await this.getScreenshots(true)
                                 const file =
                                     document.querySelector('.screenshotFile');
                                 file.value = '';
@@ -401,8 +389,17 @@ const screenshotsMixin = {
             })
         },
 
-        deleteSetup: async function(param1, param2) {
+        deleteScreenshot: async function(param1, param2) {
             console.log("selected item " + this.selectedItem)
+            //console.log("setup "+JSON.stringify(this.setups))
+            
+            /* First, let's delete patterns mistakes */
+            let setupToDelete = this.setups.filter(obj => obj.objectId == this.selectedItem)[0]
+            //console.log("setupToDelete "+JSON.stringify(setupToDelete))
+            //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
+            await this.deletePatternMistake(setupToDelete.dateUnixDay, setupToDelete.name)
+            
+            /* Now, let's delete screenshot */
             const Object = Parse.Object.extend("setupsEntries");
             const query = new Parse.Query(Object);
             query.equalTo("objectId", this.selectedItem);
@@ -410,9 +407,10 @@ const screenshotsMixin = {
 
             if (results) {
                 await results.destroy()
+                console.log('  --> Deleted screenshot with id ' + results.id)
                     //document.location.reload()
-                await this.getPatterns()
-                await (this.renderData += 1)
+                this.setups = []
+                await this.getScreenshots()
                 await this.initPopover()
 
             } else {
