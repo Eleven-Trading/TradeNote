@@ -25,6 +25,7 @@
                         <th scope="col">Note</th>
                         <!--<th scope="col">Video</th>-->
                         <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,6 +70,10 @@
                         </td>
                         <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
                             <i class="redTrade uil uil-thumbs-down"></i>
+                        </td>
+                        <td v-else></td>
+                        <td v-if="setups.findIndex(f => f.name == trade.id)!=-1">
+                            <i class="uil uil-image-v"></i>
                         </td>
                         <td v-else></td>
                     </tr>
