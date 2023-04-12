@@ -62,7 +62,7 @@ const dailyMixin = {
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.patterns = []
                 const results = await query.find();
                 this.patterns = JSON.parse(JSON.stringify(results))
@@ -79,7 +79,7 @@ const dailyMixin = {
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.mistakes = []
                 const results = await query.find();
 
@@ -97,11 +97,12 @@ const dailyMixin = {
                 //console.log(" selected start date " + this.selectedMonth.start)
                 const Object = Parse.Object.extend("patternsMistakes");
                 const query = new Parse.Query(Object);
-                query.containedIn("tradeId", this.screenshotsNames);
+                if (this.currentPage.id == "screenshots" ||  this.currentPage.id == "addScreenshot") query.containedIn("tradeId", this.screenshotsNames);
+                query.limit(this.queryLimit)
                 const results = await query.find();
 
                 this.patternsMistakes = JSON.parse(JSON.stringify(results))
-                    //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
+                //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
 
                 resolve()
             })
@@ -114,7 +115,7 @@ const dailyMixin = {
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.exists("tradeId") /// this is how we differentiate daily from trades satisfaction records
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.tradeSatisfactionArray = []
                 const results = await query.find();
                 for (let i = 0; i < results.length; i++) {
@@ -139,7 +140,7 @@ const dailyMixin = {
                 query.equalTo("user", Parse.User.current());
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.excursions = []
                 const results = await query.find();
                 this.excursions = JSON.parse(JSON.stringify(results))

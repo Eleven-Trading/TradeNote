@@ -551,7 +551,7 @@ const tradesMixin = {
                     query.equalTo("user", Parse.User.current());
                     query.ascending("dateUnix");
                     query.exclude("executions") // we omit to make it lighter
-                    query.limit(1000000); // limit to at most 10 results
+                    query.limit(this.queryLimit); // limit to at most 10 results
                     const results = await query.find();
                     console.timeEnd("  --> Execution time");
 
@@ -1484,7 +1484,7 @@ const tradesMixin = {
                 query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.mfePricesArray = []
                 this.profitAnalysis = {}
                 const results = await query.find();
@@ -1623,7 +1623,7 @@ const tradesMixin = {
                 query.lessThanOrEqualTo("dateUnix", this.selectedDateRange.end)
                 query.ascending("order");
                 //query.lessThanOrEqualTo("dateUnix", this.selectedPeriodRange.end)
-                query.limit(1000000); // limit to at most 10 results
+                query.limit(this.queryLimit); // limit to at most 10 results
                 this.mfePricesArray = []
                 const results = await query.find();
                 this.mfePricesArray = JSON.parse(JSON.stringify(results))

@@ -442,6 +442,7 @@ const vueApp = new Vue({
             amountCapital: localStorage.getItem('selectedGrossNet').charAt(0).toUpperCase() + localStorage.getItem('selectedGrossNet').slice(1),
             tradeTimeZone: "America/New_York",
             logCharts: [],
+            queryLimit: 10000000,
 
             //Show/Hide page
             showDashboard: true,
@@ -1016,7 +1017,7 @@ const vueApp = new Vue({
         var itemToEditId = sessionStorage.getItem('editItemId')
         if (this.currentPage.id == "addTrades") {
             this.initStepper()
-            await this.getExistingTradesArray()
+            await Promise.all([this.getExistingTradesArray(), this.getPatternsMistakes()])
         }
         this.tagArray()
         this.initWheelEvent()

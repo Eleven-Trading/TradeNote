@@ -592,6 +592,15 @@ const addTradesMixin = {
                              * Other
                              *******************/
                             temp7.setup = {}
+                            let existingPatternsMistakes =  this.patternsMistakes.filter(obj => obj.tradeId == temp7.id)
+                            //console.log(" -> Existing patterns mistakes "+JSON.stringify(existingPatternsMistakes))
+                            if (existingPatternsMistakes.length>0){
+                                console.log("  --> Pattern or mistake exist already")
+                                if (existingPatternsMistakes[0].hasOwnProperty('pattern') && existingPatternsMistakes[0].pattern != null && existingPatternsMistakes[0].pattern != undefined && existingPatternsMistakes[0].pattern.hasOwnProperty('objectId')) temp7.setup.pattern = existingPatternsMistakes[0].pattern.objectId
+
+                                if (existingPatternsMistakes[0].hasOwnProperty('mistake') && existingPatternsMistakes[0].mistake != null && existingPatternsMistakes[0].mistake != undefined && existingPatternsMistakes[0].mistake.hasOwnProperty('objectId')) temp7.setup.mistake = existingPatternsMistakes[0].mistake.objectId
+                            }
+                            //console.log("   ---> Setup "+JSON.stringify(temp7.setup))
                             temp7.note = tempExec.note
                             temp7.executions = []
                             temp7
@@ -1387,7 +1396,7 @@ const addTradesMixin = {
                 const Object = Parse.Object.extend("trades");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
-                query.limit(1000000); // limit to at most 1M results
+                query.limit(this.queryLimit); // limit to at most 1M results
                 const results = await query.find();
                 for (let i = 0; i < results.length; i++) {
                     const object = results[i];
