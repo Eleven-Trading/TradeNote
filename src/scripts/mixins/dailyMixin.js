@@ -97,7 +97,7 @@ const dailyMixin = {
                 //console.log(" selected start date " + this.selectedMonth.start)
                 const Object = Parse.Object.extend("patternsMistakes");
                 const query = new Parse.Query(Object);
-                if (this.currentPage.id == "screenshots" ||  this.currentPage.id == "addScreenshot") query.containedIn("tradeId", this.screenshotsNames);
+                //if (this.currentPage.id == "screenshots" ||  this.currentPage.id == "addScreenshot") query.containedIn("tradeId", this.screenshotsNames);
                 query.limit(this.queryLimit)
                 const results = await query.find();
 

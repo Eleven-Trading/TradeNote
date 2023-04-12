@@ -926,10 +926,7 @@ const vueApp = new Vue({
             await this.initPopover()
         }
 
-        if (this.currentPage.id == "screenshots") {
-            await this.getScreenshots()
-            await this.initPopover()
-        }
+        
 
         if (this.currentPage.id == "playbook") {
             await this.getPlaybooks()
@@ -958,6 +955,11 @@ const vueApp = new Vue({
             await this.playbookDateInput(this.currentDate)
         }
 
+        if (this.currentPage.id == "screenshots") {
+            await this.getScreenshots()
+            await this.initPopover()
+        }
+        
         if (this.currentPage.id == "addScreenshot") {
             await this.getScreenshots()
             await this.getScreenshotToEdit(itemToEditId)

@@ -67,14 +67,53 @@ const screenshotsMixin = {
     },
     methods: {
         getScreenshots: async function(param) {
+            await this.getPatternsMistakes()
+            //console.log(" -> Selected patterns " + this.selectedPatterns)
+            let allPatterns = []
+            this.patterns.filter(obj => obj.active == true).forEach(element => {
+                allPatterns.push(element.objectId)
+            });
+
+            let allMistakes = []
+            this.mistakes.filter(obj => obj.active == true).forEach(element => {
+                allMistakes.push(element.objectId)
+            });
+
+            //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
+            let exclPatterns = allPatterns.filter(x => !this.selectedPatterns.includes(x));
+            //console.log(" -> Excluded patterns "+exclPatterns);
+            let exclMistakes = allMistakes.filter(x => !this.selectedMistakes.includes(x));
+            //console.log(" -> Excluded mistakes "+exclMistakes);
+            
+            let allPatternsMistakesIds = []
+            let excludedIds = []
+
+            this.patternsMistakes.forEach(element => {
+                allPatternsMistakesIds.push(element.tradeId)
+                //console.log(" - element mistake "+element.mistake)
+
+                if ((element.pattern != null && exclPatterns.includes(element.pattern.objectId)) || (element.mistake != null && exclMistakes.includes(element.mistake.objectId))) {
+                    //console.log("  --> Trade id to exclude " + element.tradeId)
+                    excludedIds.push(element.tradeId)
+                }
+            });
+            
+
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting screenshots");
+                //console.log(" -> selectedPatterns " + this.selectedPatterns)
                 //console.log(" -> screenshotsPagination (start)" + this.screenshotsPagination);
                 //console.log(" selected start date " + this.selectedMonth.start)
                 const Object = Parse.Object.extend("setupsEntries");
                 const query = new Parse.Query(Object);
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
+                query.notContainedIn("name", excludedIds) // Query not including excluded ids
+                
+                if (!this.selectedPatterns.includes("void") && !this.selectedMistakes.includes("void")){ // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
+                    query.containedIn("name",allPatternsMistakesIds)
+                }
+
                 if (param) { // if "full" false (case for daily page), then only certain limit. Else sull
                     query.greaterThanOrEqualTo("dateUnix", this.selectedMonth.start)
                     query.lessThanOrEqualTo("dateUnix", this.selectedMonth.end)
@@ -82,9 +121,10 @@ const screenshotsMixin = {
                     query.limit(this.screenshotsQueryLimit);
                     query.skip(this.screenshotsPagination)
                 }
+                               
+
                 const results = await query.find();
                 let parsedResult = JSON.parse(JSON.stringify(results))
-
                 parsedResult.forEach(element => {
                     this.screenshotsNames.push(element.name)
                 });
@@ -97,8 +137,8 @@ const screenshotsMixin = {
                     this.setups = this.setups.concat(parsedResult)
                 }
 
+                //console.log(" -> Setups/Screenshots " + JSON.stringify(this.setups))
                 this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
-                await this.getPatternsMistakes()
                 this.spinnerSetups = false //spinner for trades in daily
                 resolve()
             })
@@ -391,14 +431,14 @@ const screenshotsMixin = {
 
         deleteScreenshot: async function(param1, param2) {
             console.log("selected item " + this.selectedItem)
-            //console.log("setup "+JSON.stringify(this.setups))
-            
+                //console.log("setup "+JSON.stringify(this.setups))
+
             /* First, let's delete patterns mistakes */
             let setupToDelete = this.setups.filter(obj => obj.objectId == this.selectedItem)[0]
-            //console.log("setupToDelete "+JSON.stringify(setupToDelete))
-            //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
+                //console.log("setupToDelete "+JSON.stringify(setupToDelete))
+                //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
             await this.deletePatternMistake(setupToDelete.dateUnixDay, setupToDelete.name)
-            
+
             /* Now, let's delete screenshot */
             const Object = Parse.Object.extend("setupsEntries");
             const query = new Parse.Query(Object);
@@ -409,14 +449,22 @@ const screenshotsMixin = {
                 await results.destroy()
                 console.log('  --> Deleted screenshot with id ' + results.id)
                     //document.location.reload()
-                this.setups = []
-                await this.getScreenshots()
-                await this.initPopover()
-
+                await this.refreshScreenshot()
             } else {
                 alert("There was a problem with the query")
             }
         },
+
+        refreshScreenshot: async function() {
+            return new Promise(async(resolve, reject) => {
+                this.screenshotsQueryLimit = 6
+                this.screenshotsPagination = 0
+                this.setups = []
+                await this.getScreenshots()
+                await this.initPopover()
+                resolve()
+            })
+        }
 
     }
 }

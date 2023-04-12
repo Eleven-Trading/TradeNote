@@ -119,10 +119,10 @@ const tradesMixin = {
 
                 /* Restore selected patterns */
                 this.selectedPatterns = localStorage.getItem('selectedPatterns').split(",")
-                //console.log(" Selected patterns " + this.selectedPatterns)
+                    //console.log(" Selected patterns " + this.selectedPatterns)
 
                 this.selectedMistakes = localStorage.getItem('selectedMistakes').split(",")
-                //console.log(" Selected mistakes " + this.selectedMistakes)
+                    //console.log(" Selected mistakes " + this.selectedMistakes)
             }
         },
 
@@ -151,10 +151,14 @@ const tradesMixin = {
             }
 
             localStorage.setItem('selectedPatterns', this.selectedPatterns)
-            
+
             localStorage.setItem('selectedMistakes', this.selectedMistakes)
 
-            await this.getAllTrades(true)
+            if (this.currentPage.id == "screenshots") {
+                await this.refreshScreenshot()
+            }else{
+                await this.getAllTrades(true)
+            }
 
             if (this.currentPage.id == "daily") {
                 await this.initTab("daily") // Only for daily else was causing multiple fires in dashboard
@@ -329,7 +333,7 @@ const tradesMixin = {
                             /* We use if here but then conditional inside to check all possibilities */
                             let pattern
                             let mistake
-                            // We need to include patterns and mistakes that are void or null
+                                // We need to include patterns and mistakes that are void or null
                             if (element.hasOwnProperty('setup')) {
                                 if (element.setup.pattern == null) {
                                     pattern = "void"
@@ -356,7 +360,7 @@ const tradesMixin = {
                                 pattern = "void"
                                 mistake = "void"
                             }
-                            
+
                             //console.log(" selected patterns "+this.selectedPatterns)
                             //console.log(" pattern "+pattern)
 
@@ -373,7 +377,7 @@ const tradesMixin = {
                     });
                 }
 
-                    /* If all dates selected, we use allTrades */
+                /* If all dates selected, we use allTrades */
                 if (selectedRange.start == 0 && selectedRange.end == 0) {
                     loopTrades(this.allTrades)
                 }
@@ -407,12 +411,12 @@ const tradesMixin = {
             }
 
             /*============= 5 - Render data, charts, totals =============*/
-            
+
             if (this.currentPage.id == "dashboard") {
                 this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
                 await this.prepareTrades()
-                //await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
-                //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
+                    //await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
+                    //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 await this.calculateProfitAnalysis()
                 await (this.dashboardIdMounted = true)
                 await (this.spinnerSetupsUpdate = false)
@@ -426,7 +430,7 @@ const tradesMixin = {
             if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true)]) //setup etries here because take more time so spinner needs to still be running
-                //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
+                    //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 this.spinnerSetupsUpdateText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page

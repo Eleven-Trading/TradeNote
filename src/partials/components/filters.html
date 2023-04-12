@@ -45,7 +45,7 @@
             </div>
 
             <!-- Accounts -->
-            <div class="col-6 col-lg-4 dropdown">
+            <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id != 'screenshots'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Accounts <span class="dashInfoTitle">({{selectedAccounts.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in currentUser.accounts" class="form-check">
@@ -61,14 +61,14 @@
             </div>
 
             <!-- Gross/Net -->
-            <div class="col-6 col-lg-2">
+            <div class="col-6 col-lg-2" v-show="currentPage.id != 'screenshots'">
                 <select v-on:input="selectedGrossNet = $event.target.value" class="form-select">
                     <option v-for="item in grossNet" v-bind:value="item.value" v-bind:selected="item.value ==  selectedGrossNet">{{item.label}}</option>
                 </select>
             </div>
 
             <!-- Positions -->
-            <div class="col-6 col-lg-2 dropdown">
+            <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id != 'screenshots'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in positions" class="form-check">

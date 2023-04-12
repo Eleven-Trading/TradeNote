@@ -1,7 +1,7 @@
 <div class="col-12 table-responsive">
     <nav>
         <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}
+            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}<span v-if="dashTab.id == 'screenshots' && setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0" class="txt-small"> ({{setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length}})</span>
                 <!--({{daily[dashTab.id].length}})-->
             </button>
         </div>
