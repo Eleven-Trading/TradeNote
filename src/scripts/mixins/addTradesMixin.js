@@ -207,11 +207,6 @@ const addTradesMixin = {
                 this.loadingSpinner = false
                 return;
             }
-            if (!this.gotExistingTradesArray) {
-                this.loadingSpinner = false
-                alert("You loaded your file too quickly. Please refresh page, allow couple of seconds for background job to run and try again.")
-                return;
-            }
 
             const readAsText = async(param) => {
                 return new Promise(async(resolve, reject) => {
@@ -302,7 +297,32 @@ const addTradesMixin = {
                 await this.brokerHeldentrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
             }
 
-            create()
+            const retryFunction = (callback, delay, tries) => {
+
+                if (tries && callback() !== true) {
+                    setTimeout(retryFunction.bind(this, callback, delay, tries - 1), delay);
+                } else {
+                    //if still false, send alert else create
+                    if (!this.gotExistingTradesArray) {
+                        this.loadingSpinner = false
+                        alert("You loaded your file too quickly. Please refresh page, allow couple of seconds for background job to run and try again.")
+                        return;
+                    }
+                    create()
+                }
+            }
+
+            const checkFunction = () => {
+                console.log(" -> Waiting for existing trades");
+                return this.gotExistingTradesArray
+            }
+
+            if (this.gotExistingTradesArray) {
+                create()
+            }else{
+                retryFunction(checkFunction, 1000, 3);
+            }
+
         },
 
         createTempExecutions: async function() {
@@ -592,9 +612,9 @@ const addTradesMixin = {
                              * Other
                              *******************/
                             temp7.setup = {}
-                            let existingPatternsMistakes =  this.patternsMistakes.filter(obj => obj.tradeId == temp7.id)
-                            //console.log(" -> Existing patterns mistakes "+JSON.stringify(existingPatternsMistakes))
-                            if (existingPatternsMistakes.length>0){
+                            let existingPatternsMistakes = this.patternsMistakes.filter(obj => obj.tradeId == temp7.id)
+                                //console.log(" -> Existing patterns mistakes "+JSON.stringify(existingPatternsMistakes))
+                            if (existingPatternsMistakes.length > 0) {
                                 console.log("  --> Pattern or mistake exist already")
                                 if (existingPatternsMistakes[0].hasOwnProperty('pattern') && existingPatternsMistakes[0].pattern != null && existingPatternsMistakes[0].pattern != undefined && existingPatternsMistakes[0].pattern.hasOwnProperty('objectId')) temp7.setup.pattern = existingPatternsMistakes[0].pattern.objectId
 
@@ -908,7 +928,7 @@ const addTradesMixin = {
             return new Promise(async(resolve, reject) => {
                 console.log("  --> Updating excursion DB with MFE price")
                 this.loadingSpinnerText = "Updating MFE prices in excursions"
-                //console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
+                    //console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
                 this.mfePrices.forEach(element => {
                     //console.log(" element " + element)
                     const Object = Parse.Object.extend("excursions");
@@ -974,16 +994,16 @@ const addTradesMixin = {
                     //based on trades
                 let objectZ
                 if (param) {
-                    console.log("param "+param)
+                    console.log("param " + param)
                     let temp = _
-                    .chain(this.filteredTradesTrades)
-                    .orderBy(["entryTime"], ["asc"])
-                    .groupBy("td")
-                    objectZ =  JSON.parse(JSON.stringify(temp))
-                    //console.log(" temp "+JSON.stringify(temp))
+                        .chain(this.filteredTradesTrades)
+                        .orderBy(["entryTime"], ["asc"])
+                        .groupBy("td")
+                    objectZ = JSON.parse(JSON.stringify(temp))
+                        //console.log(" temp "+JSON.stringify(temp))
                 } else {
                     objectZ = this.trades
-                    //console.log(" this trades "+JSON.stringify(this.trades))
+                        //console.log(" this trades "+JSON.stringify(this.trades))
                 }
 
                 const keys9 = Object.keys(objectZ);
@@ -991,13 +1011,13 @@ const addTradesMixin = {
                 for (const key9 of keys9) {
                     temp10[key9] = {}
                     var tempExecs = objectZ[key9]
-                    //console.log("tempExecs9 " + JSON.stringify(tempExecs));
+                        //console.log("tempExecs9 " + JSON.stringify(tempExecs));
                     var z = _
                         .chain(tempExecs)
                         .orderBy(["entryTime"], ["asc"])
                         .groupBy("symbol")
                     let objectY = JSON.parse(JSON.stringify(z))
-                    //console.log("objectY "+JSON.stringify(objectY))
+                        //console.log("objectY "+JSON.stringify(objectY))
                     const keys10 = Object.keys(objectY);
                     for (const key10 of keys10) {
                         //console.log("key 10 " + key10)
@@ -1391,7 +1411,7 @@ const addTradesMixin = {
         },
 
         getExistingTradesArray: async function() {
-            console.log(" -> Filtering existing trades")
+            console.log(" -> Getting existing trades for filter")
             return new Promise(async(resolve, reject) => {
                 const Object = Parse.Object.extend("trades");
                 const query = new Parse.Query(Object);
@@ -1404,7 +1424,7 @@ const addTradesMixin = {
                     this.existingTradesArray.push(object.get('dateUnix'))
                 }
                 this.gotExistingTradesArray = true
-                console.log(" -> Finished filtering existing trades")
+                console.log(" -> Finished getting existing trades for filter")
             })
         },
 
