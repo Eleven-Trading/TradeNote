@@ -20,6 +20,7 @@ const addTradesMixin = {
 
             tradedSymbols: [],
             tradedStartDate: null,
+            tradedEndDate: null,
             ohlcv: [],
             mfePrices: [],
             uploadMfePrices: true,
@@ -389,15 +390,25 @@ const addTradesMixin = {
                         if (!this.tradedSymbols.includes(temp2.symbol)) {
                             this.tradedSymbols.push(temp2.symbol)
                         }
+                        
                         if (this.tradedStartDate == null) {
                             //console.log("td type " + typeof + temp2.td)
                             this.tradedStartDate = temp2.td
                         } else if (temp2.td < this.tradedStartDate) {
                             this.tradedStartDate = temp2.td
                         }
-                        console.log(" -> Trade start date " + this.tradedStartDate)
+                        
+                        if (this.tradedEndDate == null) {
+                            //console.log("td type " + typeof + temp2.td)
+                            this.tradedEndDate = temp2.execTime
+                        } else if (temp2.execTime > this.tradedEndDate) {
+                            this.tradedEndDate = temp2.execTime
+                        }
+
+                        //console.log(" -> Trade start date " + this.tradedStartDate)
+                        //console.log(" -> Trade end date " + this.tradedEndDate)
                             //console.log("temp " + JSON.stringify(temp))
-                        console.log(" -> Created temp executions");
+                        //console.log(" -> Created temp executions");
                     } catch (error) {
                         console.log("  --> ERROR " + error)
                         reject(error)
@@ -436,14 +447,18 @@ const addTradesMixin = {
                     for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that asyn needs to be for instead of foreach
                         let temp = {}
                         temp.symbol = this.tradedSymbols[i]
+                        console.log(" -> From date "+this.tradedStartDate)
+                        console.log(" -> To "+this.tradedEndDate)
+                        let toDate = dayjs(this.tradedEndDate*1000).tz(this.tradeTimeZone).endOf('day').unix()
+                        console.log(" -> To date "+toDate)
 
-                        await axios.get("https://finnhub.io/api/v1/stock/candle?symbol=" + temp.symbol + "&resolution=1&from=" + this.tradedStartDate + "&to=" + dayjs().unix() + "&token=" + this.currentUser.finnhubApiKey)
+                        await axios.get("https://finnhub.io/api/v1/stock/candle?symbol=" + temp.symbol + "&resolution=1&from=" + this.tradedStartDate + "&to=" + toDate + "&token=" + this.currentUser.finnhubApiKey)
                             .then((response) => {
                                 //console.log(" -> data +" + response.data);
                                 //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
                                 temp.ohlcv = response.data
                                 this.ohlcv.push(temp)
-                                    //console.log(" -> ohlcv " + JSON.stringify(this.ohlcv))
+                                //console.log(" -> ohlcv " + JSON.stringify(this.ohlcv))
                             })
                             .catch(function(error) {
 
@@ -758,8 +773,10 @@ const addTradesMixin = {
                                     let ohlcvSymbol = this.ohlcv[this.ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                                         //todo exclude if trade in same minute timeframe
 
+                                    //console.log(" ohlcvSymbol "+JSON.stringify(ohlcvSymbol))
                                     //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
                                     let tempStartIndex = ohlcvSymbol.t.findIndex(n => n >= initEntryTime)
+                                    //console.log(" temp start index "+tempStartIndex)
                                     let tempEndIndex = ohlcvSymbol.t.findIndex(n => n >= temp7.exitTime) //findIndex returns the first element
                                     let tempStartTime = ohlcvSymbol.t[tempStartIndex]
                                     let tempEndTime = ohlcvSymbol.t[tempEndIndex]
@@ -785,9 +802,9 @@ const addTradesMixin = {
                                         endTime = ohlcvSymbol.t[tempEndIndex - 1]
                                     }
 
-                                    //console.log(" -> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
-                                    //console.log(" -> EntryTime " + initEntryTime + " and start time " + startTime)
-                                    //console.log(" -> ExitTime " + temp7.exitTime + " and end time " + endTime)
+                                    console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
+                                    console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
+                                    console.log("   ----> ExitTime " + temp7.exitTime + " and end time " + endTime)
 
                                     //End of day index
                                     //iterate from exit time and check if same day and <= 4 hour
@@ -832,6 +849,7 @@ const addTradesMixin = {
                                         }
 
                                         console.log("   ---> Iterating between entry price and exit price")
+                                        console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
                                         for (let i = startIndex; i <= endIndex; i++) {
                                             //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
                                             if (temp7.strategy == "long" && ohlcvSymbol.h[i] > temp7.exitPrice && ohlcvSymbol.h[i] > mfePrice) mfePrice = ohlcvSymbol.h[i]

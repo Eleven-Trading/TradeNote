@@ -1539,6 +1539,7 @@ const tradesMixin = {
                     let netMfeRArray = []
 
                     this.mfePricesArray.forEach(element => {
+                        //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
                             if (this.filteredTrades.length > 0) {
                                 //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
                                 let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
@@ -1549,6 +1550,7 @@ const tradesMixin = {
                                     if (trade != undefined) {
                                         //console.log(" -> Trade " + JSON.stringify(trade))
                                         let tradeEntryPrice = trade.entryPrice
+                                        console.log(" Entry price "+tradeEntryPrice+" | MFE Price "+element.mfePrice)
                                         let entryMfeDiff
                                         trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
                                         let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
@@ -1560,7 +1562,7 @@ const tradesMixin = {
                                 }
                             }
                         })
-                        //console.log("  --> Gross mfeArray "+grossMfeRArray+" and net "+netMfeRArray)
+                        console.log("  --> Gross mfeArray "+grossMfeRArray+" and net "+netMfeRArray)
 
                     //console.log(" -> Getting gross and net win rate")
                     let grossWin = this.totals.probGrossWins
