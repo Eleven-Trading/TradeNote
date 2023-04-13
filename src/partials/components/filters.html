@@ -8,7 +8,7 @@
                 <span v-if="currentUser.hasOwnProperty('accounts')&&currentUser.accounts.length == selectedAccounts.length">All accounts</span>
                 <span v-else>Selected accounts</span>
                 <span v-show="currentPage.id == 'dashboard'">| {{selectedPeriodRange.label}}<span v-show="selectedPeriodRange.value == 'custom'"> range</span></span>
-                <span v-show="currentPage.id == 'daily'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
+                <span v-show="currentPage.id == 'daily'||currentPage.id == 'calendar'">| {{monthFormat(selectedMonth.start)}}</span> | {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data | <span v-if="positions.length == selectedPositions.length">All positions</span><span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
                 <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
                 <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">| All patterns</span>
                 <span v-else>| Selected patterns</span>
@@ -45,7 +45,7 @@
             </div>
 
             <!-- Accounts -->
-            <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id != 'screenshots'">
+            <div class="col-6 col-lg-4 dropdown" v-show="currentPage.id != 'screenshots'&&currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Accounts <span class="dashInfoTitle">({{selectedAccounts.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in currentUser.accounts" class="form-check">
@@ -56,7 +56,7 @@
             </div>
 
             <!-- Month -->
-            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'daily'">
+            <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="currentPage.id == 'daily'||currentPage.id == 'calendar'">
                 <input type="month" class="form-control" v-bind:value="dateCalFormatMonth(selectedMonth.start)" v-bind:selected="selectedMonth.start"  v-on:input="inputMonth($event.target.value)">
             </div>
 
@@ -68,7 +68,7 @@
             </div>
 
             <!-- Positions -->
-            <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id != 'screenshots'">
+            <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id != 'screenshots'&&currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <div v-for="item in positions" class="form-check">
@@ -93,7 +93,7 @@
             </div>
 
             <!-- Patterns -->
-            <div class="col-6 dropdown mt-1 mt-lg-1">
+            <div class="col-6 dropdown mt-1 mt-lg-1" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Patterns <span class="dashInfoTitle">({{selectedPatterns.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns"> Void
@@ -105,7 +105,7 @@
             </div>
 
             <!-- Mistakes -->
-            <div class="col-6 dropdown mt-1 mt-lg-1">
+            <div class="col-6 dropdown mt-1 mt-lg-1" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Mistakes <span class="dashInfoTitle">({{selectedMistakes.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
                     <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes"> Void                    

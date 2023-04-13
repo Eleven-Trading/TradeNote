@@ -146,7 +146,7 @@ const tradesMixin = {
 
             localStorage.setItem('selectedRatio', this.selectedRatio)
 
-            if (this.currentPage.id == "daily") {
+            if (this.currentPage.id == "daily"||this.currentPage.id == "calendar") {
                 localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
             }
 
