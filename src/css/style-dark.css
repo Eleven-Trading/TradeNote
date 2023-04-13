@@ -695,6 +695,10 @@ img.logo {
 .miniCalCol {
     max-width: 400px !important;
 }
+
+.miniCalBox {
+    width: 1%;
+}
 .calDivMini {
     margin: 1px;
     border: 1px solid lightgray;

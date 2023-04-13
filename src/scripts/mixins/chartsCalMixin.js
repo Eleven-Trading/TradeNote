@@ -19,32 +19,33 @@ const chartsCalMixin = {
                     let calendarJson = {}
                     let month = dayjs.unix(param1).get('month') + 1 //starts at 0
                     let year = dayjs.unix(param1).get('year')
-                    let calTrade
 
-                    /*if (this.threeMonthsBack <= param1) {
-                        if (this.threeMonthsTrades.length > 0) {
-                            console.log(" -> Getting existing variable")
-                            calTrade = this.threeMonthsTrades
-                        } else {
-                            console.log(" -> Checking tradese in IndexedDB")
-                            let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
-                            console.log(" -> Daily - threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
-                            if (!dataExistsInIndexedDB) {
-                                await this.getTradesFromDb(6)
+                    if (this.currentPage.id == "calendar") {//If calendar page, we do not take filtered trades as created in trades mixin bu twe need to get all the data for the other months on the calendar page
+                        if (this.threeMonthsBack <= param1) {
+                            if (this.threeMonthsTrades.length > 0) {
+                                console.log(" -> Getting existing variable")
+                                this.filteredTrades = this.threeMonthsTrades
+                            } else {
+                                console.log(" -> Checking tradese in IndexedDB")
+                                let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
+                                console.log(" -> Daily - threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
+                                if (!dataExistsInIndexedDB) {
+                                    await this.getTradesFromDb(6)
+                                }
+                                this.filteredTrades = this.threeMonthsTrades
                             }
-                            calTrade = this.threeMonthsTrades
-                        }
-                    } else {
-                        if (this.allTrades.length > 0) {
-                            calTrade = this.allTrades
                         } else {
-                            let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
-                            if (!dataExistsInIndexedDB) {
-                                await this.getTradesFromDb(0)
+                            if (this.allTrades.length > 0) {
+                                this.filteredTrades = this.allTrades
+                            } else {
+                                let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
+                                if (!dataExistsInIndexedDB) {
+                                    await this.getTradesFromDb(0)
+                                }
+                                this.filteredTrades = this.allTrades
                             }
-                            calTrade = this.allTrades
                         }
-                    }*/
+                    }
 
                     calendarizeData.forEach((element, index) => {
                         //console.log("element "+element)
@@ -66,6 +67,7 @@ const chartsCalMixin = {
                             //console.log("selectedRange "+param1.start)
 
                             let trade = this.filteredTrades.filter(f => dayjs.unix(f.dateUnix).isSame(dayjs.unix(elementDateUnix), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
+                            //console.log(" -> Trade " + JSON.stringify(trade))
 
                             if (trade.length && element2 != 0) { //Check also if not null because day in date cannot be 0
                                 tempData.pAndL = trade[0].pAndL
@@ -82,8 +84,9 @@ const chartsCalMixin = {
                         this.calendarData = calendarJson
                             //console.log("calendarData "+JSON.stringify(this.calendarData))
                     } else {
-                        this.miniCalendarsData.push(calendarJson)
+                        this.miniCalendarsData.unshift(calendarJson)
                     }
+                    
                     resolve()
                 })
             }
@@ -104,6 +107,8 @@ const chartsCalMixin = {
             /*await createCalendar("full", this.selectedMonth.start)
             await createCalendar("mini", dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).subtract(1, 'month').startOf('month').unix())
             await createCalendar("mini", dayjs.tz(this.selectedMonth.start * 1000, this.tradeTimeZone).subtract(2, 'month').startOf('month').unix())*/
+            //console.log(" -> Mini Cal data "+JSON.stringify(this.miniCalendarsData))
+
             this.totalCalendarMounted = true
                 //console.log("calendarData "+JSON.stringify(this.calendarData))
                 //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))

@@ -427,7 +427,8 @@ const tradesMixin = {
                 await (this.dashboardChartsMounted = true)
 
             }
-            if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
+            
+            if (this.currentPage.id == "daily") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true)]) //setup etries here because take more time so spinner needs to still be running
                     //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
@@ -482,6 +483,13 @@ const tradesMixin = {
                 await (this.spinnerSetupsUpdate = false)
             }
 
+            if (this.currentPage.id == "calendar") {
+
+                this.loadCalendar(undefined, selectedRange)
+                await (this.renderingCharts = false)
+                await (this.spinnerSetupsUpdate = false)
+            }
+            
 
         },
 

@@ -312,7 +312,7 @@ const addTradesMixin = {
                 }
             }
 
-            const checkFunction = () => {
+            const callbackFunction = () => {
                 console.log(" -> Waiting for existing trades");
                 return this.gotExistingTradesArray
             }
@@ -320,7 +320,7 @@ const addTradesMixin = {
             if (this.gotExistingTradesArray) {
                 create()
             }else{
-                retryFunction(checkFunction, 1000, 3);
+                retryFunction(callbackFunction, 1000, 3);
             }
 
         },
