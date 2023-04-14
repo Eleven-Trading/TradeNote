@@ -607,6 +607,7 @@ const dailyMixin = {
         },
 
         hideTradesModal: async function() {
+            console.log(" clicked on hide trades modal")
             if (this.markerAreaOpen == true) {
                 alert("Please save your setup annotation")
                 return
@@ -626,7 +627,7 @@ const dailyMixin = {
                         await this.updateIndexedDB()
                     }
                     if (this.tradeScreenshotChanged) {
-                        this.saveScreenshot()
+                        await this.saveScreenshot()
                     }
 
 
@@ -918,6 +919,32 @@ const dailyMixin = {
                 resolve()
             })
         },
+
+        /*deleteTrade: async function(param1, param2) {
+            console.log(" -> Trade it to delete " + this.selectedItem)
+                //console.log("setup "+JSON.stringify(this.setups))
+
+            // Delete screenshots (which also deletes patterns mistakes)
+
+            // Delete Excursions
+            // Delete satisfactions
+
+            // Delete trade
+
+            const Object = Parse.Object.extend("setupsEntries");
+            const query = new Parse.Query(Object);
+            query.equalTo("objectId", this.selectedItem);
+            const results = await query.first();
+
+            if (results) {
+                await results.destroy()
+                console.log('  --> Deleted screenshot with id ' + results.id)
+                    //document.location.reload()
+                await this.refreshScreenshot()
+            } else {
+                alert("There was a problem with the query")
+            }
+        },*/
 
 
     }
