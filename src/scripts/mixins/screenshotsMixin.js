@@ -301,7 +301,7 @@ const screenshotsMixin = {
                 this.tradeSetupId = this.setup.name
                 this.tradeSetupDateUnix = this.setup.dateUnix
                 this.tradeSetupDateUnixDay = dayjs(this.setup.dateUnix * 1000).tz(this.tradeTimeZone).startOf("day").unix()
-                await this.hideTradesModal() //I reuse the function from dailyMixin, for storing patterns and mistakes
+                if (this.currentPage.id == "addScreenshot") await this.hideTradesModal() //I reuse the function from dailyMixin, for storing patterns and mistakes. But only on add screenshot or else it creates infinity loop
 
                 /* UPLOAD SCREENSHOT */
                 await this.uploadScreenshotToParse()
