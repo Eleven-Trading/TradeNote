@@ -235,7 +235,7 @@ const addTradesMixin = {
                     alert("Error in upload file (" + error + ")")
                 })
                 await this.createExecutions()
-                if (this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') {
+                if (this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') {
                     await this.getOHLCV()
                 }
                 await this.createTrades()
@@ -320,8 +320,8 @@ const addTradesMixin = {
 
             if (this.gotExistingTradesArray) {
                 create()
-            }else{
-                retryFunction(callbackFunction, 1000, 3);
+            } else {
+                retryFunction(callbackFunction, 1000, 10);
             }
 
         },
@@ -390,14 +390,14 @@ const addTradesMixin = {
                         if (!this.tradedSymbols.includes(temp2.symbol)) {
                             this.tradedSymbols.push(temp2.symbol)
                         }
-                        
+
                         if (this.tradedStartDate == null) {
                             //console.log("td type " + typeof + temp2.td)
                             this.tradedStartDate = temp2.td
                         } else if (temp2.td < this.tradedStartDate) {
                             this.tradedStartDate = temp2.td
                         }
-                        
+
                         if (this.tradedEndDate == null) {
                             //console.log("td type " + typeof + temp2.td)
                             this.tradedEndDate = temp2.execTime
@@ -407,7 +407,7 @@ const addTradesMixin = {
 
                         //console.log(" -> Trade start date " + this.tradedStartDate)
                         //console.log(" -> Trade end date " + this.tradedEndDate)
-                            //console.log("temp " + JSON.stringify(temp))
+                        //console.log("temp " + JSON.stringify(temp))
                         //console.log(" -> Created temp executions");
                     } catch (error) {
                         console.log("  --> ERROR " + error)
@@ -447,22 +447,51 @@ const addTradesMixin = {
                     for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that asyn needs to be for instead of foreach
                         let temp = {}
                         temp.symbol = this.tradedSymbols[i]
-                        console.log(" -> From date "+this.tradedStartDate)
-                        console.log(" -> To "+this.tradedEndDate)
-                        let toDate = dayjs(this.tradedEndDate*1000).tz(this.tradeTimeZone).endOf('day').unix()
-                        console.log(" -> To date "+toDate)
+                        console.log(" -> From date " + this.tradedStartDate)
+                        console.log(" -> To " + this.tradedEndDate)
+                        let toDate = dayjs(this.tradedEndDate * 1000).tz(this.tradeTimeZone).endOf('day').unix()
+                        console.log(" -> To date " + toDate)
 
-                        await axios.get("https://finnhub.io/api/v1/stock/candle?symbol=" + temp.symbol + "&resolution=1&from=" + this.tradedStartDate + "&to=" + toDate + "&token=" + this.currentUser.finnhubApiKey)
+                        axios.interceptors.response.use(undefined, (err) => {
+                            const { config, message } = err;
+                            if (err) {
+                                console.log(" -> Interceptors error " + err)
+                                this.loadingSpinnerText = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                            }
+                            if (!config || !config.retry) {
+                                return Promise.reject(err);
+                            }
+
+                            // retry on axios error
+                            if (message.includes("AxiosError")) {
+                                return Promise.reject(err);
+                            }
+
+                            config.retry -= 1;
+
+                            const delayRetryRequest = new Promise((resolve) => {
+                                setTimeout(() => {
+                                    console.log(" -> Retrying the request ", config.url);
+                                    resolve();
+                                }, config.retryDelay || 1000);
+                            });
+
+                            return delayRetryRequest.then(() => axios(config));
+                        });
+
+                        // when request, can set retry times and retry delay time
+
+                        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + this.tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + this.currentUser.marketDataApiKey, { retry: 3, retryDelay: 60000 })
                             .then((response) => {
-                                //console.log(" -> data +" + response.data);
-                                //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
-                                temp.ohlcv = response.data
+                                console.log(" -> data " + JSON.stringify(response))
+                                    //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
+                                temp.ohlcv = response.data.results
                                 this.ohlcv.push(temp)
-                                //console.log(" -> ohlcv " + JSON.stringify(this.ohlcv))
+                                    //console.log(" -> ohlcv " + JSON.stringify(this.ohlcv))
                             })
-                            .catch(function(error) {
+                            .catch((error) => {
 
-                                console.log(error);
+                                console.log(" -> Polygon api get error " + error.status);
                             })
                             .finally(function() {
                                 // always executed
@@ -768,18 +797,19 @@ const addTradesMixin = {
                                  * GETTING MFE PRICE
                                  *****/
 
-                                if ((this.currentUser.finnhubApiKey &&  this.currentUser.finnhubApiKey != null &&  this.currentUser.finnhubApiKey != '') && this.uploadMfePrices && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                                if ((this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') && this.uploadMfePrices && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                                     console.log("  --> Getting MFE Price")
                                     let ohlcvSymbol = this.ohlcv[this.ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                                         //todo exclude if trade in same minute timeframe
 
                                     //console.log(" ohlcvSymbol "+JSON.stringify(ohlcvSymbol))
-                                    //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
-                                    let tempStartIndex = ohlcvSymbol.t.findIndex(n => n >= initEntryTime)
-                                    //console.log(" temp start index "+tempStartIndex)
-                                    let tempEndIndex = ohlcvSymbol.t.findIndex(n => n >= temp7.exitTime) //findIndex returns the first element
-                                    let tempStartTime = ohlcvSymbol.t[tempStartIndex]
-                                    let tempEndTime = ohlcvSymbol.t[tempEndIndex]
+                                    console.log(" initEntryTime " + initEntryTime * 1000)
+                                        //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
+                                    let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
+                                        //console.log(" temp start index "+tempStartIndex)
+                                    let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= temp7.exitTime * 1000) //findIndex returns the first element
+                                    let tempStartTime = ohlcvSymbol[tempStartIndex]
+                                    let tempEndTime = ohlcvSymbol[tempEndIndex]
 
                                     let startIndex
                                     let endIndex
@@ -788,10 +818,10 @@ const addTradesMixin = {
 
                                     if (tempStartTime == initEntryTime) {
                                         startIndex = tempStartIndex + 1
-                                        startTime = ohlcvSymbol.t[startIndex]
+                                        startTime = ohlcvSymbol[startIndex].t
                                     } else {
                                         startIndex = tempStartIndex
-                                        startTime = ohlcvSymbol.t[tempStartIndex]
+                                        startTime = ohlcvSymbol[tempStartIndex].t
                                     }
 
                                     if (tempEndTime == temp7.exitTime) {
@@ -799,32 +829,46 @@ const addTradesMixin = {
                                         endTime = tempEndTime
                                     } else {
                                         endIndex = tempEndIndex - 1
-                                        endTime = ohlcvSymbol.t[tempEndIndex - 1]
+                                        endTime = ohlcvSymbol[tempEndIndex - 1].t
                                     }
 
-                                    console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
-                                    console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
-                                    console.log("   ----> ExitTime " + temp7.exitTime + " and end time " + endTime)
+                                    //console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
+                                    //console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
+                                    //console.log("   ----> ExitTime " + temp7.exitTime + " and end time " + endTime)
 
-                                    //End of day index
+                                    //Get market close index
                                     //iterate from exit time and check if same day and <= 4 hour
-                                    let endTimeOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
-                                    let i = tempEndIndex - 1;
-                                    let timeDayOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
+                                    let endTimeDay = dayjs(endTime).tz(this.tradeTimeZone).get("date")
+                                    let endTimeMonth = dayjs(endTime).tz(this.tradeTimeZone).get("month") + 1
+                                    let endTimeYear = dayjs(endTime).tz(this.tradeTimeZone).get("year")
+                                    let endTimeDate = endTimeMonth + "/" + endTimeDay + "/" + endTimeYear + " 17:00:00"
+                                        //console.log(" -> End time date "+endTimeDate)
+                                    let marketCloseTime = dayjs(endTimeDate).tz(this.tradeTimeZone).unix() * 1000
+                                        //console.log(" marketCloseTime "+marketCloseTime)
+
+                                    let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= marketCloseTime)
+                                    let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
+                                        //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
+
+                                    /*let timeDayOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
+                                    console.log(" timeDayOfWeek "+timeDayOfWeek)
                                     let timeHour = dayjs(endTime * 1000).tz(this.tradeTimeZone).get('hour')
                                     let time
-                                    while (i < ohlcvSymbol.t.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
-                                        time = ohlcvSymbol.t[i]
+                                    let i = tempEndIndex - 1;
+                                    while (i < ohlcvSymbol.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
+                                        time = ohlcvSymbol[i].t
                                         timeDayOfWeek = dayjs(time * 1000).tz(this.tradeTimeZone).day()
                                         timeHour = dayjs(time * 1000).tz(this.tradeTimeZone).get('hour')
                                             //console.log("time: "+time+", timeDayOfWeek "+timeDayOfWeek+" and hour "+timeHour)
                                         i++;
                                     }
-
-                                    let tempEndOfDayTimeIndex = ohlcvSymbol.t.indexOf(time)
+                                    console.log(" -> Time "+time)
+                                    //let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= time)
                                     let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
 
                                     //console.log(" -> End of day time " + endOfDayTime)
+                                    console.log(" -> end of day time index temp "+tempEndOfDayTimeIndex)
+                                    console.log(" -> end of day time index "+endOfDayTimeIndex+"+ and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))*/
 
                                     let tempMfe = {}
                                         //check is same timeframe
@@ -849,22 +893,22 @@ const addTradesMixin = {
                                         }
 
                                         console.log("   ---> Iterating between entry price and exit price")
-                                        console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
+                                            //console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
                                         for (let i = startIndex; i <= endIndex; i++) {
                                             //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
-                                            if (temp7.strategy == "long" && ohlcvSymbol.h[i] > temp7.exitPrice && ohlcvSymbol.h[i] > mfePrice) mfePrice = ohlcvSymbol.h[i]
-                                            if (temp7.strategy == "short" && ohlcvSymbol.l[i] < temp7.exitPrice && ohlcvSymbol.l[i] < mfePrice) mfePrice = ohlcvSymbol.l[i]
+                                            if (temp7.strategy == "long" && ohlcvSymbol[i].h > temp7.exitPrice && ohlcvSymbol[i].h > mfePrice) mfePrice = ohlcvSymbol[i].h
+                                            if (temp7.strategy == "short" && ohlcvSymbol[i].l < temp7.exitPrice && ohlcvSymbol[i].l < mfePrice) mfePrice = ohlcvSymbol[i].l
 
                                         }
                                         //console.log(" -> Price difference "+priceDifference)
                                         if (initEntryPrice != temp7.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
-                                            console.log("   ---> Iterating between exit price and up until price hits / equals entry price")
+                                            console.log("   ---> Iterating between exit price and up until price hits / equals entry price, and at the latest until market close")
                                             let i = endIndex
                                             let ohlcvSymbolPrice
-                                            temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol.h[endIndex] : ohlcvSymbolPrice = ohlcvSymbol.l[endIndex]
+                                            temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
 
                                             while (i <= endOfDayTimeIndex && (temp7.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
-                                                temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol.h[i] : ohlcvSymbolPrice = ohlcvSymbol.l[i]
+                                                temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
                                                     //console.log("  -> Symbol Price " + ohlcvSymbolPrice + ", init price " + initEntryPrice + " and mfe price " + mfePrice)
                                                 if (temp7.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
                                                 if (temp7.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice

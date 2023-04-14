@@ -39,7 +39,7 @@
             "guidedTour": {
                 "type": "Boolean"
             },
-            "finnhubApiKey": {
+            "marketDataApiKey": {
                 "type": "String"
             }
         },

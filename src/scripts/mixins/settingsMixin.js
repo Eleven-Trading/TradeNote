@@ -3,7 +3,7 @@ const settingsMixin = {
         return {
             profileAvatar: null,
             renderProfile: 0,
-            finnhubApiKey: null,
+            marketDataApiKey: null,
 
             patternToEdit: null,
             updatePatternName: null,
@@ -44,7 +44,7 @@ const settingsMixin = {
                         const parseFile = new Parse.File("avatar", this.profileAvatar);
                         results.set("avatar", parseFile)
                     }
-                    if (this.finnhubApiKey != null) results.set("finnhubApiKey", this.finnhubApiKey)
+                    if (this.marketDataApiKey != null) results.set("marketDataApiKey", this.marketDataApiKey)
                     
                     await results.save().then(async() => { //very important to have await or else too quick to update
                             await this.checkCurrentUser()

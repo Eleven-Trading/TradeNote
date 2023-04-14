@@ -100,7 +100,7 @@
                     @@include('components/cancelAdd.html')    
                     </div>
                     <!--<label>Auto upload MFE prices</label>-->
-                    <div class="mt-4" v-show="currentUser.finnhubApiKey">
+                    <div class="mt-4" v-show="currentUser.marketDataApiKey">
                         <div class="form-check form-switch">
                             <label>Upload automatically MFE prices</label>
                             <input class="form-check-input" type="checkbox" role="switch" v-model="uploadMfePrices" v-on:click="uploadMfePrices = !uploadMfePrices">
