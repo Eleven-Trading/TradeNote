@@ -1,7 +1,8 @@
 <div class="col-12 table-responsive">
     <nav>
         <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}<span v-if="dashTab.id == 'screenshots' && setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0" class="txt-small"> ({{setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length}})</span>
+            <button v-for="dashTab in dailyTabs" class="nav-link" v-bind:id="dashTab.id+'-'+index" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target+'-'+index" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}
+                <span v-if="dashTab.id == 'screenshots' && setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0" class="txt-small"> ({{setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length}})</span>
                 <!--({{daily[dashTab.id].length}})-->
             </button>
         </div>
@@ -65,17 +66,21 @@
                             <!-- Need to add +1 and then remove it in modal or else modal did not show because of <div v-if="videosArrayIndex" class="modal-content">
                             <i v-bind:class="[trade.videoStart&&trade.videoEnd ? 'fab fa-youtube' : 'uil uil-times-square']"></i>
                         </td>-->
-                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
-                            <i class="greenTrade uil uil-thumbs-up"></i>
+                        <td>
+                            <span v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
+                                <i class="greenTrade uil uil-thumbs-up"></i>
+                            </span>
+                            <span v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
+                                <i class="redTrade uil uil-thumbs-down"></i>
+                            </span>
                         </td>
-                        <td v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id)!=-1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
-                            <i class="redTrade uil uil-thumbs-down"></i>
+
+                        <td>
+                            <span v-if="setups.findIndex(f => f.name == trade.id)!=-1">
+                                <i class="uil uil-image-v"></i>
+                            </span>
                         </td>
-                        <td v-else></td>
-                        <td v-if="setups.findIndex(f => f.name == trade.id)!=-1">
-                            <i class="uil uil-image-v"></i>
-                        </td>
-                        <td v-else></td>
+
                     </tr>
                 </tbody>
             </table>
@@ -116,9 +121,15 @@
 
         <!-- SCREENSHOTS TAB -->
         <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-'+index" role="tabpanel" aria-labelledby="nav-overview-tab">
-            <div v-for="setup in setups.filter(obj => obj.dateUnixDay == daily.dateUnix)" class="">
-                <p v-if="setup.side" class="col mt-1">{{setup.symbol}} @ {{timeFormat(setup.dateUnix)}} ({{setup.side}})</p>
-                <p v-else class="col mt-1">{{setup.symbol}} @ {{hourMinuteFormat(setup.dateUnix)}}</p>
+            <div v-for="setup in setups.filter(obj => obj.dateUnixDay == daily.dateUnix)" class="mb-2">
+                <span>{{setup.symbol}}</span><span v-if="setup.side" class="col mt-1"> | {{setup.side == 'SS' || setup.side == 'BC' ? 'Short' : 'Long'}} | {{timeFormat(setup.dateUnix)}}</span>
+                <span v-else class="col mb-2"> | {{hourMinuteFormat(setup.dateUnix)}}</span>
+                <span v-if="patternsMistakes.findIndex(obj => obj.tradeId==setup.name)>0">
+
+                    <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.name}}</span>
+
+                    <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.name}}</span></span>
+
                 <img v-bind:id="setup.objectId" class="setupEntryImg mt-1 img-fluid" v-bind:src="setup.annotated.url"/>
             </div>
         </div>
