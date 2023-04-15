@@ -146,7 +146,7 @@ const tradesMixin = {
 
             localStorage.setItem('selectedRatio', this.selectedRatio)
 
-            if (this.currentPage.id == "daily"||this.currentPage.id == "calendar") {
+            if (this.currentPage.id == "daily" || this.currentPage.id == "calendar") {
                 localStorage.setItem('selectedMonth', JSON.stringify(this.selectedMonth))
             }
 
@@ -154,9 +154,13 @@ const tradesMixin = {
 
             localStorage.setItem('selectedMistakes', this.selectedMistakes)
 
+            localStorage.setItem('selectedPlSatisfaction', this.selectedPlSatisfaction)
+
             if (this.currentPage.id == "screenshots") {
                 await this.refreshScreenshot()
-            }else{
+            } else if (this.currentPage.id == "calendar") {
+                //do nothing
+            } else {
                 await this.getAllTrades(true)
             }
 
@@ -214,7 +218,7 @@ const tradesMixin = {
                         const results = await query.first()
                         if (results) {
                             lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
-                            console.log("  --> Last date parse " + lastDateParse)
+                            //console.log("  --> Last date parse " + lastDateParse)
                         }
                         resolve()
                     })
@@ -404,11 +408,11 @@ const tradesMixin = {
                     this.filteredTrades[index].pAndL = this.pAndL[key]
                     this.filteredTrades[index].blotter = this.blotter[key]
                 }
-                
+
                 this.filteredTrades.sort((a, b) => {
-                    return b.dateUnix - a.dateUnix
-                })
-                console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
+                        return b.dateUnix - a.dateUnix
+                    })
+                    //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
             }
 
             /*============= 5 - Render data, charts, totals =============*/
@@ -428,7 +432,7 @@ const tradesMixin = {
                 await (this.dashboardChartsMounted = true)
 
             }
-            
+
             if (this.currentPage.id == "daily") {
                 this.spinnerSetupsUpdateText = "Getting Daily Data"
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true)]) //setup etries here because take more time so spinner needs to still be running
@@ -490,7 +494,7 @@ const tradesMixin = {
                 await (this.renderingCharts = false)
                 await (this.spinnerSetupsUpdate = false)
             }
-            
+
 
         },
 
@@ -1541,29 +1545,29 @@ const tradesMixin = {
 
                     this.mfePricesArray.forEach(element => {
                         //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
-                            if (this.filteredTrades.length > 0) {
-                                //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
-                                let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
-                                    //console.log(" tradeFilter "+JSON.stringify(tradeFilter))
-                                if (tradeFilter != undefined) {
-                                    //console.log(" tradeFilter " + JSON.stringify(tradeFilter))
-                                    let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
-                                    if (trade != undefined) {
-                                        //console.log(" -> Trade " + JSON.stringify(trade))
-                                        let tradeEntryPrice = trade.entryPrice
-                                        console.log(" Entry price "+tradeEntryPrice+" | MFE Price "+element.mfePrice)
-                                        let entryMfeDiff
-                                        trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
-                                        let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
-                                            //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
-                                        grossMfeRArray.push(grossMfeR)
-                                        let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
-                                        netMfeRArray.push(netMfeR)
-                                    }
+                        if (this.filteredTrades.length > 0) {
+                            //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
+                            let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
+                                //console.log(" tradeFilter "+JSON.stringify(tradeFilter))
+                            if (tradeFilter != undefined) {
+                                //console.log(" tradeFilter " + JSON.stringify(tradeFilter))
+                                let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
+                                if (trade != undefined) {
+                                    //console.log(" -> Trade " + JSON.stringify(trade))
+                                    let tradeEntryPrice = trade.entryPrice
+                                    //console.log(" Entry price " + tradeEntryPrice + " | MFE Price " + element.mfePrice)
+                                    let entryMfeDiff
+                                    trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
+                                    let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
+                                        //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
+                                    grossMfeRArray.push(grossMfeR)
+                                    let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
+                                    netMfeRArray.push(netMfeR)
                                 }
                             }
-                        })
-                        console.log("  --> Gross mfeArray "+grossMfeRArray+" and net "+netMfeRArray)
+                        }
+                    })
+                    //console.log("  --> Gross mfeArray " + grossMfeRArray + " and net " + netMfeRArray)
 
                     //console.log(" -> Getting gross and net win rate")
                     let grossWin = this.totals.probGrossWins

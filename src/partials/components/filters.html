@@ -20,6 +20,7 @@
                 <span v-else>| Selected patterns</span>
                 <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">| All mistakes</span>
                 <span v-else>| Selected mistakes</span></span>
+                <span v-show="currentPage.id == 'calendar'"> | {{selectedPlSatisfaction == 'satisfaction' ? 'Satisfaction' : "P&L"}} calendar</span>
             </span>
 
             <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
@@ -73,6 +74,12 @@
                 </select>
             </div>
 
+            <!-- P&L / Satisfaction  -->
+            <div class="col-6 col-lg-6" v-show="currentPage.id == 'calendar'">
+                <select v-on:input="selectedPlSatisfaction = $event.target.value" class="form-select">
+                    <option v-for="item in plSatisfaction" v-bind:value="item.value" v-bind:selected="item.value ==  selectedPlSatisfaction">{{item.label}}</option>
+                </select>
+            </div>
             <!-- Positions -->
             <div class="col-6 col-lg-2 dropdown" v-show="currentPage.id != 'screenshots'&&currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Positions <span class="dashInfoTitle">({{selectedPositions.length}})</span></button>

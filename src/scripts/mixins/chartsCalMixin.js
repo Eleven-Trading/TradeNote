@@ -23,7 +23,7 @@ const chartsCalMixin = {
                     if (this.currentPage.id == "calendar") {//If calendar page, we do not take filtered trades as created in trades mixin bu twe need to get all the data for the other months on the calendar page
                         if (this.threeMonthsBack <= param1) {
                             if (this.threeMonthsTrades.length > 0) {
-                                console.log(" -> Getting existing variable")
+                                //console.log(" -> Getting existing variable")
                                 this.filteredTrades = this.threeMonthsTrades
                             } else {
                                 console.log(" -> Checking tradese in IndexedDB")
@@ -62,7 +62,7 @@ const chartsCalMixin = {
                                 //console.log("month "+tempData.month)
                             tempData.day = element2 // day number of the month
                             tempData.dateUnix = elementDateUnix // date in unix
-
+                            
                             //Using allTrades and not filteredTrades because we do not want calendar to be filtered
                             //console.log("selectedRange "+param1.start)
 
@@ -71,6 +71,7 @@ const chartsCalMixin = {
 
                             if (trade.length && element2 != 0) { //Check also if not null because day in date cannot be 0
                                 tempData.pAndL = trade[0].pAndL
+                                tempData.satisfaction = trade[0].satisfaction
                             } else {
                                 tempData.pAndL = []
                             }
@@ -110,8 +111,8 @@ const chartsCalMixin = {
             //console.log(" -> Mini Cal data "+JSON.stringify(this.miniCalendarsData))
 
             this.totalCalendarMounted = true
-                //console.log("calendarData "+JSON.stringify(this.calendarData))
-                //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
+            //console.log("calendarData "+JSON.stringify(this.calendarData))
+            //console.log("miniCalData " + JSON.stringify(this.miniCalendarsData))
 
         },
 

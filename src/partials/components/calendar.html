@@ -21,7 +21,7 @@
             <div>{{day}}</div>
             <div v-for="line in calendarData">
                 <div class="row">
-                    <div class="col" v-show="line[index] != 0" v-bind:class="{'greenTradeDiv': line[index].pAndL[amountCase+'Proceeds']>=0, 'redTradeDiv': line[index].pAndL[amountCase+'Proceeds']<0, 'calDivDay': currentPage.id == 'daily' || currentPage.id == 'videos', 'calDivDash': currentPage.id == 'dashboard' ||  currentPage.id == 'calendar'}">
+                    <div v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv':selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']>=0 : line[index].satisfaction == true, 'redTradeDiv': selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']<0 : line[index].satisfaction == false, 'calDivDay': currentPage.id == 'daily' || currentPage.id == 'videos', 'calDivDash': currentPage.id == 'dashboard' ||  currentPage.id == 'calendar'}, 'col']">
                         <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
                     @@if(type === "full"){
                         <p v-show="line[index].pAndL.trades">{{line[index].pAndL.trades}} trades</p>
@@ -42,7 +42,7 @@
                     <div>{{day}}</div>
                     <div v-for="line in calData">
                         <div class="row">
-                            <div class="col" v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv': line[index].pAndL[amountCase+'Proceeds']>=0, 'redTradeDiv': line[index].pAndL[amountCase+'Proceeds']<0}, 'calDivMini']">
+                            <div v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv':selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']>=0 : line[index].satisfaction == true, 'redTradeDiv': selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']<0 : line[index].satisfaction == false}, 'calDivMini', 'col']">
                                 <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
                             </div>
                         </div>

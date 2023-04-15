@@ -348,6 +348,19 @@ const vueApp = new Vue({
                     label: "Net Fees"
                 }*/
             ],
+            plSatisfaction: [{
+                value: "pl",
+                label: "P&L"
+            },
+            {
+                value: "satisfaction",
+                label: "Satisfaction"
+            },
+            /*{
+                value: "netFees",
+                label: "Net Fees"
+            }*/
+        ],
             selectedPosition: localStorage.getItem('selectedPosition'),
             selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long", "short"] : [],
             selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
@@ -357,6 +370,7 @@ const vueApp = new Vue({
             selectedPatterns: localStorage.getItem('selectedPatterns') ? localStorage.getItem('selectedPatterns').split(",") : [],
             selectedMistakes: localStorage.getItem('selectedMistakes') ? localStorage.getItem('selectedMistakes').split(",") : [],
             selectedGrossNet: localStorage.getItem('selectedGrossNet'),
+            selectedPlSatisfaction: localStorage.getItem('selectedPlSatisfaction'),
             renderData: 0, //this is for updating DOM
             renderData0: 0,
             renderData1: 0, //this is for updating DOM
@@ -515,6 +529,7 @@ const vueApp = new Vue({
         !localStorage.getItem('selectedRatio') ? localStorage.setItem('selectedRatio', "appt") : '';
         !localStorage.getItem('selectedAccount') ? localStorage.setItem('selectedAccount', "all") : '';
         !localStorage.getItem('selectedGrossNet') ? localStorage.setItem('selectedGrossNet', "gross") : '';
+        !localStorage.getItem('selectedPlSatisfaction') ? localStorage.setItem('selectedPlSatisfaction', "pl") : '';
         !localStorage.getItem('selectedBroker') ? localStorage.setItem('selectedBroker', "tradeZero") : '';
 
         let date = dayjs().tz(this.tradeTimeZone).startOf("day").unix()
@@ -744,7 +759,7 @@ const vueApp = new Vue({
         // GLOBALS
         // =================================================================================
 
-        grossNetToggle() {
+        /*grossNetToggle() {
             this.dashboardChartsMounted = false
             this.eCharts("clear")
             this.getAllTrades(true)
@@ -754,6 +769,9 @@ const vueApp = new Vue({
             !currentState == true ? this.amountCase = "net" : this.amountCase = "gross";
             !currentState == true ? this.amountCapital = "Net" : this.amountCapital = "Gross"
         },
+        plSatisfactionToggle() {
+            this.dashboardChartsMounted = false
+        },*/
 
         /* ---- INITS ---- */
         initPostHog() {
@@ -1234,7 +1252,7 @@ const vueApp = new Vue({
 
         },
         initQuill(param) {
-            console.log("param " + param)
+            //console.log("param " + param)
             let quillEditor
             if (param != undefined) {
                 quillEditor = '#quillEditor' + param
