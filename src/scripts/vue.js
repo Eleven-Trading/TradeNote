@@ -371,6 +371,7 @@ const vueApp = new Vue({
             selectedMistakes: localStorage.getItem('selectedMistakes') ? localStorage.getItem('selectedMistakes').split(",") : [],
             selectedGrossNet: localStorage.getItem('selectedGrossNet'),
             selectedPlSatisfaction: localStorage.getItem('selectedPlSatisfaction'),
+            tempSelectedPlSatisfaction: null,
             renderData: 0, //this is for updating DOM
             renderData0: 0,
             renderData1: 0, //this is for updating DOM

@@ -464,8 +464,8 @@ const addTradesMixin = {
                                 return Promise.reject(err);
                             }
 
-                            // 
-                            if (err.response.status != 429) { // status must be 402 to retry, or else it's another error and we alert
+                            // If there is an error and the status is not 429, we just alert (return rejection). Else we continue and retry
+                            if (err.response.status != 429) {
                                 alert("Error getting OHLCV with message: "+message)
                                 return Promise.reject(err);
                             }

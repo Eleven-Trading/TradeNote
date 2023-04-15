@@ -154,7 +154,11 @@ const tradesMixin = {
 
             localStorage.setItem('selectedMistakes', this.selectedMistakes)
 
-            localStorage.setItem('selectedPlSatisfaction', this.selectedPlSatisfaction)
+            if (this.tempSelectedPlSatisfaction != null){
+                this.selectedPlSatisfaction = this.tempSelectedPlSatisfaction
+                localStorage.setItem('selectedPlSatisfaction', this.selectedPlSatisfaction)
+                this.tempSelectedPlSatisfaction = null
+            }
 
             if (this.currentPage.id == "screenshots") {
                 await this.refreshScreenshot()
