@@ -447,23 +447,26 @@ const addTradesMixin = {
                     for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that asyn needs to be for instead of foreach
                         let temp = {}
                         temp.symbol = this.tradedSymbols[i]
-                        console.log(" -> From date " + this.tradedStartDate)
-                        console.log(" -> To " + this.tradedEndDate)
+                        //console.log(" -> From date " + this.tradedStartDate)
+                        //console.log(" -> To " + this.tradedEndDate)
                         let toDate = dayjs(this.tradedEndDate * 1000).tz(this.tradeTimeZone).endOf('day').unix()
-                        console.log(" -> To date " + toDate)
+                        //console.log(" -> To date " + toDate)
 
                         axios.interceptors.response.use(undefined, (err) => {
                             const { config, message } = err;
                             if (err) {
-                                console.log(" -> Interceptors error " + err)
+                                console.log(" -> Interceptors status " + err.response.status)
+                                console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
+                                console.log(" -> Interceptors message " + message)
                                 this.loadingSpinnerText = "Getting OHLCV - API limit reached - Retrying 60 seconds"
                             }
                             if (!config || !config.retry) {
                                 return Promise.reject(err);
                             }
 
-                            // retry on axios error
-                            if (message.includes("AxiosError")) {
+                            // 
+                            if (err.response.status != 429) { // status must be 402 to retry, or else it's another error and we alert
+                                alert("Error getting OHLCV with message: "+message)
                                 return Promise.reject(err);
                             }
 
@@ -481,9 +484,9 @@ const addTradesMixin = {
 
                         // when request, can set retry times and retry delay time
 
-                        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + this.tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + this.currentUser.marketDataApiKey, { retry: 3, retryDelay: 60000 })
+                        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + this.tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + this.currentUser.marketDataApiKey, { retry: 5, retryDelay: 60000 })
                             .then((response) => {
-                                console.log(" -> data " + JSON.stringify(response))
+                                //console.log(" -> data " + JSON.stringify(response))
                                     //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
                                 temp.ohlcv = response.data.results
                                 this.ohlcv.push(temp)
@@ -803,7 +806,7 @@ const addTradesMixin = {
                                         //todo exclude if trade in same minute timeframe
 
                                     //console.log(" ohlcvSymbol "+JSON.stringify(ohlcvSymbol))
-                                    console.log(" initEntryTime " + initEntryTime * 1000)
+                                    //console.log(" initEntryTime " + initEntryTime * 1000)
                                         //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
                                     let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
                                         //console.log(" temp start index "+tempStartIndex)
@@ -841,14 +844,16 @@ const addTradesMixin = {
                                     let endTimeDay = dayjs(endTime).tz(this.tradeTimeZone).get("date")
                                     let endTimeMonth = dayjs(endTime).tz(this.tradeTimeZone).get("month") + 1
                                     let endTimeYear = dayjs(endTime).tz(this.tradeTimeZone).get("year")
-                                    let endTimeDate = endTimeMonth + "/" + endTimeDay + "/" + endTimeYear + " 17:00:00"
-                                        //console.log(" -> End time date "+endTimeDate)
-                                    let marketCloseTime = dayjs(endTimeDate).tz(this.tradeTimeZone).unix() * 1000
-                                        //console.log(" marketCloseTime "+marketCloseTime)
+                                    let endTimeDate = endTimeYear+"-"+endTimeMonth + "-" + endTimeDay + " 16:00:00"//VERY IMPORTANT : if i want to apply US time, it needs to be in US format, that is YYYY-MM-DD
+                                    //console.log(" -> End time date "+endTimeDate)
+                                    //    
+                                    let marketCloseTime = dayjs.tz(endTimeDate, this.tradeTimeZone)
+
+                                    //console.log(" marketCloseTime "+marketCloseTime)
 
                                     let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= marketCloseTime)
                                     let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
-                                        //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
+                                    //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
 
                                     /*let timeDayOfWeek = dayjs(endTime * 1000).tz(this.tradeTimeZone).day()
                                     console.log(" timeDayOfWeek "+timeDayOfWeek)
@@ -907,9 +912,10 @@ const addTradesMixin = {
                                             let ohlcvSymbolPrice
                                             temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
 
+                                            //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
                                             while (i <= endOfDayTimeIndex && (temp7.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
                                                 temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
-                                                    //console.log("  -> Symbol Price " + ohlcvSymbolPrice + ", init price " + initEntryPrice + " and mfe price " + mfePrice)
+                                                //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+this.dateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
                                                 if (temp7.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
                                                 if (temp7.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
                                                 i++
@@ -919,7 +925,7 @@ const addTradesMixin = {
                                         if (temp7.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
                                         if (temp7.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
 
-                                        console.log("    ----> " + temp7.strategy + " stratgy with entry at " + initEntryTime + " @ " + initEntryPrice + " -> exit at " + temp7.exitTime + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
+                                        console.log("    ----> " + temp7.strategy + " stratgy with entry at " + this.dateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + this.dateTimeFormat(temp7.exitTime) + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
                                             //if short, MFE price = if price is lower than MFE
                                             //if long, MFE = if price is higher than MFE
 
@@ -981,7 +987,7 @@ const addTradesMixin = {
                     .groupBy("td");
                 //console.log(" -> Trades " + JSON.stringify(c))
                 this.trades = JSON.parse(JSON.stringify(c))
-                    //console.log("Trades C " + JSON.stringify(this.trades))
+                //console.log("Trades C " + JSON.stringify(this.trades))
                 resolve()
             })
         },

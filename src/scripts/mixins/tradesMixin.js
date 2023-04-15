@@ -404,10 +404,11 @@ const tradesMixin = {
                     this.filteredTrades[index].pAndL = this.pAndL[key]
                     this.filteredTrades[index].blotter = this.blotter[key]
                 }
-                //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
+                
                 this.filteredTrades.sort((a, b) => {
                     return b.dateUnix - a.dateUnix
                 })
+                console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
             }
 
             /*============= 5 - Render data, charts, totals =============*/

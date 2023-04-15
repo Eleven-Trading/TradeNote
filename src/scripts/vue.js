@@ -1567,6 +1567,9 @@ const vueApp = new Vue({
         hourMinuteFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("HH:mm")
         },
+        dateTimeFormat(param) {
+            return dayjs.unix(param).tz(this.tradeTimeZone).format("YYYY-MM-DD HH:mm:ss")
+        },
         chartFormat(param) {
             return dayjs.unix(param).tz(this.tradeTimeZone).format("DD/MM/YY")
         },

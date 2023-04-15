@@ -537,10 +537,11 @@ const brokersMixin = {
                                 temp.Liq = ""
                                 temp.Note = ""
                                     //console.log("temp "+JSON.stringify(temp))*/
-                                this.tradesData.push(temp)
+                                this.tradesData.unshift(temp)
                             }
                         })
-                        //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                        
+                    //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
                 } catch (error) {
                     console.log("  --> ERROR " + error)
                     reject(error)
