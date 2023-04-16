@@ -892,7 +892,8 @@ const tradesMixin = {
             temp2.avgNetSharePLLoss = -(totalNetSharePLLoss / totalNetLossCount)
 
             this.totals = temp2
-                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+            //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+            
 
 
             /*============= 2- RECREATING TOTALS BY DATE =============
@@ -1113,7 +1114,8 @@ const tradesMixin = {
             }
 
             this.totalsByDate = temp3
-                //console.log(" -> TOTALS BY DATE " + JSON.stringify(this.totalsByDate))
+            //console.log(" -> TOTALS BY DATE " + JSON.stringify(this.totalsByDate))
+            //console.log(" -> TOTALS BY DATE (length) " + Object.keys(this.totalsByDate).length)
 
 
 

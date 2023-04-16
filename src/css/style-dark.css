@@ -70,6 +70,10 @@ main {
     color: #350f0d;
 }
 
+.blackTradeDiv {
+    background-color: var(--black);
+}
+
 .form-control {
     background-color: var(--black-bg-7);
     color: var(--white-87);

@@ -28,7 +28,7 @@ const vueApp = new Vue({
             signingUp: false,
             registerForm: { username: null, password: null },
             loginForm: { username: null, password: null },
-            
+
             //General
             currentUser: null,
             pages: [{
@@ -300,6 +300,16 @@ const vueApp = new Vue({
             selectedPeriodRange: {},
             selectedDateRange: {},
             selectedMonth: {},
+            currentDateInfos: {
+                dateUnix: null,
+                startMonth: null,
+                day: null,
+                month: null,
+                year: null,
+                equalToSelectedMonth: false,
+                beforeSelectedMonth: false,
+
+            },
             positions: [{
                     value: "long",
                     label: "Long"
@@ -349,18 +359,18 @@ const vueApp = new Vue({
                 }*/
             ],
             plSatisfaction: [{
-                value: "pl",
-                label: "P&L"
-            },
-            {
-                value: "satisfaction",
-                label: "Satisfaction"
-            },
-            /*{
-                value: "netFees",
-                label: "Net Fees"
-            }*/
-        ],
+                    value: "pl",
+                    label: "P&L"
+                },
+                {
+                    value: "satisfaction",
+                    label: "Satisfaction"
+                },
+                /*{
+                    value: "netFees",
+                    label: "Net Fees"
+                }*/
+            ],
             selectedPosition: localStorage.getItem('selectedPosition'),
             selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long", "short"] : [],
             selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
@@ -604,7 +614,6 @@ const vueApp = new Vue({
         //console.log(" -> Selected date range "+JSON.stringify(this.selectedPeriodRange))
 
         this.selectedMonth = localStorage.getItem('selectedMonth') ? JSON.parse(localStorage.getItem('selectedMonth')) : { start: this.periodRange.filter(element => element.value == 'thisMonth')[0].start, end: this.periodRange.filter(element => element.value == 'thisMonth')[0].end }
-            //console.log(" -> Selected cal range "+JSON.stringify(this.selectedMonth))
 
         //this.currentPage = document.getElementsByTagName("main")[0].id
 
@@ -636,7 +645,7 @@ const vueApp = new Vue({
             await this.initPopover()
         }
 
-        
+
 
         if (this.currentPage.id == "playbook") {
             await this.getPlaybooks()
@@ -669,7 +678,7 @@ const vueApp = new Vue({
             await this.getScreenshots()
             await this.initPopover()
         }
-        
+
         if (this.currentPage.id == "addScreenshot") {
             await this.getScreenshots()
             await this.getScreenshotToEdit(itemToEditId)
@@ -720,8 +729,6 @@ const vueApp = new Vue({
          * .unix in most cases (excempt for example startOf ) seems to convert to local time. so dayjs.unix(1656682798).tz(this.tradeTimeZone).format() shows in tz time. dayjs.unix(1656682798).tz(this.tradeTimeZone).unix() show unix in local time
          */
 
-        console.log("END DATE EXPLORATION")
-        console.log("\n")
         let screenWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width
         this.screenType = (screenWidth >= 992) ? 'computer' : 'mobile'
             //console.log(" Width : " + screenWidth + " and screen type " + this.screenType)
@@ -1726,6 +1733,27 @@ const vueApp = new Vue({
             }
         },
 
+        getCurrentDateInfos() {
+            console.log("\nGETTING CURRENT DATE")
+
+            this.currentDateInfos.dateUnix = dayjs().tz(this.tradeTimeZone) / 1000
+            this.currentDateInfos.startMonth = dayjs().tz(this.tradeTimeZone).startOf("month") / 1000
+            
+            this.currentDateInfos.day = dayjs().tz(this.tradeTimeZone).get("date")
+            
+            if (this.selectedMonth.start == this.currentDateInfos.startMonth) {
+                this.currentDateInfos.equalToSelectedMonth = true
+                this.currentDateInfos.beforeSelectedMonth = false
+            } else if(this.selectedMonth.start > this.currentDateInfos.startMonth){
+                this.this.currentDateInfos.equalToSelectedMonth = false
+                this.currentDateInfos.beforeSelectedMonth = true
+            }
+            else{
+                this.this.currentDateInfos.equalToSelectedMonth = false
+                this.currentDateInfos.beforeSelectedMonth = false
+            }
+            console.log(" -> Current date infos "+JSON.stringify(this.currentDateInfos)+" and selected month "+this.selectedMonth.start)
+        }
 
     }
 })

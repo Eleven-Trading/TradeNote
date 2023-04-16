@@ -936,10 +936,6 @@
                 "targetClass": "mistakes",
                 "required": false
             },
-            "tradeUnixDate": {
-                "type": "Number",
-                "required": false
-            },
             "tradeId": {
                 "type": "String"
             },
