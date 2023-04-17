@@ -2,10 +2,11 @@ const tradesMixin = {
     methods: {
         //Date : periode
         inputDateRange(param) {
+            //console.log(" -> Input Date Range - Param: "+param)
             //Filter to find the value of date range
             var filterJson = this.periodRange.filter(element => element.value == param)[0]
             this.selectedPeriodRange = filterJson
-                //console.log(" -> Input range: Selected Date Range "+JSON.stringify(this.selectedPeriodRange))
+                //console.log(" -> Input range: Selected Date Range " + JSON.stringify(this.selectedPeriodRange))
 
             //Created selected Date range calendar mode
             let temp = {}
@@ -19,35 +20,24 @@ const tradesMixin = {
         //Date : calendar
         inputDateRangeCal(param1, param2) {
             //console.log("param1 " + param1 + ", param2 " + param2)
-            let dateUnix = null
+            //console.log(" -> Initial selectedDateRange " + JSON.stringify(this.selectedDateRange))
+
             if (param1 == "start") {
-                dateUnix = dayjs.tz(param2, this.tradeTimeZone).unix()
+                this.selectedDateRange.start = dayjs.tz(param2, this.tradeTimeZone).unix()
             }
             if (param1 == "end") {
-                dateUnix = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix()
+                this.selectedDateRange.end = dayjs.tz(param2, this.tradeTimeZone).endOf("day").unix() // it must be tz(...). It cannot be dayjs().t
             }
 
-            let dateLocalStorage = JSON.parse(localStorage.getItem('selectedDateRange'))
 
-            /* Check if start date before end date and vice versa */
-            if (dateLocalStorage && param1 == "start" && dateLocalStorage.end > dateUnix) {
-                dateLocalStorage.start = dateUnix
-                this.selectedDateRange = dateLocalStorage
-                    //console.log("selectedDateRange " + JSON.stringify(this.selectedDateRange))
-
-            }
-
-            if (dateLocalStorage && param1 == "end" && dateLocalStorage.start < dateUnix) {
-                dateLocalStorage.end = dateUnix
-                this.selectedDateRange = dateLocalStorage
-            }
+            //console.log("selectedDateRange " + JSON.stringify(this.selectedDateRange))
 
             /* Update selectedPeriodRange */
             let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
             if (tempFilter.length > 0) {
                 this.selectedPeriodRange = tempFilter[0]
             } else {
-                console.log(" -> Custom range in trades mixin")
+                //console.log(" -> Custom range in trades mixin")
                 this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
             }
         },
@@ -86,27 +76,35 @@ const tradesMixin = {
                     //console.log(" -> Filters click (close): Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
                 /* Restore Selected Period range */
-                var filterJson = this.periodRange.filter(element => element.start == this.selectedDateRange.start)[0]
-                    //console.log(" filter json "+JSON.stringify(filterJson))
-                if (filterJson != undefined) {
-                    this.selectedPeriodRange = filterJson
+                let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
+                if (tempFilter.length > 0) {
+                    this.selectedPeriodRange = tempFilter[0]
                 } else {
-                    console.log(" -> Custom range in trades mixin")
+                    //console.log(" -> Custom range in trades mixin")
                     this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
                 }
+                
                 //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(this.selectedPeriodRange))
 
                 /* Restore temp selected accounts */
-                this.selectedAccounts = localStorage.getItem('selectedAccounts').split(",")
-                    //console.log(" Selected accounts " + this.selectedAccounts)
+                if (localStorage.getItem('selectedAccounts') && localStorage.getItem('selectedAccounts').includes(",")) {
+                    this.selectedAccounts = localStorage.getItem('selectedAccounts').split(",")
+                } else {
+                    this.selectedAccounts = localStorage.getItem('selectedAccounts')
+                }
+                //console.log(" Selected accounts " + this.selectedAccounts)
 
                 /* Restore gross net */
                 this.selectedGrossNet = localStorage.getItem('selectedGrossNet')
                     //console.log(" Selected accounts " + this.selectedAccounts)
 
                 /* Restore temp selected accounts */
-                this.selectedPositions = localStorage.getItem('selectedPositions').split(",")
-                    //console.log(" Selected positions " + this.selectedPositions)
+                if (localStorage.getItem('selectedPositions') && localStorage.getItem('selectedPositions').includes(",")) {
+                    this.selectedPositions = localStorage.getItem('selectedPositions').split(",")
+                        //console.log(" Selected positions " + this.selectedPositions)
+                } else {
+                    this.selectedPositions = localStorage.getItem('selectedPositions')
+                }
 
                 this.selectedTimeFrame = localStorage.getItem('selectedTimeFrame')
                     //console.log(" Selected timeframe " + this.selectedTimeFrame)
@@ -127,12 +125,21 @@ const tradesMixin = {
         },
 
         saveFilter: async function() {
-            if (this.currentPage.id == "dashboard") {
+            //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
+            //console.log(" -> Selected accounts "+this.selectedAccounts)
+            /* Check if start date before end date and vice versa */
+            if (this.selectedDateRange.end < this.selectedDateRange.start) {
+                alert("End date cannot be before start date")
+                return
+            } else {
+                localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
+            }
+
+
+            if (this.currentPage.id == "dashboard" && this.selectedDateRange.end >= this.selectedDateRange.start) {
                 this.eCharts("clear")
             }
-            //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
-            localStorage.setItem('selectedDateRange', JSON.stringify(this.selectedDateRange))
 
             localStorage.setItem('selectedAccounts', this.selectedAccounts)
 
@@ -154,7 +161,7 @@ const tradesMixin = {
 
             localStorage.setItem('selectedMistakes', this.selectedMistakes)
 
-            if (this.tempSelectedPlSatisfaction != null){
+            if (this.tempSelectedPlSatisfaction != null) {
                 this.selectedPlSatisfaction = this.tempSelectedPlSatisfaction
                 localStorage.setItem('selectedPlSatisfaction', this.selectedPlSatisfaction)
                 this.tempSelectedPlSatisfaction = null
@@ -222,7 +229,7 @@ const tradesMixin = {
                         const results = await query.first()
                         if (results) {
                             lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
-                            //console.log("  --> Last date parse " + lastDateParse)
+                                //console.log("  --> Last date parse " + lastDateParse)
                         }
                         resolve()
                     })
@@ -892,8 +899,8 @@ const tradesMixin = {
             temp2.avgNetSharePLLoss = -(totalNetSharePLLoss / totalNetLossCount)
 
             this.totals = temp2
-            //console.log(" -> TOTALS " + JSON.stringify(this.totals))
-            
+                //console.log(" -> TOTALS " + JSON.stringify(this.totals))
+
 
 
             /*============= 2- RECREATING TOTALS BY DATE =============
@@ -1114,8 +1121,8 @@ const tradesMixin = {
             }
 
             this.totalsByDate = temp3
-            //console.log(" -> TOTALS BY DATE " + JSON.stringify(this.totalsByDate))
-            //console.log(" -> TOTALS BY DATE (length) " + Object.keys(this.totalsByDate).length)
+                //console.log(" -> TOTALS BY DATE " + JSON.stringify(this.totalsByDate))
+                //console.log(" -> TOTALS BY DATE (length) " + Object.keys(this.totalsByDate).length)
 
 
 
@@ -1550,30 +1557,30 @@ const tradesMixin = {
                     let netMfeRArray = []
 
                     this.mfePricesArray.forEach(element => {
-                        //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
-                        if (this.filteredTrades.length > 0) {
-                            //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
-                            let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
-                                //console.log(" tradeFilter "+JSON.stringify(tradeFilter))
-                            if (tradeFilter != undefined) {
-                                //console.log(" tradeFilter " + JSON.stringify(tradeFilter))
-                                let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
-                                if (trade != undefined) {
-                                    //console.log(" -> Trade " + JSON.stringify(trade))
-                                    let tradeEntryPrice = trade.entryPrice
-                                    //console.log(" Entry price " + tradeEntryPrice + " | MFE Price " + element.mfePrice)
-                                    let entryMfeDiff
-                                    trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
-                                    let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
-                                        //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
-                                    grossMfeRArray.push(grossMfeR)
-                                    let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
-                                    netMfeRArray.push(netMfeR)
+                            //console.log(" -> Filtered trades "+JSON.stringify(this.filteredTrades))
+                            if (this.filteredTrades.length > 0) {
+                                //console.log(" this.filteredTrades "+JSON.stringify(this.filteredTrades))
+                                let tradeFilter = this.filteredTrades.find(x => x.dateUnix == element.dateUnix)
+                                    //console.log(" tradeFilter "+JSON.stringify(tradeFilter))
+                                if (tradeFilter != undefined) {
+                                    //console.log(" tradeFilter " + JSON.stringify(tradeFilter))
+                                    let trade = tradeFilter.trades.find(x => x.id == element.tradeId)
+                                    if (trade != undefined) {
+                                        //console.log(" -> Trade " + JSON.stringify(trade))
+                                        let tradeEntryPrice = trade.entryPrice
+                                            //console.log(" Entry price " + tradeEntryPrice + " | MFE Price " + element.mfePrice)
+                                        let entryMfeDiff
+                                        trade.strategy == "long" ? entryMfeDiff = (element.mfePrice - tradeEntryPrice) : entryMfeDiff = (tradeEntryPrice - element.mfePrice)
+                                        let grossMfeR = entryMfeDiff / this.profitAnalysis.grossAvLossPerShare
+                                            //console.log("  --> Strategy "+trade.strategy+", entry price : "+tradeEntryPrice+", mfe price "+element.mfePrice+", diff "+entryMfeDiff+" and grosmfe R "+grossMfeR)
+                                        grossMfeRArray.push(grossMfeR)
+                                        let netMfeR = entryMfeDiff / this.profitAnalysis.netAvLossPerShare
+                                        netMfeRArray.push(netMfeR)
+                                    }
                                 }
                             }
-                        }
-                    })
-                    //console.log("  --> Gross mfeArray " + grossMfeRArray + " and net " + netMfeRArray)
+                        })
+                        //console.log("  --> Gross mfeArray " + grossMfeRArray + " and net " + netMfeRArray)
 
                     //console.log(" -> Getting gross and net win rate")
                     let grossWin = this.totals.probGrossWins

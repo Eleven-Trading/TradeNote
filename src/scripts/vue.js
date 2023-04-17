@@ -200,103 +200,7 @@ const vueApp = new Vue({
 
             //Filter
             filtersOpen: false,
-            periodRange: [{
-                    value: "all",
-                    label: "All",
-                    start: 0,
-                    end: 0
-                },
-                {
-                    value: "thisWeek",
-                    label: "This Week",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
-                },
-                {
-                    value: "lastWeek",
-                    label: "Last Week",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(1, 'week').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').subtract(1, 'week').unix())
-                },
-                {
-                    value: "lastWeekTilNow",
-                    label: "Last Week Until Now",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(1, 'week').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
-                },
-                {
-                    value: "lastTwoWeeks",
-                    label: "Last Two Weeks",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(2, 'week').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').subtract(1, 'week').unix())
-                },
-                {
-                    value: "lastTwoWeeksTilNow",
-                    label: "Last Two Weeks Until Now",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(2, 'week').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
-                },
-                {
-                    value: "thisMonth",
-                    label: "This Month",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
-                },
-                {
-                    value: "lastMonth",
-                    label: "Last Month",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(1, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').subtract(1, 'month').unix())
-                },
-                {
-                    value: "lastMonthTilNow",
-                    label: "Last Month Until Now",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(1, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
-                },
-                {
-                    value: "lastTwoMonths",
-                    label: "Last Two Months",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(2, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').subtract(1, 'month').unix())
-                },
-                {
-                    value: "lastTwoMonthsTilNow",
-                    label: "Last Two Months Until Now",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(2, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
-                },
-                {
-                    value: "lastThreeMonths",
-                    label: "Last Three Months",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(3, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').subtract(1, 'month').unix())
-                },
-                {
-                    value: "lastThreeMonthsTilNow",
-                    label: "Last Three Months Until Now",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(3, 'month').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
-                },
-                {
-                    value: "thisYear",
-                    label: "This Year",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('year').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').unix())
-                },
-                {
-                    value: "lastYear",
-                    label: "Last Year",
-                    start: Number(dayjs().tz(this.tradeTimeZone).startOf('year').subtract(1, 'year').unix()),
-                    end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').subtract(1, 'year').unix())
-                },
-                {
-                    value: "custom",
-                    label: "Custom",
-                    start: -1,
-                    end: -1
-                },
-            ],
+            periodRange: [],
             selectedPeriodRange: {},
             selectedDateRange: {},
             selectedMonth: {},
@@ -549,6 +453,93 @@ const vueApp = new Vue({
 
     },
     created: async function() {
+        this.periodRange.push({
+            value: "all",
+            label: "All",
+            start: 0,
+            end: 0
+        }, {
+            value: "thisWeek",
+            label: "This Week",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastWeek",
+            label: "Last Week",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(1, 'week').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').subtract(1, 'week').unix())
+        }, {
+            value: "lastWeekTilNow",
+            label: "Last Week Until Now",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(1, 'week').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastTwoWeeks",
+            label: "Last Two Weeks",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(2, 'week').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').subtract(1, 'week').unix())
+        }, {
+            value: "lastTwoWeeksTilNow",
+            label: "Last Two Weeks Until Now",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').subtract(2, 'week').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "thisMonth",
+            label: "This Month",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
+        }, {
+            value: "lastMonth",
+            label: "Last Month",
+            start: Number(dayjs().tz(this.tradeTimeZone).subtract(1, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).subtract(1, 'month').endOf('month').unix())
+        }, {
+            value: "lastMonthTilNow",
+            label: "Last Month Until Now",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(1, 'month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
+        }, {
+            value: "lastTwoMonths",
+            label: "Last Two Months",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(2, 'month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').subtract(1, 'month').unix())
+        }, {
+            value: "lastTwoMonthsTilNow",
+            label: "Last Two Months Until Now",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(2, 'month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
+        }, {
+            value: "lastThreeMonths",
+            label: "Last Three Months",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(3, 'month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').subtract(1, 'month').unix())
+        }, {
+            value: "lastThreeMonthsTilNow",
+            label: "Last Three Months Until Now",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('month').subtract(3, 'month').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('month').unix())
+        }, {
+            value: "thisYear",
+            label: "This Year",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('year').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').unix())
+        }, {
+            value: "lastYear",
+            
+            label: "Last Year",
+            start: Number(dayjs().tz(this.tradeTimeZone).startOf('year').subtract(1, 'year').unix()),
+            end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').subtract(1, 'year').unix())
+        }, {
+            value: "custom",
+            label: "Custom",
+            start: -1,
+            end: -1
+        }, )
+
+
+        let test = dayjs("2023-04-01 00:00:00").tz(this.tradeTimeZone).endOf("day").unix()
+        console.log("test "+test)
+
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         this.initParse()
         this.initPostHog()
@@ -1738,21 +1729,20 @@ const vueApp = new Vue({
 
             this.currentDateInfos.dateUnix = dayjs().tz(this.tradeTimeZone) / 1000
             this.currentDateInfos.startMonth = dayjs().tz(this.tradeTimeZone).startOf("month") / 1000
-            
+
             this.currentDateInfos.day = dayjs().tz(this.tradeTimeZone).get("date")
-            
+
             if (this.selectedMonth.start == this.currentDateInfos.startMonth) {
                 this.currentDateInfos.equalToSelectedMonth = true
                 this.currentDateInfos.beforeSelectedMonth = false
-            } else if(this.selectedMonth.start > this.currentDateInfos.startMonth){
+            } else if (this.selectedMonth.start > this.currentDateInfos.startMonth) {
                 this.this.currentDateInfos.equalToSelectedMonth = false
                 this.currentDateInfos.beforeSelectedMonth = true
-            }
-            else{
+            } else {
                 this.this.currentDateInfos.equalToSelectedMonth = false
                 this.currentDateInfos.beforeSelectedMonth = false
             }
-            console.log(" -> Current date infos "+JSON.stringify(this.currentDateInfos)+" and selected month "+this.selectedMonth.start)
+            console.log(" -> Current date infos " + JSON.stringify(this.currentDateInfos) + " and selected month " + this.selectedMonth.start)
         }
 
     }
