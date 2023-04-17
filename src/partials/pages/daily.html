@@ -174,7 +174,7 @@
                                                 <i class="fa fa-chevron-left me-2"></i>Back</button>
                                         </div>
                                         <div class="col-4 text-center">
-                                            <button v-if="tradeSetupChanged||tradeExcursionChanged" class="btn btn-outline-success btn-sm" v-on:click="hideTradesModal">Close & Save</button>
+                                            <button v-if="indexedDBtoUpdate" class="btn btn-outline-success btn-sm" v-on:click="hideTradesModal">Close & Save</button>
                                             <button v-else class="btn btn-outline-primary btn-sm" v-on:click="hideTradesModal">Close</button>
                                         </div>
                                         <div v-if="daily.trades.hasOwnProperty(videosArrayIndex+1)" class="ms-auto col-2 text-end">

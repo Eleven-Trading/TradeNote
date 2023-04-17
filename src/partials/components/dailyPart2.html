@@ -43,7 +43,6 @@
                         <!--<td>{{timeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                         <td v-bind:class="[trade.grossSharePL>0 ? 'greenTrade' : 'redTrade']">{{(trade.grossSharePL).toFixed(2)}}</td>
                         <td v-bind:class="[trade.netProceeds>0 ? 'greenTrade' : 'redTrade']">{{(trade.netProceeds).toFixed(2)}}</td>
-
                         <td v-if="trade.hasOwnProperty('setup')&&trade.setup.hasOwnProperty('pattern')&&trade.setup.pattern != null&&patterns.filter(x => x.objectId == trade.setup.pattern)[0]!=undefined">
                             {{(JSON.parse(JSON.stringify(patterns.filter(x => x.objectId == trade.setup.pattern)[0])).name).substr(0,15)+"..."}}
                         </td>

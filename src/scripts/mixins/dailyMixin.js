@@ -522,13 +522,11 @@ const dailyMixin = {
                 }
 
                 if (!param3 && this.tradeSetupChanged) {
-                    await this.updatePatternsMistakes()
-                    await this.updateTrades()
+                    await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
                 }
 
                 if (!param3 && this.tradeExcursionChanged) {
-                    await this.updateExcursions()
-                    await this.updateTrades()
+                    await Promise.all([this.updateExcursions(), this.updateTrades()])
                     await this.getExcursions()
                 }
 
@@ -614,22 +612,21 @@ const dailyMixin = {
             } else {
                 if (this.currentPage.id == "daily") this.tradesModal.hide()
 
-                console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
+                //console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
                 if (this.indexedDBtoUpdate) {
 
                     if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
                         await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
-                        await this.updateIndexedDB()
                     }
                     if (this.tradeExcursionChanged) { //in the case excursion changed but did not click on next 
                         await Promise.all([this.updateExcursions(), this.updateTrades()])
                         await this.getExcursions()
-                        await this.updateIndexedDB()
                     }
+
                     if (this.tradeScreenshotChanged) {
                         await this.saveScreenshot()
                     }
-
+                    await this.updateIndexedDB()
 
                 }
                 this.indexedDBtoUpdate = false
