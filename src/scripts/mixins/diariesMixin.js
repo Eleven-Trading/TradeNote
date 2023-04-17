@@ -180,15 +180,24 @@ const diariesMixin = {
 
             if (results) {
                 await results.destroy()
-                    //document.location.reload()
-                await this.getJournals()
-                await (this.renderData += 1)
-                await this.initPopover()
-                this.selectedItem = null
+                await this.refreshJournals()
 
             } else {
                 alert("There was a problem with the query")
             }
         },
+
+        refreshJournals: async function() {
+            return new Promise(async(resolve, reject) => {
+                this.diaryQueryLimit = 10
+                this.diaryPagination = 0
+                this.journals = []
+                await this.getJournals()
+                await this.initPopover()
+                await (this.renderData += 1)
+                this.selectedItem = null
+                resolve()
+            })
+        }
     }
 }
