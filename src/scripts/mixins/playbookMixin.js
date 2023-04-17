@@ -6,7 +6,7 @@ const playbookMixin = {
             playbookButton: false,
             playbooks: [],
             playbookIdToEdit: null,
-            currentDate: dayjs().format("YYYY-MM-DD"),
+            //currentDate: dayjs().format("YYYY-MM-DD"),
         }
     },
     watch: {

@@ -60,12 +60,12 @@ const diariesMixin = {
             })
         },
         journalDateInput: function(param) {
-            console.log(" param " + param)
+            console.log(" -> journalDateInput param: " + param)
             this.journalUpdate.dateUnix = dayjs.tz(param, this.tradeTimeZone).unix()
             this.journalUpdate.date = dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD")
             this.journalUpdate.dateDateFormat = new Date(dayjs(param, this.tradeTimeZone).format("YYYY-MM-DD"))
                 //console.log(" -> journalDateUnix " + this.journalUpdate.dateUnix + " and date " + this.journalUpdate.date)
-                //console.log("journalUpdate " + JSON.stringify(this.journalUpdate))
+            console.log("journalUpdate " + JSON.stringify(this.journalUpdate))
         },
         getJournals: async function(param) {
             return new Promise(async(resolve, reject) => {

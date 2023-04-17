@@ -24,7 +24,7 @@ const screenshotsMixin = {
             screenshotButton: false,
             setups: [],
             screenshotIdToEdit: null,
-            currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
+            //currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
             setupType: [{
                     value: null,
                     label: "Type"

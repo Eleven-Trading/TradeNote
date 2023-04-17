@@ -16,7 +16,7 @@ const entriesMixin = {
             entryButton: false,
             entries: [],
             entryIdToEdit: null,
-            currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
+            //currentDate: dayjs().format("YYYY-MM-DD THH:mm:ss"),
             entry: {},
 
         }
