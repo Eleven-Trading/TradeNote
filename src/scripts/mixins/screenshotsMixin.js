@@ -68,7 +68,7 @@ const screenshotsMixin = {
     methods: {
         getScreenshots: async function(param) {
             await this.getPatternsMistakes()
-            //console.log(" -> Selected patterns " + this.selectedPatterns)
+                //console.log(" -> Selected patterns " + this.selectedPatterns)
             let allPatterns = []
             this.patterns.filter(obj => obj.active == true).forEach(element => {
                 allPatterns.push(element.objectId)
@@ -84,20 +84,20 @@ const screenshotsMixin = {
             //console.log(" -> Excluded patterns "+exclPatterns);
             let exclMistakes = allMistakes.filter(x => !this.selectedMistakes.includes(x));
             //console.log(" -> Excluded mistakes "+exclMistakes);
-            
+
             let allPatternsMistakesIds = []
             let excludedIds = []
 
             this.patternsMistakes.forEach(element => {
                 allPatternsMistakesIds.push(element.tradeId)
-                //console.log(" - element mistake "+element.mistake)
+                    //console.log(" - element mistake "+element.mistake)
 
                 if ((element.pattern != null && exclPatterns.includes(element.pattern.objectId)) || (element.mistake != null && exclMistakes.includes(element.mistake.objectId))) {
                     //console.log("  --> Trade id to exclude " + element.tradeId)
                     excludedIds.push(element.tradeId)
                 }
             });
-            
+
 
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Getting screenshots");
@@ -109,9 +109,9 @@ const screenshotsMixin = {
                 query.equalTo("user", Parse.User.current());
                 query.descending("dateUnix");
                 query.notContainedIn("name", excludedIds) // Query not including excluded ids
-                
-                if (!this.selectedPatterns.includes("void") && !this.selectedMistakes.includes("void")){ // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
-                    query.containedIn("name",allPatternsMistakesIds)
+
+                if (!this.selectedPatterns.includes("void") && !this.selectedMistakes.includes("void")) { // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
+                    query.containedIn("name", allPatternsMistakesIds)
                 }
 
                 if (param) { // if "full" false (case for daily page), then only certain limit. Else sull
@@ -121,7 +121,7 @@ const screenshotsMixin = {
                     query.limit(this.screenshotsQueryLimit);
                     query.skip(this.screenshotsPagination)
                 }
-                               
+
 
                 const results = await query.find();
                 let parsedResult = JSON.parse(JSON.stringify(results))
@@ -157,7 +157,7 @@ const screenshotsMixin = {
             const results = await query.first();
             if (results) {
                 this.setup = JSON.parse(JSON.stringify(results))
-
+                    //console.log(" -> Setup of screenshot to edit "+JSON.stringify(this.setup))
                 if (this.setup.side) {
                     this.setup.type = "entry"
                 } else {
@@ -166,13 +166,15 @@ const screenshotsMixin = {
 
                 let index = this.patternsMistakes.findIndex(obj => obj.tradeId == this.setup.name)
 
-                if (this.patternsMistakes[index].hasOwnProperty('pattern') && this.patternsMistakes[index].pattern != null && this.patternsMistakes[index].pattern != undefined && this.patternsMistakes[index].pattern.hasOwnProperty('objectId')) this.setup.pattern = this.patternsMistakes[index].pattern.objectId
+                if (index != -1) {
+                    if (this.patternsMistakes[index].hasOwnProperty('pattern') && this.patternsMistakes[index].pattern != null && this.patternsMistakes[index].pattern != undefined && this.patternsMistakes[index].pattern.hasOwnProperty('objectId')) this.setup.pattern = this.patternsMistakes[index].pattern.objectId
 
-                if (this.patternsMistakes[index].hasOwnProperty('mistake') && this.patternsMistakes[index].mistake != null && this.patternsMistakes[index].mistake != undefined && this.patternsMistakes[index].mistake.hasOwnProperty('objectId')) this.setup.mistake = this.patternsMistakes[index].mistake.objectId
+                    if (this.patternsMistakes[index].hasOwnProperty('mistake') && this.patternsMistakes[index].mistake != null && this.patternsMistakes[index].mistake != undefined && this.patternsMistakes[index].mistake.hasOwnProperty('objectId')) this.setup.mistake = this.patternsMistakes[index].mistake.objectId
 
-                //updating patterns and mistakes used in dailyMixin
-                this.tradeSetup.pattern = this.setup.pattern
-                this.tradeSetup.mistake = this.setup.mistake
+                    //updating patterns and mistakes used in dailyMixin
+                    this.tradeSetup.pattern = this.setup.pattern
+                    this.tradeSetup.mistake = this.setup.mistake
+                }
 
             } else {
                 alert("Query did not return any results")

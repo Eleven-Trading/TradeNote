@@ -536,10 +536,6 @@ const vueApp = new Vue({
             end: -1
         }, )
 
-
-        let test = dayjs("2023-04-01 00:00:00").tz(this.tradeTimeZone).endOf("day").unix()
-        console.log("test "+test)
-
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
         this.initParse()
         this.initPostHog()
