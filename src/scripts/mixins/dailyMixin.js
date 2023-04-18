@@ -102,7 +102,7 @@ const dailyMixin = {
                 const results = await query.find();
 
                 this.patternsMistakes = JSON.parse(JSON.stringify(results))
-                //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
+                    //console.log(" -> Patterns Mistakes " + JSON.stringify(this.patternsMistakes))
 
                 resolve()
             })
@@ -605,7 +605,7 @@ const dailyMixin = {
         },
 
         hideTradesModal: async function() {
-            console.log(" clicked on hide trades modal")
+            //console.log(" clicked on hide trades modal")
             if (this.markerAreaOpen == true) {
                 alert("Please save your setup annotation")
                 return
@@ -616,7 +616,18 @@ const dailyMixin = {
                 if (this.indexedDBtoUpdate) {
 
                     if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
-                        await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
+                        //console.log(" Setup type " + this.setup.type)
+
+                        //We're also using hideTradesModal in addScreenshot, so we need to distinguish two cases
+                        //Case for daily page (null) or add screenshot entry => Update trades
+                        if (this.setup.type == null || this.setup.type == "entry") {
+                            await Promise.all([this.updatePatternsMistakes(), this.updateTrades()])
+                        }
+
+                        //Case add screenshot is setup => do not update trades
+                        if (this.setup.type == "setup") {
+                            await this.updatePatternsMistakes()
+                        }
                     }
                     if (this.tradeExcursionChanged) { //in the case excursion changed but did not click on next 
                         await Promise.all([this.updateExcursions(), this.updateTrades()])
@@ -769,8 +780,8 @@ const dailyMixin = {
 
 
         resetSetup() {
-            console.log(" -> Resetting tradeSetup")
-                //we need to reset the setup variable each time
+            //console.log(" -> Resetting tradeSetup")
+            //we need to reset the setup variable each time
             this.tradeSetup = {
                 pattern: null,
                 mistake: null,
@@ -780,8 +791,8 @@ const dailyMixin = {
 
 
         resetExcursion() {
-            console.log(" -> Resetting excursion")
-                //we need to reset the setup variable each time
+            //console.log(" -> Resetting excursion")
+            //we need to reset the setup variable each time
             this.excursion = {
                 stopLoss: null,
                 maePrice: null,

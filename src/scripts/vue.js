@@ -525,7 +525,7 @@ const vueApp = new Vue({
             end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').unix())
         }, {
             value: "lastYear",
-            
+
             label: "Last Year",
             start: Number(dayjs().tz(this.tradeTimeZone).startOf('year').subtract(1, 'year').unix()),
             end: Number(dayjs().tz(this.tradeTimeZone).endOf('year').subtract(1, 'year').unix())
@@ -653,9 +653,8 @@ const vueApp = new Vue({
         if (this.currentPage.id == "addDiary") {
             await this.getJournalToEdit(itemToEditId)
             await this.initJournalJson()
-            await Promise.all([this.initQuill(0), this.initQuill(1), this.initQuill(2)])
+            await Promise.all([this.journalDateInput(this.currentDate), this.initQuill(0), this.initQuill(1), this.initQuill(2)])
             await sessionStorage.removeItem('editItemId');
-            await this.journalDateInput(this.currentDate)
         }
 
         if (this.currentPage.id == "addPlaybook") {
