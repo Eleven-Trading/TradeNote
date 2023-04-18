@@ -154,7 +154,7 @@ const dailyMixin = {
          ***************/
 
         tradeSetupChange(param1, param2, param3, param4, param5) {
-            console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
+            //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
             if (param2 == "pattern") {
                 this.tradeSetup.pattern = param1
             }
@@ -420,7 +420,7 @@ const dailyMixin = {
          * EXCURSION
          ***************/
         tradeExcursionChange(param1, param2, param3, param4) {
-            console.log("param 1: " + param1 + " param2: " + param2, ", param3: " + param3 + ", param4: " + param4)
+            //console.log("param 1: " + param1 + " param2: " + param2, ", param3: " + param3 + ", param4: " + param4)
             if (param2 == "stopLoss") {
                 this.excursion.stopLoss = parseFloat(param1)
                 this.excursion.maePrice = this.excursions[this.excursions.findIndex(f => f.tradeId == param4)] ? this.excursions[this.excursions.findIndex(f => f.tradeId == param4)].maePrice : null
