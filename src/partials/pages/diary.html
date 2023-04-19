@@ -2,13 +2,13 @@
     <!-- ============ DASHBOARD ============ -->
     
     @@include('components/noData.html')
-    <div v-else-if="spinnerSetupsUpdate" class="text-center overlay">
+    <div v-show="spinnerSetupsUpdate" class="text-center overlay">
         <div class="d-flex justify-content-center">
             <div class="spinner-border text-blue" role="status"></div>
         </div>
         {{spinnerSetupsUpdateText}}
     </div>
-    <div v-else class="col-12">
+    <div class="col-12">
         <div v-for="(journal, index) in journals" class="row mt-2">
             <div class="col-12">
                 <div class="dailyCard quill">

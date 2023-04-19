@@ -42,6 +42,7 @@ const screenshotsMixin = {
             screenshotsPagination: 0,
             screenshotsNames: [],
             patternsMistakes: [],
+            loadMoreSpinner: false
         }
     },
 
@@ -51,21 +52,42 @@ const screenshotsMixin = {
         }
     },
     mounted: async function() {
-        if (this.currentPage.id == "screenshots") {
+        this.spinnerSetupsUpdate = true
+        this.getScreenshotsPagination()
+
+        if (this.currentPage.id == "screenshots" || this.currentPage.id == "diary") {
             window.addEventListener('scroll', () => {
-                //console.log(window.scrollY) //scrolled from top
-                //console.log(window.innerHeight) //visible part of screen
-                if (window.scrollY + window.innerHeight >=
-                    document.documentElement.scrollHeight) {
-                    if (this.currentPage.id == "screenshots") {
-                        console.log(" -> Load new images")
-                        this.getScreenshots()
-                    }
+                let scrollTop = window.scrollY
+                let visibleScreen = window.innerHeight
+                let documentHeight = document.documentElement.scrollHeight
+                let difference = documentHeight - (scrollTop + visibleScreen)
+
+                //console.log(" -> Scrolled from top: "+scrollTop+" | Visible part of screen: "+visibleScreen+" | Total document height: "+documentHeight+" | Top + visible: "+(scrollTop + visibleScreen)+" | Difference: "+difference)
+
+
+                //console.log(" -> Scrolled from top + visible part: "+(window.scrollY + window.innerHeight))
+
+                if (difference <= 0) {
+                    
+                        if (!this.loadMoreSpinner && !this.spinnerSetupsUpdate) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+                            console.log("  --> Loading more screenshots")
+                            if (this.currentPage.id == "screenshots") this.getScreenshots()
+                            if (this.currentPage.id == "diary") this.getJournals()
+                            this.loadMoreSpinner = true
+                        }
                 }
             })
         }
     },
     methods: {
+        getScreenshotsPagination() {
+            if (sessionStorage.getItem('screenshotsPagination') && this.currentPage.id == "screenshots") {
+                this.screenshotsQueryLimit = Number(sessionStorage.getItem('screenshotsPagination'))
+                console.log(" this.screenshotsPagination " + typeof this.screenshotsQueryLimit)
+                sessionStorage.removeItem('screenshotsPagination');
+            }
+        },
+
         getScreenshots: async function(param) {
             await this.getPatternsMistakes()
                 //console.log(" -> Selected patterns " + this.selectedPatterns)
@@ -123,25 +145,37 @@ const screenshotsMixin = {
                 }
 
 
-                const results = await query.find();
-                let parsedResult = JSON.parse(JSON.stringify(results))
-                parsedResult.forEach(element => {
-                    this.screenshotsNames.push(element.name)
-                });
+                await query.find().then((results) => {
+                    let parsedResult = JSON.parse(JSON.stringify(results))
+                    parsedResult.forEach(element => {
+                        this.screenshotsNames.push(element.name)
+                    });
 
-                if (this.currentPage.id == "daily") {
-                    //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
-                    //However, on screenshots page, we need to add to setups on new image / page load on scroll
-                    this.setups = parsedResult
-                } else {
-                    this.setups = this.setups.concat(parsedResult)
-                }
+                    if (this.currentPage.id == "daily") {
+                        //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
+                        //However, on screenshots page, we need to add to setups on new image / page load on scroll
+                        this.setups = parsedResult
+                    } else {
+                        this.setups = this.setups.concat(parsedResult)
+                    }
 
-                //console.log(" -> Setups/Screenshots " + JSON.stringify(this.setups))
-                this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
-                this.spinnerSetups = false //spinner for trades in daily
-                resolve()
+                    //console.log(" -> Setups/Screenshots " + JSON.stringify(this.setups))
+                    this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
+                    this.spinnerSetups = false //spinner for trades in daily
+                    this.loadMoreSpinner = false
+                    this.spinnerSetupsUpdate = false
+                }).then(() => {
+                    if (sessionStorage.getItem('screenshotIdToEdit')&&this.currentPage.id == "screenshots") this.scrollToScreenshot()
+                    resolve()
+                })
+
             })
+        },
+
+        scrollToScreenshot() {
+            let element = document.getElementById(sessionStorage.getItem('screenshotIdToEdit'))
+            element.scrollIntoView()
+            sessionStorage.removeItem('screenshotIdToEdit');
         },
 
         getScreenshotToEdit: async function(param) {
@@ -150,7 +184,8 @@ const screenshotsMixin = {
             }
             this.editingScreenshot = true
             this.screenshotIdToEdit = param
-                //console.log("setup to edit " + this.screenshotIdToEdit)
+
+            //console.log("setup to edit " + this.screenshotIdToEdit)
             const Object = Parse.Object.extend("setupsEntries");
             const query = new Parse.Query(Object);
             query.equalTo("objectId", param);
@@ -376,14 +411,15 @@ const screenshotsMixin = {
                                 document.querySelector('.screenshotFile');
                             file.value = '';
                         }
-
+                        this.loadingSpinner = false
                         resolve()
 
                     }, (error) => {
                         console.log('Failed to update new object, with error code: ' + error.message);
                         //window.location.href = "/screenshots"
+                        this.loadingSpinner = false
                     })
-                    this.loadingSpinner = false
+
                 } else {
                     console.log(" -> Saving")
 
@@ -418,14 +454,15 @@ const screenshotsMixin = {
                                     document.querySelector('.screenshotFile');
                                 file.value = '';
                             }
+                            this.loadingSpinner = false
                             resolve()
 
 
                         }, (error) => {
                             console.log('Failed to create new object, with error code: ' + error.message);
                             //window.location.href = "/screenshots"
+                            this.loadingSpinner = false
                         });
-                    this.loadingSpinner = false
 
                 }
             })

@@ -36,19 +36,7 @@ const diariesMixin = {
 
     },
     mounted() {
-        if (this.currentPage.id == "diary") {
-            window.addEventListener('scroll', () => {
-                //console.log(window.scrollY) //scrolled from top
-                //console.log(window.innerHeight) //visible part of screen
-                if (window.scrollY + window.innerHeight >=
-                    document.documentElement.scrollHeight) {
-                    if (this.currentPage.id == "diary") {
-                        console.log(" -> Load new diary entries")
-                        this.getJournals()
-                    }
-                }
-            })
-        }
+      
     },
     methods: {
         initJournalJson: async function(param) {
@@ -93,6 +81,8 @@ const diariesMixin = {
                 
                     //console.log(" -> Journals " + JSON.stringify(this.journals))
                 this.diaryPagination = this.diaryPagination + this.diaryQueryLimit
+                this.spinnerSetupsUpdate = false
+                this.loadMoreSpinner = false
                 resolve()
             })
         },

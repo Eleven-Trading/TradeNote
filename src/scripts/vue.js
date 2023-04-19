@@ -1685,6 +1685,9 @@ const vueApp = new Vue({
                 window.location.href = "/addEntry"
             }
             if (this.currentPage.id == "screenshots") {
+                sessionStorage.setItem('screenshotsPagination', this.screenshotsPagination);
+                sessionStorage.setItem('screenshotIdToEdit', param) //We use this to scroll to watched id on screenshots page. We e rase it in scrollToScreenshot
+
                 window.location.href = "/addScreenshot"
             }
             if (this.currentPage.id == "playbook") {

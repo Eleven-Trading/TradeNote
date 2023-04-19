@@ -34,6 +34,7 @@ const playbookMixin = {
                 const results = await query.find();
                 this.playbooks = JSON.parse(JSON.stringify(results))
                 //console.log(" -> Playbooks " + JSON.stringify(this.playbooks))
+                this.spinnerSetupsUpdate = false
                 resolve()
             })
         },
