@@ -543,8 +543,7 @@ const vueApp = new Vue({
             //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
             this.initShepherd()
         }
-
-        await Promise.all([this.getPatterns(), this.getMistakes()])
+        if (this.currentPage.id != "registerSignup") await Promise.all([this.getPatterns(), this.getMistakes()])
 
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */

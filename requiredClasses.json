@@ -88,63 +88,6 @@
         }
     },
     {
-        "className": "notes",
-        "fields": {
-            "objectId": {
-                "type": "String"
-            },
-            "createdAt": {
-                "type": "Date"
-            },
-            "updatedAt": {
-                "type": "Date"
-            },
-            "ACL": {
-                "type": "ACL"
-            },
-            "note": {
-                "type": "String",
-                "required": false
-            },
-            "user": {
-                "type": "Pointer",
-                "targetClass": "_User",
-                "required": false
-            }
-        },
-        "classLevelPermissions": {
-            "find": {
-                "*": true
-            },
-            "count": {
-                "*": true
-            },
-            "get": {
-                "*": true
-            },
-            "create": {
-                "*": true
-            },
-            "update": {
-                "*": true
-            },
-            "delete": {
-                "*": true
-            },
-            "addField": {
-                "*": true
-            },
-            "protectedFields": {
-                "*": []
-            }
-        },
-        "indexes": {
-            "_id_": {
-                "_id": 1
-            }
-        }
-    },
-    {
         "className": "trades",
         "fields": {
             "objectId": {
