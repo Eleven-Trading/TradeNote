@@ -1,23 +1,9 @@
 <div class="row mt-2 mb-2">
     
     @@include('components/filters.html')
-    <!-- ============ DASHBOARD ============ -->
-    <div class="text-center overlay" v-show="renderingCharts">
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-blue" role="status"></div>
-        </div>
-        {{spinnerSetupsUpdateText}}
-    </div>
     @@include('components/noData.html')
-    <div v-show="spinnerSetupsUpdate" class="text-center overlay">
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-blue" role="status"></div>
-        </div>
-        {{spinnerSetupsUpdateText}}
-    </div>
-
     <!-- added v-if instead v-show because need to wait for patterns to load -->
-    <div v-if="!spinnerSetupsUpdate" class="col-12 col-xl-8">
+    <div v-if="!spinnerLoadingPage" class="col-12 col-xl-8">
         <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
         <div v-for="(daily, index) in filteredTrades" class="row mt-2">
             <div class="col-12">
@@ -38,7 +24,7 @@
     <!-- end dashboard-->
 
     <!-- ============ CALENDAR ============ -->
-    <div v-show="calendarData && !spinnerSetupsUpdate" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+    <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
         <div class="dailyCard calCard">
             <div class="row">
                 @@include('components/calendar.html', {

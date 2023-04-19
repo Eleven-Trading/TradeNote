@@ -1,22 +1,16 @@
 <div class="row mt-2 mb-2">
     @@include('components/filters.html')
-    <!-- ============ DASHBOARD ============ -->
-    <div class="text-center overlay" v-show="renderingCharts">
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-blue" role="status"></div>
-        </div>
-    </div>
     @@include('components/noData.html')
-
+    <div v-show="!spinnerLoadingPage">
     <!-- ============ CALENDAR ============ -->
-    <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">
-        <div class="dailyCard">
-            <div class="row justify-content-center">
+        <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">
+            <div class="dailyCard">
+                <div class="row justify-content-center">
                 @@include('components/calendar.html', {
                     "type": "full"
                 })
             </div>
+            </div>
         </div>
     </div>
-
 </div>

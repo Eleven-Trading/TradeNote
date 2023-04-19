@@ -81,7 +81,7 @@ const diariesMixin = {
                 
                     //console.log(" -> Journals " + JSON.stringify(this.journals))
                 this.diaryPagination = this.diaryPagination + this.diaryQueryLimit
-                this.spinnerSetupsUpdate = false
+                if (this.currentPage.id != "daily") this.spinnerLoadingPage = false //we remove it later
                 this.loadMoreSpinner = false
                 resolve()
             })

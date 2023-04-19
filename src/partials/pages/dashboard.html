@@ -1,13 +1,7 @@
 <div class="row mt-2">
-    <div v-show="spinnerSetupsUpdate" class="text-center overlay">
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-blue" role="status"></div>
-        </div>
-        {{spinnerSetupsUpdateText}}
-    </div>
-    <div v-show="!spinnerSetupsUpdate"> 
     @@include('components/filters.html')
-    <nav>
+    <div v-show="!spinnerLoadingPage">
+        <nav>
             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
                 <button v-for="dashTab in dashTabs" v-bind:class="'nav-link ' + (selectedDashTab == dashTab.id ? 'active' : '')" v-bind:id="dashTab.id" data-bs-toggle="tab" v-bind:data-bs-target="dashTab.target" type="button" role="tab" aria-controls="nav-overview" aria-selected="true">{{dashTab.label}}</button>
             </div>
@@ -108,30 +102,42 @@
                                     <div class="col-12 mb-3">
                                         <div class="row">
                                             <div class="col-6">
-                                                <h4 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'R'])">{{(profitAnalysis[amountCase+'R']).toFixed(2)}}</span><span v-else>-</span></h4>
+                                                <h4 class="titleWithDesc">
+                                                    <span v-if="!isNaN(profitAnalysis[amountCase+'R'])">{{(profitAnalysis[amountCase+'R']).toFixed(2)}}</span>
+                                                    <span v-else>-</span></h4>
                                                 <span class="dashInfoTitle">Risk&Reward Ratio</span>
                                             </div>
                                             <div class="col-6">
-                                                <h4 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'MfeR']!=null">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</span><span v-else>-</span></h4>
+                                                <h4 class="titleWithDesc">
+                                                    <span v-if="profitAnalysis[amountCase+'MfeR']!=null">{{(profitAnalysis[amountCase+'MfeR']).toFixed(2)}}</span>
+                                                    <span v-else>-</span></h4>
                                                 <span class="dashInfoTitle">MFE Risk&Reward</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'AvWinPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvWinPerShare'])}}</span><span v-else>-</span></h6>
+                                        <h6 class="titleWithDesc">
+                                            <span v-if="!isNaN(profitAnalysis[amountCase+'AvWinPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvWinPerShare'])}}</span>
+                                            <span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Average Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc"><span v-if="!isNaN(profitAnalysis[amountCase+'AvLossPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvLossPerShare'])}}</span><span v-else>-</span></h6>
+                                        <h6 class="titleWithDesc">
+                                            <span v-if="!isNaN(profitAnalysis[amountCase+'AvLossPerShare'])">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'AvLossPerShare'])}}</span>
+                                            <span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Average Loss Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'HighWinPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighWinPerShare'])}}</span><span v-else>-</span></h6>
+                                        <h6 class="titleWithDesc">
+                                            <span v-if="profitAnalysis[amountCase+'HighWinPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighWinPerShare'])}}</span>
+                                            <span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Highest Win Per Share</span>
                                     </div>
                                     <div class="col-6">
-                                        <h6 class="titleWithDesc"><span v-if="profitAnalysis[amountCase+'HighLossPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighLossPerShare'])}}</span><span v-else>-</span></h6>
+                                        <h6 class="titleWithDesc">
+                                            <span v-if="profitAnalysis[amountCase+'HighLossPerShare']>0">{{twoDecCurrencyFormat(profitAnalysis[amountCase+'HighLossPerShare'])}}</span>
+                                            <span v-else>-</span></h6>
                                         <span class="dashInfoTitle">Highest Loss Per Share</span>
                                     </div>
                                 </div>
@@ -217,7 +223,7 @@
                 </div>
 
             </div>
-            
+
             <!-- ============ TIME ============ -->
             <div v-bind:class="'tab-pane fade ' +(selectedDashTab == 'timeTab' ? 'active show' : '')" id="timeNav" role="tabpanel" aria-labelledby="nav-time-tab">
                 <div class="col-12">
@@ -266,7 +272,7 @@
                                 <div v-bind:key="renderData" id="scatterChart1" class="chartClass"></div>
                             </div>
                         </div>
-                        
+
                         <!-- SCATTER LOSSES -->
                         <div class="col-12">
                             <div class="dailyCard">

@@ -14,11 +14,11 @@
                         <div v-show="sideMenuMobileOut" class="sideMenuMobileOut position-absolute" v-on:click="toggleMobileMenu"></div>
                         @@include('components/nav.html')
                         <main id="@@pageId">
-                            <div v-show="loadingSpinner" class="overlay">
+                            <div v-show="spinnerLoadingPage" class="text-center overlay">
                                 <div class="d-flex justify-content-center">
-                                    <button class="btn btn-primary" type="button" disabled>
-                                        <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{loadingSpinnerText}}</button>
+                                    <div class="spinner-border text-blue" role="status"></div>
                                 </div>
+                                {{spinnerLoadingPageText}}
                             </div>
                             @@include('pages/@@pageId.html')
                         </main>

@@ -52,7 +52,7 @@ const screenshotsMixin = {
         }
     },
     mounted: async function() {
-        this.spinnerSetupsUpdate = true
+        this.spinnerLoadingPage = true
         this.getScreenshotsPagination()
 
         if (this.currentPage.id == "screenshots" || this.currentPage.id == "diary") {
@@ -69,7 +69,7 @@ const screenshotsMixin = {
 
                 if (difference <= 0) {
                     
-                        if (!this.loadMoreSpinner && !this.spinnerSetupsUpdate) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+                        if (!this.loadMoreSpinner && !this.spinnerLoadingPage) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                             console.log("  --> Loading more screenshots")
                             if (this.currentPage.id == "screenshots") this.getScreenshots()
                             if (this.currentPage.id == "diary") this.getJournals()
@@ -163,7 +163,8 @@ const screenshotsMixin = {
                     this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
                     this.spinnerSetups = false //spinner for trades in daily
                     this.loadMoreSpinner = false
-                    this.spinnerSetupsUpdate = false
+                    if (this.currentPage.id != "daily") this.spinnerLoadingPage = false //we remove it later
+                    
                 }).then(() => {
                     if (sessionStorage.getItem('screenshotIdToEdit')&&this.currentPage.id == "screenshots") this.scrollToScreenshot()
                     resolve()

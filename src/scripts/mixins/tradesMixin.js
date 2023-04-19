@@ -83,7 +83,7 @@ const tradesMixin = {
                     //console.log(" -> Custom range in trades mixin")
                     this.selectedPeriodRange = this.periodRange.filter(element => element.start == -1)[0]
                 }
-                
+
                 //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(this.selectedPeriodRange))
 
                 /* Restore temp selected accounts */
@@ -185,9 +185,9 @@ const tradesMixin = {
                 //console.log("this.selectedPeriodRange "+this.selectedPeriodRange)
 
             this.dashboardChartsMounted = false
-            this.spinnerSetupsUpdate = true
+            this.spinnerLoadingPage = true
             this.dashboardIdMounted = false
-            this.spinnerSetupsUpdateText = "Getting trades"
+            this.spinnerLoadingPageText = "Getting trades"
                 //console.log("filtered "+JSON.stringify(this.filteredTrades))
 
             let selectedRange
@@ -243,7 +243,7 @@ const tradesMixin = {
                  ***************************************************/
 
                 console.log(" -> Checking local storage");
-                this.spinnerSetupsUpdateText = "Getting trades - Checking local storage"
+                this.spinnerLoadingPageText = "Getting trades - Checking local storage"
                 let lastDateLocal
                 if (this.threeMonthsBack <= selectedRange.start) {
 
@@ -251,7 +251,7 @@ const tradesMixin = {
                     if (this.threeMonthsTrades.length > 0) {
                         console.log("  --> 3 Months trades already exists")
                         console.log("  --> Size of this.threeMonths: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
-                        this.spinnerSetupsUpdateText = "Getting trades - 3 Months trades already exists"
+                        this.spinnerLoadingPageText = "Getting trades - 3 Months trades already exists"
 
                         /*Compare last dateUnix with last date from #2*/
                         lastDateLocal = this.threeMonthsTrades[this.threeMonthsTrades.length - 1].dateUnix
@@ -259,26 +259,26 @@ const tradesMixin = {
 
                         /*If new date, we update IndexedDB by getting trades from Parse*/
                         if (lastDateLocal < lastDateParse) {
-                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            this.spinnerLoadingPageText = "New data. Updating IndexedDB"
                             await this.getTradesFromDb(6)
                         }
 
                         /* If variable does not exist, we check IndexedDB or get from Parse */
                     } else {
                         console.log("  --> 3 months trades is null. Getting data")
-                        this.spinnerSetupsUpdateText = "Getting trades - 3 months trades is null. Getting data"
+                        this.spinnerLoadingPageText = "Getting trades - 3 months trades is null. Getting data"
 
                         /* Check if data exists in indexed db */
                         let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(6)
                             //console.log("dataExistsInIndexedDB "+dataExistsInIndexedDB)
-                            //this.spinnerSetupsUpdateText = "Getting trades - data exists is "+dataExistsInIndexedDB
+                            //this.spinnerLoadingPageText = "Getting trades - data exists is "+dataExistsInIndexedDB
 
                         if (dataExistsInIndexedDB && this.threeMonthsTrades.length > 0) {
                             //console.log("  --> Three Months Trades "+JSON.stringify(this.threeMonthsTrades))
                             lastDateLocal = this.threeMonthsTrades[this.threeMonthsTrades.length - 1].dateUnix
                             console.log("  --> threeMonthsBack size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.threeMonthsTrades)]).size))
                         }
-                        //this.spinnerSetupsUpdateText = "Getting trades - last date is "+lastDateLocal +" and last date parse "+lastDateParse
+                        //this.spinnerLoadingPageText = "Getting trades - last date is "+lastDateLocal +" and last date parse "+lastDateParse
                         //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
 
                         /* Get from parse db if not exist in indexed db (resolve returns false in checkTradesInIndexedDB) or if there is a new date in parse db */
@@ -291,29 +291,29 @@ const tradesMixin = {
                     if (this.allTrades.length > 0) {
                         console.log("  --> All trades already exists")
                         console.log("  --> Size of this.allTrades: " + this.formatBytes(new Blob([JSON.stringify(this.allTrades)]).size))
-                        this.spinnerSetupsUpdateText = "Getting trades - All trades already exists"
+                        this.spinnerLoadingPageText = "Getting trades - All trades already exists"
 
                         lastDateLocal = this.allTrades[this.allTrades.length - 1].dateUnix
                         if (lastDateLocal < lastDateParse) {
-                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            this.spinnerLoadingPageText = "New data. Updating IndexedDB"
                             await this.getTradesFromDb(0)
                         }
 
                     } else {
                         console.log("  --> All trades is null. Getting data")
 
-                        this.spinnerSetupsUpdateText = "Getting trades - All trades is null. Getting data"
+                        this.spinnerLoadingPageText = "Getting trades - All trades is null. Getting data"
                         let dataExistsInIndexedDB = await this.checkTradesInIndexedDB(0)
-                        this.spinnerSetupsUpdateText = "Getting trades - data exists is " + dataExistsInIndexedDB
+                        this.spinnerLoadingPageText = "Getting trades - data exists is " + dataExistsInIndexedDB
 
                         if (dataExistsInIndexedDB && this.allTrades.length > 0) {
                             lastDateLocal = this.allTrades[this.allTrades.length - 1].dateUnix
                             console.log("  --> allTrades size in indexedDB: " + this.formatBytes(new Blob([JSON.stringify(this.allTrades)]).size))
                         }
-                        //this.spinnerSetupsUpdateText = "Getting trades - lastDateLocal is "+lastDateLocal
+                        //this.spinnerLoadingPageText = "Getting trades - lastDateLocal is "+lastDateLocal
 
                         if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
-                            this.spinnerSetupsUpdateText = "New data. Updating IndexedDB"
+                            this.spinnerLoadingPageText = "New data. Updating IndexedDB"
                             await this.getTradesFromDb(0)
                         }
                     }
@@ -327,7 +327,7 @@ const tradesMixin = {
 
                 //console.log(" -> Getting trades from " + dayjs.unix(selectedRange.start).format("DD/MM/YY") + " to " + dayjs.unix(selectedRange.end).format("DD/MM/YY"))
                 console.log(" -> Filtering trades")
-                this.spinnerSetupsUpdateText = "Getting trades - Filtering trades"
+                this.spinnerLoadingPageText = "Getting trades - Filtering trades"
                     //console.log("Range (Date or Call) start " + selectedRange.start + " Range (Date or Call) end " + selectedRange.end)
 
                 this.filteredTrades = []
@@ -429,13 +429,13 @@ const tradesMixin = {
             /*============= 5 - Render data, charts, totals =============*/
 
             if (this.currentPage.id == "dashboard") {
-                this.spinnerSetupsUpdateText = "Rendering data, charts and totals"
+                this.spinnerLoadingPageText = "Rendering data, charts and totals"
                 await this.prepareTrades()
                     //await Promise.all([this.getPatterns(), this.getMistakes(), this.calculateProfitAnalysis()])
                     //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 await this.calculateProfitAnalysis()
                 await (this.dashboardIdMounted = true)
-                await (this.spinnerSetupsUpdate = false)
+                await (this.spinnerLoadingPage = false)
 
                 console.log("\nBUILDING CHARTS")
                 await (this.renderData += 1)
@@ -445,17 +445,67 @@ const tradesMixin = {
             }
 
             if (this.currentPage.id == "daily") {
-                this.spinnerSetupsUpdateText = "Getting Daily Data"
-                await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true)]) //setup etries here because take more time so spinner needs to still be running
+                this.spinnerLoadingPageText = "Getting Daily Data"
+                console.log(" spinnerLoadingPage "+this.spinnerLoadingPage)
+                await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true), this.loadCalendar(undefined, selectedRange)]) //setup etries here because take more time so spinner needs to still be running
                     //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
-                this.spinnerSetupsUpdateText = "Loading Calendar"
+                this.spinnerLoadingPageText = "Loading Calendar"
 
                 /*In dashboard, filter is dependant on the filter input on top of page
                  * In daily, filter is dependant on the calendar -> charts are loaded after and inside calendar in this case
                  */
-                await (this.spinnerSetupsUpdate = false)
                 //Rendering double line chart
                 //console.log("filtered trades "+JSON.stringify(this.filteredTrades))
+                /*const renderingDoubleLineCharts = async() => {
+                    for (let i = 0; i < this.filteredTrades.length; i++) {
+                        console.log(" spinnerLoadingPage "+this.spinnerLoadingPage)
+                        let el = this.filteredTrades[i]
+                            //Rendering double line chart
+
+                        var chartId = 'doubleLineChart' + el.dateUnix
+                        var chartDataGross = []
+                        var chartDataNet = []
+                        var chartCategories = []
+                        const renderingCharts = async() => {
+                            for (let i = 0; i < el.trades.length; i++) {
+                                let element = el.trades[i]
+                                console.log(" element "+element)
+                                var proceeds = Number((element.grossProceeds).toFixed(2))
+                                    //console.log("proceeds "+proceeds)
+                                var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
+                                if (chartDataGross.length == 0) {
+                                    chartDataGross.push(proceeds)
+                                } else {
+                                    chartDataGross.push(chartDataGross.slice(-1).pop() + proceeds)
+                                }
+
+                                if (chartDataNet.length == 0) {
+                                    chartDataNet.push(proceedsNet)
+                                } else {
+                                    chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
+                                }
+                                chartCategories.push(this.hourMinuteFormat(element.exitTime))
+                                    //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
+                                this.doubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
+                            }
+                        }
+                        await renderingCharts()
+                    }
+                }
+                const renderingPieCharts = async() => {
+                    for (let i = 0; i < this.filteredTrades.length; i++) {
+                        let el = this.filteredTrades[i]
+                        var chartId = "pieChart" + el.dateUnix
+                        var probWins = (el.pAndL[this.amountCase + 'WinsCount'] / el.pAndL.trades)
+                        var probLoss = (el.pAndL[this.amountCase + 'LossCount'] / el.pAndL.trades)
+                            //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
+                            //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
+                            //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
+                        this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
+                    }
+                }*/
+
+                await (this.spinnerLoadingPage = false) // this must go before foreach
                 await this.filteredTrades.forEach(el => {
                     //console.log(" date "+el.dateUnix)
                     var chartId = 'doubleLineChart' + el.dateUnix
@@ -494,16 +544,15 @@ const tradesMixin = {
                     this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
                 })
 
-                this.loadCalendar(undefined, selectedRange)
                 await (this.renderingCharts = false)
-                await (this.spinnerSetupsUpdate = false)
+                console.log(" spinnerLoadingPage "+this.spinnerLoadingPage)
             }
 
             if (this.currentPage.id == "calendar") {
 
                 this.loadCalendar(undefined, selectedRange)
                 await (this.renderingCharts = false)
-                await (this.spinnerSetupsUpdate = false)
+                await (this.spinnerLoadingPage = false)
             }
 
 
@@ -516,7 +565,7 @@ const tradesMixin = {
 
         checkTradesInIndexedDB: async function(param) {
             return new Promise((resolve, reject) => {
-                this.spinnerSetupsUpdateText = "Getting trades - Checking data in IndexedDB"
+                this.spinnerLoadingPageText = "Getting trades - Checking data in IndexedDB"
                 let transaction = this.indexedDB.transaction(["trades"], "readwrite");
 
                 if (param == 6) {
@@ -528,7 +577,7 @@ const tradesMixin = {
                 objectToGet.onsuccess = (event) => {
                     if (event.target.result != undefined) {
                         console.log("  --> Data exists in IndexedDB. Retreiving trades")
-                        this.spinnerSetupsUpdateText = "Getting trades - Data exists in IndexedDB. Retreiving trades"
+                        this.spinnerLoadingPageText = "Getting trades - Data exists in IndexedDB. Retreiving trades"
                         if (param == 6) {
                             this.threeMonthsTrades = event.target.result.data;
                         }
@@ -549,14 +598,14 @@ const tradesMixin = {
                         resolve(true)
                     } else {
                         console.log("  --> Data does not exist in IndexedDB. Retreiving from DB")
-                        this.spinnerSetupsUpdateText = "Getting trades - Data does not exist in IndexedDB. Retreiving from DB"
+                        this.spinnerLoadingPageText = "Getting trades - Data does not exist in IndexedDB. Retreiving from DB"
                         resolve(false)
                     }
 
                 }
                 objectToGet.onerror = (event) => {
                     console.log("  --> There was an error getting trades from IndexedDB")
-                    this.spinnerSetupsUpdateText = "Getting trades - There was an error getting trades from IndexedDB"
+                    this.spinnerLoadingPageText = "Getting trades - There was an error getting trades from IndexedDB"
                     return
                 }
             })
@@ -573,7 +622,7 @@ const tradesMixin = {
                 (async() => {
                     console.log(" -> Getting trades from ParseDB");
                     console.time("  --> Execution time");
-                    this.spinnerSetupsUpdateText = "Getting trades from ParseDB"
+                    this.spinnerLoadingPageText = "Getting trades from ParseDB"
                     const Object = Parse.Object.extend("trades");
                     const query = new Parse.Query(Object)
                     query.equalTo("user", Parse.User.current());
@@ -590,7 +639,7 @@ const tradesMixin = {
                             //this.allTrades = JSON.parse(JSON.stringify(results))
                             //this.allTrades = JSON.parse(JSON.stringify(results))
                         console.log(" -> Parsing data from ParseDB");
-                        this.spinnerSetupsUpdateText = "Parsing data from ParseDB"
+                        this.spinnerLoadingPageText = "Parsing data from ParseDB"
 
                         JSON.parse(JSON.stringify(results)).forEach(element => {
                             if (element.dateUnix >= this.threeMonthsBack) {

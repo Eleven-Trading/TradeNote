@@ -444,7 +444,7 @@ const addTradesMixin = {
                 console.log("\nGETTING OHLCV")
                 this.loadingSpinnerText = "Getting OHLCV"
                 const asyncLoop = async() => {
-                    for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that asyn needs to be for instead of foreach
+                    for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
                         let temp = {}
                         temp.symbol = this.tradedSymbols[i]
                         //console.log(" -> From date " + this.tradedStartDate)
@@ -1627,7 +1627,7 @@ const addTradesMixin = {
             console.log("\nREFRESHING INFO")
             this.dashboardIdMounted = false
             this.renderingCharts = true //for daily
-            this.spinnerSetupsUpdateText = "Refreshing info"
+            this.spinnerLoadingPageText = "Refreshing info"
             this.renderData += 1
             this.dashboardChartsMounted = false
             await this.getTradesFromDb()

@@ -2,11 +2,11 @@
     <!-- ============ DASHBOARD ============ -->
     
     @@include('components/noData.html')
-    <div v-else-if="spinnerSetupsUpdate" class="text-center overlay">
+    <div v-else-if="spinnerLoadingPage" class="text-center overlay">
         <div class="d-flex justify-content-center">
             <div class="spinner-border text-blue" role="status"></div>
         </div>
-        {{spinnerSetupsUpdateText}}
+        {{spinnerLoadingPageText}}
     </div>
     <div v-else class="col-12">
         <div v-for="(playbook, index) in playbooks" class="row mt-2">

@@ -124,8 +124,8 @@ const videosMixin = {
                             //console.log("video file "+this.videoFile+ " and blob "+this.videoBlob)
 
                         this.showMoreVideos = true
-                        this.spinnerSetupsUpdate = false
-                        console.log("spinner setup update "+this.spinnerSetupsUpdate)
+                        this.spinnerLoadingPage = false
+                        console.log("spinner setup update "+this.spinnerLoadingPage)
                         // Open a transaction to the database
                         let transaction = this.indexedDB.transaction(["videos"], "readwrite");
 
@@ -139,13 +139,13 @@ const videosMixin = {
 
                         objectToAdd.onsuccess = (event) => {
                             console.log(" -> Stored video in IndexedDB")
-                            console.log("spinner setup update "+this.spinnerSetupsUpdate)
+                            console.log("spinner setup update "+this.spinnerLoadingPage)
                         }
                         objectToAdd.onserror = (event) => {
                             alert(" -> Error storing video in IndexedDB with message " + event)
                         }
                     })()
-                    console.log("spinner setup update "+this.spinnerSetupsUpdate)
+                    console.log("spinner setup update "+this.spinnerLoadingPage)
                 }
 
             }

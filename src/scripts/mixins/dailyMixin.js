@@ -5,8 +5,8 @@ const dailyMixin = {
             //SETUPS
             spinnerSetups: false,
             spinnerSetupsText: null,
-            spinnerSetupsUpdate: false,
-            spinnerSetupsUpdateText: null,
+            spinnerLoadingPage: false,
+            spinnerLoadingPageText: null,
 
             patterns: [],
             mistakes: [],
@@ -722,8 +722,8 @@ const dailyMixin = {
                             //this.loadingSpinner = false
                     } else {
                         console.log(" -> Video does not exist in IndexedDB. Storing it")
-                        this.spinnerSetupsUpdate = true
-                        this.spinnerSetupsUpdateText = "First time getting this video, please wait ...";
+                        this.spinnerLoadingPage = true
+                        this.spinnerLoadingPageText = "First time getting this video, please wait ...";
 
                         (async() => {
                             //console.log("Creating video file")
@@ -742,8 +742,8 @@ const dailyMixin = {
 
                             this.showMoreVideos = true
                                 //this.loadingSpinner = false
-                            this.spinnerSetupsUpdate = false
-                            console.log("spinner setup update " + this.spinnerSetupsUpdate)
+                            this.spinnerLoadingPage = false
+                            console.log("spinner setup update " + this.spinnerLoadingPage)
                                 // Open a transaction to the database
 
                             let transaction = this.indexedDB.transaction(["videos"], "readwrite");
@@ -758,7 +758,7 @@ const dailyMixin = {
 
                             objectToAdd.onsuccess = (event) => {
                                 console.log(" -> Stored video in IndexedDB")
-                                console.log("spinner setup update " + this.spinnerSetupsUpdate)
+                                console.log("spinner setup update " + this.spinnerLoadingPage)
                             }
                             objectToAdd.onserror = (event) => {
                                 alert(" -> Error storing video in IndexedDB with message " + event)
@@ -884,8 +884,8 @@ const dailyMixin = {
         updateIndexedDB: async function(param1) {
             console.log("\nUPDATING INDEXEDDB")
             return new Promise(async(resolve, reject) => {
-                await (this.spinnerSetupsUpdate = true)
-                await (this.spinnerSetupsUpdateText = "Updating trades in IndexedDB")
+                await (this.spinnerLoadingPage = true)
+                await (this.spinnerLoadingPageText = "Updating trades in IndexedDB")
                 //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedMonth.start "+this.selectedMonth.start)
                 if (this.threeMonthsBack <= this.selectedMonth.start) {
                     console.log("3 months")
@@ -894,7 +894,7 @@ const dailyMixin = {
                     console.log(">6 months")
                     await this.getTradesFromDb(0)
                 }
-                await (this.spinnerSetupsUpdateText = "Getting all trades")
+                await (this.spinnerLoadingPageText = "Getting all trades")
                 await this.getAllTrades(true)
                     //Once we get all trades, we need to update the filtered trades so it reflects on the page we are looking at
                     /*await (() => {
@@ -923,7 +923,7 @@ const dailyMixin = {
                         })
                         console.log(" -> Updated filtered trade")
                     })()*/
-                await (this.spinnerSetupsUpdate = false)
+                await (this.spinnerLoadingPage = false)
                 resolve()
             })
         },
