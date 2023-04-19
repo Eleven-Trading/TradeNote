@@ -14,12 +14,6 @@
                         <div v-show="sideMenuMobileOut" class="sideMenuMobileOut position-absolute" v-on:click="toggleMobileMenu"></div>
                         @@include('components/nav.html')
                         <main id="@@pageId">
-                            <div v-show="spinnerLoadingPage" class="text-center overlay">
-                                <div class="d-flex justify-content-center">
-                                    <div class="spinner-border text-blue" role="status"></div>
-                                </div>
-                                {{spinnerLoadingPageText}}
-                            </div>
                             @@include('pages/@@pageId.html')
                         </main>
                     </div>

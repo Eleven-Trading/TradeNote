@@ -1,8 +1,14 @@
+<div v-show="spinnerLoadingPage" class="text-center overlay">
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-blue" role="status"></div>
+    </div>
+    {{spinnerLoadingPageText}}
+</div>
 <div class="row mt-2 mb-2">
     @@include('components/filters.html')
     @@include('components/noData.html')
     <div v-show="!spinnerLoadingPage">
-    <!-- ============ CALENDAR ============ -->
+        <!-- ============ CALENDAR ============ -->
         <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">
             <div class="dailyCard">
                 <div class="row justify-content-center">

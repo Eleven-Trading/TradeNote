@@ -21,11 +21,13 @@
             <div>{{day}}</div>
             <div v-for="line in calendarData">
                 <div class="row">
-                    <div v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv':selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']>=0 : line[index].satisfaction == true, 'redTradeDiv': selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']<0 : line[index].satisfaction == false, 'calDivDay': currentPage.id == 'daily' || currentPage.id == 'videos', 'calDivDash': currentPage.id == 'dashboard' ||  currentPage.id == 'calendar'}, 'col']">
+                    <div v-show="line[index] != 0" v-bind:class="[{'greenTradeDiv':selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']>=0 : line[index].satisfaction == true, 'redTradeDiv': selectedPlSatisfaction == 'pl' ? line[index].pAndL[amountCase+'Proceeds']<0 : line[index].satisfaction == false, 'calDivDay': currentPage.id == 'daily', 'calDivDash': currentPage.id == 'calendar'}, 'col']">
                         <p class="mb-1 dayNumber" v-show="line[index].day != 0">{{line[index].day}}</p>
                     @@if(type === "full"){
-                        <p v-show="line[index].pAndL.trades">{{line[index].pAndL.trades}} trades</p>
-                        <p v-show="line[index].pAndL[amountCase+'Proceeds']">{{thousandCurrencyFormat(parseInt(line[index].pAndL[amountCase+'Proceeds']))}}</p>
+                        <div class="d-none d-md-block">
+                            <p v-show="line[index].pAndL.trades">{{line[index].pAndL.trades}} trades</p>
+                            <p v-show="line[index].pAndL[amountCase+'Proceeds']">{{thousandCurrencyFormat(parseInt(line[index].pAndL[amountCase+'Proceeds']))}}</p>
+                        </div>
                     }
                 </div>
                 </div>
@@ -35,7 +37,7 @@
 </div>
 <div v-show="currentPage.id == 'calendar'" class="col-12">
     <div class="row">
-        <div class="col-4 mb-3" v-for="(calData, index) in miniCalendarsData">
+        <div class="col-12 col-md-4 col-xl-3 mb-3" v-for="(calData, index) in miniCalendarsData">
             <div class="row me-2">
                 <div>{{calData[0][0].month}}</div>
                 <div class="col miniCalBox" v-for="(day, index) in days">

@@ -298,12 +298,14 @@ input:checked+.slider:before {
     display: none;
 }
 
-.btn-check:focus+.btn-secondary, .btn-secondary:focus {
+.btn-check:focus+.btn-secondary,
+.btn-secondary:focus {
     border-color: none;
     box-shadow: none;
 }
 
-.btn-check:focus+.btn-secondary, .btn-secondary:active {
+.btn-check:focus+.btn-secondary,
+.btn-secondary:active {
     border-color: none;
     box-shadow: none;
 }
@@ -673,8 +675,8 @@ img.logo {
     font-size: small !important;
 }
 
-.calDivDash p {
-    font-size: smaller;
+.numXSmall {
+    font-size: x-small;
 }
 
 .calDivDay {
@@ -684,25 +686,40 @@ img.logo {
     width: 40px;
 }
 
+.calDivDash p {
+    font-size: smaller;
+}
+
 .calDivDash {
     margin: 1px;
     border: 1px solid lightgray;
-    height: 90px;
-    width: 90px;
-    padding: 1em;
+    height: 40px;
+    width: 40px;
+}
+
+@media (min-width: 768px) {
+    .calDivDash {
+        margin: 1px;
+        border: 1px solid lightgray;
+        height: 90px;
+        width: 40px;
+        padding: 1em;
+    }
+
 }
 
 .calDivDash p {
     margin: 0;
 }
 
-.miniCalCol {
+.miniCalCol {
     max-width: 400px !important;
 }
 
 .miniCalBox {
     width: 1%;
 }
+
 .calDivMini {
     margin: 1px;
     border: 1px solid lightgray;
@@ -997,17 +1014,18 @@ h4 {
     opacity: 0.85;
 }
 
-.shepherd-button{
+.shepherd-button {
     background-color: var(--blue-color);
 }
 
-.shepherd-button:hover{
+.shepherd-button:hover {
     background: var(--blue-active-color) !important;
 }
 
-.exitButton{
+.exitButton {
     background-color: var(--grey-color) !important;
 }
-.exitButton:hover{
+
+.exitButton:hover {
     background-color: var(--dark-grey) !important;
 }

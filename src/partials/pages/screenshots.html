@@ -1,6 +1,11 @@
+<div v-show="spinnerLoadingPage" class="text-center overlay">
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-blue" role="status"></div>
+    </div>
+    {{spinnerLoadingPageText}}
+</div>
 <div class="row mt-2 mb-2">
     @@include('components/filters.html')
-    <!-- ============ DASHBOARD ============ -->
     @@include('components/noData.html')
     <div v-if="spinnerLoadingPage" class="text-center overlay">
         <div class="d-flex justify-content-center">
