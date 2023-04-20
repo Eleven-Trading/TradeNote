@@ -647,6 +647,9 @@ const dailyMixin = {
 
                 }
                 this.indexedDBtoUpdate = false
+                if (this.currentPage.id == "daily") {
+                    await this.initTab("daily")
+                }
             }
         },
 
