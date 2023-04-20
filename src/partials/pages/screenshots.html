@@ -60,7 +60,7 @@
             <div id="setupsCarousel" class="carousel slide">
                 <div class="carousel-inner">
                     <div v-for="(setup, index) in setups" v-bind:class="[expandedScreenshot === setup.objectId ? 'active' : '', 'carousel-item']">
-                        <img class="d-block w-100" v-bind:src="setup.annotated.url">
+                        <img class="d-block w-100" v-bind:src="setup.annotatedBase64">
                         <div class="carousel-caption d-none d-md-block">
                             <h5>{{createdDateFormat(setup.dateUnix)}}</h5>
                             <p>{{setup.symbol}}

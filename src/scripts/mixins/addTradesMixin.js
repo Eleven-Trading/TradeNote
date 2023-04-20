@@ -1574,8 +1574,8 @@ const addTradesMixin = {
 
             checkTradeAccounts = async(param) => {
                 return new Promise(async(resolve, reject) => {
-                    console.log("trade Accounts " + this.tradeAccounts)
-                    console.log("current accounts " + JSON.stringify(this.currentUser.accounts))
+                    //console.log("trade Accounts " + this.tradeAccounts)
+                    //console.log("current accounts " + JSON.stringify(this.currentUser.accounts))
 
                     let updateTradeAccounts = async(param) => {
                         const Object = Parse.Object.extend("_User");

@@ -285,7 +285,8 @@ const dailyMixin = {
 
         updateDailySatisfaction: async function(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
             console.log("\nUPDATING OR SAVING SATISFACTIONS IN PARSE")
-            console.log(" param 1 " + param1)
+            //console.log(" param 1 " + param1)
+            this.spinnerLoadingPage = true
             return new Promise(async(resolve, reject) => {
                 this.spinnerSetups = true
 
@@ -325,6 +326,9 @@ const dailyMixin = {
                 }
 
                 await this.updateTradesDailySatisfaction(param1, param2)
+                if (this.currentPage.id == "daily") {
+                    await this.initTab("daily")
+                }
                 resolve()
 
 
@@ -610,6 +614,8 @@ const dailyMixin = {
                 alert("Please save your setup annotation")
                 return
             } else {
+                this.spinnerLoadingPage = true
+                
                 if (this.currentPage.id == "daily") this.tradesModal.hide()
 
                 //console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
@@ -884,7 +890,6 @@ const dailyMixin = {
         updateIndexedDB: async function(param1) {
             console.log("\nUPDATING INDEXEDDB")
             return new Promise(async(resolve, reject) => {
-                await (this.spinnerLoadingPage = true)
                 await (this.spinnerLoadingPageText = "Updating trades in IndexedDB")
                 //console.log("this.threeMonthsBack "+this.threeMonthsBack+" ; this.selectedMonth.start "+this.selectedMonth.start)
                 if (this.threeMonthsBack <= this.selectedMonth.start) {

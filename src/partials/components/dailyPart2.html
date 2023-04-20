@@ -129,7 +129,7 @@
 
                     <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].mistake.name}}</span></span>
 
-                <img v-bind:id="setup.objectId" class="setupEntryImg mt-1 img-fluid" v-bind:src="setup.annotated.url"/>
+                <img v-bind:id="setup.objectId" class="setupEntryImg mt-1 img-fluid" v-bind:src="setup.annotatedBase64"/>
             </div>
         </div>
 
