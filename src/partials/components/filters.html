@@ -5,21 +5,28 @@
             <span v-if="!filtersOpen" v-on:click="filtersClick" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
             </span>
             <span v-if="!filtersOpen" class="dashInfoTitle ms-3">
-                <span v-show="this.currentPage.id != 'calendar'"><span v-if="currentUser.hasOwnProperty('accounts')&&currentUser.accounts.length == selectedAccounts.length">All accounts |</span>
-                <span v-else>Selected accounts |</span></span>
-                
-                <span v-show="currentPage.id == 'dashboard'"> {{selectedPeriodRange.label}} <span v-show="selectedPeriodRange.value == 'custom'"> range </span></span>
-                
-                <span v-show="currentPage.id == 'daily'||currentPage.id == 'calendar'"> {{monthFormat(selectedMonth.start)}}</span> 
-                
+                <span v-show="this.currentPage.id != 'calendar'">
+                    <span v-if="currentUser.hasOwnProperty('accounts')&&currentUser.accounts.length == selectedAccounts.length">All accounts |</span>
+                    <span v-else>Selected accounts |</span></span>
+
+                <span v-show="currentPage.id == 'dashboard'">
+                    {{selectedPeriodRange.label}}
+                    <span v-show="selectedPeriodRange.value == 'custom'"> range </span></span>
+
+                <span v-show="currentPage.id == 'daily'||currentPage.id == 'calendar'">
+                    {{monthFormat(selectedMonth.start)}}</span>
+
                 <span>| {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data</span>
-                
-                <span v-show="this.currentPage.id != 'calendar'"><span v-if="positions.length == selectedPositions.length"> | All positions</span><span v-else> | {{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
-                <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
-                <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">| All patterns</span>
-                <span v-else>| Selected patterns</span>
-                <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">| All mistakes</span>
-                <span v-else>| Selected mistakes</span></span>
+
+                <span v-show="this.currentPage.id != 'calendar'">
+                    <span v-if="positions.length == selectedPositions.length"> | All positions</span>
+                    <span v-else> | {{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
+                    <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
+                    <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">| All patterns</span>
+                    <span v-else>| Selected patterns</span>
+                    <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">| All mistakes</span>
+                    <span v-else>| Selected mistakes</span>
+                </span>
                 <span v-show="currentPage.id == 'calendar'||currentPage.id == 'daily'"> | {{selectedPlSatisfaction == 'satisfaction' ? 'Satisfaction' : "P&L"}} calendar</span>
             </span>
 

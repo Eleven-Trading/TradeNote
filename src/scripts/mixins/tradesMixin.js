@@ -71,11 +71,11 @@ const tradesMixin = {
 
             if (!this.filtersOpen) { //It's like clicking cancel of not saving so we remove data / go back to old data 
 
-                /* Restore Selected Date range cal */
+                // Restore Selected Date range cal
                 this.selectedDateRange = JSON.parse(localStorage.getItem('selectedDateRange'))
                     //console.log(" -> Filters click (close): Selected Date Range Cal " + JSON.stringify(this.selectedDateRange))
 
-                /* Restore Selected Period range */
+                // Restore Selected Period range
                 let tempFilter = this.periodRange.filter(element => element.start == this.selectedDateRange.start && element.end == this.selectedDateRange.end)
                 if (tempFilter.length > 0) {
                     this.selectedPeriodRange = tempFilter[0]
@@ -86,24 +86,35 @@ const tradesMixin = {
 
                 //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(this.selectedPeriodRange))
 
-                /* Restore temp selected accounts */
-                if (localStorage.getItem('selectedAccounts') && localStorage.getItem('selectedAccounts').includes(",")) {
-                    this.selectedAccounts = localStorage.getItem('selectedAccounts').split(",")
+                // Restore temp selected accounts
+                if (localStorage.getItem('selectedAccounts')) {
+                    if (localStorage.getItem('selectedAccounts').includes(",")) {
+                        this.selectedAccounts = localStorage.getItem('selectedAccounts').split(",")
+                    } else {
+                        this.selectedAccounts = []
+                        this.selectedAccounts.push(localStorage.getItem('selectedAccounts'))
+                    }
                 } else {
-                    this.selectedAccounts = localStorage.getItem('selectedAccounts')
+                    this.selectedAccounts = []
                 }
+
+
                 //console.log(" Selected accounts " + this.selectedAccounts)
 
-                /* Restore gross net */
+                //Restore gross net
                 this.selectedGrossNet = localStorage.getItem('selectedGrossNet')
                     //console.log(" Selected accounts " + this.selectedAccounts)
 
-                /* Restore temp selected accounts */
-                if (localStorage.getItem('selectedPositions') && localStorage.getItem('selectedPositions').includes(",")) {
-                    this.selectedPositions = localStorage.getItem('selectedPositions').split(",")
-                        //console.log(" Selected positions " + this.selectedPositions)
+                // Restore temp selected positions
+                if (localStorage.getItem('selectedPositions')) {
+                    if (localStorage.getItem('selectedPositions').includes(",")) {
+                        this.selectedPositions = localStorage.getItem('selectedPositions').split(",")
+                    } else {
+                        this.selectedPositions = []
+                        this.selectedPositions.push(localStorage.getItem('selectedPositions'))
+                    }
                 } else {
-                    this.selectedPositions = localStorage.getItem('selectedPositions')
+                    this.selectedPositions = []
                 }
 
                 this.selectedTimeFrame = localStorage.getItem('selectedTimeFrame')
@@ -115,12 +126,28 @@ const tradesMixin = {
                 this.selectedMonth = JSON.parse(localStorage.getItem('selectedMonth'))
                     //console.log(" Selected Month " + JSON.stringify(this.selectedMonth))
 
-                /* Restore selected patterns */
-                this.selectedPatterns = localStorage.getItem('selectedPatterns').split(",")
-                    //console.log(" Selected patterns " + this.selectedPatterns)
+                // Restore selected patterns
+                if (localStorage.getItem('selectedPatterns')) {
+                    if (localStorage.getItem('selectedPatterns').includes(",")) {
+                        this.selectedPatterns = localStorage.getItem('selectedPatterns').split(",")
+                    } else {
+                        this.selectedPatterns = []
+                        this.selectedPatterns.push(localStorage.getItem('selectedPatterns'))
+                    }
+                } else {
+                    this.selectedPatterns = []
+                }
 
-                this.selectedMistakes = localStorage.getItem('selectedMistakes').split(",")
-                    //console.log(" Selected mistakes " + this.selectedMistakes)
+                if (localStorage.getItem('selectedMistakes')) {
+                    if (localStorage.getItem('selectedMistakes').includes(",")) {
+                        this.selectedMistakes = localStorage.getItem('selectedMistakes').split(",")
+                    } else {
+                        this.selectedMistakes = []
+                        this.selectedMistakes.push(localStorage.getItem('selectedMistakes'))
+                    }
+                } else {
+                    this.selectedMistakes = []
+                }
             }
         },
 
@@ -446,7 +473,7 @@ const tradesMixin = {
 
             if (this.currentPage.id == "daily") {
                 this.spinnerLoadingPageText = "Getting Daily Data"
-                console.log(" spinnerLoadingPage "+this.spinnerLoadingPage)
+                console.log(" spinnerLoadingPage " + this.spinnerLoadingPage)
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true), this.loadCalendar(undefined, selectedRange)]) //setup etries here because take more time so spinner needs to still be running
                     //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 this.spinnerLoadingPageText = "Loading Calendar"
@@ -545,7 +572,7 @@ const tradesMixin = {
                 })
 
                 await (this.renderingCharts = false)
-                console.log(" spinnerLoadingPage "+this.spinnerLoadingPage)
+                console.log(" spinnerLoadingPage " + this.spinnerLoadingPage)
             }
 
             if (this.currentPage.id == "calendar") {

@@ -123,7 +123,7 @@
             <div v-for="setup in setups.filter(obj => obj.dateUnixDay == daily.dateUnix)" class="mb-2">
                 <span>{{setup.symbol}}</span><span v-if="setup.side" class="col mt-1"> | {{setup.side == 'SS' || setup.side == 'BC' ? 'Short' : 'Long'}} | {{timeFormat(setup.dateUnix)}}</span>
                 <span v-else class="col mb-2"> | {{hourMinuteFormat(setup.dateUnix)}}</span>
-                <span v-if="patternsMistakes.findIndex(obj => obj.tradeId==setup.name)>0">
+                <span v-if="patternsMistakes.findIndex(obj => obj.tradeId==setup.name)!=-1">
 
                     <span v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.hasOwnProperty('name')"> | {{patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId==setup.name)].pattern.name}}</span>
 

@@ -548,15 +548,15 @@ const vueApp = new Vue({
 
         /* With selectedAccounts we are doing differently than with local storage variables in beforeCreate because we need to get the variable from currentUser. And checkCurrentUser cannot be done in beforeCreate */
         if (this.currentUser && this.currentUser.hasOwnProperty("accounts") && this.currentUser.accounts.length > 0) {
-            if (!localStorage.getItem('selectedAccounts')) {
+            if (localStorage.getItem('selectedAccounts') == null) {
                 this.selectedAccounts.push(this.currentUser.accounts[0].value)
                 localStorage.setItem('selectedAccounts', this.currentUser.accounts[0].value)
                 this.firstTimeSelectedAccounts = true
             }
         }
 
-        if (!localStorage.getItem('selectedPatterns')) {
-
+        //IMPORTANT : when exists in localstorage but is empty, then == ''. When does not exist in localstorage then == null. As it may be empty, we take the case of null
+        if (localStorage.getItem('selectedPatterns') == null){
             console.log(" -> No patterns in local storage")
             this.selectedPatterns.push("void")
             this.patterns.filter(obj => obj.active == true).forEach(element => {
@@ -567,8 +567,7 @@ const vueApp = new Vue({
             localStorage.setItem('selectedPatterns', this.selectedPatterns)
         }
 
-        if (!localStorage.getItem('selectedMistakes')) {
-            //await Promise.all([this.getPatterns(), this.getMistakes()])
+        if (localStorage.getItem('selectedMistakes') == null) {
             console.log(" -> No mistakes in local storage")
             this.selectedMistakes.push("void")
             this.mistakes.filter(obj => obj.active == true).forEach(element => {
@@ -744,6 +743,15 @@ const vueApp = new Vue({
     watch: {
         activeNav: function() {
             //console.log("nav " + this.activeNav + ' and type ' + typeof this.activeNav)
+        },
+
+        selectedMistakes: function(){
+            console.log(" Watch: selected mistakes "+this.selectedMistakes)
+        },
+
+        selectedPatterns: function(){
+            console.log(" Watch: selected patterns "+this.selectedPatterns)
+            console.log(" Watch: selected patterns type "+typeof this.selectedPatterns)
         }
 
     },

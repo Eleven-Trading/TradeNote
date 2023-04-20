@@ -42,7 +42,8 @@ const screenshotsMixin = {
             screenshotsPagination: 0,
             screenshotsNames: [],
             patternsMistakes: [],
-            loadMoreSpinner: false
+            loadMoreSpinner: false,
+            endOfList: false
         }
     },
 
@@ -68,13 +69,13 @@ const screenshotsMixin = {
                 //console.log(" -> Scrolled from top + visible part: "+(window.scrollY + window.innerHeight))
 
                 if (difference <= 0) {
-                    
-                        if (!this.loadMoreSpinner && !this.spinnerLoadingPage) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
-                            console.log("  --> Loading more screenshots")
-                            if (this.currentPage.id == "screenshots") this.getScreenshots()
-                            if (this.currentPage.id == "diary") this.getJournals()
-                            this.loadMoreSpinner = true
-                        }
+
+                    if (!this.loadMoreSpinner && !this.spinnerLoadingPage && !this.endOfList) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+                        console.log("  --> Loading more screenshots")
+                        if (this.currentPage.id == "screenshots") this.getScreenshots()
+                        if (this.currentPage.id == "diary") this.getJournals()
+                        this.loadMoreSpinner = true
+                    }
                 }
             })
         }
@@ -146,27 +147,33 @@ const screenshotsMixin = {
 
 
                 await query.find().then((results) => {
-                    let parsedResult = JSON.parse(JSON.stringify(results))
-                    parsedResult.forEach(element => {
-                        this.screenshotsNames.push(element.name)
-                    });
+                    //console.log("results " + JSON.stringify(results))
+                    if (results.length > 0) {
+                        let parsedResult = JSON.parse(JSON.stringify(results))
+                        parsedResult.forEach(element => {
+                            this.screenshotsNames.push(element.name)
+                        });
 
-                    if (this.currentPage.id == "daily") {
-                        //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
-                        //However, on screenshots page, we need to add to setups on new image / page load on scroll
-                        this.setups = parsedResult
-                    } else {
-                        this.setups = this.setups.concat(parsedResult)
+                        if (this.currentPage.id == "daily") {
+                            //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
+                            //However, on screenshots page, we need to add to setups on new image / page load on scroll
+                            this.setups = parsedResult
+                        } else {
+                            this.setups = this.setups.concat(parsedResult)
+                        }
+                    }else{
+                        this.endOfList = true
                     }
+
 
                     //console.log(" -> Setups/Screenshots " + JSON.stringify(this.setups))
                     this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
                     this.spinnerSetups = false //spinner for trades in daily
                     this.loadMoreSpinner = false
                     if (this.currentPage.id != "daily") this.spinnerLoadingPage = false //we remove it later
-                    
+
                 }).then(() => {
-                    if (sessionStorage.getItem('screenshotIdToEdit')&&this.currentPage.id == "screenshots") this.scrollToScreenshot()
+                    if (sessionStorage.getItem('screenshotIdToEdit') && this.currentPage.id == "screenshots") this.scrollToScreenshot()
                     resolve()
                 })
 

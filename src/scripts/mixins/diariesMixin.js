@@ -36,7 +36,7 @@ const diariesMixin = {
 
     },
     mounted() {
-      
+
     },
     methods: {
         initJournalJson: async function(param) {
@@ -72,14 +72,17 @@ const diariesMixin = {
                     query.skip(this.diaryPagination)
                 }
                 const results = await query.find();
-
-                if (this.currentPage.id == "diary") {
-                    this.journals = this.journals.concat(JSON.parse(JSON.stringify(results)))
+                if (results.length > 0) {
+                    if (this.currentPage.id == "diary") {
+                        this.journals = this.journals.concat(JSON.parse(JSON.stringify(results)))
+                    } else {
+                        this.journals = JSON.parse(JSON.stringify(results))
+                    }
                 }else{
-                    this.journals = JSON.parse(JSON.stringify(results))
+                    this.endOfList = true
                 }
                 
-                    //console.log(" -> Journals " + JSON.stringify(this.journals))
+                //console.log(" -> Journals " + JSON.stringify(this.journals))
                 this.diaryPagination = this.diaryPagination + this.diaryQueryLimit
                 if (this.currentPage.id != "daily") this.spinnerLoadingPage = false //we remove it later
                 this.loadMoreSpinner = false
