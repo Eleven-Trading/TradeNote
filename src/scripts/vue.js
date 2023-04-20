@@ -745,14 +745,14 @@ const vueApp = new Vue({
             //console.log("nav " + this.activeNav + ' and type ' + typeof this.activeNav)
         },
 
-        selectedMistakes: function(){
+        /*selectedMistakes: function(){
             console.log(" Watch: selected mistakes "+this.selectedMistakes)
         },
 
         selectedPatterns: function(){
             console.log(" Watch: selected patterns "+this.selectedPatterns)
             console.log(" Watch: selected patterns type "+typeof this.selectedPatterns)
-        }
+        }*/
 
     },
     methods: {
