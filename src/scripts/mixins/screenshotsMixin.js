@@ -310,8 +310,8 @@ const screenshotsMixin = {
                     return
                 }
                 if (this.currentPage.id == "addScreenshot") {
-                    this.loadingSpinner = true
-                    this.loadingSpinnerText = "Uploading screenshot ..."
+                    this.spinnerLoadingPage = true
+                    this.spinnerLoadingPageText = "Uploading screenshot ..."
                 }
 
                 if (this.currentPage.id == "daily") {
@@ -359,7 +359,7 @@ const screenshotsMixin = {
             return new Promise(async(resolve, reject) => {
                 console.log(" -> Uploading to database")
 
-                this.loadingSpinnerText = "Uploading Screenshot ..."
+                this.spinnerLoadingPageText = "Uploading Screenshot ..."
 
                 /* creating names, recreating files and new parse files */
                 const originalName = this.setup.name + "-original." + this.setup.extension
@@ -419,13 +419,12 @@ const screenshotsMixin = {
                                 document.querySelector('.screenshotFile');
                             file.value = '';
                         }
-                        this.loadingSpinner = false
                         resolve()
 
                     }, (error) => {
                         console.log('Failed to update new object, with error code: ' + error.message);
                         //window.location.href = "/screenshots"
-                        this.loadingSpinner = false
+                        this.spinnerLoadingPage = false
                     })
 
                 } else {
@@ -462,14 +461,13 @@ const screenshotsMixin = {
                                     document.querySelector('.screenshotFile');
                                 file.value = '';
                             }
-                            this.loadingSpinner = false
                             resolve()
 
 
                         }, (error) => {
                             console.log('Failed to create new object, with error code: ' + error.message);
                             //window.location.href = "/screenshots"
-                            this.loadingSpinner = false
+                            this.spinnerLoadingPage = false
                         });
 
                 }

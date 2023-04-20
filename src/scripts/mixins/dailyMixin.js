@@ -680,13 +680,11 @@ const dailyMixin = {
             return new Promise((resolve, reject) => {
                 console.log("\nGETTTING VIDEO URL FROM LOCAL OR REMOTE DB")
                     //console.log("Video to load (dateUnix) " + param1 + " and index of the video " + param2)
-                    //this.loadingSpinner = true
                 this.showDashboard = false
                 var x = document.getElementById(param1);
                 this.videoToLoad = param1 //Video that has been clicked on
                 this.videoIndex = param2 //Index from the list of videos on the videos page
                 let transaction = this.indexedDB.transaction(["videos"], "readwrite");
-                //this.loadingSpinnerText = "Getting videos ..."
 
                 var filterTradeByVideo = []
                 this.tradeToShow = []
@@ -728,7 +726,6 @@ const dailyMixin = {
                         //console.log("url to create " + URL.createObjectURL(videoFile.url))
                         this.videoBlob = URL.createObjectURL(videoFile.url)
                             //console.log("blob " + this.videoBlob)
-                            //this.loadingSpinner = false
                     } else {
                         console.log(" -> Video does not exist in IndexedDB. Storing it")
                         this.spinnerLoadingPage = true
@@ -750,7 +747,6 @@ const dailyMixin = {
                                 //console.log("video file "+this.videoFile+ " and blob "+this.videoBlob)
 
                             this.showMoreVideos = true
-                                //this.loadingSpinner = false
                             this.spinnerLoadingPage = false
                             console.log("spinner setup update " + this.spinnerLoadingPage)
                                 // Open a transaction to the database
@@ -779,7 +775,6 @@ const dailyMixin = {
 
                 objectToGet.onerror = (event) => {
                     console.log("there was an error getting video from indexedDB")
-                        //this.loadingSpinner = false
                     this.showDashboard = true
                 }
                 resolve()

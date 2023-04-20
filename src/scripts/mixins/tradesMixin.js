@@ -473,7 +473,6 @@ const tradesMixin = {
 
             if (this.currentPage.id == "daily") {
                 this.spinnerLoadingPageText = "Getting Daily Data"
-                console.log(" spinnerLoadingPage " + this.spinnerLoadingPage)
                 await Promise.all([this.addVideoStartEnd(), this.getJournals(true), this.getScreenshots(true), this.loadCalendar(undefined, selectedRange)]) //setup etries here because take more time so spinner needs to still be running
                     //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
                 this.spinnerLoadingPageText = "Loading Calendar"
@@ -541,7 +540,7 @@ const tradesMixin = {
                     var chartCategories = []
                     el.trades.forEach(element => {
                         var proceeds = Number((element.grossProceeds).toFixed(2))
-                            //console.log("proceeds "+proceeds)
+                        //console.log("proceeds "+proceeds)
                         var proceedsNet = Number((element[this.amountCase + 'Proceeds']).toFixed(2))
                         if (chartDataGross.length == 0) {
                             chartDataGross.push(proceeds)
@@ -559,7 +558,6 @@ const tradesMixin = {
                         this.doubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
                     });
                 })
-
                 //Rendering pie chart
                 await this.filteredTrades.forEach(el => {
                     var chartId = "pieChart" + el.dateUnix
@@ -570,9 +568,9 @@ const tradesMixin = {
                         //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
                     this.pieChart(chartId, probWins, probLoss, this.currentPage.id)
                 })
-
+                
                 await (this.renderingCharts = false)
-                console.log(" spinnerLoadingPage " + this.spinnerLoadingPage)
+
             }
 
             if (this.currentPage.id == "calendar") {

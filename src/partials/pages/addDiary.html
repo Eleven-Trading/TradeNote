@@ -1,7 +1,8 @@
+@@include('components/spinnerLoadingPage.html')
 <div class="row mt-2">
     <!-- ============ ADD JOURNAL ============ -->
     <div>
-        <div v-show="!loadingSpinner">
+        <div v-show="!spinnerLoadingPage">
             <p>Generating ideas and identifying opportunities, following setups, sizing, entering and exiting and managing myself and keeming myself in peak performance</p>
             <div class="mt-3 input-group mb-3">
                 <input type="date" class="form-control" v-bind:readonly="journal.hasOwnProperty('date')" v-bind:value="journal.hasOwnProperty('dateUnix') ? journalUpdate.date = dateCalFormat(journal.dateUnix) : journalUpdate.hasOwnProperty('date') ? journalUpdate.date : journalUpdate.date = currentDate" v-on:input="journalDateInput($event.target.value)"/>

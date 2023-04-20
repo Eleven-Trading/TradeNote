@@ -1,12 +1,6 @@
-<div v-show="loadingSpinner" class="overlay">
-    <div class="d-flex justify-content-center">
-        <button class="btn btn-primary" type="button" disabled>
-            <span class="spinner-border spinner-border-sm me-3" role="status" aria-hidden="true"></span>{{loadingSpinnerText}}</button>
-    </div>
-</div>
+@@include('components/spinnerLoadingPage.html')
 <div>
-
-    <div v-show="!loadingSpinner">
+    <div v-show="!spinnerLoadingPage">
         <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
             <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value ==  selectedBroker">{{item.label}}</option>
         </select>

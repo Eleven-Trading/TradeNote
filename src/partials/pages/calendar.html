@@ -1,9 +1,4 @@
-<div v-show="spinnerLoadingPage" class="text-center overlay">
-    <div class="d-flex justify-content-center">
-        <div class="spinner-border text-blue" role="status"></div>
-    </div>
-    {{spinnerLoadingPageText}}
-</div>
+@@include('components/spinnerLoadingPage.html')
 <div class="row mt-2 mb-2">
     @@include('components/filters.html')
     @@include('components/noData.html')

@@ -40,8 +40,8 @@ const addTradesMixin = {
         importCashJournals: async function(e) {
             console.log("IMPORTING CASH JOURNALS")
                 // Using Papa Parse : https://www.papaparse.com/docs
-            this.loadingSpinner = true
-            this.loadingSpinnerText = "Importing CSV(s) ..."
+            this.spinnerLoadingPage = true
+            this.spinnerLoadingPageText = "Importing CSV(s) ..."
             var files = e.target.files || e.dataTransfer.files;
 
             if (!files.length)
@@ -50,7 +50,7 @@ const addTradesMixin = {
             if (files[0].type != "text/csv") {
                 alert("Please upload a csv type file")
                 document.getElementById('tradesInput').value = null;
-                this.loadingSpinner = false
+                this.spinnerLoadingPage = false
                 return
             }
             //await this.getExistingTradesArray()
@@ -75,14 +75,14 @@ const addTradesMixin = {
 
                 await this.createJournal()
                 await this.filterExisting("cashJournals")
-                this.loadingSpinner = false
+                this.spinnerLoadingPage = false
             })
         },
 
         createJournal: async function() {
             return new Promise(async(resolve, reject) => {
                     console.log("\nCREATING JOURNAL")
-                    this.loadingSpinnerText = "Creating journal"
+                    this.spinnerLoadingPageText = "Creating journal"
                     const keys = Object.keys(this.cashJournalsData);
                     let temp = [];
 
@@ -114,7 +114,7 @@ const addTradesMixin = {
                     /* GROUPING BY DATE */
 
                     console.log("\nGROUPING BY DATE")
-                    this.loadingSpinnerText = "Grouping by date ..."
+                    this.spinnerLoadingPageText = "Grouping by date ..."
                     var a = _
                         .chain(temp)
                         .orderBy(["ed"], ["asc"])
@@ -127,7 +127,7 @@ const addTradesMixin = {
                     /* CREATING BLOTTER */
 
                     console.log("\nCREATING BLOTTER BY COST")
-                    this.loadingSpinnerText = "Creating blotter by cost ..."
+                    this.spinnerLoadingPageText = "Creating blotter by cost ..."
                         //based on trades
                     let objectZ = JSON.parse(JSON.stringify(a))
                         //console.log("objectZ "+JSON.stringify(objectZ))
@@ -200,12 +200,12 @@ const addTradesMixin = {
         importTrades: async function(e) {
             console.log("IMPORTING FILE")
                 // Using Papa Parse : https://www.papaparse.com/docs
-            this.loadingSpinner = true
-            this.loadingSpinnerText = "Importing file ..."
+            this.spinnerLoadingPage = true
+            this.spinnerLoadingPageText = "Importing file ..."
             let files = e.target.files || e.dataTransfer.files;
             console.log(" got existing " + this.gotExistingTradesArray)
             if (!files.length) {
-                this.loadingSpinner = false
+                this.spinnerLoadingPage = false
                 return;
             }
 
@@ -242,6 +242,7 @@ const addTradesMixin = {
                 await this.createBlotter()
                 await this.filterExisting("trades")
                 await this.createPnL()
+                await (this.spinnerLoadingPage = false)
             }
 
             /****************************
@@ -305,7 +306,7 @@ const addTradesMixin = {
                 } else {
                     //if still false, send alert else create
                     if (!this.gotExistingTradesArray) {
-                        this.loadingSpinner = false
+                        this.spinnerLoadingPage = false
                         alert("You loaded your file too quickly. Please refresh page, allow couple of seconds for background job to run and try again.")
                         return;
                     }
@@ -329,7 +330,7 @@ const addTradesMixin = {
         createTempExecutions: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING TEMP EXECUTION")
-                this.loadingSpinnerText = "Creating temp executions"
+                this.spinnerLoadingPageText = "Creating temp executions"
                 const keys = Object.keys(this.tradesData);
                 var temp = [];
                 var i = 0
@@ -421,7 +422,7 @@ const addTradesMixin = {
         createExecutions: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING EXECUTIONS")
-                this.loadingSpinnerText = "Creating executions"
+                this.spinnerLoadingPageText = "Creating executions"
                 var a = _
                     .chain(this.tempExecutions)
                     .orderBy(["execTime"], ["asc"])
@@ -442,7 +443,7 @@ const addTradesMixin = {
         getOHLCV: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nGETTING OHLCV")
-                this.loadingSpinnerText = "Getting OHLCV"
+                this.spinnerLoadingPageText = "Getting OHLCV"
                 const asyncLoop = async() => {
                     for (let i = 0; i < this.tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
                         let temp = {}
@@ -458,7 +459,7 @@ const addTradesMixin = {
                                 console.log(" -> Interceptors status " + err.response.status)
                                 console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
                                 console.log(" -> Interceptors message " + message)
-                                this.loadingSpinnerText = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                                this.spinnerLoadingPageText = "Getting OHLCV - API limit reached - Retrying 60 seconds"
                             }
                             if (!config || !config.retry) {
                                 return Promise.reject(err);
@@ -511,7 +512,7 @@ const addTradesMixin = {
         createTrades: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING TRADES")
-                this.loadingSpinnerText = "Creating trades"
+                this.spinnerLoadingPageText = "Creating trades"
                 var b = _
                     .chain(this.tempExecutions)
                     .orderBy(["execTime"], ["asc"])
@@ -995,7 +996,7 @@ const addTradesMixin = {
         updateMfePrices: async function(param) {
             return new Promise(async(resolve, reject) => {
                 console.log("  --> Updating excursion DB with MFE price")
-                this.loadingSpinnerText = "Updating MFE prices in excursions"
+                this.spinnerLoadingPageText = "Updating MFE prices in excursions"
                     //console.log(" MFE Prices " + JSON.stringify(this.mfePrices))
                 this.mfePrices.forEach(element => {
                     //console.log(" element " + element)
@@ -1022,7 +1023,7 @@ const addTradesMixin = {
         filterExisting: async function(param) {
             return new Promise(async(resolve, reject) => {
                 console.log("\nFILTERING EXISTING")
-                this.loadingSpinnerText = "Filtering existing"
+                this.spinnerLoadingPageText = "Filtering existing"
                     // We can only filter at this point because trades depend on executions. So, once trades are created, we can filter out existing trades
 
                 //await this.getExistingTradesArray(param) => Here, I no longer call it here but on page load, so it's quicker to load
@@ -1058,7 +1059,7 @@ const addTradesMixin = {
         createBlotter: async function(param) {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING BLOTTER BY SYMBOL")
-                this.loadingSpinnerText = "Creating blotter"
+                this.spinnerLoadingPageText = "Creating blotter"
                     //based on trades
                 let objectZ
                 if (param) {
@@ -1292,7 +1293,7 @@ const addTradesMixin = {
         createPnL: async function() {
             return new Promise(async(resolve, reject) => {
                 console.log("\nCREATING P&L")
-                this.loadingSpinnerText = "Creating P&L"
+                this.spinnerLoadingPageText = "Creating P&L"
                     //based on blotter
                 objectQ = this.blotter
                 const keys7 = Object.keys(objectQ);
@@ -1473,7 +1474,6 @@ const addTradesMixin = {
 
 
                 //console.log(" -> Created trades table successfully");
-                this.loadingSpinner = false
                 resolve()
             })
         },
@@ -1493,6 +1493,7 @@ const addTradesMixin = {
                 }
                 this.gotExistingTradesArray = true
                 console.log(" -> Finished getting existing trades for filter")
+                resolve()
             })
         },
 
@@ -1500,8 +1501,8 @@ const addTradesMixin = {
         uploadTrades: async function() {
 
             console.log("\nUPLOADING TRADES")
-            this.loadingSpinner = true
-            this.loadingSpinnerText = "Uploading and storing trades(s) ..."
+            this.spinnerLoadingPage = true
+            this.spinnerLoadingPageText = "Uploading and storing trades(s) ..."
 
             let numberOfDates = 0
             let i = 0
@@ -1509,7 +1510,7 @@ const addTradesMixin = {
             uploadToParse = async(param1, param2) => {
                 return new Promise(async(resolve, reject) => {
                     console.log(" -> Parse param2 is " + param2)
-                    this.loadingSpinnerText = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
+                    this.spinnerLoadingPageText = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
                     const Object = Parse.Object.extend(param2);
                     const object = new Object();
 
@@ -1542,7 +1543,7 @@ const addTradesMixin = {
 
                         }, (error) => {
                             console.log('Failed to create new trade, with error code: ' + error.message);
-                            this.loadingSpinner = false
+                            this.spinnerLoadingPage = false
                         });
                 })
             }
@@ -1625,6 +1626,7 @@ const addTradesMixin = {
 
         refreshTrades: async function() {
             console.log("\nREFRESHING INFO")
+            await (this.spinnerLoadingPage = true)
             this.dashboardIdMounted = false
             this.renderingCharts = true //for daily
             this.spinnerLoadingPageText = "Refreshing info"
@@ -1632,14 +1634,13 @@ const addTradesMixin = {
             this.dashboardChartsMounted = false
             await this.getTradesFromDb()
             console.log("done")
-                //this.loadingSpinner = false
+                //this.spinnerLoadingPage = false
             if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar" ||  this.currentPage.id == "daily") {
                 await this.getAllTrades(true)
                 await this.initTab()
             }
-            if (this.currentPage.id == "addTrades") {
-                window.location.href = "/dashboard"
-            }
+            await (this.spinnerLoadingPage = false)
+
             //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
         }
     }

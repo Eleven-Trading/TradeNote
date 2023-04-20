@@ -1,7 +1,6 @@
+@@include('components/spinnerLoadingPage.html')
 <div class="row mt-2">
-    <!-- ============ ADD playbook ============ -->
-    <div>
-        <div v-show="!loadingSpinner">
+        <div v-show="!spinnerLoadingPage">
             <div class="mt-3 input-group mb-3">
                 <input type="date" class="form-control" v-bind:readonly="playbook.hasOwnProperty('dateUnix')" v-bind:value="playbook.hasOwnProperty('dateUnix') ? playbookUpdate.date = dateCalFormat(playbook.dateUnix) : playbookUpdate.hasOwnProperty('date') ? playbookUpdate.date : ''" v-on:input="playbookDateInput($event.target.value)"/>
             </div>
@@ -16,5 +15,4 @@
                 <button type="cancel" onclick="location.href = '/playbook';" class="btn btn-outline-secondary btn-sm">Cancel</button>
             </div>
         </div>
-    </div>
 </div>

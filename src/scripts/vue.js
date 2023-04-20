@@ -2,7 +2,7 @@ const vueApp = new Vue({
 
     components: {},
     el: '#vapp',
-    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, entriesMixin, dailyMixin, videosMixin, notesMixin, dashboardMixin, addNoteMixin, playbookMixin, settingsMixin, diariesMixin, screenshotsMixin, forecastMixin, brokersMixin],
+    mixins: [tradesMixin, chartsCalMixin, addTradesMixin, dailyMixin, videosMixin, dashboardMixin, playbookMixin, settingsMixin, diariesMixin, screenshotsMixin, forecastMixin, brokersMixin],
     data() {
         return {
             cssTheme: "dark",
@@ -90,11 +90,6 @@ const vueApp = new Vue({
                     id: "addEntry",
                     name: "Add Entry",
                     icon: "uil uil-signin"
-                },
-                {
-                    id: "addNote",
-                    name: "Add Note",
-                    icon: "uil uil-plus-circle"
                 },
                 {
                     id: "addDiary",
@@ -537,8 +532,10 @@ const vueApp = new Vue({
         }, )
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
+
         this.initParse()
         this.initPostHog()
+        
         if (this.currentUser && !this.currentUser.guidedTour) {
             //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
             this.initShepherd()
@@ -605,6 +602,7 @@ const vueApp = new Vue({
 
         await this.initIndexedDB()
 
+
         if (this.currentPage.id == "dashboard" || this.currentPage.id == "calendar") {
             await this.getAllTrades(true)
             await this.initTab("dashboard")
@@ -620,64 +618,42 @@ const vueApp = new Vue({
             await this.initPopover()
         }
 
-        if (this.currentPage.id == "entries") {
-            await this.getEntries(30)
-            await this.initPopover()
-        }
-
-        if (this.currentPage.id == "notes") {
-            await this.getNotes()
-            await this.initPopover()
-        }
-
-
-
-        if (this.currentPage.id == "playbook") {
-            await this.getPlaybooks()
-            await this.initPopover()
-        }
-        let itemToEditId = sessionStorage.getItem('editItemId')
-
-        if (this.currentPage.id == "addNote") {
-            await this.getNoteToEdit(itemToEditId)
-            await this.initQuill()
-            await sessionStorage.removeItem('editItemId');
-        }
-
-        if (this.currentPage.id == "addDiary") {
-            await this.getJournalToEdit(itemToEditId)
-            await this.initJournalJson()
-            await Promise.all([this.journalDateInput(this.currentDate), this.initQuill(0), this.initQuill(1), this.initQuill(2)])
-            await sessionStorage.removeItem('editItemId');
-        }
-
-        if (this.currentPage.id == "addPlaybook") {
-            await this.getPlaybookToEdit(itemToEditId)
-            await this.initQuill('Playbook')
-            await sessionStorage.removeItem('editItemId');
-            await this.playbookDateInput(this.currentDate)
-        }
-
         if (this.currentPage.id == "screenshots") {
             await this.getScreenshots()
             await this.initPopover()
         }
 
+        if (this.currentPage.id == "playbook") {
+            await this.getPlaybooks()
+            await this.initPopover()
+        }
+
+        let itemToEditId = sessionStorage.getItem('editItemId')
+
+        if (this.currentPage.id == "addDiary") {
+            await (this.spinnerLoadingPage = true)
+            await this.getJournalToEdit(itemToEditId)
+            await this.initJournalJson()
+            await Promise.all([this.journalDateInput(this.currentDate), this.initQuill(0), this.initQuill(1), this.initQuill(2)])
+            await sessionStorage.removeItem('editItemId');
+            await (this.spinnerLoadingPage = false)
+        }
+
+        if (this.currentPage.id == "addPlaybook") {
+            await (this.spinnerLoadingPage = true)
+            await this.getPlaybookToEdit(itemToEditId)
+            await this.initQuill('Playbook')
+            await sessionStorage.removeItem('editItemId');
+            await this.playbookDateInput(this.currentDate)
+            await (this.spinnerLoadingPage = false)
+        }       
+
         if (this.currentPage.id == "addScreenshot") {
+            await (this.spinnerLoadingPage = true)
             await this.getScreenshots()
             await this.getScreenshotToEdit(itemToEditId)
             await sessionStorage.removeItem('editItemId');
-        }
-
-        if (this.currentPage.id == "addEntry") {
-            await this.getEntryToEdit(itemToEditId)
-            await sessionStorage.removeItem('editItemId');
-        }
-
-        if (this.currentPage.id == "forecast") {
-            await this.getScenarios()
-            await this.createForecast()
-            await this.linesChartForecast()
+            await (this.spinnerLoadingPage = false)
         }
 
         if (this.currentPage.id == "settings") {
@@ -686,58 +662,21 @@ const vueApp = new Vue({
     },
 
     mounted: async function() {
-        /*console.log("\nDATE EXPLORATION")
-        console.log(" -> Guessing timezone "+dayjs.tz.guess())
-        //console.log(" -> Current date "+dayjs())
-        let currentDateUnix = dayjs.unix()
-        console.log(" -> Current date unix "+currentDateUnix)
-        console.log(" -> Current date "+dayjs().format())
-        //console.log(" -> Current date w/ guess timezone "+dayjs().tz(dayjs.tz.guess()))
-        console.log(" -> Current date unix w/ guess tz "+dayjs().tz(dayjs.tz.guess()).unix())
-        console.log(" -> Current date unix w/ tz "+dayjs().tz(this.tradeTimeZone).unix())
-        console.log(" -> Current date w/ tz "+dayjs().tz(this.tradeTimeZone).format())
-        console.log(" -> Start of day "+dayjs().startOf("day"))
-        console.log(" -> Start of day unix "+dayjs().startOf("day").unix())
-        console.log(" -> Start of day unix tz "+dayjs().tz(this.tradeTimeZone).startOf("day").unix())
-        console.log(" -> Start of week " + dayjs().startOf('week').add(1, 'day').unix())
-        console.log(" -> Start of week tz " + dayjs().tz(this.tradeTimeZone).startOf('week').add(1, 'day').unix())
-        console.log(" -> entryTime "+dayjs.unix(1656682798).format())
-        console.log(" -> entryTime w/ tz "+dayjs.unix(1656682798).tz(this.tradeTimeZone).format())
-        console.log(" -> entryTime unix w/ tz "+dayjs.unix(1656682798).tz(this.tradeTimeZone).unix())*/
-
-        /* DAYJS Rules
-         * Setting timezone to dayjs and showing in unix shows in local unix
-         * setting timezone to dayjs and formatting shows in tz date
-         * Manipulating with startOf shows in tz date even in unix
-         * Inside dayjs(xxx) it must be in miliseconds. If you have a timestamp in seconds, use dayjs.unix(xxx)
-         * .unix in most cases (excempt for example startOf ) seems to convert to local time. so dayjs.unix(1656682798).tz(this.tradeTimeZone).format() shows in tz time. dayjs.unix(1656682798).tz(this.tradeTimeZone).unix() show unix in local time
-         */
-
         let screenWidth = (window.innerWidth > 0) ? window.innerWidth : screen.width
         this.screenType = (screenWidth >= 992) ? 'computer' : 'mobile'
             //console.log(" Width : " + screenWidth + " and screen type " + this.screenType)
             //this.getDailyInfos()
         var itemToEditId = sessionStorage.getItem('editItemId')
+        
+        
         if (this.currentPage.id == "addTrades") {
+            await (this.spinnerLoadingPage = false) // Here we remove spinner straight away cause the rest of functions shouls spinn in background
             this.initStepper()
             await Promise.all([this.getExistingTradesArray(), this.getPatternsMistakes()])
         }
+        
         this.tagArray()
         this.initWheelEvent()
-
-
-        /*var fileDate = fileName.split("-")[0].split("_")
-        var fileYear = fileDate[0]
-        var fileMonth = fileDate[1]
-        var fileDay = fileDate[2]
-            //console.log("year "+fileYear + " month "+fileMonth+" day "+fileDay)
-        var fileTime = fileName.split("-")[1]
-        var fileHour = fileTime.substring(0, 2)
-        var fileMinutes = fileTime.substring(2, 4)
-        var fileSeconds = fileTime.substring(4, 6)
-            //console.log("hour "+fileHour + " minutes "+fileMinutes+" seconds "+fileSeconds)
-        var fileDateUnix = dayjs(fileDate + " " + fileHour + ":" + fileMinutes + ":" + fileSeconds, "YYYY_MM_DD HH:mm:ss").format("YYYY-MM-DD HH:mm:ss")
-        console.log("unix " + fileDateUnix)*/
 
     },
     watch: {
@@ -1267,11 +1206,6 @@ const vueApp = new Vue({
             quill.root.setAttribute('spellcheck', true)
 
             quill.on('text-change', () => {
-                if (this.currentPage.id == "addNote") {
-                    this.note.note = document.querySelector(".ql-editor").innerHTML
-                    console.log("note " + this.note.note)
-                }
-
                 if (this.currentPage.id == "addScreenshot") {
                     this.setupUpdate.checkList = document.querySelector(".ql-editor").innerHTML
                         //console.log("setup " + JSON.stringify(this.setupUpdate))
