@@ -1639,6 +1639,11 @@ const addTradesMixin = {
                 await this.getAllTrades(true)
                 await this.initTab()
             }
+
+            if (this.currentPage.id == "addTrades") { //this will redirect if we refresh data but is need when we upload trades
+                window.location.href = "/dashboard"
+            }
+
             await (this.spinnerLoadingPage = false)
 
             //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
