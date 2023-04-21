@@ -132,7 +132,7 @@
             <div v-bind:class="[currentPage.id == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Patterns <span class="dashInfoTitle">({{selectedPatterns.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
-                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns">&nbsp;&nbsp;No Patterns
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns">&nbsp;&nbsp;No Tag
                     <hr>
                     <div v-for="item in patterns.filter(obj => obj.active == true)" class="form-check">
                         <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedPatterns">
@@ -145,7 +145,7 @@
             <div v-bind:class="[currentPage.id == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Mistakes <span class="dashInfoTitle">({{selectedMistakes.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
-                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes">&nbsp;&nbsp;No Mistakes
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes">&nbsp;&nbsp;No Tag
                     <hr>
                     <div v-for="item in mistakes.filter(obj => obj.active == true)" class="form-check">
                         <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedMistakes">

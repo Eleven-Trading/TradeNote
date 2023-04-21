@@ -42,7 +42,7 @@ const screenshotsMixin = {
             screenshotsPagination: 0,
             screenshotsNames: [],
             patternsMistakes: [],
-            loadMoreSpinner: false,
+            spinnerLoadMore: false,
             endOfList: false
         }
     },
@@ -70,11 +70,11 @@ const screenshotsMixin = {
 
                 if (difference <= 0) {
 
-                    if (!this.loadMoreSpinner && !this.spinnerLoadingPage && !this.endOfList) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+                    if (!this.spinnerLoadMore && !this.spinnerLoadingPage && !this.endOfList && !this.expandedScreenshot) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                         console.log("  --> Loading more screenshots")
                         if (this.currentPage.id == "screenshots") this.getScreenshots()
                         if (this.currentPage.id == "diary") this.getJournals()
-                        this.loadMoreSpinner = true
+                        this.spinnerLoadMore = true
                     }
                 }
             })
@@ -169,7 +169,7 @@ const screenshotsMixin = {
                     //console.log(" -> Setups/Screenshots " + JSON.stringify(this.setups))
                     this.screenshotsPagination = this.screenshotsPagination + this.screenshotsQueryLimit
                     this.spinnerSetups = false //spinner for trades in daily
-                    this.loadMoreSpinner = false
+                    this.spinnerLoadMore = false
                     if (this.currentPage.id != "daily") this.spinnerLoadingPage = false //we remove it later
 
                 }).then(() => {
