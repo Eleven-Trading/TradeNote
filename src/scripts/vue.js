@@ -195,6 +195,12 @@ const vueApp = new Vue({
 
             //Filter
             filtersOpen: false,
+            filters: {
+               "dashboard": ["accounts", "periodRange", "month", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes"],
+               "calendar": ["month", "grossNet", "plSatisfaction"],
+               "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "plSatisfaction"],
+               "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes"],
+            },
             periodRange: [],
             selectedPeriodRange: {},
             selectedDateRange: {},

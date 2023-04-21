@@ -63,6 +63,9 @@ const tradesMixin = {
                 await this.initTab("daily") // Only for daily else was causing multiple fires in dashboard
             }
         },
+        selectAll(param1, param2){
+            console.log("param1: "+param1+", param2: "+param2)
+        },
 
         filtersClick() {
             this.filtersOpen = !this.filtersOpen

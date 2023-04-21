@@ -5,29 +5,51 @@
             <span v-if="!filtersOpen" v-on:click="filtersClick" class="pointerClass">Filters <i class="uil uil-angle-up"></i>
             </span>
             <span v-if="!filtersOpen" class="dashInfoTitle ms-3">
-                <span v-show="this.currentPage.id != 'calendar'">
+                <span v-show="this.filters[this.currentPage.id].includes('accounts')">
                     <span v-if="currentUser.hasOwnProperty('accounts')&&currentUser.accounts.length == selectedAccounts.length">All accounts |</span>
-                    <span v-else>Selected accounts |</span></span>
-
-                <span v-show="currentPage.id == 'dashboard'">
-                    {{selectedPeriodRange.label}}
-                    <span v-show="selectedPeriodRange.value == 'custom'"> range </span></span>
-
-                <span v-show="currentPage.id == 'daily'||currentPage.id == 'calendar'">
-                    {{monthFormat(selectedMonth.start)}}</span>
-
-                <span>| {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data</span>
-
-                <span v-show="this.currentPage.id != 'calendar'">
-                    <span v-if="positions.length == selectedPositions.length"> | All positions</span>
-                    <span v-else> | {{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}}</span>
-                    <span v-show="currentPage.id == 'dashboard'"> | {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe | {{selectedRatio.toUpperCase()}}</span>
-                    <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">| All patterns</span>
-                    <span v-else>| Selected patterns</span>
-                    <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">| All mistakes</span>
-                    <span v-else>| Selected mistakes</span>
+                    <span v-else>Selected accounts |</span>
                 </span>
-                <span v-show="currentPage.id == 'calendar'||currentPage.id == 'daily'"> | {{selectedPlSatisfaction == 'satisfaction' ? 'Satisfaction' : "P&L"}} calendar</span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('periodRange')">
+                    {{selectedPeriodRange.label}}
+                    <span v-show="selectedPeriodRange.value == 'custom'"> range |</span>
+                </span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('month')">
+                    {{monthFormat(selectedMonth.start)}} |
+                </span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('grossNet')">
+                    {{selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1)}} data |
+                </span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('positions')">
+                    <span v-if="positions.length == selectedPositions.length">All positions |</span>
+                    <span v-else>{{selectedPositions.toString().charAt(0).toUpperCase() + selectedPositions.toString().slice(1)}} |</span>
+                </span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('timeFrame')"> 
+                    {{selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1)}} timeframe |
+                </span>
+                
+                <span v-show="this.filters[this.currentPage.id].includes('ratio')">
+                    {{selectedRatio.toUpperCase()}} |
+                </span>
+                
+                <span v-show="this.filters[this.currentPage.id].includes('patterns')">
+                    <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">All patterns |</span>
+                    <span v-else>Selected patterns |</span>
+                </span>
+                
+                <span v-show="this.filters[this.currentPage.id].includes('mistakes')">
+                    <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">All mistakes <span v-show="this.filters[this.currentPage.id].includes('plSatisfaction')">|</span></span>
+                    <span v-else>Selected mistakes <span v-show="this.filters[this.currentPage.id].includes('plSatisfaction')">|</span></span>
+                </span>
+
+                <span v-show="this.filters[this.currentPage.id].includes('plSatisfaction')">
+                    {{selectedPlSatisfaction == 'satisfaction' ? 'Satisfaction' : "P&L"}} calendar
+                </span>
+
             </span>
 
             <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
@@ -110,7 +132,8 @@
             <div v-bind:class="[currentPage.id == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Patterns <span class="dashInfoTitle">({{selectedPatterns.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
-                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns"> Void
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedPatterns">&nbsp;&nbsp;No Patterns
+                    <hr>
                     <div v-for="item in patterns.filter(obj => obj.active == true)" class="form-check">
                         <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedPatterns">
                         {{item.name}}
@@ -122,7 +145,8 @@
             <div v-bind:class="[currentPage.id == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']" v-show="currentPage.id != 'calendar'">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Mistakes <span class="dashInfoTitle">({{selectedMistakes.length}})</span></button>
                 <ul class="dropdown-menu dropdownCheck">
-                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes"> Void                    
+                    <input class="form-check-input" type="checkbox" value="void" v-model="selectedMistakes">&nbsp;&nbsp;No Mistakes
+                    <hr>
                     <div v-for="item in mistakes.filter(obj => obj.active == true)" class="form-check">
                         <input class="form-check-input" type="checkbox" v-bind:value="item.objectId" v-model="selectedMistakes">
                         {{item.name}}
