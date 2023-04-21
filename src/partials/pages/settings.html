@@ -16,10 +16,16 @@
             </div>
 
             <!-- Finnhub API Key -->
-            <div class="mt-3">
+            <div class="mt-5">
                 <h5>Insert your Polygon API Key</h5>
                 <p>Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades.</p>
                 <input type="text" :value="currentUser.marketDataApiKey" @input="marketDataApiKey = $event.target.value"/>
+            </div>
+
+            <div class="mt-5">
+                <select v-on:input="selectedCssMode = $event.target.value" class="form-select">
+                    <option v-for="item in cssModes" v-bind:value="item.value" v-bind:selected="item.value ==  selectedCssMode">{{item.label}}</option>
+                </select>
             </div>
 
             <div class="mt-3 mb-3">
