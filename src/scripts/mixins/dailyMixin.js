@@ -614,12 +614,12 @@ const dailyMixin = {
                 alert("Please save your setup annotation")
                 return
             } else {
-                this.spinnerLoadingPage = true
                 
                 if (this.currentPage.id == "daily") this.tradesModal.hide()
 
                 //console.log(" -> Trades modal hidden with indexDBUpdate " + this.indexedDBtoUpdate + " and setup changed " + this.tradeSetupChanged)
                 if (this.indexedDBtoUpdate) {
+                    this.spinnerLoadingPage = true
 
                     if (this.tradeSetupChanged) { //in the case setup changed but did not click on next 
                         //console.log(" Setup type " + this.setup.type)
