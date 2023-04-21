@@ -1535,8 +1535,8 @@ const addTradesMixin = {
                             console.log(" -> Added new " + param2 + " with id " + object.id)
                             i++
                             if (i == numberOfDates) {
-                                console.log("resolve")
-                                resolve("resolve")
+                                //console.log("resolve")
+                                //resolve("resolve")
                             } else {
                                 resolve()
                             }
