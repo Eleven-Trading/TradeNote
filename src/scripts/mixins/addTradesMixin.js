@@ -1068,7 +1068,7 @@ const addTradesMixin = {
                     //based on trades
                 let objectZ
                 if (param) {
-                    console.log("param " + param)
+                    //console.log("param " + param)
                     let temp = _
                         .chain(this.filteredTradesTrades)
                         .orderBy(["entryTime"], ["asc"])
@@ -1514,7 +1514,7 @@ const addTradesMixin = {
                 //Function uplaod trades to parse
             uploadToParse = async(param1, param2) => {
                 return new Promise(async(resolve, reject) => {
-                    console.log(" -> Parse param2 is " + param2)
+                    //console.log(" -> Parse param2 is " + param2)
                     this.spinnerLoadingPageText = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
                     const Object = Parse.Object.extend(param2);
                     const object = new Object();
@@ -1541,7 +1541,7 @@ const addTradesMixin = {
                             i++
                             if (i == numberOfDates) {
                                 //console.log("resolve")
-                                //resolve("resolve")
+                                resolve("resolve")
                             } else {
                                 resolve()
                             }
@@ -1572,7 +1572,7 @@ const addTradesMixin = {
                     console.log("num of dates " + numberOfDates)
                     for (const key of keys) {
                         const promise = await uploadToParse(key, param)
-                        console.log("promise " + JSON.stringify(promise))
+                        //console.log("promise " + JSON.stringify(promise))
                         if (promise == "resolve") resolve()
                     }
                 })
