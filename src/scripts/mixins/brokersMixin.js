@@ -135,7 +135,7 @@ const brokersMixin = {
                     console.log("  --> ERROR " + error)
                     reject(error)
                 }
-                console.log("trade data " + JSON.stringify(this.tradesData))
+                //console.log("trade data " + JSON.stringify(this.tradesData))
                 resolve()
             })
         },
