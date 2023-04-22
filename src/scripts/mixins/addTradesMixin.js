@@ -24,6 +24,7 @@ const addTradesMixin = {
             ohlcv: [],
             mfePrices: [],
             uploadMfePrices: true,
+            openPosition: false
         }
     },
 
@@ -234,14 +235,24 @@ const addTradesMixin = {
                 await this.createTempExecutions().catch((error) => {
                     alert("Error in upload file (" + error + ")")
                 })
+
                 await this.createExecutions()
                 if (this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') {
                     await this.getOHLCV()
                 }
-                await this.createTrades()
-                await this.createBlotter()
-                await this.filterExisting("trades")
-                await this.createPnL()
+                await this.createTrades().then(async() => {
+                    console.log(" -> Open posisitions: " + this.openPosition)
+                    if (this.openPosition) {
+                        //console.log("You have one or more open positions. Please close all your positions before import.")
+                        alert("You have one or more open positions. Please close all your positions before import.")
+                        return
+                    } else {
+                        await this.createBlotter()
+                        await this.filterExisting("trades")
+                        await this.createPnL()
+                    }
+                })
+
                 await (this.spinnerLoadingPage = false)
             }
 
@@ -743,7 +754,6 @@ const addTradesMixin = {
                                 .trade = temp7.id
 
                             if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
-                                console.log("   ---> Position CLOSED")
                                 temp7.exitPrice = tempExec.price;
                                 temp7.exitTime = tempExec.execTime;
                                 /*if (temp7.exitTime >= this.startTimeUnix) {
@@ -807,7 +817,7 @@ const addTradesMixin = {
                                         //todo exclude if trade in same minute timeframe
 
                                     //console.log(" ohlcvSymbol " + JSON.stringify(ohlcvSymbol))
-                                    
+
                                     if (ohlcvSymbol != undefined) {
                                         //console.log(" initEntryTime " + initEntryTime * 1000)
                                         //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
@@ -946,7 +956,7 @@ const addTradesMixin = {
                                             tempMfe.mfePrice = mfePrice
                                             this.mfePrices.push(tempMfe)
                                         }
-                                    }else{
+                                    } else {
                                         console.log("   ---> Cannot find symbol in market data provider")
                                     }
                                 } // End MFE prices
@@ -964,8 +974,12 @@ const addTradesMixin = {
                                     //console.log(" -> trade concat finished")
                                     //console.log(tradesCount+" trades for symbol "+key2)
 
+                                console.log("   ---> Position CLOSED")
+                                this.openPosition = false
+
                             } else {
                                 console.log("   ---> Position OPEN")
+                                this.openPosition = true
                             }
                         } else {
                             console.log("nothing for key " + key2)
@@ -1572,7 +1586,7 @@ const addTradesMixin = {
                     console.log("num of dates " + numberOfDates)
                     for (const key of keys) {
                         const promise = await uploadToParse(key, param)
-                        //console.log("promise " + JSON.stringify(promise))
+                            //console.log("promise " + JSON.stringify(promise))
                         if (promise == "resolve") resolve()
                     }
                 })
