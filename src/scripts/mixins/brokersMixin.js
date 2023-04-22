@@ -112,7 +112,8 @@ const brokersMixin = {
                                     temp.Side = "S"
                                 }
                                 temp.Symbol = Object.values(row)[2]
-                                temp.Qty = (Object.values(row)[5] * 100000).toString()
+                                temp.Qty = (Object.values(row)[5] * 100000).toFixed(2).toString()
+                                //console.log(" -> Qty import "+temp.Qty)
                                 temp.Price = Object.values(row)[6].toString()
                                 temp["Exec Time"] = Object.values(row)[0].split(" ")[1]
                                 temp.Comm = (-Object.values(row)[8]).toString()

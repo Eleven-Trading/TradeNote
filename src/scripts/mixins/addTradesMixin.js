@@ -241,7 +241,7 @@ const addTradesMixin = {
                     await this.getOHLCV()
                 }
                 await this.createTrades().then(async() => {
-                    console.log(" -> Open posisitions: " + this.openPosition)
+                    //console.log(" -> Open posisitions: " + this.openPosition)
                     if (this.openPosition) {
                         //console.log("You have one or more open positions. Please close all your positions before import.")
                         alert("You have one or more open positions. Please close all your positions before import.")
@@ -752,7 +752,7 @@ const addTradesMixin = {
                                 .executions[tempExec.td]
                                 .find(x => x.id == tempExec.id)
                                 .trade = temp7.id
-
+                            console.log(" -> buy quantity "+temp7.buyQuantity+ " and sell quantity "+temp7.sellQuantity)
                             if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
                                 temp7.exitPrice = tempExec.price;
                                 temp7.exitTime = tempExec.execTime;
