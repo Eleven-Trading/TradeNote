@@ -35,9 +35,6 @@ const settingsMixin = {
             return new Promise(async(resolve, reject) => {
                 console.log("\nUPDATING PROFILE")
 
-                localStorage.setItem('selectedCssMode', this.selectedCssMode)
-                this.lightDarkMode()
-
                 const Object = Parse.Object.extend("_User");
                 const query = new Parse.Query(Object);
                 query.equalTo("objectId", this.currentUser.objectId);

@@ -196,10 +196,10 @@ const vueApp = new Vue({
             //Filter
             filtersOpen: false,
             filters: {
-                "dashboard": ["accounts", "periodRange", "month", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes"],
-                "calendar": ["month", "grossNet", "plSatisfaction"],
-                "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "plSatisfaction"],
-                "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes"],
+               "dashboard": ["accounts", "periodRange", "month", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes"],
+               "calendar": ["month", "grossNet", "plSatisfaction"],
+               "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "plSatisfaction"],
+               "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes"],
             },
             periodRange: [],
             selectedPeriodRange: {},
@@ -276,15 +276,6 @@ const vueApp = new Vue({
                     label: "Net Fees"
                 }*/
             ],
-            cssModes: [{
-                    value: "dark",
-                    label: "Dark Mode",
-                },
-                {
-                    value: "light",
-                    label: "Light Mode"
-                }
-            ],
             selectedPosition: localStorage.getItem('selectedPosition'),
             selectedPositions: localStorage.getItem('selectedPositions') ? localStorage.getItem('selectedPositions').split(",") : localStorage.getItem('selectedPositions') === null ? ["long", "short"] : [],
             selectedTimeFrame: localStorage.getItem('selectedTimeFrame'),
@@ -296,7 +287,6 @@ const vueApp = new Vue({
             selectedGrossNet: localStorage.getItem('selectedGrossNet'),
             selectedPlSatisfaction: localStorage.getItem('selectedPlSatisfaction'),
             tempSelectedPlSatisfaction: null,
-            selectedCssMode: localStorage.getItem('selectedCssMode') ? localStorage.getItem('selectedCssMode') : "dark",
             renderData: 0, //this is for updating DOM
             renderData0: 0,
             renderData1: 0, //this is for updating DOM
@@ -457,7 +447,10 @@ const vueApp = new Vue({
         !localStorage.getItem('selectedGrossNet') ? localStorage.setItem('selectedGrossNet', "gross") : '';
         !localStorage.getItem('selectedPlSatisfaction') ? localStorage.setItem('selectedPlSatisfaction', "pl") : '';
         !localStorage.getItem('selectedBroker') ? localStorage.setItem('selectedBroker', "tradeZero") : '';
-        !localStorage.getItem('selectedCssMode') ? localStorage.setItem('selectedCssMode', "dark") : '';
+
+        let date = dayjs().tz(this.tradeTimeZone).startOf("day").unix()
+            //console.log("date "+date)
+            //the hours is not correct. UTC time ?
 
     },
     created: async function() {
@@ -543,14 +536,12 @@ const vueApp = new Vue({
             start: -1,
             end: -1
         }, )
-        
-        this.lightDarkMode()
 
         this.currentPage = this.pages.filter(item => item.id == document.getElementsByTagName("main")[0].id)[0];
 
         this.initParse()
         this.initPostHog()
-
+        
         if (this.currentUser && !this.currentUser.guidedTour) {
             //console.log(" this.currentUser.guidedTour " + this.currentUser.guidedTour)
             this.initShepherd()
@@ -568,7 +559,7 @@ const vueApp = new Vue({
         }
 
         //IMPORTANT : when exists in localstorage but is empty, then == ''. When does not exist in localstorage then == null. As it may be empty, we take the case of null
-        if (localStorage.getItem('selectedPatterns') == null) {
+        if (localStorage.getItem('selectedPatterns') == null){
             console.log(" -> No patterns in local storage")
             this.selectedPatterns.push("void")
             this.patterns.filter(obj => obj.active == true).forEach(element => {
@@ -661,7 +652,7 @@ const vueApp = new Vue({
             await sessionStorage.removeItem('editItemId');
             await this.playbookDateInput(this.currentDate)
             await (this.spinnerLoadingPage = false)
-        }
+        }       
 
         if (this.currentPage.id == "addScreenshot") {
             await (this.spinnerLoadingPage = true)
@@ -682,14 +673,14 @@ const vueApp = new Vue({
             //console.log(" Width : " + screenWidth + " and screen type " + this.screenType)
             //this.getDailyInfos()
         var itemToEditId = sessionStorage.getItem('editItemId')
-
-
+        
+        
         if (this.currentPage.id == "addTrades") {
             await (this.spinnerLoadingPage = false) // Here we remove spinner straight away cause the rest of functions shouls spinn in background
             this.initStepper()
             await Promise.all([this.getExistingTradesArray(), this.getPatternsMistakes()])
         }
-
+        
         this.tagArray()
         this.initWheelEvent()
 
@@ -710,10 +701,6 @@ const vueApp = new Vue({
 
     },
     methods: {
-        lightDarkMode(){
-            document.body.classList.remove(this.selectedCssMode == "dark" ? "light" : "dark");
-            document.body.classList.add(this.selectedCssMode);
-        },
         // =================================================================================
         // GLOBALS
         // =================================================================================

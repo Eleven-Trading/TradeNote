@@ -1,7 +1,4 @@
 /*=================== GENERAL ===================*/
-[v-cloak] {
-    display: none;
-}
 
 :root {
     --grey-color: #6c757d;
@@ -12,34 +9,14 @@
     --red-color: #FF6960;
     --red-hover-color: #fd4b42;
     --black: #333333;
-    --black-bg-0: hsl(0, 0%, 0%);
-    --black-bg-5: hsl(0, 0%, 5%);
-    --black-bg-7: hsl(0, 0%, 7%);
-    --green: #26a69a;
-    --white-87: hsla(0, 0%, 100%, 0.87);
-    /*High-emphasis (text)*/
-    --white-60: hsla(0, 0%, 100%, 0.6);
-    /*Medium-emphasis (text)*/
-    --white-38: hsla(0, 0%, 100%, 0.38);
-    /*Low-emphasis (text)*/
-    /*for quill */
-    --white-70: hsla(0, 0%, 100%, 0.7);
-    --white-65: hsla(0, 0%, 100%, 0.65);
-
-    --font-size-main: 11px;
-    /*small : 13px; x-small: 10px*/
-    --font-size-secondary: x-small;
-
-    /*06c*/
 }
 
 * {
     font-family: 'Nunito Sans', sans-serif;
 }
 
-body.dark  {
-    background-color: var(--black-bg-0);
-    color: var(--white-87);
+body {
+    background-color: #fbfbfd;
 }
 
 .text-blue {
@@ -47,7 +24,7 @@ body.dark  {
 }
 
 main {
-    padding: 0.8rem !important;
+    padding: 0 1.5rem !important;
     /*we add padding back here because we have removed gutter (g-0) in order to have top menu without padding with side menu*/
 }
 
@@ -69,46 +46,6 @@ main {
     color: #350f0d;
 }
 
-.blackTradeDiv {
-    background-color: var(--black);
-}
-
-.form-control {
-    background-color: var(--black-bg-7);
-    color: var(--white-87);
-    border-color: var(--white-60);
-}
-
-.form-control:disabled,
-.form-control[readonly] {
-    background-color: var(--black-bg-5);
-    opacity: 1;
-}
-
-.form-control:focus {
-    color: var(--white-87);
-    background-color: var(--black-bg-5);
-    border-color: var(--white-87);
-    outline: 0;
-    box-shadow: 0 0 0 0;
-}
-
-.form-check-input:checked {
-    background-color: var(--blue-active-color);
-    border-color: var(--blue-active-color);
-}
-
-input[type="datetime-local"],
-input[type="date"] {
-    background: transparent;
-    color: var(--white-87);
-    border: 1px solid var(--white-38);
-}
-
-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(60%);
-}
 
 /* Slider / ON/OFF Switch */
 
@@ -122,15 +59,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     height: 30px;
 }
 
-.txt-small {
+.txt-small{
     font-size: small;
 }
 
-.txt-xx-large {
+.txt-xx-large{
     font-size: xx-large;
 }
-
-
 /* Hide default HTML checkbox */
 
 .switch input {
@@ -196,137 +131,62 @@ input:checked+.slider:before {
 }
 
 .v-align-start {
-    top: 25%;
+    top:25%;
     right: 55%;
     position: absolute;
     color: white;
 }
-
 .v-align-end {
-    top: 25%;
+    top:25%;
     left: 50%;
     position: absolute;
     color: var(--dark-grey);
 }
-
 .sliderText {
     font-size: x-small;
 }
 
 
 /*Nav tabs*/
-
 .nav-tabs .nav-link:not(.active) {
-    color: var(--white-87);
+    color: var(--black);
 }
-
 .nav-tabs .nav-link.active {
     color: var(--blue-active-color);
-    background-color: var(--black-bg-5);
-    border-color: var(--white-38);
 }
 
-.nav-link:hover {
-    border-color: var(--white-38);
-}
-
-.nav-tabs {
-    border-bottom: 1px solid var(--white-38);
-}
 
 .parentIcon {
     position: relative;
-}
-
+  }
 .childIcon {
     /* ... */
     position: absolute;
     top: 55%;
     left: 60%;
-}
-
-.tradeSetup .form-select {
+  }
+  
+.tradeSetup .form-select{
     font-size: small;
-}
-
-.form-select {
-    background-color: var(--black-bg-5);
-    color: var(--white-87);
-    border: 1px solid var(--white-38);
-}
-
-.dropdown-menu {
-    background-color: #2f2f2f;
-    color: var(--white-87);
-    border: 1px solid var(--white-38);
-}
-
-
-.dropdown-item {
-    color: var(--white-87);
-}
-
-.dropdown-item:hover,
-.dropdown-item:active {
-    background-color: var(--blue-active-color);
-    color: var(--white-87);
-}
-
-.dropdownCheck {
-    padding: 0.5rem;
-    width: 100%;
-}
-
-.dropdown button {
-    background-color: var(--black-bg-5);
-    width: 100%;
-    text-align: left;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-}
-
-.dropdown button:focus,
-.dropdown button:hover {
-    background-color: var(--black-bg-5);
-    ;
-}
-
-.dropdown-toggle::after {
-    display: none;
-}
-
-.btn-check:focus+.btn-secondary,
-.btn-secondary:focus {
-    border-color: none;
-    box-shadow: none;
-}
-
-.btn-check:focus+.btn-secondary,
-.btn-secondary:active {
-    border-color: none;
-    box-shadow: none;
 }
 
 /*=================== /END GENERAL/ ===================*/
 
-
 /*=================== Radio Check Box ===================*/
 
-.form-check-sm {
+.form-check-sm{
     padding-left: 1em;
 }
 
-.check-sm {
+.check-sm{
     width: 0.8em;
     height: 0.8em;
     margin-top: 0.35em;
     margin-left: 1em;
 }
 
-.check-sm:checked {
-    background-color: var(--blue-active-color);
+.check-sm:checked{
+    background-color:var(--blue-active-color);
     border-color: var(--blue-active-color);
 }
 
@@ -342,47 +202,24 @@ input:checked+.slider:before {
 }
 
 .sideMenu {
-    background-color: var(--black-bg-7);
-    border-right: 1px solid var(--white-38);
-    border-bottom: 1px solid var(--white-38);
-    /*z-index: 1;
-    position: fixed;*/
-}
-
-.sideMenuMobile {
-    background-color: var(--black-bg-7);
-    border-right: 1px solid var(--white-38);
-    border-bottom: 1px solid var(--white-38);
-    z-index: 2;
-    position: fixed;
-    width: 230px;
-    margin-left: -500px;
-    -webkit-transition: 0.5s;
-}
-
-.toggleSideMenu {
-    margin-left: 0px;
-    -webkit-transition: 0.5s;
+    background-color: white;
+    border-right: 1px solid;
+    border-image: linear-gradient(to top, var(--ghost-grey) 97.5%, white 99.8%);
+    border-image-slice: 1;
 }
 
 .sideMenuDiv a {
-    color: var(--white-87);
+    color: var(--black);
 }
 
 .sideMenuDiv {
-    border-bottom: 1px solid var(--white-38);
+    border-bottom: 1px solid;
+    border-image: linear-gradient(to left top, var(--ghost-grey) 15%, 40%, white 50%);
     border-image-slice: 1;
 }
 
 .sideMenuDivContent {
     padding: 0 1rem;
-}
-
-.sideMenuMobileOut {
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    /*background-color: red;*/
 }
 
 .bg-white {
@@ -391,7 +228,9 @@ input:checked+.slider:before {
 
 .logoDiv {
     /* https://developer.mozilla.org/fr/docs/Web/CSS/linear-gradient() */
-    border-bottom: 1px solid var(--white-38);
+    border-bottom: 1px solid;
+    border-image: linear-gradient(to left top, var(--ghost-grey) 15%, 40%, white 50%);
+    border-image-slice: 1;
     width: 100%;
     height: 63px;
 }
@@ -409,33 +248,10 @@ img.navbar-brand {
     height: 40px;
 }
 
-img.logo {
-    height: 1.1rem;
-}
-
 .navbar {
-    border-bottom: 1px solid var(--white-38);
+    border-bottom: 1px solid var(--ghost-grey);
     padding-right: 1.5rem;
     padding-left: 1.5rem;
-    background-color: var(--black-bg-7) !important;
-    color: var(--white-87);
-    height: 63px;
-}
-
-#navbarDropdown {
-    color: var(--white-87);
-}
-
-.nav-link {
-    color: var(--white-87);
-}
-
-.nav-link:hover {
-    color: var(--blue-color);
-}
-
-.nav-link:active {
-    color: var(--blue-active-color);
 }
 
 
@@ -454,7 +270,7 @@ img.logo {
 
 #imagePreview img {
     max-width: 100%;
-    max-height: 650px;
+    max-height: 500px;
 }
 
 #comment {
@@ -483,8 +299,6 @@ img.logo {
 
 .modal-content {
     margin-top: 30px;
-    background-color: var(--black-bg-7);
-    color: var(--white-87);
 }
 
 .modal-body {
@@ -528,7 +342,7 @@ img.logo {
     position: fixed;
     width: 100%;
     height: 100%;
-    z-index: 10000;
+    z-index: 1000;
     top: 40%;
     left: 0px;
     opacity: 1;
@@ -537,19 +351,6 @@ img.logo {
 
 #quillEditor {
     height: 200px;
-}
-
-#quillEditorPlaybook {
-    height: 700px;
-}
-
-#quillEditor0,
-#quillEditor1 {
-    height: 100px;
-}
-
-#quillEditor2 {
-    height: 150px;
 }
 
 .modal-header {
@@ -637,14 +438,17 @@ img.logo {
 /*Must be inside .row or else too big but in that case height 100% (of the row div)*/
 
 .dailyCard {
-    background-color: var(--black-bg-5);
-    border: 1px solid var(--white-38);
+    background-color: white;
+    border: 1px solid white;
     border-radius: 5px;
     padding: 1em;
+    /*https://cssgenerator.org/box-shadow-css-generator.html*/
+    box-shadow: 1px 1px 4px 4px rgba(176, 176, 176, 0.2);
+    -webkit-box-shadow: 1px 1px 4px 4px rgba(176, 176, 176, 0.2);
+    -moz-box-shadow: 1px 1px 4px 4px rgba(176, 176, 176, 0.2);
     height: 100%;
     width: 100%;
 }
-
 
 .cardFirstLine {
     border-bottom: 1px solid lightgray;
@@ -674,8 +478,8 @@ img.logo {
     font-size: small !important;
 }
 
-.numXSmall {
-    font-size: x-small;
+.calDivDash p {
+    font-size: smaller;
 }
 
 .calDivDay {
@@ -685,51 +489,21 @@ img.logo {
     width: 40px;
 }
 
-.calDivDash p {
-    font-size: smaller;
-}
-
 .calDivDash {
     margin: 1px;
     border: 1px solid lightgray;
-    height: 40px;
-    width: 40px;
-}
-
-@media (min-width: 768px) {
-    .calDivDash {
-        margin: 1px;
-        border: 1px solid lightgray;
-        height: 90px;
-        width: 40px;
-        padding: 1em;
-    }
-
+    height: 90px;
+    width: 90px;
+    padding: 1em;
 }
 
 .calDivDash p {
     margin: 0;
 }
 
-.miniCalCol {
-    max-width: 400px !important;
-}
-
-.miniCalBox {
-    width: 1%;
-}
-
-.calDivMini {
-    margin: 1px;
-    border: 1px solid lightgray;
-    height: 9px;
-    width: 9px;
-    padding: 1em;
-}
-
 .dashInfoTitle {
     font-size: x-small;
-    color: var(--white-60);
+    color: grey;
     font-weight: bold;
 }
 
@@ -737,9 +511,6 @@ img.logo {
     margin-bottom: -5px;
 }
 
-.journalRow {
-    margin-bottom: -0.8rem !important;
-}
 
 /* TIMELINE */
 
@@ -790,21 +561,13 @@ ul.timeline>li:before {
 }
 
 .editItem {
-    color: var(--white-60);
+    color: var(--dark-grey);
     padding-right: 1rem;
 }
 
 .popoverDelete {
     color: var(--red-color);
     padding-right: 1.5rem;
-}
-
-.popover {
-    background-color: var(--black-bg-7);
-}
-
-.popover-body {
-    color: var(--white-60);
 }
 
 .theme-bg-dark {
@@ -822,209 +585,5 @@ ul.timeline>li:before {
     }
 }
 
-/* BUTTONS */
-.blueBtn {
-    background: var(--blue-color)
-}
 
-.blueBtn:hover {
-    background: var(--blue-active-color)
-}
-
-/* FOOTER BOTTOM */
-
-table {
-    color: var(--white-87) !important;
-}
-
-.scrolling-wrapper {
-    overflow: auto;
-    white-space: nowrap;
-}
-
-/* ENTRY */
-.setupEntryImg {
-    max-width: 100%;
-}
-
-/* FORECAST TABLE */
-
-.forecastTable th {
-    background-color: var(--black-bg-7) !important;
-}
-
-.forecastTable th:first-child,
-td:first-child {
-    position: sticky;
-    left: 0px;
-    background-color: var(--black-bg-7) !important;
-}
-
-/*.forecastTable th, td:not(:first-child) {
-    background-color: var(--black-bg-5) !important;
-    font-size: small;
-    text-align: center;
-}*/
-
-.forecastTable {
-    font-size: small;
-    text-align: center;
-}
-
-
-/*=================== /CUSTOMIZING MODULES/ ===================*/
-.ql-editor .ql-bg-blue {
-    background-color: var(--blue-active-color);
-}
-
-.ql-editor .ql-color-blue {
-    color: var(--blue-active-color);
-}
-
-.ql-snow.ql-toolbar button:hover,
-.ql-snow .ql-toolbar button:hover,
-.ql-snow.ql-toolbar button:focus,
-.ql-snow .ql-toolbar button:focus,
-.ql-snow.ql-toolbar button.ql-active,
-.ql-snow .ql-toolbar button.ql-active,
-.ql-snow.ql-toolbar .ql-picker-label:hover,
-.ql-snow .ql-toolbar .ql-picker-label:hover,
-.ql-snow.ql-toolbar .ql-picker-label.ql-active,
-.ql-snow .ql-toolbar .ql-picker-label.ql-active,
-.ql-snow.ql-toolbar .ql-picker-item:hover,
-.ql-snow .ql-toolbar .ql-picker-item:hover,
-.ql-snow.ql-toolbar .ql-picker-item.ql-selected,
-.ql-snow .ql-toolbar .ql-picker-item.ql-selected {
-    color: var(--blue-active-color);
-}
-
-.ql-snow.ql-toolbar button:hover .ql-fill,
-.ql-snow .ql-toolbar button:hover .ql-fill,
-.ql-snow.ql-toolbar button:focus .ql-fill,
-.ql-snow .ql-toolbar button:focus .ql-fill,
-.ql-snow.ql-toolbar button.ql-active .ql-fill,
-.ql-snow .ql-toolbar button.ql-active .ql-fill,
-.ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
-.ql-snow .ql-toolbar .ql-picker-label:hover .ql-fill,
-.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,
-.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill,
-.ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
-.ql-snow .ql-toolbar .ql-picker-item:hover .ql-fill,
-.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill,
-.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill,
-.ql-snow.ql-toolbar button:hover .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar button:hover .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar button:focus .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar button:focus .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar button.ql-active .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar button.ql-active .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke.ql-fill,
-.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill,
-.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill {
-    fill: var(--blue-active-color);
-}
-
-.ql-snow.ql-toolbar button:hover .ql-stroke,
-.ql-snow .ql-toolbar button:hover .ql-stroke,
-.ql-snow.ql-toolbar button:focus .ql-stroke,
-.ql-snow .ql-toolbar button:focus .ql-stroke,
-.ql-snow.ql-toolbar button.ql-active .ql-stroke,
-.ql-snow .ql-toolbar button.ql-active .ql-stroke,
-.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
-.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke,
-.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
-.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,
-.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
-.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke,
-.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
-.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
-.ql-snow.ql-toolbar button:hover .ql-stroke-miter,
-.ql-snow .ql-toolbar button:hover .ql-stroke-miter,
-.ql-snow.ql-toolbar button:focus .ql-stroke-miter,
-.ql-snow .ql-toolbar button:focus .ql-stroke-miter,
-.ql-snow.ql-toolbar button.ql-active .ql-stroke-miter,
-.ql-snow .ql-toolbar button.ql-active .ql-stroke-miter,
-.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
-.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
-.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
-.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
-.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
-.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
-.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,
-.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
-    stroke: var(--blue-active-color);
-}
-
-.ql-snow a {
-    color: var(--blue-active-color);
-}
-
-.quill h1,
-h2,
-h3,
-h4 {
-    padding-top: 0.3em;
-}
-
-.quill h1 {
-    font-size: 20pt;
-    font-weight: bold;
-    color: var(--white-70);
-}
-
-.quill h2 {
-    font-size: 17pt;
-    color: var(--white-65);
-}
-
-.quill h3 {
-    font-size: 15pt;
-    font-style: italic;
-}
-
-.quill br:active {
-    content: "";
-    display: block;
-    margin: 1em 0;
-}
-
-.quill br {
-    content: "";
-    display: block;
-    margin: 1rem;
-}
-
-.quill br::after {
-    content: " ";
-    /* content: " " space ignored */
-    ;
-    float: left;
-    margin-right: 0.5rem;
-}
-
-/* SHEPHERD */
-
-.shepherd-modal-overlay-container.shepherd-modal-is-visible {
-    opacity: 0.85;
-}
-
-.shepherd-button {
-    background-color: var(--blue-color);
-}
-
-.shepherd-button:hover {
-    background: var(--blue-active-color) !important;
-}
-
-.exitButton {
-    background-color: var(--grey-color) !important;
-}
-
-.exitButton:hover {
-    background-color: var(--dark-grey) !important;
-}
+/* FOOTER BOOTOM */
