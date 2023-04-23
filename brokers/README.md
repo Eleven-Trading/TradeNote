@@ -106,3 +106,11 @@ Before attempting to import data, there are a few things that may help.
 - Remove any Open Trades
 - Add an Order Time to Expired Contracts rather than leaving the fields empty
 - Format prices to 2 decimal places to prevent dealing with floating point precision errors
+
+## MetaTrader 5 (MT 5)
+Please use the standalone MT5 windows application and follow the steps below. 
+
+1. In the MetaTrader Terminal window, select the History tab.
+2. Right-click on any order in the account history, and select the time period you want to export.
+3. Right-click on any order in the account history, and select Report.
+4. Save the report as an "Open XML (MS Office Excel 2007)" file to your desktop (or anywhere else - just remember where you put it).
