@@ -1,6 +1,8 @@
 # Import instructions
 Different brokers have different export options so on this page you will find import instructions for some of the brokers supported by TradeNote.
 
+Import instructions are written with the help other TradeNote users in the community. Contact me if you want to contribute as well.
+
 You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker. Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
 
 ## Template
