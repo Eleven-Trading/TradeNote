@@ -1,11 +1,11 @@
-# Import instructions
-Different brokers have different export options so on this page you will find import instructions for some of the brokers supported by TradeNote.
+Different brokers have different export options so on this page you will find instructions for some of the brokers supported by TradeNote.
 
-Import instructions are written with the help other TradeNote users in the community. Contact me if you want to contribute as well.
+Export instructions are written with the help other TradeNote users in the community. Contact me if you want to contribute as well.
 
 You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker. Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
 
-## Template
+
+# Template
 If you wish to adapt your export file to the template, below is the explanation for each of the columns. 
 - Account: your accound id or name
 - T/D: trade date in MM/DD/YYYY format
@@ -34,15 +34,15 @@ If you wish to adapt your export file to the template, below is the explanation 
 - Liq: not applicable. Leave blank
 - Note: not applicable. Leave blank
 
-## Interactive Brokers
-### Navigating to Flex Queries
+# Interactive Brokers
+#### Navigating to Flex Queries
 1. Login to the Portal
 2. Select the Performance & Reports tab (top of the page, under the Search Box)
 3. Select Flex Queries
     1. There are 2 options available, Activity Flex Query and Trade Confirmation Flex Query.
     2. We are interested in the Trade Confirmation Flex Query
 
-### Setting up a new Flex Query
+#### Setting up a new Flex Query
 1. Under the Trade Confirmation Flex Query panel, click the Create, +, button.
 2. At the Create Trade Confirmation Flex Query page, select the following options
     1. Trade Confirmation Flex Query Details: Provide a Query Name (ex. TradeNoteExport)
@@ -89,7 +89,7 @@ If you wish to adapt your export file to the template, below is the explanation 
 4. On the Trade Confirm Flex Query Saved page, click Ok
 5. Notice your new Flex Query is now available under the Trade Confirmation Flex Query panel
 
-### Executing your Flex Query
+#### Executing your Flex Query
 1. Use the Run (right arrow icon) to generate a new report
 2. In the TradeNoteExport (name of your Flex Query) dialog, select
     1. Period: <Your desired date range>
@@ -97,7 +97,7 @@ If you wish to adapt your export file to the template, below is the explanation 
     3. Click Run
 3. At this point, your file should be downloaded and available to use
 
-### Cleanup before importing to TradeNote
+#### Cleanup before importing to TradeNote
 Before attempting to import data, there are a few things that may help.
 - Remove any empty lines that may be present in your CSV file
 - If multiple accounts are present, isolate them to 1 account at a time
@@ -109,10 +109,19 @@ Before attempting to import data, there are a few things that may help.
 - Add an Order Time to Expired Contracts rather than leaving the fields empty
 - Format prices to 2 decimal places to prevent dealing with floating point precision errors
 
-## MetaTrader 5 (MT 5)
+# MetaTrader 5 (MT 5)
 Please use the standalone MT5 windows application and follow the steps below. 
 
 1. In the MetaTrader Terminal window, select the History tab.
 2. Right-click on any order in the account history, and select the time period you want to export.
 3. Right-click on any order in the account history, and select Report.
 4. Save the report as an "Open XML (MS Office Excel 2007)" file to your desktop (or anywhere else - just remember where you put it).
+
+# HeldenTrader Pro
+1. In the upper section of the application select the "Account" button
+2. In the dropdown menu select "Reports" and a new window "Reports" will appear
+3. Select in the "Report type" dropdown menu - "Trades report"
+4. Select the timeframe you want to export in the "From" - "To" dropdown menu. One export file can contain one or more trading days/weeks.
+5. Select "Export to CSV"
+<div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader1.png" width="200">
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader2.png" width="200"></div>
