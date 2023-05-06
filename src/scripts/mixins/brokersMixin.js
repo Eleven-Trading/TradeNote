@@ -173,7 +173,11 @@ const brokersMixin = {
                             accountTradeHistoryStart = (index + 1)
                             //console.log(" accountTradeHistoryStart "+accountTradeHistoryStart)
                         }
-                        if (element.includes("Profits and Losses" )) {
+                        
+                        if (element.includes("Equities" )) {
+                            accountTradeHistoryEnd = (index - 2)
+                        }
+                        else if (element.includes("Profits and Losses" )) {
                             accountTradeHistoryEnd = (index - 2)
                             //console.log(" accountTradeHistoryEnd "+accountTradeHistoryEnd)
                         }
@@ -200,9 +204,10 @@ const brokersMixin = {
                     //console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory.data))
 
                     let cashBalanceJsonArrayTemp = papaParseCashBalance.data
-
+                    papaParseAccountTradeHistory.data = papaParseAccountTradeHistory.data.filter(obj => obj.Symbol != "" && obj.hasOwnProperty("Symbol") )
+                    console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory.data))
                     let time1 = dayjs(papaParseAccountTradeHistory.data[0]["Exec Time"])
-                    let time2 = dayjs(papaParseAccountTradeHistory.data[1]["Exec Time"])
+                    let time2 = dayjs(papaParseAccountTradeHistory.data[papaParseAccountTradeHistory.data.length-1]["Exec Time"])
                     let accountTradeHistoryJsonArrayTemp
                     console.log("  --> time1 "+time1+" and time2 "+time2)
                     if (time1 < time2){
