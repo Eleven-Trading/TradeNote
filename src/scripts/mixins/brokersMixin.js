@@ -191,16 +191,30 @@ const brokersMixin = {
                         accountTradeHistoryCsv == undefined ? accountTradeHistoryCsv = element2 + "\n" : accountTradeHistoryCsv = accountTradeHistoryCsv + element2 + "\n"
                     }
                     //console.log("cashBalanceCsv \n" + cashBalanceCsv)
-                    console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
+                    //console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
 
                     this.tradesData = []
 
                     let papaParseCashBalance = Papa.parse(cashBalanceCsv, { header: true })
                     let papaParseAccountTradeHistory = Papa.parse(accountTradeHistoryCsv, { header: true })
-                    //console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory))
+                    //console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory.data))
 
                     let cashBalanceJsonArrayTemp = papaParseCashBalance.data
-                    let accountTradeHistoryJsonArrayTemp = papaParseAccountTradeHistory.data
+
+                    let time1 = dayjs(papaParseAccountTradeHistory.data[0]["Exec Time"])
+                    let time2 = dayjs(papaParseAccountTradeHistory.data[1]["Exec Time"])
+                    let accountTradeHistoryJsonArrayTemp
+                    console.log("  --> time1 "+time1+" and time2 "+time2)
+                    if (time1 < time2){
+                        console.log("   ---> Increasing order")
+                        accountTradeHistoryJsonArrayTemp = papaParseAccountTradeHistory.data
+                    }else if(time1 > time2){
+                        console.log("   ---> Decreasing order")
+                        accountTradeHistoryJsonArrayTemp = papaParseAccountTradeHistory.data.reverse()
+                    }else{
+                        console.log("   ---> Neither increasing nor decreasing order")
+                        alert("Cannot determine date and time order")
+                    }
                     
                     let cashBalanceJsonArray = []
                     let accountTradeHistoryJsonArray = []
