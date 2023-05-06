@@ -161,7 +161,7 @@ const brokersMixin = {
                     arrayLines.forEach((element, index) => {
                         if (element.includes("Account Statement")) {
                             account = element.split(" ")[3]
-                                //console.log("account "+account)
+                            //console.log("account "+account)
                         }
                         if (element.includes("Cash Balance")) {
                             cashBalanceStart = (index + 1)
@@ -171,14 +171,17 @@ const brokersMixin = {
                         }
                         if (element.includes("Account Trade History")) {
                             accountTradeHistoryStart = (index + 1)
+                            //console.log(" accountTradeHistoryStart "+accountTradeHistoryStart)
                         }
-                        if (element.includes("Equities")) {
+                        if (element.includes("Profits and Losses" )) {
                             accountTradeHistoryEnd = (index - 2)
+                            //console.log(" accountTradeHistoryEnd "+accountTradeHistoryEnd)
                         }
                     });
 
                     for (let index = cashBalanceStart; index <= cashBalanceEnd; index++) {
                         const element = arrayLines[index];
+                        //console.log(" element "+element)
                         cashBalanceCsv == undefined ? cashBalanceCsv = element + "\n" : cashBalanceCsv = cashBalanceCsv + element + "\n"
 
                     }
@@ -188,15 +191,17 @@ const brokersMixin = {
                         accountTradeHistoryCsv == undefined ? accountTradeHistoryCsv = element2 + "\n" : accountTradeHistoryCsv = accountTradeHistoryCsv + element2 + "\n"
                     }
                     //console.log("cashBalanceCsv \n" + cashBalanceCsv)
-                    //console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
+                    console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
 
                     this.tradesData = []
 
                     let papaParseCashBalance = Papa.parse(cashBalanceCsv, { header: true })
                     let papaParseAccountTradeHistory = Papa.parse(accountTradeHistoryCsv, { header: true })
+                    //console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory))
 
                     let cashBalanceJsonArrayTemp = papaParseCashBalance.data
-                    let accountTradeHistoryJsonArrayTemp = papaParseAccountTradeHistory.data.reverse()
+                    let accountTradeHistoryJsonArrayTemp = papaParseAccountTradeHistory.data
+                    
                     let cashBalanceJsonArray = []
                     let accountTradeHistoryJsonArray = []
 
@@ -216,12 +221,12 @@ const brokersMixin = {
                             accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
                         }
                     }
-                    /*console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
-                    console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
-                    console.log("cashBalanceJsonArray "+JSON.stringify(cashBalanceJsonArray))
-                    console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))*/
-                    console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
-                    console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
+                    //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
+                    //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
+                    //console.log("cashBalanceJsonArray "+JSON.stringify(cashBalanceJsonArray))
+                    //console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))
+                    //console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
+                    //console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
                     if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
                         alert("Cash Balance Json is different from Account Trade History Json")
                         return
@@ -282,7 +287,7 @@ const brokersMixin = {
                     console.log("  --> ERROR " + error)
                     reject(error)
                 }
-                console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
+                //console.log(" -> Trades Data\n" + JSON.stringify(this.tradesData))
                 resolve()
 
             })

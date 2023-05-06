@@ -237,7 +237,7 @@ const addTradesMixin = {
                 })
 
                 await this.createExecutions()
-                if (this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') {
+                if (this.uploadMfePrices && this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') {
                     await this.getOHLCV()
                 }
                 await this.createTrades().then(async() => {
@@ -810,7 +810,6 @@ const addTradesMixin = {
                                 /*****
                                  * GETTING MFE PRICE
                                  *****/
-
                                 if ((this.currentUser.marketDataApiKey &&  this.currentUser.marketDataApiKey != null &&  this.currentUser.marketDataApiKey != '') && this.uploadMfePrices && this.ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                                     console.log("  --> Getting MFE Price")
                                     let ohlcvSymbol = this.ohlcv[this.ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv

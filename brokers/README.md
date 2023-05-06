@@ -109,6 +109,17 @@ Before attempting to import data, there are a few things that may help.
 - Add an Order Time to Expired Contracts rather than leaving the fields empty
 - Format prices to 2 decimal places to prevent dealing with floating point precision errors
 
+# TD Ameritrade (thinkorswim)
+Please use the standalone thinkorswim application and follow the steps below.
+
+1. Navigate to the "Monitor" tab, then "Account Statement" tab.
+2. From "days back from today" dropdown, filter the date range.
+3. From "Transactions" dropdown, select "Trades" and deselect all others.
+4. From the top right corner (underneath "OnDemand" button), click the Actions menu (3-dashes) and "Export to file". 
+5. Save the .csv file to your desktop.
+<div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD1.png" width="200">
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD2.png" width="200"></div>
+
 # MetaTrader 5 (MT 5)
 Please use the standalone MT5 windows application and follow the steps below. 
 
@@ -116,6 +127,7 @@ Please use the standalone MT5 windows application and follow the steps below.
 2. Right-click on any order in the account history, and select the time period you want to export.
 3. Right-click on any order in the account history, and select Report.
 4. Save the report as an "Open XML (MS Office Excel 2007)" file to your desktop (or anywhere else - just remember where you put it).
+<div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/MT51.png" width="200">
 
 # HeldenTrader Pro
 1. In the upper section of the application select the "Account" button
