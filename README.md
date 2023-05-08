@@ -106,7 +106,7 @@ Run the image with the following environment variables
 - <MONGO_INITDB_ROOT_PASSWORD>: Password for authenticating to the MongoDB database.
 
 ### TradeNote
-#### 1_ Pull image
+#### 1_ Pull image from DockerHub
 Pull image from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 ```
@@ -135,6 +135,18 @@ Run the image with the following environment variables
 2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
 
 ### Side note
+#### Build image locally
+For advanced users, you can also build the TradeNote image locally, directly from GitHub repository.
+
+1. Pull from github
+2. cd into Tradenote directory 
+3. docker build -f docker/Dockerfile . -t tradenote:<tag>
+(replace <tag> with the number you wish / with latest tag number)
+4. Run the image
+```
+docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d tradenote:<TAG>
+
+```
 #### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
 1. Manage the authentification (flow)
