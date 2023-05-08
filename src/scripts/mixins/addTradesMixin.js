@@ -357,10 +357,13 @@ const addTradesMixin = {
                             /*usDate = dayjs.tz("07/22/2021 00:00:00", 'MM/DD/YYYY 00:00:00', "UTC")
                             //frDate = usDate.tz("Europe/Paris")
                             console.log("date "+usDate+" and fr ")*/
+                        //console.log(" TD "+JSON.stringify(this.tradesData[key]))
                         const dateArrayTD = this.tradesData[key]['T/D'].split('/');
+                        //console.log(" dateArrayTD "+dateArrayTD)
                         const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
+                        console.log(" formatedDateTD "+formatedDateTD)
                         temp2.td = dayjs.tz(formatedDateTD, this.tradeTimeZone).unix()
-
+                        console.log(" td "+temp2.td)
                         const dateArraySD = this.tradesData[key]['S/D'].split('/');
                         const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
                         temp2.sd = dayjs.tz(formatedDateSD, this.tradeTimeZone).unix()
@@ -371,7 +374,9 @@ const addTradesMixin = {
                         temp2.symbol = this.tradesData[key].Symbol.replace(".", "_")
                         temp2.quantity = parseFloat(this.tradesData[key].Qty);
                         temp2.price = parseFloat(this.tradesData[key].Price);
+                        //console.log(" exec time "+this.tradesData[key]['Exec Time'])
                         temp2.execTime = dayjs.tz(formatedDateTD + " " + this.tradesData[key]['Exec Time'], this.tradeTimeZone).unix()
+                        //console.log(" time "+temp2.execTime)
                         tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
                         // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                         if (tempId != lastId) {

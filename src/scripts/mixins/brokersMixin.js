@@ -205,7 +205,7 @@ const brokersMixin = {
 
                     let cashBalanceJsonArrayTemp = papaParseCashBalance.data
                     papaParseAccountTradeHistory.data = papaParseAccountTradeHistory.data.filter(obj => obj.Symbol != "" && obj.hasOwnProperty("Symbol") )
-                    console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory.data))
+                    //console.log(" papaParseAccountTradeHistory "+JSON.stringify(papaParseAccountTradeHistory.data))
                     let time1 = dayjs(papaParseAccountTradeHistory.data[0]["Exec Time"])
                     let time2 = dayjs(papaParseAccountTradeHistory.data[papaParseAccountTradeHistory.data.length-1]["Exec Time"])
                     let accountTradeHistoryJsonArrayTemp
@@ -258,8 +258,17 @@ const brokersMixin = {
                         //console.log("element "+JSON.stringify(element))
                         let temp = {}
                         temp.Account = account
-                        temp["T/D"] = element.DATE
-                        temp["S/D"] = element.DATE
+                        const dateArrayTD = element.DATE.split('/');
+                        const yearLenght = dateArrayTD[2].length
+                        console.log(" -> Year "+dateArrayTD[2]+" with length "+yearLenght)
+                        let tdSdDate = element.DATE
+                        if(yearLenght == 2){
+                            const formatedDateTD = dateArrayTD[0] + "/" + dateArrayTD[1] + "/20" + dateArrayTD[2]
+                            tdSdDate = formatedDateTD
+                        }
+                        console.log("tdSdDate "+tdSdDate)
+                        temp["T/D"] = tdSdDate
+                        temp["S/D"] = tdSdDate
                         temp.Currency = "USD"
                         temp.Type = "0"
                         if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
