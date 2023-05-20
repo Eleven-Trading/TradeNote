@@ -1,0 +1,478 @@
+<script setup>
+import { ref, onBeforeMount, onMounted } from "vue";
+import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage } from "../utils/utils.js";
+import { useGetPatterns, useGetMistakes } from '../utils/patternsMistakes';
+import { pageId, patterns, mistakes, currentUser, tradeTimeZone, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage } from "../stores/globals"
+import { useGetAllTrades } from "../utils/trades"
+import { useLoadCalendar } from '../utils/calendar'
+import { useECharts } from "../utils/charts.js";
+import { useRefreshScreenshot } from "../utils/screenshots"
+
+/*============================================
+    VARIABLES
+============================================*/
+
+let filtersOpen = ref(false)
+let filters = ref({
+    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes"],
+    "calendar": ["month", "grossNet", "plSatisfaction"],
+    "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "plSatisfaction"],
+    "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes"],
+})
+
+
+
+/*if (selectedDateRange.value) {
+    console.log(" -> Filtering date range")
+    let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+    if (tempFilter.length > 0) {
+        selectedPeriodRange.value = tempFilter[0]
+    } else {
+        console.log(" -> Custom range in vue")
+        selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+    }
+}*/
+//console.log(" -> Selected date range "+JSON.stringify(selectedPeriodRange))
+
+
+//IMPORTANT : when exists in localstorage but is empty, then == ''. When does not exist in localstorage then == null. As it may be empty, we take the case of null
+
+
+/*============================================
+    LIFECYCLE
+============================================*/
+onBeforeMount(async () => {
+    let getPatMis = async () => {
+        console.log(" getting Pat Mis")
+        await Promise.all([useGetPatterns(), useGetMistakes()])
+    }
+
+    await getPatMis().then(() => {
+        //console.log(" -> patterns "+JSON.stringify(patterns[0].name))
+        //console.log(" -> Mistakes "+JSON.stringify(mistakes))
+        if (Object.is(localStorage.getItem('selectedPatterns'), null)) {
+            selectedPatterns.value.push("void")
+            patterns.filter(obj => obj.active == true).forEach(element => {
+                selectedPatterns.value.push(element.objectId)
+            });
+
+            localStorage.setItem('selectedPatterns', selectedPatterns.value)
+        }
+
+        if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
+            selectedMistakes.value.push("void")
+            mistakes.filter(obj => obj.active == true).forEach(element => {
+                selectedMistakes.value.push(element.objectId)
+            });
+            localStorage.setItem('selectedMistakes', selectedMistakes.value)
+        }
+    })
+
+})
+/*============================================
+    FUNCTIONS
+============================================*/
+function filtersClick() {
+    filtersOpen.value = !filtersOpen.value
+    //console.log(" -> Filters click: Selected Period Range " + JSON.stringify(selectedPeriodRange))
+    //console.log(" -> Filters click: Selected Date Range Cal " + JSON.stringify(selectedDateRange))
+
+    if (!filtersOpen.value) { //It's like clicking cancel of not saving so we remove data / go back to old data 
+
+        // Restore Selected Date range cal
+        selectedDateRange.value = JSON.parse(localStorage.getItem('selectedDateRange'))
+        //console.log(" -> Filters click (close): Selected Date Range Cal " + JSON.stringify(selectedDateRange))
+        //console.log(" periodRange "+JSON.stringify(periodRange))
+        // Restore Selected Period range
+        //console.log(" selectedDateRange "+JSON.stringify(selectedDateRange.value))
+        let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+
+        if (tempFilter.length > 0) {
+            selectedPeriodRange.value = tempFilter[0]
+        } else {
+            //console.log(" -> Custom range in trades mixin")
+            //console.log(" periodRange 2 " + JSON.stringify(periodRange))
+            selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+        }
+
+        //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(selectedPeriodRange))
+
+        // Restore temp selected accounts
+        if (localStorage.getItem('selectedAccounts')) {
+            if (localStorage.getItem('selectedAccounts').includes(",")) {
+                selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
+            } else {
+                selectedAccounts.value = []
+                selectedAccounts.value.push(localStorage.getItem('selectedAccounts'))
+            }
+        } else {
+            selectedAccounts.value = []
+        }
+
+
+        //console.log(" Selected accounts " + selectedAccounts)
+
+        //Restore gross net
+        selectedGrossNet.value = localStorage.getItem('selectedGrossNet')
+        //console.log(" Selected accounts " + selectedAccounts)
+
+        // Restore temp selected positions
+        if (localStorage.getItem('selectedPositions')) {
+            if (localStorage.getItem('selectedPositions').includes(",")) {
+                selectedPositions.value = localStorage.getItem('selectedPositions').split(",")
+            } else {
+                selectedPositions.value = []
+                selectedPositions.value.push(localStorage.getItem('selectedPositions'))
+            }
+        } else {
+            selectedPositions.value = []
+        }
+
+        selectedTimeFrame.value = localStorage.getItem('selectedTimeFrame')
+        //console.log(" Selected timeframe " + selectedTimeFrame)
+
+        selectedRatio.value = localStorage.getItem('selectedRatio')
+        //console.log(" Selected ratio " + selectedRatio)
+
+        selectedMonth.value = JSON.parse(localStorage.getItem('selectedMonth'))
+        //console.log(" Selected Month " + JSON.stringify(selectedMonth))
+
+        // Restore selected patterns
+        if (localStorage.getItem('selectedPatterns')) {
+            if (localStorage.getItem('selectedPatterns').includes(",")) {
+                selectedPatterns.value = localStorage.getItem('selectedPatterns').split(",")
+            } else {
+                selectedPatterns.value = []
+                selectedPatterns.value.push(localStorage.getItem('selectedPatterns'))
+            }
+        } else {
+            selectedPatterns.value = []
+        }
+
+        if (localStorage.getItem('selectedMistakes')) {
+            if (localStorage.getItem('selectedMistakes').includes(",")) {
+                selectedMistakes.value = localStorage.getItem('selectedMistakes').split(",")
+            } else {
+                selectedMistakes.value = []
+                selectedMistakes.value.push(localStorage.getItem('selectedMistakes'))
+            }
+        } else {
+            selectedMistakes.value = []
+        }
+    }
+}
+
+//Date : periode
+function inputDateRange(param) {
+    //console.log(" -> Input Date Range - Param: "+param)
+    //Filter to find the value of date range
+    var filterJson = periodRange.value.filter(element => element.value == param)[0]
+    selectedPeriodRange.value = filterJson
+    //console.log(" -> Input range: Selected Date Range " + JSON.stringify(selectedPeriodRange.value))
+
+    //Created selected Date range calendar mode
+    let temp = {}
+    temp.start = selectedPeriodRange.value.start
+    temp.end = selectedPeriodRange.value.end
+    selectedDateRange.value = temp
+    //console.log(" -> Input range : Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+
+}
+//Date : calendar
+function inputDateRangeCal(param1, param2) {
+    //console.log("param1 " + param1 + ", param2 " + param2)
+    //console.log(" -> Initial selectedDateRange " + JSON.stringify(selectedDateRange.value))
+
+    if (param1 == "start") {
+        selectedDateRange.value.start = dayjs.tz(param2, tradeTimeZone.value).unix()
+    }
+    if (param1 == "end") {
+        selectedDateRange.value.end = dayjs.tz(param2, tradeTimeZone.value).endOf("day").unix() // it must be tz(...). It cannot be dayjs().t
+    }
+
+
+    //console.log("selectedDateRange " + JSON.stringify(selectedDateRange.value))
+
+    /* Update selectedPeriodRange */
+    let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+    if (tempFilter.length > 0) {
+        selectedPeriodRange.value = tempFilter[0]
+    } else {
+        //console.log(" -> Custom range in trades mixin")
+        selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+    }
+}
+
+function inputMonth(param1) {
+    //console.log(" param1 " + param1)
+    let temp = {}
+    temp.start = dayjs.tz(param1, tradeTimeZone.value).unix()
+    temp.end = dayjs.tz(param1, tradeTimeZone.value).endOf("month").unix()
+    selectedMonth.value = temp
+    //console.log(" -> Selected Month "+JSON.stringify(selectedMonth.value))
+}
+
+async function saveFilter() {
+    //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+    //console.log(" -> Selected accounts "+selectedAccounts.value)
+    // Check if start date before end date and vice versa
+    if (selectedDateRange.value.end < selectedDateRange.value.start) {
+        alert("End date cannot be before start date")
+        return
+    } else {
+        localStorage.setItem('selectedDateRange', JSON.stringify(selectedDateRange.value))
+    }
+
+
+    if (pageId.value == "dashboard" && selectedDateRange.value.end >= selectedDateRange.value.start) {
+        useECharts("clear")
+    }
+
+
+    localStorage.setItem('selectedAccounts', selectedAccounts.value)
+
+    localStorage.setItem('selectedGrossNet', selectedGrossNet.value)
+    amountCase.value = selectedGrossNet.value
+    amountCapital.value = selectedGrossNet.value.charAt(0).toUpperCase() + selectedGrossNet.value.slice(1)
+
+    localStorage.setItem('selectedPositions', selectedPositions.value)
+
+    localStorage.setItem('selectedTimeFrame', selectedTimeFrame.value)
+
+    localStorage.setItem('selectedRatio', selectedRatio.value)
+
+    if (pageId.value == "daily" || pageId.value == "calendar") {
+        localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
+    }
+
+    localStorage.setItem('selectedPatterns', selectedPatterns.value)
+
+    localStorage.setItem('selectedMistakes', selectedMistakes.value)
+
+    if (tempSelectedPlSatisfaction.value != null) {
+        selectedPlSatisfaction.value = tempSelectedPlSatisfaction.value
+        localStorage.setItem('selectedPlSatisfaction', selectedPlSatisfaction.value)
+        tempSelectedPlSatisfaction.value = null
+    }
+
+    if (pageId.value == "screenshots") {
+        await useRefreshScreenshot()
+    } else if (pageId.value == "calendar") {
+        await (spinnerLoadingPage.value = true)
+        await useInitIndexedDB()
+        await useLoadCalendar(true) // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
+        await (spinnerLoadingPage.value = false)
+    } else {
+        await useGetAllTrades(true)
+    }
+
+    if (pageId.value == "daily") {
+        useInitTab("daily") // Only for daily else was causing multiple fires in dashboard
+    }
+}
+</script>
+
+<template>
+    <!-- ============ LINE 1: DATE FILTERS ============ -->
+    <div id="step10" class="col-12 mb-3">
+        <div class="dailyCard">
+            <div>
+                <span v-if="!filtersOpen" v-on:click="filtersClick" class="pointerClass">Filters <i
+                        class="uil uil-angle-up"></i>
+                </span>
+                <span v-if="!filtersOpen" class="dashInfoTitle ms-3">
+                    <span v-show="filters[pageId].includes('accounts')">
+                        <span
+                            v-if="currentUser.hasOwnProperty('accounts') && currentUser.accounts.length == selectedAccounts.length">All
+                            accounts |</span>
+                        <span v-else>Selected accounts |</span>
+                    </span>
+
+                    <span v-show="filters[pageId].includes('periodRange')">
+                        {{ selectedPeriodRange.label }}
+                        <span v-show="selectedPeriodRange.value == 'custom'"> range |</span>
+                    </span>
+
+                    <span v-show="filters[pageId].includes('month')">
+                        {{ useMonthFormat(selectedMonth.start) }} |
+                    </span>
+
+                    <span v-show="filters[pageId].includes('grossNet')">
+                        {{ selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1) }} data |
+                    </span>
+
+                    <span v-show="filters[pageId].includes('positions')">
+                        <span v-if="positions.length == selectedPositions.length">All positions |</span>
+                        <span v-else>{{ selectedPositions.toString().charAt(0).toUpperCase() +
+                            selectedPositions.toString().slice(1) }} |</span>
+                    </span>
+
+                    <span v-show="filters[pageId].includes('timeFrame')">
+                        {{ selectedTimeFrame.charAt(0).toUpperCase() + selectedTimeFrame.slice(1) }} timeframe |
+                    </span>
+
+                    <span v-show="filters[pageId].includes('ratio')">
+                        {{ selectedRatio.toUpperCase() }} |
+                    </span>
+
+                    <span v-show="filters[pageId].includes('patterns')">
+                        <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">All
+                            patterns |</span>
+                        <span v-else>Selected patterns |</span>
+                    </span>
+
+                    <span v-show="filters[pageId].includes('mistakes')">
+                        <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">All
+                            mistakes <span v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
+                        <span v-else>Selected mistakes <span
+                                v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
+                    </span>
+
+                    <span v-show="filters[pageId].includes('plSatisfaction')">
+                        {{ selectedPlSatisfaction == 'satisfaction' ? 'Satisfaction' : "P&L" }} calendar
+                    </span>
+
+                </span>
+
+                <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
+                </span>
+            </div>
+
+            <div v-show="filtersOpen" class="row text-center align-items-center">
+                <!-- Date : periode -->
+                <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'dashboard'">
+                    <select v-on:input="inputDateRange($event.target.value)" class="form-select">
+                        <option v-for="item in periodRange" :key="item.value" :value="item.value"
+                            :selected="item.value == selectedPeriodRange.value">{{ item.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Date : calendar -->
+                <div class="col-12 col-lg-8 mt-1 mt-lg-0 mb-1" v-show="pageId == 'dashboard'">
+                    <div class="row">
+                        <div class="col-5">
+                            <input type="date" class="form-control" :value="useDateCalFormat(selectedDateRange.start)"
+                                :selected="selectedDateRange.start"
+                                v-on:input="inputDateRangeCal('start', $event.target.value)" />
+                        </div>
+                        <div class="col-2">
+                            <i class="uil uil-angle-right-b"></i>
+                        </div>
+                        <div class="col-5">
+                            <input type="date" class="form-control" :value="useDateCalFormat(selectedDateRange.end)"
+                                :selected="selectedDateRange.end"
+                                v-on:input="inputDateRangeCal('end', $event.target.value)">
+                            <div class="row"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accounts -->
+                <div class="col-6 col-lg-4 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Accounts <span class="dashInfoTitle">({{ selectedAccounts.length
+                        }})</span></button>
+                    <ul class="dropdown-menu dropdownCheck">
+                        <div v-for="item in currentUser.accounts" :key="item.value" class="form-check">
+                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedAccounts">
+                            {{ item.label }}
+                        </div>
+                    </ul>
+                </div>
+
+                <!-- Month -->
+                <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'daily' || pageId == 'calendar'">
+                    <input type="month" class="form-control" :value="useDateCalFormatMonth(selectedMonth.start)"
+                        :selected="selectedMonth.start" v-on:input="inputMonth($event.target.value)">
+                </div>
+
+                <!-- Gross/Net -->
+                <div class="col-6 col-lg-2" v-show="pageId != 'screenshots'">
+                    <select v-on:input="selectedGrossNet = $event.target.value" class="form-select">
+                        <option v-for="item in grossNet" :key="item.value" :value="item.value"
+                            :selected="item.value == selectedGrossNet">{{ item.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Positions -->
+                <div class="col-6 col-lg-2 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Positions <span class="dashInfoTitle">({{ selectedPositions.length
+                        }})</span></button>
+                    <ul class="dropdown-menu dropdownCheck">
+                        <div v-for="item in positions" :key="item.value" class="form-check">
+                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedPositions">
+                            {{ item.label }}
+                        </div>
+                    </ul>
+                </div>
+
+                <!-- Timeframe -->
+                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                    <select v-on:input="selectedTimeFrame = $event.target.value" class="form-select">
+                        <option v-for="item in timeFrames" :key="item.value" :value="item.value"
+                            :selected="item.value == selectedTimeFrame">{{ item.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Ratio -->
+                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                    <select v-on:input="selectedRatio = $event.target.value" class="form-select">
+                        <option v-for="item in ratios" :key="item.value" :value="item.value"
+                            :selected="item.value == selectedRatio">{{ item.label }}</option>
+                    </select>
+                </div>
+
+                <!-- Patterns -->
+                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
+                    v-show="pageId != 'calendar'">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Patterns <span class="dashInfoTitle">({{ selectedPatterns.length
+                        }})</span></button>
+                    <ul class="dropdown-menu dropdownCheck">
+                        <input class="form-check-input" type="checkbox" value="void"
+                            v-model="selectedPatterns">&nbsp;&nbsp;No Tag
+                        <hr>
+                        <div v-for="item in patterns.filter(obj => obj.active == true)" :key="item.objectId"
+                            class="form-check">
+                            <input class="form-check-input" type="checkbox" :value="item.objectId"
+                                v-model="selectedPatterns">
+                            {{ item.name }}
+                        </div>
+                    </ul>
+                </div>
+
+                <!-- Mistakes -->
+                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
+                    v-show="pageId != 'calendar'">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Mistakes <span class="dashInfoTitle">({{ selectedMistakes.length
+                        }})</span></button>
+                    <ul class="dropdown-menu dropdownCheck">
+                        <input class="form-check-input" type="checkbox" value="void"
+                            v-model="selectedMistakes">&nbsp;&nbsp;No Tag
+                        <hr>
+                        <div v-for="item in mistakes.filter(obj => obj.active == true)" :key="item.objectId"
+                            class="form-check">
+                            <input class="form-check-input" type="checkbox" :value="item.objectId"
+                                v-model="selectedMistakes">
+                            {{ item.name }}
+                        </div>
+                    </ul>
+                </div>
+
+                <!-- P&L / Satisfaction  -->
+                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6']" v-show="pageId == 'calendar' || pageId == 'daily'">
+                    <select v-on:input="tempSelectedPlSatisfaction = $event.target.value" class="form-select">
+                        <option v-for="item in plSatisfaction" :key="item.value" :value="item.value"
+                            :selected="item.value == selectedPlSatisfaction">{{ item.label }}</option>
+                    </select>
+                </div>
+
+                <div class="col-12 text-center">
+                    <button class="btn btn-success btn-sm mt-2" v-on:click="saveFilter">Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

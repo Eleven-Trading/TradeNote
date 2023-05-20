@@ -1,0 +1,201 @@
+<script setup>
+import { useInitIndexedDB, useScreenType } from '../utils/utils.js'
+import { useInitShepherd } from "../utils/utils.js";
+import { useRefreshTrades } from "../utils/trades.js"
+import { useCheckCurrentUser } from '../utils/utils.js';
+import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion } from "../stores/globals"
+
+const pages = [{
+    id: "registerSignup",
+    name: "Login",
+    icon: "uil uil-apps"
+},
+{
+    id: "dashboard",
+    name: "Dashboard",
+    icon: "uil uil-apps"
+},
+{
+    id: "daily",
+    name: "Daily",
+    icon: "uil uil-signal-alt-3"
+},
+{
+    id: "calendar",
+    name: "Calendar",
+    icon: "uil uil-calendar-alt"
+},
+{
+    id: "screenshots",
+    name: "Screenshots",
+    icon: "uil uil-image-v"
+},
+{
+    id: "videos",
+    name: "Videos",
+    icon: "uil uil-clapper-board"
+},
+{
+    id: "diary",
+    name: "Diary",
+    icon: "uil uil-diary"
+},
+{
+    id: "notes",
+    name: "Notes",
+    icon: "uil uil-diary"
+},
+{
+    id: "playbook",
+    name: "Playbook",
+    icon: "uil uil-compass"
+},
+{
+    id: "addPlaybook",
+    name: "Add Playbook",
+    icon: "uil uil-compass"
+},
+{
+    id: "addTrades",
+    name: "Add Trades",
+    icon: "uil uil-plus-circle"
+},
+{
+    id: "addEntry",
+    name: "Add Entry",
+    icon: "uil uil-signin"
+},
+{
+    id: "addDiary",
+    name: "Add Diary",
+    icon: "uil uil-plus-circle"
+},
+{
+    id: "settings",
+    name: "Settings",
+    icon: "uil uil-sliders-v-alt"
+},
+{
+    id: "addScreenshot",
+    name: "Add Screenshot",
+    icon: "uil uil-image-v"
+},
+{
+    id: "entries",
+    name: "Entries",
+    icon: "uil uil-signin"
+},
+{
+    id: "forecast",
+    name: "Forecast",
+    icon: "uil uil-cloud-sun"
+}
+]
+//console.log(" user "+useCheckCurrentUser())
+
+function logout() {
+    Parse.User.logOut().then(async() => {
+        Parse.User.current(); // this will now be null
+        localStorage.clear()
+
+        indexedOpenRequest.value = window.indexedDB.open("tradeNote", indexedDBVersion.value);
+
+        indexedOpenRequest.value.onsuccess = () => {
+
+            // Clear all the data from the object store
+            clearData();
+        };
+        const clearData = () => {
+            // open a read/write db transaction, ready for clearing the data
+            const transaction = indexedDB.value.transaction(["trades"], "readwrite");
+
+            // report on the success of the transaction completing, when everything is done
+            transaction.oncomplete = (event) => {
+                console.log("Transaction completed")
+            };
+
+            transaction.onerror = (event) => {
+                console.log("Transaction not opened due to error: " + transaction.error)
+            };
+
+            // create an object store on the transaction
+            const objectStore = transaction.objectStore("trades");
+
+            // Make a request to clear all the data out of the object store
+            const objectStoreRequest = objectStore.clear();
+
+            objectStoreRequest.onsuccess = (event) => {
+                // report the success of our request
+                console.log("Data clear successful")
+            }
+        }
+        console.log("Logging out")
+        window.location.replace("/");
+    });
+}
+
+
+</script>
+
+<template>
+    <div class="justify-content-between navbar">
+        <div class="col-6">
+            <span v-if="useScreenType() == 'mobile'">
+                <a v-on:click="toggleMobileMenu">
+                    <i v-bind:class="pages.filter(item => item.id == pageId)[0].icon" class="me-1"></i>{{
+                        pages.filter(item => item.id == pageId)[0].name }}</a>
+            </span>
+            <span v-else>
+                <i v-bind:class="pages.filter(item => item.id == pageId)[0].icon" class="me-1"></i>{{ pages.filter(item=>item.id== pageId)[0].name }}</span>
+        </div>
+        <div class="col-6 ms-auto text-end">
+            <div class="row">
+                <div id="step11" class="col align-self-end">
+                    <button class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="uil uil-plus me-2"></i>Add</button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li>
+                            <a class="dropdown-item" href="addTrades">Trades</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="addDiary">Diary Entry</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="addScreenshot">Screenshot</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="addPlaybook">Playbook</a>
+                        </li>
+
+                    </ul>
+                </div>
+                <div id="step12" class="col-1 me-3" v-bind:key="renderProfile">
+                    <a id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span v-if="currentUser.hasOwnProperty('avatar')"><img class="profileImg"
+                                v-bind:src="currentUser.avatar.url" /></span>
+                        <span v-else><img class="profileImg" src="../assets/astronaut.png" /></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li>
+                            <a class="dropdown-item" v-on:click="useInitShepherd()">
+                                <i class="uil uil-question-circle me-2"></i>Tutorial</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" v-on:click="useRefreshTrades()">
+                                <i class="uil uil-sync me-2"></i>Refresh Data</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="settings">
+                                <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" v-on:click="logout()">
+                                <i class="uil uil-signout me-2"></i>Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

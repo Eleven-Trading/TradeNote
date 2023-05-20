@@ -1,0 +1,1521 @@
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, tradeTimeZone, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet } from "../stores/globals"
+import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat } from "./utils"
+
+const cssColor87 = "rgba(255, 255, 255, 0.87)"
+const cssColor60 = "rgba(255, 255, 255, 0.60)"
+const cssColor38 = "rgba(255, 255, 255, 0.38)"
+const blackbg0 = "hsl(0, 0%, 0%)"
+const blackbg5 = "hsl(0, 0%, 5%)"
+const blackbg7 = "hsl(0, 0%, 7%)"
+const white87 = "hsla(0, 0%, 100%, 0.87)"
+const white60 = "hsla(0, 0%, 100%, 0.6)"
+const white38 = "hsla(0, 0%, 100%, 0.38)"
+const maxChartValues = 20
+
+
+export function useECharts(param) {
+    //console.log(" -> eCharts " + param)
+
+    for (let index = 1; index <= 1; index++) {
+        var chartId = 'pieChart' + index
+        //console.log("chartId " + chartId)
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init" || "pieChart") {
+            //console.log("totals "+JSON.stringify(totals))
+            var probWins = (totals[amountCase.value + 'WinsCount'] / totals.trades)
+            var probLoss = (totals[amountCase.value + 'LossCount'] / totals.trades)
+            usePieChart(chartId, probWins, probLoss)
+        }
+    }
+
+    for (let index = 1; index <= 1; index++) {
+        var chartId = 'lineChart' + index
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init") {
+            useLineChart(chartId)
+        }
+    }
+
+    for (let index = 1; index <= 1; index++) {
+        var chartId = 'lineBarChart' + index
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init" || param == "lineBarChart") {
+            useLineBarChart(chartId)
+        }
+    }
+
+    for (let index = 1; index <= 2; index++) {
+        var chartId = 'barChart' + index
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init" || param == "barChart") {
+            useBarChart(chartId)
+        }
+    }
+
+    let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 15] // This way.value here because I took out some charts
+    indexes.forEach(index => {
+        var chartId = 'barChartNegative' + index
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init" || param == "barChartNegative") {
+            useBarChartNegative(chartId)
+        }
+    });
+
+    for (let index = 1; index <= 2; index++) {
+        var chartId = 'scatterChart' + index
+        if (param == "clear") {
+            echarts.init(document.getElementById(chartId)).clear()
+        }
+        if (param == "init" || param == "scatterChart") {
+            useScatterChart(chartId)
+        }
+    }
+
+    /*for (let index = 1; index <= 1; index++) {
+        echarts.init(document.getElementById('boxPlotChart' + index)).clear()
+    }*/
+}
+
+export function useLineChart(param) { //chartID, chartDataGross, chartDataNet, chartCategories
+    //console.log("  --> " + param)
+    return new Promise((resolve, reject) => {
+        var myChart = echarts.init(document.getElementById(param));
+        var chartData = []
+        var chartXAxis = []
+        var wins = 0
+        var loss = 0
+        var profitFactor = 0
+        var weekOfYear = null
+        var monthOfYear = null
+        var i = 1
+
+        let objectY = JSON.parse(JSON.stringify(totalsByDate))
+        const keys = Object.keys(objectY);
+
+        for (const key of keys) {
+            var element = objectY[key]
+
+            var pushingChartData = () => {
+                chartData.push(profitFactor)
+            }
+
+            if (selectedTimeFrame.value == "daily") {
+                wins = element[amountCase.value + 'Wins']
+                loss = -element[amountCase.value + 'Loss']
+                //console.log("wins " + wins + " and loss " + loss)
+                if (loss != 0) {
+                    profitFactor = wins / loss
+                }
+                chartXAxis.push(useChartFormat(key))
+                pushingChartData()
+            }
+
+            if (selectedTimeFrame.value == "weekly") {
+                //First value
+                if (weekOfYear == null) {
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                    chartXAxis.push(useChartFormat(key))
+
+                } else if (weekOfYear == dayjs.unix(key).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time.value
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                }
+                if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    if (loss != 0) {
+                        profitFactor = wins / loss
+                    }
+                    pushingChartData()
+
+                    //New week, new proceeds
+                    wins = 0
+                    loss = 0
+                    profitFactor = 0
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    if (loss != 0) {
+                        profitFactor = wins / loss
+                    }
+                    pushingChartData()
+                    //console.log("Last element")
+                }
+            }
+
+            if (selectedTimeFrame.value == "monthly") {
+                //First value
+                if (monthOfYear == null) {
+                    monthOfYear = dayjs.unix(key).month()
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                    chartXAxis.push(useChartFormat(key))
+
+                }
+                //Same month. Let's continue adding proceeds
+                else if (monthOfYear == dayjs.unix(key).month()) {
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                }
+                if (dayjs.unix(key).month() != monthOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    profitFactor = wins / loss
+                    pushingChartData()
+
+                    //New month, new proceeds
+                    wins = 0
+                    loss = 0
+                    profitFactor = 0
+                    monthOfYear = dayjs.unix(key).month()
+                    wins += element[amountCase.value + 'Wins']
+                    loss += -element[amountCase.value + 'Loss']
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('month') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    profitFactor = wins / loss
+                    pushingChartData()
+                }
+            }
+            i++
+
+            //console.log("element "+JSON.stringify(element))
+        }
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                formatter: (params) => {
+                    return params[0].value.toFixed(2)
+
+                }
+            },
+            axisLabel: {
+                interval: 1000,
+            },
+            xAxis: {
+                type: 'category',
+                data: chartXAxis,
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: {
+                    lineStyle: {
+                        type: 'solid',
+                        color: cssColor38
+                    }
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        return params.toFixed(2)
+                    }
+                },
+            },
+            series: [{
+                data: chartData,
+                type: 'line',
+                smooth: true,
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#01B4FF'
+                    }
+                },
+            }]
+        }
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useDoubleLineChart(param1, param2, param3, param4) { //chartID, chartDataGross, chartDataNet, chartCategories
+    //console.log("param1 "+param1+", param2 "+param2+", param3 "+param3+", param4 "+param4)
+    return new Promise((resolve, reject) => {
+        //console.log("param1 "+param1)
+        var myChart = echarts.init(document.getElementById(param1));
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                formatter: (params) => {
+                    var gross
+                    var net
+                    var time
+                    params.forEach((element, index) => {
+                        //console.log('element ' + JSON.stringify(element))
+                        if (index == 0) {
+                            gross = element.value.toFixed(0) + "$"
+                            time = element.name
+                        }
+                        if (index == 1) {
+                            net = element.value.toFixed(0) + "$"
+                        }
+                    });
+                    //console.log("params "+JSON.stringify(params[0][0]))
+                    //console.log('time format ' + typeof time + "time " + time)
+                    return time + "<br>Gross: " + gross + "<br>Net: " + net
+
+                }
+            },
+            axisLabel: {
+
+            },
+            xAxis: {
+                data: param4,
+                name: '0',
+                nameLocation: 'start',
+            },
+            yAxis: {
+                type: 'value',
+                /*scale: true,
+                max: function(value) {
+                    return value.max;
+                },
+                min: function(value) {
+                    return value.min;
+                },*/
+                axisLabel: {
+                    show: false,
+                    formatter: (params) => {
+                        return params.toFixed(0) + "$"
+                    }
+                },
+                splitLine: {
+                    show: false
+                },
+            },
+            series: [{
+                data: param2,
+                showSymbol: false, //removes dot on line
+                type: 'line',
+                smooth: true,
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#01B4FF'
+                    }
+                },
+            },
+            {
+                data: param3,
+                showSymbol: false, //removes dot on line
+                type: 'line',
+                smooth: true,
+                itemStyle: {
+                    color: '#9AE3FD',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#9AE3FD'
+                    }
+                },
+            }
+            ],
+        }
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useLineBarChart(param) {
+    //console.log("  --> " + param)
+    return new Promise((resolve, reject) => {
+        var myChart = echarts.init(document.getElementById(param));
+        var chartData = []
+        var chartBarData = []
+        var chartXAxis = []
+        var sumProceeds = 0
+        var weekOfYear = null
+        var monthOfYear = null
+        var i = 1
+        
+        let objectY = JSON.parse(JSON.stringify(totalsByDate))
+        const keys = Object.keys(objectY);
+
+        for (const key of keys) {
+            var element = objectY[key]
+            var proceeds = 0
+
+            var pushingChartBarData = () => {
+                if (keys.length <= maxChartValues) {
+                    var temp = {}
+                    temp.value = proceeds
+                    temp.label = {}
+                    temp.label.show = true
+                    if (proceeds >= 0) {
+                        temp.label.position = 'top'
+                    } else {
+                        temp.label.position = 'bottom'
+                    }
+                    temp.label.formatter = (params) => {
+                        return useThousandCurrencyFormat(params.value)
+                    }
+                    chartBarData.push(temp)
+                } else {
+                    chartBarData.push(proceeds)
+                }
+            }
+
+            var pushingChartData = () => {
+                if (chartData.length == 0) {
+                    chartData.push(proceeds)
+                } else {
+                    chartData.push(chartData.slice(-1).pop() + proceeds)
+                }
+            }
+
+            if (selectedTimeFrame.value == "daily") {
+                proceeds = element[amountCase.value + 'Proceeds']
+                chartXAxis.push(useChartFormat(key))
+                pushingChartBarData()
+                pushingChartData()
+            }
+
+            if (selectedTimeFrame.value == "weekly") {
+                //First value
+                if (weekOfYear == null) {
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                    //console.log("First run. Week of year: "+weekOfYear+" and month of year "+ dayjs.unix(key).month()+" and start of week "+dayjs.unix(key).startOf('isoWeek')+" and month of start of week "+dayjs.unix(dayjs.unix(key).startOf('isoWeek')/1000).month())
+                    //If start of week is another month
+                    /*if (dayjs.unix(key).month() != dayjs.unix(dayjs.unix(key).startOf('isoWeek') / 1000).month()) {
+                        chartXAxis.push(useChartFormat(key))
+                    } else {
+                        chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                    }*/
+                    //First I did the logic above. But I realized that it makes difficult to compare. Expl: 1 month you will have from 1/09, then 06/09. But then, last two weeks, the 06/09 value will not be the same, because two weeks back is actually starting at 07/09.So, for the first, we always push the key
+                    chartXAxis.push(useChartFormat(key))
+
+                } else if (weekOfYear == dayjs.unix(key).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time.value
+                    //console.log("Same week. Week of year: " + weekOfYear)
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                }
+                if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    proceeds = sumProceeds
+                    pushingChartBarData()
+                    pushingChartData()
+
+                    //New week, new proceeds
+                    sumProceeds = 0
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(key).startOf('isoWeek'))
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    proceeds = sumProceeds
+                    pushingChartBarData()
+                    pushingChartData()
+                    //console.log("Last element")
+                }
+            }
+
+            if (selectedTimeFrame.value == "monthly") {
+                //First value
+                if (monthOfYear == null) {
+                    monthOfYear = dayjs.unix(key).month()
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                    chartXAxis.push(useChartFormat(key))
+
+                }
+                //Same month. Let's continue adding proceeds
+                else if (monthOfYear == dayjs.unix(key).month()) {
+                    //console.log("Same week. Week of year: " + monthOfYear)
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                }
+                if (dayjs.unix(key).month() != monthOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    proceeds = sumProceeds
+                    pushingChartBarData()
+                    pushingChartData()
+
+                    //New month, new proceeds
+                    sumProceeds = 0
+                    monthOfYear = dayjs.unix(key).month()
+                    //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(key).startOf('month'))
+                    sumProceeds += element[amountCase.value + 'Proceeds']
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('month') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    proceeds = sumProceeds
+                    pushingChartBarData()
+                    pushingChartData()
+                    sumProceeds = 0
+                    //console.log("Last element")
+                }
+            }
+            i++
+
+            //console.log("element "+JSON.stringify(element))
+        }
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                formatter: (params) => {
+                    var proceeds
+                    var cumulProceeds
+                    var date
+                    params.forEach((element, index) => {
+                        if (index == 0) {
+                            cumulProceeds = useThousandCurrencyFormat(element.value)
+                            date = element.name
+                        }
+                        if (index == 1) {
+                            proceeds = useThousandCurrencyFormat(element.value)
+                        }
+                    });
+                    //console.log("params "+JSON.stringify(params[0][0]))
+                    return date + "<br>Proceeds: " + proceeds + "<br>Cumulated: " + cumulProceeds
+
+                }
+            },
+            axisLabel: {
+                interval: 1000,
+            },
+            xAxis: {
+                type: 'category',
+                data: chartXAxis,
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: {
+                    lineStyle: {
+                        type: 'solid',
+                        color: cssColor38
+                    }
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        return useThousandCurrencyFormat(params)
+                    }
+                },
+            },
+            series: [{
+                data: chartData,
+                type: 'line',
+                smooth: true,
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#01B4FF'
+                    }
+                },
+            },
+            {
+                data: chartBarData,
+                type: 'bar',
+                smooth: true,
+                label: {
+                    color: cssColor87
+                },
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#01B4FF'
+                    }
+                },
+            }
+            ]
+        }
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function usePieChart(param1, param2, param3) { //chart ID, winShare, lossShare, page
+    return new Promise((resolve, reject) => {
+        //console.log("  --> " + param1)
+        //console.log("para 2 " + param2 + " and 3 " + param3)
+        var myChart = echarts.init(document.getElementById(param1));
+        var winShare = param2
+        var lossShare = param3
+        const option = {
+            series: [{
+                type: 'pie',
+                radius: ['70%', '100%'],
+                avoidLabelOverlap: false,
+                data: [
+                    { value: winShare, name: "Win Share" },
+                    { value: lossShare, name: "Loss Share" },
+                ],
+                itemStyle: {
+                    color: (params) => {
+                        if (params.dataIndex == 0) {
+                            return '#00CA73'
+                        }
+                        if (params.dataIndex == 1) {
+                            return '#f2f2f4'
+                        }
+                    }
+                },
+                label: {
+                    show: true,
+                    position: 'center',
+                    color: cssColor87,
+                    formatter: (params) => {
+                        if (pageId.value == "dashboard") {
+                            return useOneDecPercentFormat(winShare) + "\nWin rate"
+                        }
+                        if (pageId.value == "daily") {
+                            return useOneDecPercentFormat(winShare)
+                        }
+                    }
+                }
+            },
+
+            ]
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useBarChart(param1) {
+    //console.log("  --> " + param1)
+    return new Promise((resolve, reject) => {
+        var chartData = []
+        var chartXAxis = []
+        var sumWinsCount = 0
+        var sumLossCount = 0
+        var sumTrades = 0
+        var sumWins = 0
+        var sumLoss = 0
+        var sumSharePLWins = 0
+        var sumSharePLLoss = 0
+        var sumWinsCount = 0
+        var sumLossCount = 0
+
+        var probWins
+        var probLoss
+        var avgWins
+        var avgLoss
+        var avgSharePLWins
+        var avgSharePLLoss
+        var appt
+        var appspt
+
+        var weekOfYear = null
+        var monthOfYear = null
+        var i = 1
+
+        //console.log("totals " + JSON.stringify(totalsByDate))
+        let objectY = JSON.parse(JSON.stringify(totalsByDate))
+        const keys = Object.keys(objectY);
+        for (const key of keys) {
+            var element = objectY[key]
+            var ratio
+            var pushingChartData = () => {
+                if (selectedRatio.value == "appt") {
+                    ratio = appt
+                } else {
+                    ratio = appspt
+                }
+
+                if (param1 == "barChart1") {
+                    if (keys.length <= maxChartValues) {
+                        var temp = {}
+                        temp.value = ratio
+                        temp.label = {}
+                        temp.label.show = true
+                        if (ratio >= 0) {
+                            temp.label.position = 'top'
+                        } else {
+                            temp.label.position = 'bottom'
+                        }
+                        temp.label.formatter = (params) => {
+                            return useTwoDecCurrencyFormat(params.value)
+                        }
+                        chartData.push(temp)
+                    } else {
+                        chartData.push(ratio)
+                    }
+                }
+                if (param1 == "barChart2") {
+                    if (keys.length <= maxChartValues) {
+                        var temp = {}
+                        temp.value = probWins
+                        temp.label = {}
+                        temp.label.show = true
+                        temp.label.position = 'top'
+                        temp.label.formatter = (params) => {
+                            return useOneDecPercentFormat(params.value)
+                        }
+                        chartData.push(temp)
+                    } else {
+                        chartData.push(probWins)
+                    }
+
+                }
+            }
+
+            var sumElements = () => {
+                sumWinsCount += element[amountCase.value + 'WinsCount']
+                sumTrades += element.trades
+                sumLossCount += element[amountCase.value + 'LossCount']
+                sumWins += element[amountCase.value + 'Wins']
+                sumLoss += element[amountCase.value + 'Loss']
+                sumSharePLWins += element[amountCase.value + 'SharePLWins']
+                sumSharePLLoss += element[amountCase.value + 'SharePLLoss']
+            }
+
+            var createAP = () => {
+                probWins = (sumWinsCount / sumTrades)
+                probLoss = (sumLossCount / sumTrades)
+
+                avgWins = sumWinsCount == 0 ? 0 : (sumWins / sumWinsCount)
+                avgLoss = sumLossCount == 0 ? 0 : -(sumLoss / sumLossCount)
+
+                avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
+                avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
+
+                appt = (probWins * avgWins) - (probLoss * avgLoss)
+                appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+            }
+
+            if (selectedTimeFrame.value == "daily") {
+                var probWins = (element[amountCase.value + 'WinsCount'] / element.trades)
+                var probLoss = (element[amountCase.value + 'LossCount'] / element.trades)
+
+                var avgWins = element[amountCase.value + 'WinsCount'] == 0 ? 0 : (element[amountCase.value + 'Wins'] / element[amountCase.value + 'WinsCount'])
+                var avgLoss = element[amountCase.value + 'LossCount'] == 0 ? 0 : -(element[amountCase.value + 'Loss'] / element[amountCase.value + 'LossCount'])
+
+                //element[amountCase.value + 'SharePLWins'] is from totals (by date) so it's a sum of share PL wins => the average is divided by the total number of wins
+                var avgSharePLWins = element[amountCase.value + 'WinsCount'] == 0 ? 0 : (element[amountCase.value + 'SharePLWins'] / element[amountCase.value + 'WinsCount'])
+                var avgSharePLLoss = element[amountCase.value + 'LossCount'] == 0 ? 0 : -(element[amountCase.value + 'SharePLLoss'] / element[amountCase.value + 'LossCount'])
+
+                appt = (probWins * avgWins) - (probLoss * avgLoss)
+                appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+
+                chartXAxis.push(useChartFormat(key))
+                pushingChartData()
+            }
+
+
+            if (selectedTimeFrame.value == "weekly") {
+                //First value
+                if (weekOfYear == null) {
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    sumElements()
+                    chartXAxis.push(useChartFormat(key))
+
+                } else if (weekOfYear == dayjs.unix(key).isoWeek()) {
+                    sumElements()
+                }
+                if (dayjs.unix(key).isoWeek() != weekOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    createAP()
+                    pushingChartData()
+
+                    //New week, new proceeds
+                    sumWinsCount = 0
+                    sumLossCount = 0
+                    sumTrades = 0
+                    sumWins = 0
+                    sumLoss = 0
+                    sumSharePLWins = 0
+                    sumSharePLLoss = 0
+                    sumWinsCount = 0
+                    sumLossCount = 0
+
+                    weekOfYear = dayjs.unix(key).isoWeek()
+                    //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(key).startOf('isoWeek'))
+                    sumElements()
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    createAP()
+                    pushingChartData()
+                    //console.log("Last element")
+                }
+            }
+
+            if (selectedTimeFrame.value == "monthly") {
+                //First value
+                if (monthOfYear == null) {
+                    monthOfYear = dayjs.unix(key).month()
+                    sumElements()
+                    chartXAxis.push(useChartFormat(key))
+
+                }
+                //Same month. Let's continue adding proceeds
+                else if (monthOfYear == dayjs.unix(key).month()) {
+                    sumElements()
+                }
+                if (dayjs.unix(key).month() != monthOfYear) {
+                    //When week changes, we create values proceeds and push both chart datas
+                    createAP()
+                    pushingChartData()
+
+                    //New week, new proceeds
+                    sumWinsCount = 0
+                    sumLossCount = 0
+                    sumTrades = 0
+                    sumWins = 0
+                    sumLoss = 0
+                    sumSharePLWins = 0
+                    sumSharePLLoss = 0
+                    sumWinsCount = 0
+                    sumLossCount = 0
+
+                    monthOfYear = dayjs.unix(key).month()
+                    //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(key).startOf('month'))
+                    sumElements()
+                    chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('month') / 1000))
+                }
+                if (i == keys.length) {
+                    //Last key. We wrap up.
+                    createAP()
+                    pushingChartData()
+                }
+            }
+            //console.log("proceeds " + proceeds)
+            i++
+
+
+        }
+        var myChart = echarts.init(document.getElementById(param1));
+        const option = {
+            xAxis: {
+                type: 'category',
+                data: chartXAxis
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: {
+                    lineStyle: {
+                        type: 'solid',
+                        color: cssColor38
+                    }
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        if (param1 == "barChart2") {
+                            return useOneDecPercentFormat(params)
+                        }
+                        if (param1 == "barChart1") {
+                            return useThousandCurrencyFormat(params)
+                        }
+                    }
+                },
+            },
+            series: [{
+                data: chartData,
+                type: 'bar',
+                label: {
+                    color: cssColor87
+                },
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: '#01B4FF'
+                    }
+                },
+            }],
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                formatter: (params) => {
+                    if (param1 == "barChart2") {
+                        return params[0].name + ": " + useOneDecPercentFormat(params[0].value)
+                    }
+                    if (param1 == "barChart1") {
+                        return params[0].name + ": " + useTwoDecCurrencyFormat(params[0].value)
+                    }
+                }
+            },
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useBarChartNegative(param1) {
+    //console.log("  --> " + param1)
+    return new Promise((resolve, reject) => {
+        var yAxis = []
+        var series = []
+        if (param1 == "barChartNegative1") {
+            var keyObject = groups.timeframe
+        }
+        if (param1 == "barChartNegative2") {
+            var keyObject = groups.duration
+        }
+        if (param1 == "barChartNegative3") {
+            var keyObject = groups.day
+        }
+        if (param1 == "barChartNegative4") {
+            var keyObject = groups.trades
+        }
+        if (param1 == "barChartNegative7") {
+            var keyObject = groups.executions
+        }
+        if (param1 == "barChartNegative10") {
+            const toRemove = ['null', 'undefined'];
+            var keyObject = _.omit(groups.patterns, toRemove)
+            //console.log("filtered "+JSON.stringify(keyObject))
+        }
+        if (param1 == "barChartNegative11") {
+            const toRemove = ['null', 'undefined'];
+            var keyObject = _.omit(groups.patternTypes, toRemove)
+            //console.log("filtered "+JSON.stringify(filteredObj))
+        }
+        if (param1 == "barChartNegative15") {
+            const toRemove = ['null', 'undefined'];
+            var keyObject = _.omit(groups.mistakes, toRemove)
+            //console.log("filtered "+JSON.stringify(filteredObj))
+        }
+
+        if (param1 == "barChartNegative12") {
+            var keyObject = groups.shareFloat
+        }
+
+        if (param1 == "barChartNegative13") {
+            var keyObject = groups.entryPrice
+        }
+
+        if (param1 == "barChartNegative14") {
+            var keyObject = groups.mktCap
+        }
+
+        if (param1 == "barChartNegative16") {
+            var keyObject = groups.symbols
+        }
+
+        const keys = Object.keys(keyObject);
+
+        //console.log("object " + JSON.stringify(keyObject))
+        //console.log("keys " + JSON.stringify(keys))
+        for (const key of keys) {
+            //console.log("key " + JSON.stringify(key))
+            let pushRatio = true
+            if (param1 == "barChartNegative10") {
+                let pattern = patterns.find(item => item.objectId === key)
+                //console.log("patterns " + JSON.stringify(patterns))
+                if (pattern) {
+                    yAxis.push(pattern.name) // unshift because I'm only able to sort timeframe ascending
+                } else {
+                    pushRatio = false //this because.value I manage to remove pattern name from list, but the ratio is still calculated. So I need to mark it here
+                }
+                //console.log("yaxis "+JSON.stringify(yAxis))
+
+            } else if (param1 == "barChartNegative11") {
+                let pattern = patterns.find(item => item.type === key)
+                //console.log("patteern "+pattern)
+                yAxis.push(pattern.type) // unshift because I'm only able to sort timeframe ascending
+
+            } else if (param1 == "barChartNegative15") {
+                var mistake = mistakes.find(item => item.objectId === key)
+                //console.log("mistakes "+mistakes)
+                if (mistake) {
+                    yAxis.push(mistake.name) // unshift because I'm only able to sort timeframe ascending
+                } else {
+                    pushRatio = false //not sure this is.value needed for mistake
+                }
+
+            } else {
+                yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
+            }
+            //console.log("yaxis "+JSON.stringify(yAxis))
+
+            var sumWinsCount = 0
+            var sumLossCount = 0
+            var sumWins = 0
+            var sumLoss = 0
+            var sumSharePLWins = 0
+            var sumSharePLLoss = 0
+            var trades = 0
+            var profitFactor = 0
+            var numElements = keyObject[key].length
+            //console.log("num elemnets " + numElements)
+            keyObject[key].forEach((element, index) => {
+                //console.log("index " + index)
+                //console.log("element " + JSON.stringify(element))
+                sumWinsCount += element[amountCase.value + 'WinsCount']
+                sumLossCount += element[amountCase.value + 'LossCount']
+                sumWins += element[amountCase.value + 'Wins']
+                sumLoss += element[amountCase.value + 'Loss']
+                sumSharePLWins += element[amountCase.value + 'SharePLWins']
+                sumSharePLLoss += element[amountCase.value + 'SharePLLoss']
+
+                if (param1 == "barChartNegative4") {
+                    trades += element.trades
+                } else {
+                    trades += element.tradesCount
+                }
+                //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
+                if (numElements == (index + 1)) {
+                    if (trades > 0) {
+                        var probWins = (sumWinsCount / trades)
+                        var probLoss = (sumLossCount / trades)
+                    } else {
+                        var probWins = 0
+                        var probLoss = 0
+                    }
+
+                    if (sumWinsCount > 0) {
+                        var avgWins = (sumWins / sumWinsCount)
+                    } else {
+                        var avgWins = 0
+                    }
+
+                    if (sumLossCount > 0) {
+                        var avgLoss = -(sumLoss / sumLossCount)
+                    } else {
+                        var avgLoss = 0
+                    }
+
+                    var avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
+                    var avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
+
+                    var appt = (probWins * avgWins) - (probLoss * avgLoss)
+                    var appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+
+                    sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
+                    //sumLoss > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = "Infinity"
+
+                    var ratio
+                    if (selectedRatio.value == "appt") {
+                        ratio = appt
+                    }
+                    if (selectedRatio.value == "appspt") {
+                        ratio = appspt
+                    }
+                    if (selectedRatio.value == "profitFactor") {
+                        ratio = profitFactor
+                    }
+
+                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16") {
+                        series.unshift(ratio)
+                    }
+                    if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15") {
+                        if (pushRatio) series.push(ratio)
+                    }
+                }
+            })
+        }
+        if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16") {
+            //1) combine the arrays:
+            var list = [];
+            for (var j = 0; j < series.length; j++)
+                list.push({ 'ratio': series[j], 'name': yAxis[j] });
+            //2) sort:
+            list.sort(function (a, b) {
+                return ((a.ratio < b.ratio) ? -1 : ((a.ratio == b.ratio) ? 0 : 1));
+                //Sort could be modified to, for example, sort on the age 
+                // if the name is the same.
+            });
+            //3) separate them back out:
+            for (var k = 0; k < list.length; k++) {
+                series[k] = list[k].ratio;
+                yAxis[k] = list[k].name;
+            }
+
+
+            /*var indices = Array.from(series.keys()).sort((a, b) => series[a] > series[b])
+
+            var sortedAPPT = indices.map(i => series[i])
+            var sortedName = indices.map(i => yAxis[i])*/
+            //console.log("Sorted ratio " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
+
+        }
+
+        var myChart = echarts.init(document.getElementById(param1));
+        const option = {
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: (params) => {
+                    return useTwoDecCurrencyFormat(params[0].value)
+                }
+            },
+            grid: {
+                top: 80,
+                bottom: 30,
+                containLabel: true // or else the yaxis labels are cutout
+            },
+            xAxis: {
+                type: 'value',
+                position: 'bottom',
+                splitLine: {
+                    lineStyle: {
+                        type: 'solid',
+                        color: cssColor38
+                    }
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        if (selectedRatio.value == "profitFactor") {
+                            return params.toFixed(0)
+                        } else {
+                            return useThousandCurrencyFormat(params)
+                        }
+                    }
+                }
+            },
+            yAxis: {
+                type: 'category',
+                axisLine: { show: false },
+                axisLabel: { show: true },
+                axisTick: { show: false },
+                splitLine: { show: false },
+                data: yAxis,
+                axisLabel: {
+                    formatter: (params) => {
+                        if (param1 == "barChartNegative4") {
+                            if (params <= 30) {
+                                var range
+                                if (params <= 5) {
+                                    range = 5
+                                } else {
+                                    range = 4
+                                }
+                                return (params - range) + "-" + params
+                            }
+                            if (params > 30) {
+                                return "+30"
+                            }
+                        } else if (param1 == "barChartNegative2") { //Duration
+                            //console.log("params "+params)
+                            if (params < 1) {
+                                return "00:00-00:59"
+                            }
+                            if (params >= 1 && params < 2) {
+                                return "01:00-01:59"
+                            }
+                            if (params >= 2 && params < 5) {
+                                return "02:00-04:59"
+                            }
+                            if (params >= 5 && params < 10) {
+                                return "05:00-09:59"
+                            }
+                            if (params >= 10 && params < 20) {
+                                return "10:00-19:59"
+                            }
+                            if (params >= 20 && params < 40) {
+                                return "20:00-39:59"
+                            }
+                            if (params >= 40 && params < 60) {
+                                return "40:00-59:59"
+                            }
+                            if (params >= 60) {
+                                return "+60:00"
+                            }
+                        } else if (param1 == "barChartNegative3") { //Day of week
+                            //console.log(dayjs.updateLocale('en').weekdays[params])
+                            return dayjs.updateLocale('en').weekdays[params]
+                        } else if (param1 == "barChartNegative13") {
+                            //console.log("params "+params)
+                            if (params < 30) {
+                                if (params < 5) {
+                                    return "0-4.99$"
+                                } else {
+                                    return params + "-" + (Number(params) + 4.99).toFixed(2) + "$"
+                                }
+                            }
+                            if (params >= 30) {
+                                return "+30$"
+                            }
+                        } else if (param1 == "barChartNegative12") { //Float
+                            params = params / 1000000
+                            if (params < 20) {
+                                var range = 4.9
+                                if (params < 5) {
+                                    return "0-" + (params + range) + "M"
+                                } else {
+                                    return params + "M-" + (params + range) + "M"
+                                }
+                            }
+                            if (params >= 20 && params < 50) {
+                                var range = 9.9
+                                return params + "M-" + (params + range) + "M"
+                            }
+                            if (params >= 50) {
+                                return "+50M"
+                            }
+                        } else if (param1 == "barChartNegative14") {
+                            params = params / 1000000
+                            if (params <= 50) {
+                                return "Nano-cap (0-" + params + "M)"
+                            }
+                            if (params > 50 && params <= 300) {
+                                return "Micro-cap (50M-" + params + "M)"
+                            }
+                            if (params > 300 && params <= 2000) {
+                                return "Small-cap (300M-" + params / 1000 + "B)"
+                            }
+                            if (params > 2000 && params <= 10000) {
+                                return "Mid-cap (2B-" + params / 1000 + "B)"
+                            } else {
+                                return "Big-cap (+10B)"
+                            }
+                        } else {
+                            return params
+                        }
+                    }
+                },
+            },
+            series: [{
+                type: 'bar',
+                itemStyle: {
+                    color: '#35C4FE',
+                },
+                label: {
+                    show: true,
+                    position: "right",
+                    color: cssColor87,
+                    formatter: (params) => {
+                        if (selectedRatio.value == "profitFactor") {
+                            return params.value.toFixed(2)
+                        } else {
+                            return useTwoDecCurrencyFormat(params.value)
+                        }
+                    }
+                },
+                data: series
+            }]
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useBoxPlotChart() {
+    //console.log("  --> boxPlotChart")
+    return new Promise((resolve, reject) => {
+        //console.log("totals "+JSON.stringify(filteredTrades))
+        var myChart = echarts.init(document.getElementById('boxPlotChart1'));
+        var dataArray = []
+        var dateArray = []
+
+        var sumSharePL = 0
+        var sumTrades = 0
+        var weekOfYear = null
+        var monthOfYear = null
+        var i = 1
+        var numOfEl = 0
+        filteredTrades.forEach(element => {
+            var sharePL = 0
+            var tradesLength = element.trades.length
+            element.trades.forEach(element => {
+                if (selectedTimeFrame.value == "daily") {
+                    dataArray.push(element[amountCase.value + 'SharePL'])
+                    dateArray.push(useChartFormat(element.dateUnix))
+                }
+
+                if (selectedTimeFrame.value == "weekly") {
+                    //First value
+                    if (weekOfYear == null) {
+                        weekOfYear = dayjs.unix(element.dateUnix).isoWeek()
+                        sumSharePL += element[amountCase.value + 'SharePL']
+                        numOfEl += 1
+                        dateArray.push(useChartFormat(element.dateUnix))
+
+                    } else if (weekOfYear == dayjs.unix(element.dateUnix).isoWeek()) { //Must be "else if" or else calculates twice : once when null and then this time.value
+                        //console.log("Same week. Week of year: " + weekOfYear)
+                        sumSharePL += element[amountCase.value + 'SharePL']
+                        numOfEl += 1
+                    }
+                    if (dayjs.unix(element.dateUnix).isoWeek() != weekOfYear) {
+                        //When week changes, we create values proceeds and push both chart datas
+                        dataArray.push(sumSharePL / numOfEl)
+
+                        //New week, new proceeds
+                        sumSharePL = 0
+                        numOfEl = 0
+
+                        weekOfYear = dayjs.unix(element.dateUnix).isoWeek()
+                        //console.log("New week. Week of year: " + weekOfYear + " and start of week " + dayjs.unix(element.dateUnix).startOf('isoWeek'))
+                        sumSharePL += element[amountCase.value + 'SharePL']
+                        numOfEl += 1
+                        dateArray.push(useChartFormat(dayjs.unix(element.dateUnix).startOf('isoWeek') / 1000))
+                    }
+                    if (i == tradesLength) {
+                        //Last key. We wrap up.
+                        dataArray.push(sumSharePL / numOfEl)
+                        //console.log("Last element")
+                    }
+                }
+
+                if (selectedTimeFrame.value == "monthly") {
+                    //First value
+                    if (monthOfYear == null) {
+                        monthOfYear = dayjs.unix(element.dateUnix).month()
+                        sumSharePL += element[amountCase.value + 'Proceeds']
+                        chartXAxis.push(useChartFormat(element.dateUnix))
+
+                    }
+                    //Same month. Let's continue adding proceeds
+                    else if (monthOfYear == dayjs.unix(element.dateUnix).month()) {
+                        //console.log("Same week. Week of year: " + monthOfYear)
+                        sumSharePL += element[amountCase.value + 'Proceeds']
+                    }
+                    if (dayjs.unix(element.dateUnix).month() != monthOfYear) {
+                        //When week changes, we create values proceeds and push both chart datas
+                        proceeds = sumSharePL
+                        pushingChartBarData()
+                        pushingChartData()
+
+                        //New month, new proceeds
+                        sumSharePL = 0
+                        monthOfYear = dayjs.unix(element.dateUnix).month()
+                        //console.log("New week. Week of year: " + monthOfYear + " and start of week " + dayjs.unix(element.dateUnix).startOf('month'))
+                        sumSharePL += element[amountCase.value + 'Proceeds']
+                        chartXAxis.push(useChartFormat(dayjs.unix(element.dateUnix).startOf('month') / 1000))
+                    }
+                    if (i == tradesLength) {
+                        //Last key. We wrap up.
+                        proceeds = sumSharePL
+                        pushingChartBarData()
+                        pushingChartData()
+                        sumSharePL = 0
+                        //console.log("Last element")
+                    }
+                }
+                i++
+            });
+            //console.log("gross list " + listGrossSharePL)
+
+            //Sorting list
+
+
+
+        });
+        // specify chart configuration item and data
+        const option = {
+            dataset: [{
+                source: dataArray
+            }, {
+                transform: {
+                    type: 'boxplot',
+                    config: {
+                        itemNameformatter: (params) => {
+                            return dateArray[params.value];
+                        }
+                    }
+                }
+            }, {
+                fromDatasetIndex: 1,
+                fromTransformResult: 1
+            }],
+            tooltip: {
+                trigger: 'item',
+                backgroundColor: blackbg7,
+                borderColor: blackbg7,
+                textStyle: {
+                    color: white87.value
+                },
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: (params) => {
+                    if (params.componentIndex == 0) {
+                        return 'Maximum: ' + params.value[5].toFixed(2) + '$<br/>' +
+                            'Upper quartile: ' + params.value[4].toFixed(2) + '$<br/>' +
+                            'Median: ' + params.value[3].toFixed(2) + '$<br/>' +
+                            'Lower quartile: ' + params.value[2].toFixed(2) + '$<br/>' +
+                            'Minimum: ' + params.value[1].toFixed(2) + '$<br/>'
+                    }
+                    if (params.componentIndex == 1) {
+                        return 'Outlier: ' + params.value[1].toFixed(2) + '$'
+                    }
+                }
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: true,
+                nameGap: 30,
+                splitArea: {
+                    show: false
+                },
+                splitLine: {
+                    show: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                splitArea: {
+                    show: true
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        return params.toFixed(2) + "$"
+                    }
+                },
+            },
+
+            series: [{
+                name: 'boxplot',
+                type: 'boxplot',
+                datasetIndex: 1,
+                itemStyle: {
+                    borderColor: "#01B4FF"
+                },
+                emphasis: {
+                    label: {
+                        show: true
+                    }
+                },
+            },
+            {
+                name: 'outlier',
+                type: 'scatter',
+                datasetIndex: 2,
+                itemStyle: {
+                    color: '#6c757d',
+                }
+            }
+            ]
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useScatterChart(param1) { //chart ID, winShare, lossShare, page
+    //console.log(" param1 " + param1)
+    return new Promise((resolve, reject) => {
+        //console.log("  --> " + param1)
+        //console.log("para 2 " + param2 + " and 3 " + param3)
+        let myChart = echarts.init(document.getElementById(param1));
+        let dataArray = []
+
+        filteredTrades.forEach(element => {
+            //console.log("element "+JSON.stringify(element))
+            element.trades.forEach(el => {
+                if (param1 == "scatterChart1") {
+                    if (el[selectedGrossNet.value + 'Status'] == 'win') {
+                        let temp = []
+                        //console.log(" -> Win element "+JSON.stringify(el))
+                        temp.push(useTimeFormat(el.entryTime))
+                        temp.push(el[selectedGrossNet.value + 'SharePLWins'])
+                        temp.push(el[selectedGrossNet.value + 'Wins'])
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).hour())
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).minute())
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).second())
+                        dataArray.push(temp)
+                    }
+                }
+                if (param1 == "scatterChart2") {
+                    if (el[selectedGrossNet.value + 'Status'] == 'loss') {
+                        let temp = []
+                        //console.log(" -> Win element "+JSON.stringify(el))
+                        temp.push(useTimeFormat(el.entryTime))
+                        temp.push(el[selectedGrossNet.value + 'SharePLLoss'])
+                        temp.push(-el[selectedGrossNet.value + 'Loss'])
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).hour())
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).minute())
+                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).second())
+                        dataArray.push(temp)
+                    }
+                }
+
+
+            });
+        });
+        //console.log("current hour "+)
+        //console.log(" -> Data array " + dataArray)
+
+        let sortedArray = dataArray.sort((a, b) => a[5] - b[5]).sort((a, b) => a[4] - b[4]).sort((a, b) => a[3] - b[3])
+
+        //console.log(" -> Sorted array " + sortedArray)
+
+        const option = {
+            grid: {
+                left: '8%',
+                top: '10%'
+            },
+            xAxis: {
+                type: 'category',
+            },
+            yAxis: {
+                type: 'value',
+                splitLine: {
+                    lineStyle: {
+                        type: 'solid',
+                        color: cssColor38
+                    }
+                },
+                axisLabel: {
+                    formatter: (params) => {
+                        return params.toFixed(2)
+                    }
+                },
+            },
+            series: {
+                data: sortedArray,
+                type: 'scatter',
+                symbolSize: function (data) {
+                    return Math.sqrt(data[2])
+                },
+                emphasis: {
+                    focus: 'series',
+                    label: {
+                        show: true,
+                        formatter: (param) => {
+                            return useThousandCurrencyFormat(param.data[2])
+                        },
+                        position: 'top'
+                    }
+                },
+                itemStyle: {
+                    color: '#35C4FE',
+                }
+            }
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
