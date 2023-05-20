@@ -1,7 +1,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePageId, useInitPopover } from './utils.js'
-import { useGetPatternsMistakes, useDeletePatternMistake } from '../utils/patternsMistakes'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, patternsMistakes, selectedMonth, pageId, setups, setup, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, tradeTimeZone, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem } from '../stores/globals.js'
+import { useGetPatternsMistakes, useDeletePatternMistake, useUpdatePatternsMistakes } from '../utils/patternsMistakes'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, patternsMistakes, selectedMonth, pageId, setups, setup, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, tradeTimeZone, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
+import { useUpdateTrades } from './trades.js'
 
 let screenshotsQueryLimit = 6
 
@@ -239,7 +240,18 @@ export async function useSaveScreenshot() {
         tradeSetupDateUnix.value = setup.dateUnix
         tradeSetupDateUnixDay.value = dayjs(setup.dateUnix * 1000).tz(tradeTimeZone.value).startOf("day").unix()
 
-        //if (pageId.value == "addScreenshot") await hideTradesModal() //I reuse the function from dailyMixin, for storing patterns and mistakes. But only on add screenshot or else it creates infinity loop
+        //console.log(" -> Trades modal hidden with indexDBUpdate " + indexedDBtoUpdate.value + " and setup changed " + tradeSetupChanged.value)
+        if (indexedDBtoUpdate.value && tradeSetupChanged.value) {
+            if (setup.type == null || setup.type == "entry") {
+                await Promise.all([useUpdatePatternsMistakes(), useUpdateTrades()])
+            }
+
+            //Case add screenshot is setup => do not update trades
+            if (setup.type == "setup") {
+                await useUpdatePatternsMistakes()
+            }
+        }
+
 
         /* UPLOAD SCREENSHOT */
         await useUploadScreenshotToParse()
@@ -303,7 +315,7 @@ export async function useUploadScreenshotToParse() {
             results.save().then(async () => {
                 console.log(' -> Updated screenshot with id ' + results.id)
                 if (pageId.value == "addScreenshot") {
-                    window.location.href = "/screenshots"
+                    //window.location.href = "/screenshots"
                 }
 
                 if (pageId.value == "daily") {

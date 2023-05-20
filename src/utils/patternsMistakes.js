@@ -53,6 +53,7 @@ export async function useGetPatternsMistakes(param) {
         results.forEach(element => {
             patternsMistakes.push(JSON.parse(JSON.stringify(element)))
         });
+        console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
         resolve()
     })
 }
@@ -103,7 +104,7 @@ export async function useUpdatePatternsMistakes() {
 
                 results.save()
                     .then(async () => {
-                        console.log(' -> Updated setup with id ' + results.id)
+                        console.log(' -> Updated patternsMistakes with id ' + results.id)
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);

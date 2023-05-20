@@ -48,6 +48,7 @@ onMounted(() => {
             </div>
             <div v-show="!spinnerLoadingPage">
                 <div v-if="!expandedScreenshot" v-for="(setup, index) in setups" class="col-12 col-xl-6 mt-2">
+                    setup: {{ setup.name }}
                     <div class="dailyCard" v-bind:id="setup.objectId">
                         <div class="row">
                             <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
@@ -61,6 +62,8 @@ onMounted(() => {
                                         <span v-else class="col mb-2"> | {{ useHourMinuteFormat(setup.dateUnix)
                                         }}</span>
                                         <span v-if="patternsMistakes.findIndex(obj => obj.tradeId == setup.name) != -1">
+                                            patternsMistakes {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                                    obj.tradeId == setup.name)] }}
                                             <span
                                                 v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern.hasOwnProperty('name')">
                                                 | {{ patternsMistakes[patternsMistakes.findIndex(obj =>

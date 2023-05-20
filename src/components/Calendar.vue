@@ -16,7 +16,8 @@ async function monthLastNext(param) {
     //console.log("selectedMonth.value.start " + selectedMonth.value.start+" selectedMonth.value.end " + selectedMonth.value.end)
     localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     await useInitIndexedDB()
-    await useLoadCalendar(true)
+    await useGetAllTrades(true)
+    //await useLoadCalendar(true)
     if (pageId.value == "daily") {
         useInitTab("daily") // Only for daily else was causing multiple fires in dashboard
     }

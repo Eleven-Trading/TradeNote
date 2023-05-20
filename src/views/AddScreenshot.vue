@@ -4,12 +4,12 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, setup, spinnerLoadingPage } from '../stores/globals';
 import { useGetScreenshots, useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat } from '../utils/utils';
-import { useTradeSetupChange } from '../utils/patternsMistakes'
+import { useGetMistakes, useGetPatterns, useGetPatternsMistakes, useTradeSetupChange } from '../utils/patternsMistakes'
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
     //await useGetScreenshots()
-    await getScreenshotToEdit(itemToEditId.value)
+    await Promise.all([getScreenshotToEdit(itemToEditId.value), useGetPatternsMistakes(), useGetPatterns(), useGetMistakes()])
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
 })
