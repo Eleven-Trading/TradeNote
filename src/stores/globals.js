@@ -15,11 +15,12 @@ export const hasData = ref(true)
 export const itemToEditId = ref(sessionStorage.getItem('editItemId'))
 export const currentDate = ref(dayjs().format("YYYY-MM-DD"))
 export const quill = ref()
+export const sideMenuMobileOut = ref(false)
 
 /**************************************
 * PATTERNS, MISTAKES & SETUPS
 **************************************/
-export const setups = reactive([])
+export const screenshots = reactive([])
 export const patterns = reactive([])
 export const mistakes = reactive([])
 export const patternsMistakes = reactive([])
@@ -28,7 +29,7 @@ export const tradeSetup = reactive({
     mistake: null,
     note: null,
 })
-export const setup = reactive({
+export const screenshot = reactive({
     "side": null,
     "type": null
 })

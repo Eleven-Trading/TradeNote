@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, tradeTimeZone, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, journalUpdate, journalButton, selectedItem, playbookUpdate, playbookButton } from "../stores/globals"
+import { pageId, tradeTimeZone, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, journalUpdate, journalButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
 import { useECharts } from './charts';
 import { useDeleteJournal } from "./diary";
 import { useDeleteScreenshot } from '../utils/screenshots'
@@ -725,6 +725,13 @@ export function usePageRedirect() {
         window.location.href = "/playbook"
     }
 
+}
+
+export function useToggleMobileMenu() {
+  let element = document.getElementById("sideMenu");
+  element.classList.toggle("toggleSideMenu");
+  sideMenuMobileOut.value = !sideMenuMobileOut.value
+  console.log("sideMenuMobileOut " + sideMenuMobileOut.value)
 }
 
 /**************************************

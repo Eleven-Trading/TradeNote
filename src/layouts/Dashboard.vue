@@ -13,14 +13,7 @@ onBeforeMount(async () => {
   await useSetSelectedLocalStorage()
 })
 
-const sideMenuMobileOut = ref(false)
 
-function toggleMobileMenu() {
-  let element = document.getElementById("sideMenu");
-  element.classList.toggle("toggleSideMenu");
-  sideMenuMobileOut.value = !sideMenuMobileOut.value
-  console.log("sideMenuMobileOut " + sideMenuMobileOut.value)
-}
 </script>
 <template>
   <div v-cloak class="container-fluid g-0">

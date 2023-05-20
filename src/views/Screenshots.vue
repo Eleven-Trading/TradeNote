@@ -3,7 +3,7 @@ import { ref, reactive, onBeforeMount, onMounted } from 'vue'
 import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { pageId, patternsMistakes, selectedItem, setups, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
+import { pageId, patternsMistakes, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
 import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat } from '../utils/utils';
 import { useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots';
 import { endOfList } from '../stores/globals';
@@ -40,56 +40,53 @@ onMounted(() => {
     <DashboardLayout>
         <SpinnerLoadingPage />
         <div class="row mt-2 mb-2">
-            <div v-if="setups.length == 0">
+            <div v-if="screenshots.length == 0">
                 <NoData />
             </div>
             <div v-else>
                 <Filters />
             </div>
             <div v-show="!spinnerLoadingPage">
-                <div v-if="!expandedScreenshot" v-for="(setup, index) in setups" class="col-12 col-xl-6 mt-2">
-                    setup: {{ setup.name }}
-                    <div class="dailyCard" v-bind:id="setup.objectId">
+                <div v-if="!expandedScreenshot" v-for="(screenshot, index) in screenshots" class="col-12 col-xl-6 mt-2">
+                    <div class="dailyCard" v-bind:id="screenshot.objectId">
                         <div class="row">
                             <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-                                <div class="col-auto">{{ useCreatedDateFormat(setup.dateUnix) }}</div>
+                                <div class="col-auto">{{ useCreatedDateFormat(screenshot.dateUnix) }}</div>
                             </div>
                             <div class="col-12">
                                 <div class="row mt-2 journalRow">
-                                    <span class="col mb-2 txt-small">{{ setup.symbol }}
-                                        <span v-if="setup.side"> | {{ setup.side == 'SS' || setup.side == 'BC' ? 'Short'
-                                            : 'Long' }} | {{ useTimeFormat(setup.dateUnix) }}</span>
-                                        <span v-else class="col mb-2"> | {{ useHourMinuteFormat(setup.dateUnix)
+                                    <span class="col mb-2 txt-small">{{ screenshot.symbol }}
+                                        <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short'
+                                            : 'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
+                                        <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
                                         }}</span>
-                                        <span v-if="patternsMistakes.findIndex(obj => obj.tradeId == setup.name) != -1">
-                                            patternsMistakes {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                    obj.tradeId == setup.name)] }}
+                                        <span v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
                                             <span
-                                                v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern.hasOwnProperty('name')">
+                                                v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
                                                 | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                    obj.tradeId == setup.name)].pattern.name }}</span>
+                                                    obj.tradeId == screenshot.name)].pattern.name }}</span>
 
                                             <span
-                                                v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].mistake.hasOwnProperty('name')">
+                                                v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
                                                 | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                    obj.tradeId == setup.name)].mistake.name }}</span></span>
+                                                    obj.tradeId == screenshot.name)].mistake.name }}</span></span>
                                     </span>
                                     <span class="col mb-2 ms-auto text-end">
                                         <i class="uil uil-expand-arrows-alt pointerClass me-4"
-                                            v-on:click="expandedScreenshot = setup.objectId"></i>
+                                            v-on:click="expandedScreenshot = screenshot.objectId"></i>
 
                                         <i class="uil uil-edit-alt editItem pointerClass"
-                                            v-on:click="useEditItem(setup.objectId)"></i>
+                                            v-on:click="useEditItem(screenshot.objectId)"></i>
                                             
-                                        <i v-on:click="selectedItem = setup.objectId"
+                                        <i v-on:click="selectedItem = screenshot.objectId"
                                             class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true"
                                             data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>"
                                             data-bs-toggle="popover" data-bs-placement="left"></i>
                                     </span>
                                 </div>
                                 <div class="">
-                                    <!--<img v-bind:id="setup.objectId" class="setupEntryImg mt-3 img-fluid" v-bind:src="setup.annotated.url"/>-->
-                                    <img class="setupEntryImg mt-3 img-fluid" v-bind:src="setup.annotatedBase64" />
+                                    <!--<img v-bind:id="screenshot.objectId" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotated.url"/>-->
+                                    <img class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64" />
                                 </div>
                             </div>
                         </div>
@@ -107,19 +104,19 @@ onMounted(() => {
                     </div>
                     <div id="setupsCarousel" class="carousel slide">
                         <div class="carousel-inner">
-                            <div v-for="(setup, index) in setups"
-                                v-bind:class="[expandedScreenshot === setup.objectId ? 'active' : '', 'carousel-item']">
-                                <img class="d-block w-100" v-bind:src="setup.annotatedBase64">
+                            <div v-for="(screenshot, index) in screenshots"
+                                v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
+                                <img class="d-block w-100" v-bind:src="screenshot.annotatedBase64">
                                 <div class="carousel-caption d-none d-md-block">
-                                    <h5>{{ useCreatedDateFormat(setup.dateUnix) }}</h5>
-                                    <p>{{ setup.symbol }}
-                                        <span v-if="setup.side"> | {{ setup.side == 'SS' || setup.side == 'BC' ? 'Short' :
-                                            'Long' }} | {{ useTmeFormat(setup.dateUnix) }}</span>
-                                        <span v-else class="col mb-2"> | {{ useHourMinuteFormat(setup.dateUnix) }}</span>
+                                    <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
+                                    <p>{{ screenshot.symbol }}
+                                        <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
+                                            'Long' }} | {{ useTmeFormat(screenshot.dateUnix) }}</span>
+                                        <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
                                         <span
-                                            v-if="patternsMistakes.findIndex(obj => obj.tradeId == setup.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern.name != null">
+                                            v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
                                             | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                obj.tradeId == setup.name)].pattern.name }}</span>
+                                                obj.tradeId == screenshot.name)].pattern.name }}</span>
                                     </p>
                                 </div>
                             </div>

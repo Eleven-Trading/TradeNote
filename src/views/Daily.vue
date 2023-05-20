@@ -4,7 +4,7 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, setups, patternsMistakes, journals, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, queryLimit, amountCase, markerAreaOpen, setup, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, journals, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, queryLimit, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData } from '../stores/globals';
 import { useInitIndexedDB, useInitPopover, useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration } from '../utils/utils';
 import { useGetAllTrades, useUpdateTrades, useGetTradesFromDb } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
@@ -322,7 +322,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
     //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: "+JSON.stringify(param3))
     //console.log("param 1: " + param1 + " param2 " + param2 + " param3 " + param3 + " param 4 " + param4 + " param 5 " + param5)
     if (markerAreaOpen.value == true) {
-        alert("Please save your setup annotation")
+        alert("Please save your screenshot annotation")
         return
     } else {
 
@@ -352,17 +352,17 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
             //console.log("daily "+JSON.stringify(param3))
             //console.log(" trade "+JSON.stringify(param3.trades[param2]))
             //console.log(" trade id "+param3.trades[param2].id)
-            //console.log(" Find " + JSON.stringify(setups.find(obj => obj.name == setups.trades[param2].id)))
-            if (setups.find(obj => obj.name == daily.trades[param2].id)) {
-                for (let key in setup) delete setup[key]
-                let setupObj = setups.find(obj => obj.name == daily.trades[param2].id)
+            //console.log(" Find " + JSON.stringify(screenshots.find(obj => obj.name == screenshots.trades[param2].id)))
+            if (screenshots.find(obj => obj.name == daily.trades[param2].id)) {
+                for (let key in screenshot) delete screenshot[key]
+                let setupObj = screenshots.find(obj => obj.name == daily.trades[param2].id)
                 for (let key in setupObj) {
-                    setup[key] = setupObj[key]
+                    screenshot[key] = setupObj[key]
                 }
             } else {
-                for (let key in setup) delete setup[key]
-                setup.side = null
-                setup.type = null
+                for (let key in screenshot) delete screenshot[key]
+                screenshot.side = null
+                screenshot.type = null
             }
 
 
@@ -417,7 +417,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
 async function hideTradesModal() {
     //console.log(" clicked on hide trades modal")
     if (markerAreaOpen.value == true) {
-        alert("Please save your setup annotation")
+        alert("Please save your screenshot annotation")
         return
     } else {
 
@@ -428,16 +428,16 @@ async function hideTradesModal() {
             spinnerLoadingPage.value = true
 
             if (tradeSetupChanged.value) { //in the case setup changed but did not click on next 
-                //console.log(" Setup type " + setup.type)
+                //console.log(" Setup type " + screenshot.type)
 
                 //We're also using hideTradesModal in addScreenshot, so we need to distinguish two cases
                 //Case for daily page (null) or add screenshot entry => Update trades
-                if (setup.type == null || setup.type == "entry") {
+                if (screenshot.type == null || screenshot.type == "entry") {
                     await Promise.all([useUpdatePatternsMistakes(), useUpdateTrades()])
                 }
 
-                //Case add screenshot is setup => do not update trades
-                if (setup.type == "setup") {
+                //Case add screenshot is screenshot => do not update trades
+                if (screenshot.type == "setup") {
                     await useUpdatePatternsMistakes()
                 }
             }
@@ -601,8 +601,8 @@ async function updateIndexedDB(param1) {
                                                     role="tab" aria-controls="nav-overview" aria-selected="true">{{
                                                         dashTab.label }}
                                                     <span
-                                                        v-if="dashTab.id == 'screenshots' && setups.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0"
-                                                        class="txt-small"> ({{ setups.filter(obj => obj.dateUnixDay ==
+                                                        v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0"
+                                                        class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
                                                             daily.dateUnix).length }})</span>
                                                     <!--({{daily[dashTab.id].length}})-->
                                                 </button>
@@ -673,7 +673,7 @@ async function updateIndexedDB(param1) {
                                                             </td>
                                                             <td
                                                                 v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">
-                                                                {{ (trade.setup.note).substr(0, 15) + "..." }}
+                                                                {{ (trade.screenshot.note).substr(0, 15) + "..." }}
                                                             </td>
                                                             <td v-else>
 
@@ -691,7 +691,7 @@ async function updateIndexedDB(param1) {
 
                                                             <td>
                                                                 <span
-                                                                    v-if="setups.findIndex(f => f.name == trade.id) != -1">
+                                                                    v-if="screenshots.findIndex(f => f.name == trade.id) != -1">
                                                                     <i class="uil uil-image-v"></i>
                                                                 </span>
                                                             </td>
@@ -742,28 +742,28 @@ async function updateIndexedDB(param1) {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="setup in setups.filter(obj => obj.dateUnixDay == daily.dateUnix)"
+                                                <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == daily.dateUnix)"
                                                     class="mb-2">
-                                                    <span>{{ setup.symbol }}</span><span v-if="setup.side" class="col mt-1">
-                                                        | {{ setup.side == 'SS' || setup.side == 'BC' ? 'Short' : 'Long' }}
-                                                        | {{ useTimeFormat(setup.dateUnix) }}</span>
-                                                    <span v-else class="col mb-2"> | {{ useHourMinuteFormat(setup.dateUnix)
+                                                    <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side" class="col mt-1">
+                                                        | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' : 'Long' }}
+                                                        | {{ useTimeFormat(screenshot.dateUnix) }}</span>
+                                                    <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
                                                     }}</span>
                                                     <span
-                                                        v-if="patternsMistakes.findIndex(obj => obj.tradeId == setup.name) != -1">
+                                                        v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
 
                                                         <span
-                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].pattern.hasOwnProperty('name')">
+                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
                                                             | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                                obj.tradeId == setup.name)].pattern.name }}</span>
+                                                                obj.tradeId == screenshot.name)].pattern.name }}</span>
 
                                                         <span
-                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == setup.name)].mistake.hasOwnProperty('name')">
+                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
                                                             | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                                obj.tradeId == setup.name)].mistake.name }}</span></span>
+                                                                obj.tradeId == screenshot.name)].mistake.name }}</span></span>
 
-                                                    <img v-bind:id="setup.objectId" class="setupEntryImg mt-1 img-fluid"
-                                                        v-bind:src="setup.annotatedBase64" />
+                                                    <img v-bind:id="screenshot.objectId" class="setupEntryImg mt-1 img-fluid"
+                                                        v-bind:src="screenshot.annotatedBase64" />
                                                 </div>
                                             </div>
 
@@ -819,11 +819,11 @@ async function updateIndexedDB(param1) {
                         <div class="modal-content">
                             <div v-if="modalVideosOpen">
 
-                                <div v-if="setup.annotatedBase64" class="mt-3" id="imagePreview"
+                                <div v-if="screenshot.annotatedBase64" class="mt-3" id="imagePreview"
                                     style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px;">
-                                    <img id="setupDiv" v-bind:src="setup.originalBase64" style="position: relative;"
+                                    <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;"
                                         v-bind:key="renderData" crossorigin="anonymous" />
-                                    <img v-bind:src="setup.annotatedBase64" style="position: absolute;"
+                                    <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;"
                                         v-on:click="useSetupMarkerArea()" />
                                 </div>
 

@@ -1,4 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, patternsMistakes, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetupsText, spinnerSetups, pageId } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, patternsMistakes, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetupsText, spinnerSetups, pageId, tradeId } from '../stores/globals';
 import { useUpdateTrades } from '../utils/trades'
 
 
@@ -47,13 +47,15 @@ export async function useGetPatternsMistakes(param) {
         const parseObject = Parse.Object.extend("patternsMistakes");
         const query = new Parse.Query(parseObject);
         //if (pageId.value == "screenshots" ||  pageId.value == "addScreenshot") query.containedIn("tradeId", screenshotsNames.value);
+        query.include("pattern")
+        query.include("mistake")
         query.limit(queryLimit.value)
         const results = await query.find();
         patternsMistakes.length = 0
         results.forEach(element => {
             patternsMistakes.push(JSON.parse(JSON.stringify(element)))
         });
-        console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
+        //console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
         resolve()
     })
 }

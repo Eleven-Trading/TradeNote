@@ -1,15 +1,16 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, setup, spinnerLoadingPage } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, screenshot, spinnerLoadingPage, tradeSetup, tradeTimeZone } from '../stores/globals';
 import { useGetScreenshots, useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat } from '../utils/utils';
 import { useGetMistakes, useGetPatterns, useGetPatternsMistakes, useTradeSetupChange } from '../utils/patternsMistakes'
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
-    //await useGetScreenshots()
-    await Promise.all([getScreenshotToEdit(itemToEditId.value), useGetPatternsMistakes(), useGetPatterns(), useGetMistakes()])
+    //await useGetScreenshots() // get screenshots because that is were patternsMistakes is
+    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes()])
+    await getScreenshotToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
 })
@@ -45,44 +46,45 @@ function screenshotUpdateDate(event) {
     if (editingScreenshot.value) {
         dateScreenshotEdited.value = true
     }
-    setup.date = event
-    //console.log("setup date (local time, i.e. New York time) " + this.setup.date)
-    setup.dateUnix = dayjs.tz(this.setup.date, this.tradeTimeZone).unix()
-    //console.log("unix " + dayjs.tz(this.setup.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
+    screenshot.date = event
+    //console.log("screenshot date (local time, i.e. New York time) " + this.screenshot.date)
+    screenshot.dateUnix = dayjs.tz(screenshot.date, tradeTimeZone.value).unix()
+    //console.log("unix " + dayjs.tz(this.screenshot.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
 }
 
 async function getScreenshotToEdit(param) {
+    console.log("getting screenshot to edit")
     if (!param) {
         return
     }
     editingScreenshot.value = true
 
-    //console.log("setup to edit " + screenshotIdToEdit.value)
+    //console.log("screenshot to edit " + screenshotIdToEdit.value)
     const parseObject = Parse.Object.extend("setupsEntries");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", param);
     const results = await query.first();
     if (results) {
-        for (let key in setup) delete setup[key]
-        Object.assign(setup, JSON.parse(JSON.stringify(results)))
-
-        //console.log(" -> Setup of screenshot to edit "+JSON.stringify(setup))
-        if (setup.side) {
-            setup.type = "entry"
+        for (let key in screenshot) delete screenshot[key]
+        Object.assign(screenshot, JSON.parse(JSON.stringify(results)))
+        //console.log(" -> Screenshot to edit "+JSON.stringify(screenshot))
+        if (screenshot.side) {
+            screenshot.type = "entry"
         } else {
-            setup.type = "setup"
+            screenshot.type = "setup"
         }
 
-        let index = patternsMistakes.findIndex(obj => obj.tradeId == patternsMistakes.name)
+        let index = patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)
+        console.log("index "+index)
 
         if (index != -1) {
-            if (patternsMistakes[index].hasOwnProperty('pattern') && patternsMistakes[index].pattern != null && patternsMistakes[index].pattern != undefined && patternsMistakes[index].pattern.hasOwnProperty('objectId')) patternsMistakes.pattern = patternsMistakes[index].pattern.objectId
+            if (patternsMistakes[index].hasOwnProperty('pattern') && patternsMistakes[index].pattern != null && patternsMistakes[index].pattern != undefined && patternsMistakes[index].pattern.hasOwnProperty('objectId')) screenshot.pattern = patternsMistakes[index].pattern.objectId
 
-            if (patternsMistakes[index].hasOwnProperty('mistake') && patternsMistakes[index].mistake != null && patternsMistakes[index].mistake != undefined && patternsMistakes[index].mistake.hasOwnProperty('objectId')) patternsMistakes.mistake = patternsMistakes[index].mistake.objectId
+            if (patternsMistakes[index].hasOwnProperty('mistake') && patternsMistakes[index].mistake != null && patternsMistakes[index].mistake != undefined && patternsMistakes[index].mistake.hasOwnProperty('objectId')) screenshot.mistake = patternsMistakes[index].mistake.objectId
 
             //updating patterns and mistakes used in dailyMixin
-            tradeSetup.value.pattern = tradeSetup.value.pattern
-            tradeSetup.value.mistake = tradeSetup.value.mistake
+            tradeSetup.pattern = screenshot.pattern
+            tradeSetup.mistake = screenshot.mistake
         }
 
     } else {
@@ -99,19 +101,19 @@ async function getScreenshotToEdit(param) {
             <div class="col-12 mb-2">
                 <div class="row">
                     <div class="col">
-                        <select v-model="setup.type" class="form-select">
+                        <select v-model="screenshot.type" class="form-select">
                             <option v-for="item in setupType" v-bind:value="item.value">{{ item.label }}</option>
                         </select>
                     </div>
                     <div class="col">
-                        <input type="datetime-local" v-bind:step="setup.type == 'setup' ? '' : '1'" class="form-control"
-                            v-bind:value="setup.hasOwnProperty('dateUnix') ? useDatetimeLocalFormat(setup.dateUnix) : currentDate"
+                        <input type="datetime-local" v-bind:step="screenshot.type == 'setup' ? '' : '1'" class="form-control"
+                            v-bind:value="screenshot.hasOwnProperty('dateUnix') ? useDatetimeLocalFormat(screenshot.dateUnix) : currentDate"
                             v-on:input="screenshotUpdateDate($event.target.value)" />
                     </div>
                     <div class="col">
                         <input type="text" class="form-control"
-                            v-bind:value="setup.hasOwnProperty('symbol') ? setup.symbol : ''"
-                            v-on:input="setup.symbol = $event.target.value" placeholder="Symbol" />
+                            v-bind:value="screenshot.hasOwnProperty('symbol') ? screenshot.symbol : ''"
+                            v-on:input="screenshot.symbol = $event.target.value" placeholder="Symbol" />
                     </div>
 
                 </div>
@@ -119,8 +121,8 @@ async function getScreenshotToEdit(param) {
             <div class="col-12">
                 <div class="row">
 
-                    <div v-if="setup.type == 'entry'" class="col">
-                        <select v-model="setup.side" class="form-select">
+                    <div v-if="screenshot.type == 'entry'" class="col">
+                        <select v-model="screenshot.side" class="form-select">
                             <option v-for="item in entrySide" v-bind:value="item.value">{{ item.label }}</option>
                         </select>
                     </div>
@@ -129,7 +131,7 @@ async function getScreenshotToEdit(param) {
                         <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')" class="form-select">
                             <option value='null' selected>Pattern</option>
                             <option v-for="item in patterns.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == setup.pattern">{{ item.name }}</option>
+                                v-bind:selected="item.objectId == screenshot.pattern">{{ item.name }}</option>
                         </select>
                     </div>
                     <!-- Mistakes -->
@@ -137,7 +139,7 @@ async function getScreenshotToEdit(param) {
                         <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')" class="form-select">
                             <option value='null' selected>Mistake</option>
                             <option v-for="item in mistakes.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == setup.mistake">{{ item.name }}</option>
+                                v-bind:selected="item.objectId == screenshot.mistake">{{ item.name }}</option>
                         </select>
                     </div>
 
@@ -149,11 +151,11 @@ async function getScreenshotToEdit(param) {
         </div>
         <div class="mt-3" id="imagePreview"
             style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 50px;">
-            <img id="setupDiv" v-bind:src="setup.originalBase64" style="position: relative;" v-bind:key="renderData"
+            <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;" v-bind:key="renderData"
                 crossorigin="anonymous" />
-            <img v-bind:src="setup.annotatedBase64" style="position: absolute;" v-on:click="useSetupMarkerArea()" />
+            <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;" v-on:click="useSetupMarkerArea()" />
         </div>
-        <p class="fst-italic fw-lighter text-center" v-show="setup.originalBase64">
+        <p class="fst-italic fw-lighter text-center" v-show="screenshot.originalBase64">
             <small>Click image to mark & annotate</small>
         </p>
 
