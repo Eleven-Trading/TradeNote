@@ -2,7 +2,7 @@ import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted,
 import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 import { useECharts } from './charts'
-import { useGetJournals } from "./diary";
+import { useGetDiaries } from "./diary";
 import { useGetScreenshots } from "./screenshots";
 import { useLoadCalendar } from "./calendar";
 import { useDoubleLineChart, usePieChart } from "./charts";
@@ -156,7 +156,7 @@ export async function useGetAllTrades(param, param2) {
         filteredTrades.length = 0
         filteredTradesTrades.length = 0
         let loopTrades = (param1) => {
-            if (!param1) hasData.value = false //I do reverse, that is start with true so that on page load No Data does not appear
+            if (param1.length <= 0) hasData.value = false //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
                 //console.log(" element "+JSON.stringify(element))
                 let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
@@ -277,7 +277,7 @@ export async function useGetAllTrades(param, param2) {
 
     if (pageId.value == "daily") {
         spinnerLoadingPageText.value = "Getting Daily Data"
-        await Promise.all([useGetJournals(false), useGetScreenshots(true), useLoadCalendar(undefined, selectedRange.value)]) //setup etries here because take more time so spinner needs to still be running
+        await Promise.all([useGetDiaries(false), useGetScreenshots(true), useLoadCalendar(undefined, selectedRange.value)]) //setup etries here because take more time so spinner needs to still be running
         //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
         spinnerLoadingPageText.value = "Loading Calendar"
 

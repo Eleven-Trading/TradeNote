@@ -411,7 +411,7 @@ export async function useRefreshScreenshot() {
         screenshotsPagination.value = 0
         screenshots.length = 0
         await useGetScreenshots()
-        await useInitPopover()
+        //await useInitPopover()
         resolve()
     })
 }

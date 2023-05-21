@@ -1,15 +1,15 @@
-import { journals, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, journalIdToEdit, journalUpdate, selectedItem, renderData } from "../stores/globals"
+import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals"
 import { useInitPopover, usePageRedirect } from "./utils";
 let diaryQueryLimit = 10
 let diaryPagination = 0
 
-export async function useGetJournals(param1, param2) {
+export async function useGetDiaries(param1, param2) {
     //param1: true is diary page
     //param2: true is diary delete
     console.log("param 1 "+ param1)
     console.log("param 2 "+ param2)
     return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting journals");
+        console.log(" -> Getting diaries");
         const parseObject = Parse.Object.extend("journals");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
@@ -26,19 +26,19 @@ export async function useGetJournals(param1, param2) {
             if (param1) { //when on diary page and not deleting diary
                 //console.log("param2 "+param2+" and we are concatenating")
                 results.forEach(element => {
-                    journals.push(JSON.parse(JSON.stringify(element))) // Here we concat
+                    diaries.push(JSON.parse(JSON.stringify(element))) // Here we concat
                 });
             } else {
-                journals.length = 0 // here we do not concat so we reset
+                diaries.length = 0 // here we do not concat so we reset
                 results.forEach(element => {
-                    journals.push(JSON.parse(JSON.stringify(element))) // Here we concatenante
+                    diaries.push(JSON.parse(JSON.stringify(element))) // Here we concatenante
                 });
             }
         } else {
             endOfList.value = true
         }
 
-        //console.log(" -> Journals " + JSON.stringify(journals))
+        //console.log(" -> Diaries " + JSON.stringify(diaries))
         diaryPagination = diaryPagination + diaryQueryLimit
         if (pageId.value != "daily") spinnerLoadingPage.value = false //we remove it later
         spinnerLoadMore.value = false
@@ -48,17 +48,17 @@ export async function useGetJournals(param1, param2) {
 
 
 
-export async function useUploadJournal() {
+export async function useUploadDiary() {
 
     const parseObject = Parse.Object.extend("journals");
 
-    if (journalIdToEdit.value) {
-        console.log(" -> Updating journal")
+    if (diaryIdToEdit.value) {
+        console.log(" -> Updating diary")
         const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", journalIdToEdit.value);
+        query.equalTo("objectId", diaryIdToEdit.value);
         const results = await query.first();
         if (results) {
-            results.set("journal", journalUpdate.journal)
+            results.set("journal", diaryUpdate.journal)
             await results.save() //very important to have await or else too quick to update
             usePageRedirect()
 
@@ -68,23 +68,23 @@ export async function useUploadJournal() {
         }
     } else {
         const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", journalUpdate.dateUnix);
+        query.equalTo("dateUnix", diaryUpdate.dateUnix);
         const results = await query.first();
         if (results) {
-            alert("Journal with that date already exists")
+            alert("Diary with that date already exists")
             return
         }
 
-        console.log(" -> saving journal")
+        console.log(" -> saving diary")
         const object = new parseObject();
         object.set("user", Parse.User.current())
-        object.set("date", journalUpdate.dateDateFormat)
-        object.set("dateUnix", journalUpdate.dateUnix)
-        object.set("journal", journalUpdate.journal)
+        object.set("date", diaryUpdate.dateDateFormat)
+        object.set("dateUnix", diaryUpdate.dateUnix)
+        object.set("journal", diaryUpdate.journal)
         object.setACL(new Parse.ACL(Parse.User.current()));
         object.save()
             .then((object) => {
-                console.log(' -> Added new journal with id ' + object.id)
+                console.log(' -> Added new diary with id ' + object.id)
                 usePageRedirect()
 
             }, (error) => {
@@ -93,7 +93,7 @@ export async function useUploadJournal() {
     }
 }
 
-export async function useDeleteJournal(param1, param2) {
+export async function useDeleteDiary(param1, param2) {
     //console.log("selected item " + selectedItem.value)
     console.log("\nDELETING JOURNAL ENTRY")
     const parseObject = Parse.Object.extend("journals");
@@ -103,21 +103,21 @@ export async function useDeleteJournal(param1, param2) {
 
     if (results) {
         await results.destroy()
-        await refreshJournals()
+        await refreshDiaries()
 
     } else {
         alert("There was a problem with the query")
     }
 }
 
-async function refreshJournals() {
-    console.log(" -> Refreshing journal entries")
+async function refreshDiaries() {
+    console.log(" -> Refreshing diary entries")
     return new Promise(async (resolve, reject) => {
         diaryQueryLimit = 10
         diaryPagination = 0
-        journals.length = 0
-        await useGetJournals(true)
-        useInitPopover()
+        diaries.length = 0
+        await useGetDiaries(true)
+        //useInitPopover()
         await (renderData.value += 1)
         selectedItem.value = null
         resolve()

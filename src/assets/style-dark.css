@@ -100,14 +100,15 @@ main {
 }
 
 input[type="datetime-local"],
-input[type="date"] {
+input[type="date"], input[type="month"] {
     background: transparent;
     color: var(--white-87);
     border: 1px solid var(--white-38);
 }
 
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-webkit-calendar-picker-indicator {
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
     filter: invert(100%);
 }
 
@@ -738,7 +739,7 @@ img.logo {
     margin-bottom: -5px;
 }
 
-.journalRow {
+.diaryRow {
     margin-bottom: -0.8rem !important;
 }
 

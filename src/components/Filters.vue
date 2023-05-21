@@ -234,6 +234,7 @@ async function saveFilter() {
     localStorage.setItem('selectedGrossNet', selectedGrossNet.value)
     amountCase.value = selectedGrossNet.value
     amountCapital.value = selectedGrossNet.value.charAt(0).toUpperCase() + selectedGrossNet.value.slice(1)
+    console.log("filter amountCapital "+amountCapital.value)
 
     localStorage.setItem('selectedPositions', selectedPositions.value)
 

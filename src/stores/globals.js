@@ -20,7 +20,6 @@ export const sideMenuMobileOut = ref(false)
 /**************************************
 * PATTERNS, MISTAKES & SETUPS
 **************************************/
-export const screenshots = reactive([])
 export const patterns = reactive([])
 export const mistakes = reactive([])
 export const patternsMistakes = reactive([])
@@ -150,6 +149,7 @@ export const tradeExcursionDateUnix = ref()
 /**************************************
 * SCREENSHOTS
 **************************************/
+export const screenshots = reactive([])
 export const tradeScreenshotChanged = ref(false)
 export const markerAreaOpen = ref(false)
 export const screenshotsNames = reactive([])
@@ -159,10 +159,10 @@ export const screenshotsPagination = ref(0)
 /**************************************
 * DIARY
 **************************************/
-export const journals = reactive([])
-export const journalUpdate = reactive({})
-export const journalIdToEdit = ref()
-export const journalButton = ref(false)
+export const diaries = reactive([])
+export const diaryUpdate = reactive({})
+export const diaryIdToEdit = ref()
+export const diaryButton = ref(false)
 
 /**************************************
 * PLAYBOOKS

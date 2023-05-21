@@ -88,7 +88,7 @@ async function refreshPlaybooks() {
     return new Promise(async (resolve, reject) => {
         playbooks.length = 0
         await useGetPlaybooks()
-        await useInitPopover()
+        //await useInitPopover()
         await (renderData.value += 1)
         selectedItem.value = null
         resolve()

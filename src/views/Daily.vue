@@ -4,7 +4,7 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, journals, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, queryLimit, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, queryLimit, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId } from '../stores/globals';
 import { useInitIndexedDB, useInitPopover, useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration } from '../utils/utils';
 import { useGetAllTrades, useUpdateTrades, useGetTradesFromDb } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
@@ -673,7 +673,7 @@ async function updateIndexedDB(param1) {
                                                             </td>
                                                             <td
                                                                 v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">
-                                                                {{ (trade.screenshot.note).substr(0, 15) + "..." }}
+                                                                {{ (trade.setup.note).substr(0, 15) + "..." }}
                                                             </td>
                                                             <td v-else>
 
@@ -770,24 +770,24 @@ async function updateIndexedDB(param1) {
                                             <!-- DIARY TAB -->
                                             <div class="tab-pane fade" v-bind:id="'diariesNav-' + index" role="tabpanel"
                                                 aria-labelledby="nav-overview-tab">
-                                                <div v-if="journals.findIndex(obj => obj.dateUnix == daily.dateUnix) != -1">
+                                                <div v-if="diaries.findIndex(obj => obj.dateUnix == daily.dateUnix) != -1">
                                                     <p
-                                                        v-if="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive != '<p><br></p>'">
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive != '<p><br></p>'">
                                                         <span class="dashInfoTitle col mb-2">Positive aspect</span>
                                                         <span
-                                                            v-html="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive"></span>
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive"></span>
                                                     </p>
                                                     <p
-                                                        v-if="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative != '<p><br></p>'">
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative != '<p><br></p>'">
                                                         <span class="dashInfoTitle">Negative aspect</span>
                                                         <span
-                                                            v-html="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative"></span>
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative"></span>
                                                     </p>
                                                     <p
-                                                        v-if="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other != '<p><br></p>'">
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other != '<p><br></p>'">
                                                         <span class="dashInfoTitle">Observations</span>
                                                         <span
-                                                            v-html="journals[journals.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other"></span>
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other"></span>
                                                     </p>
                                                 </div>
                                             </div>

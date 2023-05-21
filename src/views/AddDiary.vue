@@ -1,56 +1,56 @@
 <script setup>
 import { onBeforeMount, onMounted } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { spinnerLoadingPage, itemToEditId, currentDate, journalUpdate, tradeTimeZone, journalIdToEdit, journalButton } from '../stores/globals';
+import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, tradeTimeZone, diaryIdToEdit, diaryButton } from '../stores/globals';
 import { useInitQuill, useDateCalFormat } from '../utils/utils';
-import { useUploadJournal } from '../utils/diary'
+import { useUploadDiary } from '../utils/diary'
 
-let journal = {}
+let diary = {}
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
-    await Promise.all([journalDateInput(currentDate.value), useInitQuill(0), useInitQuill(1), useInitQuill(2)])
-    await initJournalJson()
-    await getJournalToEdit(itemToEditId.value)
+    await Promise.all([diaryDateInput(currentDate.value), useInitQuill(0), useInitQuill(1), useInitQuill(2)])
+    await initDiaryJson()
+    await getDiaryToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
 })
 
-function journalDateInput(param) {
-    console.log(" -> journalDateInput param: " + param)
-    journalUpdate.dateUnix = dayjs.tz(param, tradeTimeZone.value).unix()
-    journalUpdate.date = dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD")
-    journalUpdate.dateDateFormat = new Date(dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD"))
-    //console.log(" -> journalDateUnix " + journalUpdate.dateUnix + " and date " + journalUpdate.date)
-    //console.log("journalUpdate " + JSON.stringify(journalUpdate))
+function diaryDateInput(param) {
+    console.log(" -> diaryDateInput param: " + param)
+    diaryUpdate.dateUnix = dayjs.tz(param, tradeTimeZone.value).unix()
+    diaryUpdate.date = dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD")
+    diaryUpdate.dateDateFormat = new Date(dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD"))
+    //console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
+    //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
 }
 
-async function getJournalToEdit(param) {
+async function getDiaryToEdit(param) {
     if (!param) {
         return
     }
-    journalIdToEdit.value = param
-    //console.log("journal to edit " + journalIdToEdit.value)
+    diaryIdToEdit.value = param
+    //console.log("diary to edit " + diaryIdToEdit.value)
     const parseObject = Parse.Object.extend("journals");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", param);
     const results = await query.first();
     if (results) {
-        journal = JSON.parse(JSON.stringify(results)) //we start by using journal to show html. Then, for changing, we use journal
-        //console.log(" Journal to edit " + JSON.stringify(journal))
-        document.querySelector("#quillEditor0 .ql-editor").innerHTML = journal.journal.positive
-        document.querySelector("#quillEditor1 .ql-editor").innerHTML = journal.journal.negative
-        document.querySelector("#quillEditor2 .ql-editor").innerHTML = journal.journal.other
+        diary = JSON.parse(JSON.stringify(results)) //we start by using diary to show html. Then, for changing, we use diary
+        //console.log(" Diary to edit " + JSON.stringify(diary))
+        document.querySelector("#quillEditor0 .ql-editor").innerHTML = diary.journal.positive
+        document.querySelector("#quillEditor1 .ql-editor").innerHTML = diary.journal.negative
+        document.querySelector("#quillEditor2 .ql-editor").innerHTML = diary.journal.other
     } else {
         console.log(' -> No diary to edit')
         //alert("Query did not return any results")
     }
 }
 
-async function initJournalJson(param) {
+async function initDiaryJson(param) {
     return new Promise(async (resolve, reject) => {
 
-        journalUpdate.journal = {}
+        diaryUpdate.journal = {}
 
         resolve()
     })
@@ -67,9 +67,9 @@ async function initJournalJson(param) {
         <div>
             <div v-show="!spinnerLoadingPage">
                 <div class="mt-3 input-group mb-3">
-                    <input type="date" class="form-control" v-bind:readonly="journal.hasOwnProperty('date')"
-                        v-bind:value="journal.hasOwnProperty('dateUnix') ? journalUpdate.date = useDateCalFormat(journal.dateUnix) : journalUpdate.hasOwnProperty('date') ? journalUpdate.date : journalUpdate.date = currentDate"
-                        v-on:input="journalDateInput($event.target.value)" />
+                    <input type="date" class="form-control" v-bind:readonly="diary.hasOwnProperty('date')"
+                        v-bind:value="diary.hasOwnProperty('dateUnix') ? diaryUpdate.date = useDateCalFormat(diary.dateUnix) : diaryUpdate.hasOwnProperty('date') ? diaryUpdate.date : diaryUpdate.date = currentDate"
+                        v-on:input="diaryDateInput($event.target.value)" />
                 </div>
                 <h5>Positive Aspects</h5>
                 <div class="mt-2">
@@ -84,7 +84,7 @@ async function initJournalJson(param) {
                     <div id="quillEditor2"></div>
                 </div>
                 <div class="mt-3">
-                    <button :disabled="!journalButton" type="button" v-on:click="useUploadJournal()"
+                    <button :disabled="!diaryButton" type="button" v-on:click="useUploadDiary()"
                         class="btn btn-success btn-lg">Submit</button>
                 </div>
                 <div class="mt-3">

@@ -1,11 +1,12 @@
 <script setup>
-import { ref, reactive, onMounted, onBeforeMount, defineAsyncComponent } from 'vue'
+import {computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData } from '../stores/globals';
 import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTwoDecPercentFormat, useInitIndexedDB, useSetSelectedLocalStorage } from '../utils/utils';
 import { useGetAllTrades } from '../utils/trades';
 import NoData from '../components/NoData.vue';
+
 const dashTabs = [{
     id: "overviewTab",
     label: "Overview",
@@ -32,6 +33,16 @@ const dashTabs = [{
     target: "#financialsNav"
 }
 ]
+
+const apptCompute = computed(()=>{
+    let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins']*totals['avg' + amountCapital.value + 'Wins'])-(totals['prob' + amountCapital.value + 'Loss']*totals['avg'+ amountCapital.value + 'Loss'])) 
+    return temp
+})
+
+const appsptCompute = computed(() => {
+    let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'SharePLWins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'SharePLLoss']))
+    return temp
+})
 
 onBeforeMount(async() => {
     await useInitIndexedDB()
@@ -137,22 +148,12 @@ onMounted(async () => {
                                                         </div>
                                                         <div class="col-4">
                                                             <h4 class="titleWithDesc">
-                                                                {{ useTwoDecCurrencyFormat((totals['prob' + amountCapital +
-                                                                    'Wins']
-                                                                    *
-                                                                    totals['avg' + amountCapital + 'Wins']) -
-                                                                    (totals['prob' + amountCapital + 'Loss'] *
-                                                                        totals['avg' + amountCapital + 'Loss'])) }}</h4>
+                                                                {{ apptCompute }}</h4>
                                                             <span class="dashInfoTitle">APPT</span>
                                                         </div>
                                                         <div class="col-4">
                                                             <h4 class="titleWithDesc">
-                                                                {{ useTwoDecCurrencyFormat((totals['prob' + amountCapital +
-                                                                    'Wins']
-                                                                    *
-                                                                    totals['avg' + amountCapital + 'SharePLWins']) -
-                                                                    (totals['prob' + amountCapital + 'Loss'] *
-                                                                        totals['avg' + amountCapital + 'SharePLLoss'])) }}</h4>
+                                                                {{ appsptCompute }}</h4>
                                                             <span class="dashInfoTitle">APPSPT</span>
                                                         </div>
                                                     </div>

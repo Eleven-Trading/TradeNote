@@ -54,7 +54,7 @@ onMounted(() => {
                                 <div class="col-auto">{{ useCreatedDateFormat(screenshot.dateUnix) }}</div>
                             </div>
                             <div class="col-12">
-                                <div class="row mt-2 journalRow">
+                                <div class="row mt-2 diaryRow">
                                     <span class="col mb-2 txt-small">{{ screenshot.symbol }}
                                         <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short'
                                             : 'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
@@ -111,7 +111,7 @@ onMounted(() => {
                                     <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
                                     <p>{{ screenshot.symbol }}
                                         <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
-                                            'Long' }} | {{ useTmeFormat(screenshot.dateUnix) }}</span>
+                                            'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
                                         <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
                                         <span
                                             v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">

@@ -1,8 +1,8 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, tradeTimeZone, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, journalUpdate, journalButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
+import { pageId, tradeTimeZone, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
 import { useECharts } from './charts';
-import { useDeleteJournal } from "./diary";
+import { useDeleteDiary } from "./diary";
 import { useDeleteScreenshot } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
 
@@ -262,7 +262,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step5',
-        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a tab where you can see your daily journal entry (see below), all your trades and a blotter of your trades per symbol.</p><p>For each trade, you can click on the line to add a note per trade, a pattern and a mistake. Currently, patterns and mistakes must be first added manually in the Parse Dashboard.</p>',
+        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a tab where you can see your daily diary entry (see below), all your trades and a blotter of your trades per symbol.</p><p>For each trade, you can click on the line to add a note per trade, a pattern and a mistake. Currently, patterns and mistakes must be first added manually in the Parse Dashboard.</p>',
         attachTo: {
             element: '#step5',
             on: 'right'
@@ -283,7 +283,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step6',
-        text: 'Journal is where you can see and edit your daily journals.',
+        text: 'Diary is where you can see and edit your daily entries.',
         attachTo: {
             element: '#step6',
             on: 'right'
@@ -397,7 +397,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step11',
-        text: "<p>Click here to add trades, diary entries, screenshots or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Journal is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in case.value). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
+        text: "<p>Click here to add trades, diary entries, screenshots or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Diary is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in case.value). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
         attachTo: {
             element: '#step11',
             on: 'bottom'
@@ -486,17 +486,17 @@ export async function useInitQuill(param) {
                 let elements = document.querySelectorAll(".ql-editor");
                 elements.forEach((input, index) => {
                     if (index == 0) {
-                        journalUpdate.journal.positive = input.innerHTML
+                        diaryUpdate.journal.positive = input.innerHTML
                     }
                     if (index == 1) {
-                        journalUpdate.journal.negative = input.innerHTML
+                        diaryUpdate.journal.negative = input.innerHTML
                     }
                     if (index == 2) {
-                        journalUpdate.journal.other = input.innerHTML
+                        diaryUpdate.journal.other = input.innerHTML
                     }
                 })
-                //console.log(" -> journalUpdate " + JSON.stringify(journalUpdate))
-                journalButton.value = true
+                //console.log(" -> diaryUpdate " + JSON.stringify(diaryUpdate))
+                diaryButton.value = true
             }
 
             if (pageId.value == "addPlaybook") {
@@ -602,7 +602,7 @@ export function useInitPopover() {
             useDeleteScreenshot()
         }
         if (pageId.value == "diary") {
-            useDeleteJournal(true)
+            useDeleteDiary(true)
         }
         if (pageId.value == "playbook") {
             useDeletePlaybook()
@@ -634,7 +634,7 @@ export function useScreenType() {
 
 export async function useSetSelectedLocalStorage() {
     return new Promise(async (resolve, reject) => {
-        //console.log(" -> Setting selected local storage")
+        console.log(" -> Setting selected local storage")
 
         if (!localStorage.getItem('selectedDashTab')) localStorage.setItem('selectedDashTab', 'overviewTab')
         selectedDashTab.value = localStorage.getItem('selectedDashTab')
@@ -689,8 +689,8 @@ export async function useSetSelectedLocalStorage() {
         }
 
         amountCase.value = localStorage.getItem('selectedGrossNet')
-
-        amountCapital.value = computed(() => { return amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : '' })
+        console.log('amount case '+amountCase.value)
+        amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
         resolve()
     })
 }
