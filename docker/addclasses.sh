@@ -19,10 +19,10 @@ curl -X POST \
   -H "Content-Type: application/json" \
   -d '
     {
-      "className": "journals",
+      "className": "diaries",
       "fields": {}
     }' \
-  http://$PARSEHOST:1337/parse/schemas/journals
+  http://$PARSEHOST:1337/parse/schemas/diaries
 
 curl -X POST \
   -H "X-Parse-Application-Id: $PARSE_APP_ID" \
@@ -52,10 +52,10 @@ curl -X POST \
   -H "Content-Type: application/json" \
   -d '
     {
-      "className": "setupsEntries",
+      "className": "screenshots",
       "fields": {}
     }' \
-  http://$PARSEHOST:1337/parse/schemas/setupsEntries
+  http://$PARSEHOST:1337/parse/schemas/screenshots
 
 curl -X POST \
   -H "X-Parse-Application-Id: $PARSE_APP_ID" \

@@ -10,7 +10,7 @@ export async function useGetDiaries(param1, param2) {
     console.log("param 2 "+ param2)
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting diaries");
-        const parseObject = Parse.Object.extend("journals");
+        const parseObject = Parse.Object.extend("diaries");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
@@ -50,7 +50,7 @@ export async function useGetDiaries(param1, param2) {
 
 export async function useUploadDiary() {
 
-    const parseObject = Parse.Object.extend("journals");
+    const parseObject = Parse.Object.extend("diaries");
 
     if (diaryIdToEdit.value) {
         console.log(" -> Updating diary")
@@ -96,7 +96,7 @@ export async function useUploadDiary() {
 export async function useDeleteDiary(param1, param2) {
     //console.log("selected item " + selectedItem.value)
     console.log("\nDELETING JOURNAL ENTRY")
-    const parseObject = Parse.Object.extend("journals");
+    const parseObject = Parse.Object.extend("diaries");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", selectedItem.value);
     const results = await query.first();

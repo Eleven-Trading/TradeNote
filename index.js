@@ -5,6 +5,9 @@ const Parse = require('parse/node');
 const path = require('path');
 const fs = require('fs');
 const Vite = require('vite');
+const MongoClient = require("mongodb").MongoClient;
+
+let mongoDatabase = "parse"
 
 var app = express();
 
@@ -15,21 +18,21 @@ const PROXY_PORT = 39482;
 
 let server = null
 
-const startIndex = async() => {
+const startIndex = async () => {
 
-    const startServer = async() => {
+    const startServer = async () => {
         console.log("\nSTARTING NODEJS SERVER")
-        return new Promise(async(resolve, reject) => {
-            server = app.listen(port, function() {
+        return new Promise(async (resolve, reject) => {
+            server = app.listen(port, function () {
                 console.log('\nTradeNote server started on http://localhost:' + port)
             });
             resolve(server)
         })
     }
 
-    const runServer = async() => {
+    const runServer = async () => {
         console.log("\nRUNNING SERVER")
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if (process.env.NODE_ENV == 'dev') {
 
                 const Proxy = require('http-proxy');
@@ -56,16 +59,16 @@ const startIndex = async() => {
                 app.use(express.static('dist'))
                 app.get('*', function (request, response) {
                     response.sendFile(path.resolve('dist', 'index.html'));
-                  });
+                });
                 console.log(" -> Running prod server")
                 resolve()
             }
         })
     }
 
-    const setupParseServer = async() => {
+    const setupParseServer = async () => {
         console.log("\nSETTING UP PARSE SERVER")
-        return new Promise(async(resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const serv = new ParseServer({
                 databaseURI: process.env.MONGO_URI,
                 appId: process.env.APP_ID,
@@ -77,7 +80,7 @@ const startIndex = async() => {
             await serv.start().then(() => {
                 app.use('/parse', serv.app);
                 resolve()
-            })            
+            })
         })
     }
 
@@ -121,7 +124,7 @@ const startIndex = async() => {
         }
     });
 
-    app.post("/updateSchemas", async(req, res) => {
+    app.post("/updateSchemas", async (req, res) => {
         //console.log("\nAPI : post update schema")
 
         let rawdata = fs.readFileSync('requiredClasses.json');
@@ -130,13 +133,54 @@ const startIndex = async() => {
 
         let existingSchema = []
         const getExistingSchema = await Parse.Schema.all()
-        console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
-        getExistingSchema.forEach(element => {
-            existingSchema.push(element.className)
-        });
-        console.log(" -> Existing Schema " + existingSchema)
+        //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
 
-        const uploadSchema = (param1, param2, param3) => {
+        const renameMongoDb = (param1, param2) => {
+            return new Promise(async (resolve, reject) => {
+                console.log(" -> Renaming class " + param1 + " to " + param2)
+                MongoClient.connect(process.env.MONGO_URI).then(async (client) => {
+                    console.log("  --> Connected to MongoDB")
+                    const connect = client.db(mongoDatabase);
+                    const allCollections = await connect.listCollections().toArray()
+                    //console.log("allCollections "+JSON.stringify(allCollections))
+                    let collectionExists = allCollections.filter(obj => obj.name == param1)
+                    //console.log("  --> collectionExists "+collectionExists.length)
+                    if (collectionExists.length > 0) {
+                        const collection = connect.collection(param1);
+                        collection.rename(param2).then(() => {
+                            console.log(" -> Renamed class successfully");
+                            resolve()
+                        })
+                    } else {
+                        console.log(" -> Collection doesn't exist.")
+                        resolve()
+                    }
+
+                }).catch((err) => {
+                    console.log(" -> Error renaming MongoDB class: " + err.Message);
+                    reject()
+                })
+            })
+        }
+        for (let i = 0; i < getExistingSchema.length; i++) {
+            //console.log("Class name " + getExistingSchema[i].className)
+            
+            //we check for classes/collections that need to be renamed
+            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
+                let oldName = getExistingSchema[i].className
+                let newName
+
+                if (getExistingSchema[i].className == "setupsEntries") newName = "screenshots"
+                if (getExistingSchema[i].className == "journals") newName = "diaries"
+
+                await renameMongoDb(oldName, newName)
+            } else {
+                existingSchema.push(getExistingSchema[i].className)
+            }
+        }
+        //console.log(" -> Existing Schema " + existingSchema)
+
+        const updateSaveSchema = (param1, param2, param3) => {
             return new Promise((resolve, reject) => {
                 const mySchema = new Parse.Schema(param1);
                 if (param2[param3].type === "String") mySchema.addString(param3)
@@ -153,16 +197,20 @@ const startIndex = async() => {
 
                 //console.log("existing schema "+existingSchema)
                 //console.log("includes ? "+existingSchema.includes(className))
+
+                //If Parse (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
                 if (existingSchema.includes(param1)) {
                     mySchema.update().then((result) => {
-                        console.log(" -> Updated schema " + JSON.stringify(result))
+                        console.log("  --> Updating field type "+param2[param3].type)
+                        //console.log(" -> Updated schema " + JSON.stringify(result))
                         resolve()
                     })
                 } else {
                     mySchema.save().then((result) => {
-                        console.log(" -> Save new schema " + JSON.stringify(result))
-                        existingSchema.push(param1)
-                        console.log(" -> Existing Schema " + existingSchema)
+                        //console.log(" -> Save new schema " + JSON.stringify(result))
+                        console.log("  --> Saving field type "+param2[param3].type)
+                        existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
+                        //console.log(" -> Existing Schema " + existingSchema)
                         resolve()
                     })
                 }
@@ -172,17 +220,19 @@ const startIndex = async() => {
         for (let i = 0; i < schemasJson.length; i++) {
             //console.log("el " + schemasJson[i].className)
             let className = schemasJson[i].className
+            console.log(" -> Upsert class/collection "+className+" in Parse Schema")
             let obj = schemasJson[i].fields
             for (const key of Object.keys(obj)) {
                 //console.log(key, obj[key]);
                 if (key != "objectId" && key != "updatedAt" && key != "createdAt" && key != "ACL") {
-                    console.log(" -> Key " + key)
-                    await uploadSchema(className, obj, key)
+                    //console.log(" -> Key " + key)
+                    await updateSaveSchema(className, obj, key)
                 }
 
             }
         }
         res.sendStatus(200)
+
 
     })
 

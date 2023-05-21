@@ -14,11 +14,11 @@ async function login() {
     alert("Missing App ID. Please make sure you entered correct App ID during runtime.")
     return
   }
-  //const updateSchemaFunction = await updateSchema()
-  //console.log(" -> Status " + updateSchemaFunction.status)
-  const test = 200
-  //if (updateSchemaFunction.status == 200) {
-  if (test == 200) {
+  const updateSchemaFunction = await updateSchema()
+  console.log(" -> Status " + updateSchemaFunction.status)
+  //const test = 200
+  if (updateSchemaFunction.status == 200) {
+  //if (test == 200) {
     try {
       console.log(" -> Parse logIn")
       await Parse.User.logIn(loginForm.username, loginForm.password)

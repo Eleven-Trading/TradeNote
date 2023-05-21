@@ -257,79 +257,6 @@
         }
     },
     {
-        "className": "videos",
-        "fields": {
-            "objectId": {
-                "type": "String"
-            },
-            "createdAt": {
-                "type": "Date"
-            },
-            "updatedAt": {
-                "type": "Date"
-            },
-            "ACL": {
-                "type": "ACL"
-            },
-            "video": {
-                "type": "String",
-                "required": false
-            },
-            "videoDate": {
-                "type": "Date",
-                "required": false
-            },
-            "videoDateUnix": {
-                "type": "Number",
-                "required": false
-            },
-            "videoName": {
-                "type": "String",
-                "required": false
-            },
-            "user": {
-                "type": "Pointer",
-                "targetClass": "_User",
-                "required": false
-            },
-            "tradeDateUnix": {
-                "type": "Number",
-                "required": false
-            }
-        },
-        "classLevelPermissions": {
-            "find": {
-                "*": true
-            },
-            "count": {
-                "*": true
-            },
-            "get": {
-                "*": true
-            },
-            "create": {
-                "*": true
-            },
-            "update": {
-                "*": true
-            },
-            "delete": {
-                "*": true
-            },
-            "addField": {
-                "*": true
-            },
-            "protectedFields": {
-                "*": []
-            }
-        },
-        "indexes": {
-            "_id_": {
-                "_id": 1
-            }
-        }
-    },
-    {
         "className": "patterns",
         "fields": {
             "objectId": {
@@ -615,7 +542,7 @@
         }
     },
     {
-        "className": "journals",
+        "className": "diaries",
         "fields": {
             "objectId": {
                 "type": "String"
@@ -757,7 +684,7 @@
         }
     },
     {
-        "className": "setupsEntries",
+        "className": "screenshots",
         "fields": {
             "objectId": {
                 "type": "String"

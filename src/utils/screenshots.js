@@ -52,7 +52,7 @@ export async function useGetScreenshots(param) {
         //console.log(" -> selectedPatterns " + selectedPatterns.value)
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination);
         //console.log(" selected start date " + selectedMonth.value.start)
-        const parseObject = Parse.Object.extend("setupsEntries");
+        const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
@@ -289,7 +289,7 @@ export async function useUploadScreenshotToParse() {
         let annotatedFile = dataURLtoFile(screenshot.annotatedBase64, originalName);
         const parseAnnotatedFile = new Parse.File(annotatedName, annotatedFile);
 
-        const parseObject = Parse.Object.extend("setupsEntries");
+        const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
         query.equalTo("objectId", screenshot.objectId);
 
@@ -390,7 +390,7 @@ export async function useDeleteScreenshot(param1, param2) {
     if (setupToDelete) await useDeletePatternMistake(setupToDelete.dateUnixDay, setupToDelete.name)
 
     /* Now, let's delete screenshot */
-    const parseObject = Parse.Object.extend("setupsEntries");
+    const parseObject = Parse.Object.extend("screenshots");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", selectedItem.value);
     const results = await query.first();

@@ -60,7 +60,7 @@ async function getScreenshotToEdit(param) {
     editingScreenshot.value = true
 
     //console.log("screenshot to edit " + screenshotIdToEdit.value)
-    const parseObject = Parse.Object.extend("setupsEntries");
+    const parseObject = Parse.Object.extend("screenshots");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", param);
     const results = await query.first();

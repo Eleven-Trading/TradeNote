@@ -31,7 +31,7 @@ async function getDiaryToEdit(param) {
     }
     diaryIdToEdit.value = param
     //console.log("diary to edit " + diaryIdToEdit.value)
-    const parseObject = Parse.Object.extend("journals");
+    const parseObject = Parse.Object.extend("diaries");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", param);
     const results = await query.first();
