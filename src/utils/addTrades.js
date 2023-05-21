@@ -1,7 +1,7 @@
 import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, tradeTimeZone, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, patternsMistakes, existingTradesArray } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
 import { useRefreshTrades } from './trades'
-import { useChartFormat, useTimeFormat } from './utils'
+import { useChartFormat, useDateTimeFormat, useTimeFormat } from './utils'
 
 let openPosition = false
 let tradeAccounts = []
@@ -55,7 +55,7 @@ export async function useImportTrades(e) {
 
         await createExecutions()
         if (currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') {
-            await getOHLCV.value()
+            await getOHLCV()
         }
         await createTrades().then(async () => {
             //console.log(" -> Open posisitions: " + openPosition)
@@ -746,7 +746,7 @@ async function createTrades() {
                                         //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
                                         while (i <= endOfDayTimeIndex && (temp7.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
                                             temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
-                                            //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+dateuseTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
+                                            //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+useDateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
                                             if (temp7.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
                                             if (temp7.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
                                             i++
@@ -756,7 +756,7 @@ async function createTrades() {
                                     if (temp7.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
                                     if (temp7.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
 
-                                    console.log("    ----> " + temp7.strategy + " stratgy with entry at " + dateuseTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + dateuseTimeFormat(temp7.exitTime) + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
+                                    console.log("    ----> " + temp7.strategy + " stratgy with entry at " + useDateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + useDateTimeFormat(temp7.exitTime) + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
                                     //if short, MFE price = if price is lower than MFE
                                     //if long, MFE = if price is higher than MFE
 

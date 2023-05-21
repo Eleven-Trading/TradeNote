@@ -127,7 +127,7 @@ export const gotExistingTradesArray = ref(false)
 **************************************/
 export const calendarData = reactive({})
 export const miniCalendarsData = reactive([])
-export const uploadMfePrices = ref(false)
+export const uploadMfePrices = ref(true)
 
 /**************************************
 * DAILY
