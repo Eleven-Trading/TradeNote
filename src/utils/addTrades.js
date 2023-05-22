@@ -373,6 +373,8 @@ async function createTrades() {
             let initEntryPrice
 
             for (const tempExec of tempExecs) {
+                console.log("   ---> Opening Position")
+                        openPosition = true
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
@@ -571,6 +573,7 @@ async function createTrades() {
                         .find(x => x.id == tempExec.id)
                         .trade = temp7.id
                     console.log(" -> buy quantity " + temp7.buyQuantity + " and sell quantity " + temp7.sellQuantity)
+                    
                     if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
                         temp7.exitPrice = tempExec.price;
                         temp7.exitTime = tempExec.execTime;
@@ -797,7 +800,6 @@ async function createTrades() {
 
                     } else {
                         console.log("   ---> Position OPEN")
-                        openPosition = true
                     }
                 } else {
                     console.log("nothing for key " + key2)
@@ -1450,7 +1452,7 @@ export async function useUploadTrades() {
     }
     checkTradeAccounts()
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
-    if (Object.keys(mfePrices).length > 0) await updateMfePrices.value()
+    if (Object.keys(mfePrices).length > 0) await updateMfePrices()
     useRefreshTrades()
 
 }

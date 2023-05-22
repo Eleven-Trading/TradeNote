@@ -115,15 +115,17 @@ docker pull eleventrading/tradenote:<tag>
 
 #### 2_ Run image
 ```
-docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
+docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
 ```
 Run the image with the following environment variables
-- <MONGO_URI>: URI to your mongo database, including database name. It must have the following structure: `mongodb://<mongo_user>:<mongo_password>@<mongo_url>:<mongo_port>/<tradenote_database>?authSource=admin`. 
-   - <mongo_url>: Enter one of the following information : 
-      - If you have followed the above MongoDB installation process and created a network ("tradenote-net"), simply use the container name ("tradenote-mongo").
-      - If you have an existing MongoDB running on a local network, you can either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
-      - If you have an existing MongoDB on a remote network, simply use the remote IP address
-   - <tradenote_database>: You can use whatever name you like for your  tradenote database. 
+- <MONGO_URL>: Enter one of the following information : 
+   - If you have followed the above MongoDB installation process and created a network ("tradenote-net"), simply use the container name ("tradenote-mongo").
+   - If you have an existing MongoDB running on a local network, you can either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
+   - If you have an existing MongoDB on a remote network, simply use the remote IP address
+- <MONGO_PORT>: The MongoDB port number.
+- <MONGO_USER>: The MongoDB user.
+- <MONGO_PASSWORD>: The MongoDB password.
+- <TRADENOTE_DATABASE>: The TradeNote database name in the MongoDB. You can use whatever name you like. 
 - <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
 - <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
 - < TAG >: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")

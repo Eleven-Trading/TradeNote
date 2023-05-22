@@ -7,11 +7,13 @@ const fs = require('fs');
 const Vite = require('vite');
 const MongoClient = require("mongodb").MongoClient;
 
-let mongoDatabase = "parse"
+let databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+
+let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
 var app = express();
 
-const port = 7788;
+const port = 7777;
 const PROXY_PORT = 39482;
 
 // SERVER
@@ -70,10 +72,12 @@ const startIndex = async () => {
         console.log("\nSETTING UP PARSE SERVER")
         return new Promise(async (resolve, reject) => {
             const serv = new ParseServer({
-                databaseURI: process.env.MONGO_URI,
+                databaseURI: databaseURI,
                 appId: process.env.APP_ID,
                 masterKey: process.env.MASTER_KEY,
-                port: port
+                port: port,
+                allowClientClassCreation: false,
+                allowExpiredAuthDataToken: false
             });
 
             // EXPRESS USE
@@ -140,7 +144,7 @@ const startIndex = async () => {
                 console.log(" -> Renaming class " + param1 + " to " + param2)
                 MongoClient.connect(process.env.MONGO_URI).then(async (client) => {
                     console.log("  --> Connected to MongoDB")
-                    const connect = client.db(mongoDatabase);
+                    const connect = client.db(tradenoteDatabase);
                     const allCollections = await connect.listCollections().toArray()
                     //console.log("allCollections "+JSON.stringify(allCollections))
                     let collectionExists = allCollections.filter(obj => obj.name == param1)
