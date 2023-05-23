@@ -142,7 +142,7 @@ const startIndex = async () => {
         const renameMongoDb = (param1, param2) => {
             return new Promise(async (resolve, reject) => {
                 console.log(" -> Renaming class " + param1 + " to " + param2)
-                MongoClient.connect(process.env.MONGO_URI).then(async (client) => {
+                MongoClient.connect(databaseURI).then(async (client) => {
                     console.log("  --> Connected to MongoDB")
                     const connect = client.db(tradenoteDatabase);
                     const allCollections = await connect.listCollections().toArray()
