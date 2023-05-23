@@ -76,20 +76,14 @@ export async function useLoadCalendar(param, param2) {
                     element.forEach((element2) => {
                         // 1- Create a calendar date from each element2 (calendar number)
                         let elementDate = year + "/" + month + "/" + element2
-                        //var elementDateUnix = dayjs(elementDate).unix()
-                        //console.log("elementDateUnix  "+elementDateUnix)
 
                         // 2- Create data for each calendar box
                         let tempData = {}
                         tempData.month = useMonthFormat(param1) // day number of the month
-                        //console.log("month "+tempData.month)
                         tempData.day = element2 // day number of the month
-                        //tempData.dateUnix = elementDateUnix // date in unix
 
                         //Getting trade that is from the same day
                         let trade = filteredTrades.filter(f => dayjs.unix(f.dateUnix).tz(timeZoneTrade.value).isSame(dayjs.tz(elementDate, timeZoneTrade.value), 'day')) // filter by finding the same day of month between calendar date and unix date in DB
-                        console.log(" element 2 "+element2)
-                        console.log(" -> Trade " + JSON.stringify(trade))
 
                         if (trade.length && element2 != 0) { //Check also if not null because day in date cannot be 0
                             tempData.pAndL = trade[0].pAndL

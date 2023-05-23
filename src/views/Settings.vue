@@ -24,8 +24,8 @@ async function updateProfile() {
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING PROFILE")
 
-        const Object = Parse.Object.extend("_User");
-        const query = new Parse.Query(Object);
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
         query.equalTo("objectId", currentUser.value.objectId);
         const results = await query.first();
         if (results) {

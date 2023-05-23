@@ -46,7 +46,7 @@ export async function useGetScreenshots(param) {
         }
     });
 
-
+    console.log("excluded Ids "+excludedIds)
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting screenshots");
         //console.log(" -> selectedPatterns " + selectedPatterns.value)
@@ -97,7 +97,7 @@ export async function useGetScreenshots(param) {
             }
 
 
-            //console.log(" -> Setups/Screenshots " + JSON.stringify(setups))
+            //console.log(" -> Screenshots " + JSON.stringify(screenshots))
             screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit
             spinnerSetups.value = false //spinner for trades in daily
             spinnerLoadMore.value = false

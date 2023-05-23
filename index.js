@@ -205,14 +205,14 @@ const startIndex = async () => {
                 //If Parse (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
                 if (existingSchema.includes(param1)) {
                     mySchema.update().then((result) => {
-                        console.log("  --> Updating field type "+param2[param3].type)
+                        console.log("  --> Updating field "+param3)
                         //console.log(" -> Updated schema " + JSON.stringify(result))
                         resolve()
                     })
                 } else {
                     mySchema.save().then((result) => {
                         //console.log(" -> Save new schema " + JSON.stringify(result))
-                        console.log("  --> Saving field type "+param2[param3].type)
+                        console.log("  --> Saving field "+param3)
                         existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
                         //console.log(" -> Existing Schema " + existingSchema)
                         resolve()

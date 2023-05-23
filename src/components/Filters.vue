@@ -24,12 +24,12 @@ let filters = ref({
 
 /*if (selectedDateRange.value) {
     console.log(" -> Filtering date range")
-    let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+    let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
     if (tempFilter.length > 0) {
         selectedPeriodRange.value = tempFilter[0]
     } else {
         console.log(" -> Custom range in vue")
-        selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+        selectedPeriodRange.value = periodRange.filter(element => element.start == -1)[0]
     }
 }*/
 //console.log(" -> Selected date range "+JSON.stringify(selectedPeriodRange))
@@ -85,14 +85,14 @@ function filtersClick() {
         //console.log(" periodRange "+JSON.stringify(periodRange))
         // Restore Selected Period range
         //console.log(" selectedDateRange "+JSON.stringify(selectedDateRange.value))
-        let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+        let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
 
         if (tempFilter.length > 0) {
             selectedPeriodRange.value = tempFilter[0]
         } else {
             //console.log(" -> Custom range in trades mixin")
             //console.log(" periodRange 2 " + JSON.stringify(periodRange))
-            selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+            selectedPeriodRange.value = periodRange.filter(element => element.start == -1)[0]
         }
 
         //console.log(" -> Filters click (on close): Selected Period Range " + JSON.stringify(selectedPeriodRange))
@@ -166,7 +166,7 @@ function filtersClick() {
 function inputDateRange(param) {
     //console.log(" -> Input Date Range - Param: "+param)
     //Filter to find the value of date range
-    var filterJson = periodRange.value.filter(element => element.value == param)[0]
+    var filterJson = periodRange.filter(element => element.value == param)[0]
     selectedPeriodRange.value = filterJson
     //console.log(" -> Input range: Selected Date Range " + JSON.stringify(selectedPeriodRange.value))
 
@@ -194,12 +194,12 @@ function inputDateRangeCal(param1, param2) {
     //console.log("selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     /* Update selectedPeriodRange */
-    let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+    let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
     if (tempFilter.length > 0) {
         selectedPeriodRange.value = tempFilter[0]
     } else {
         //console.log(" -> Custom range in trades mixin")
-        selectedPeriodRange.value = periodRange.value.filter(element => element.start == -1)[0]
+        selectedPeriodRange.value = periodRange.filter(element => element.start == -1)[0]
     }
 }
 

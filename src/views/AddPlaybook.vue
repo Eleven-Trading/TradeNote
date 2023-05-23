@@ -30,8 +30,8 @@ async function getPlaybookToEdit(param) {
     }
     playbookIdToEdit.value = param
     //console.log("playbook to edit " + playbookIdToEdit.value)
-    const Object = Parse.Object.extend("playbooks");
-    const query = new Parse.Query(Object);
+    const parseObject = Parse.Object.extend("playbooks");
+    const query = new Parse.Query(parseObject);
     query.equalTo("objectId", param);
     const results = await query.first();
     if (results) {

@@ -887,7 +887,7 @@ async function updateIndexedDB(param1) {
                                                     </div>
 
                                                     <!-- Patterns -->
-                                                    <div class="col-5">
+                                                    <div class="col-5" v-if="patterns.length>0">
                                                         <select
                                                             v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
                                                             class="form-select">
@@ -898,9 +898,12 @@ async function updateIndexedDB(param1) {
                                                                 {{ item.name }}</option>
                                                         </select>
                                                     </div>
+                                                    <div class="col-5" v-else>
+                                                        <span class="form-control">Add pattern tags in <a href="/settings">settings</a></span>
+                                                    </div>
 
                                                     <!-- Mistakes -->
-                                                    <div class="col-5">
+                                                    <div class="col-5" v-if="mistakes.length>0">
                                                         <select
                                                             v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
                                                             class="form-select">
@@ -910,6 +913,9 @@ async function updateIndexedDB(param1) {
                                                                 v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">
                                                                 {{ item.name }}</option>
                                                         </select>
+                                                    </div>
+                                                    <div class="col-5" v-else>
+                                                        <span class="form-control">Add mistake tags in <a href="/settings">settings</a></span>
                                                     </div>
 
                                                     <!-- Delete -->

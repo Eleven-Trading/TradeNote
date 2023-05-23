@@ -2,7 +2,7 @@
 import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import { ref, reactive, onMounted, onBeforeMount } from 'vue'
-import { useInitParse, usePageId, useScreenType, useSetSelectedLocalStorage, useInitIndexedDB } from '../utils/utils.js'
+import { useInitParse, usePageId, useScreenType, useSetSelectedLocalStorage, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
 
 /*========================================
   Functions used on all Dashboard components
@@ -10,6 +10,8 @@ import { useInitParse, usePageId, useScreenType, useSetSelectedLocalStorage, use
 onBeforeMount(async () => {
   usePageId()
   useInitParse()
+  useGetTimeZone()
+  useGetPeriods()
   await useSetSelectedLocalStorage()
 })
 

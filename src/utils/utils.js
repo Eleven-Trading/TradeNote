@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones } from "../stores/globals"
 import { useECharts } from './charts';
 import { useDeleteDiary } from "./diary";
 import { useDeleteScreenshot } from '../utils/screenshots'
@@ -133,7 +133,7 @@ export function useInitParse() {
 }
 
 export function useCheckCurrentUser() {
-    console.log("\CHECKING CURRENT USER")
+    console.log("\nCHECKING CURRENT USER")
     return new Promise((resolve, reject) => {
         var path = window.location.pathname
         getCurrentUser()
@@ -160,6 +160,101 @@ export function useCheckCurrentUser() {
 
 export function getCurrentUser() {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
+}
+
+export function useGetTimeZone(){
+    //console.log("Getting timezone")
+    timeZoneTrade.value = currentUser.value.hasOwnProperty("timeZone") ? currentUser.value.timeZone : 'America/New_York'
+    console.log(" -> TimeZone for Trades: "+timeZoneTrade.value)
+}
+
+export function useGetPeriods(){
+    let temp = [{
+        value: "all",
+        label: "All",
+        start: 0,
+        end: 0
+    }, {
+        value: "thisWeek",
+        label: "This Week",
+        start: Number(dayjs().tz(timeZoneTrade.value).startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+    }, {
+        value: "lastWeek",
+        label: "Last Week",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
+    }, {
+        value: "lastWeekTilNow",
+        label: "Last Week Until Now",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+    }, {
+        value: "lastTwoWeeks",
+        label: "Last Two Weeks",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
+    }, {
+        value: "lastTwoWeeksTilNow",
+        label: "Last Two Weeks Until Now",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+    }, {
+        value: "thisMonth",
+        label: "This Month",
+        start: Number(dayjs().tz(timeZoneTrade.value).startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+    }, {
+        value: "lastMonth",
+        label: "Last Month",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+    }, {
+        value: "lastMonthTilNow",
+        label: "Last Month Until Now",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+    }, {
+        value: "lastTwoMonths",
+        label: "Last Two Months",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+    }, {
+        value: "lastTwoMonthsTilNow",
+        label: "Last Two Months Until Now",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+    }, {
+        value: "lastThreeMonths",
+        label: "Last Three Months",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+    }, {
+        value: "lastThreeMonthsTilNow",
+        label: "Last Three Months Until Now",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+    }, {
+        value: "thisYear",
+        label: "This Year",
+        start: Number(dayjs().tz(timeZoneTrade.value).startOf('year').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).endOf('year').unix())
+    }, {
+        value: "lastYear",
+    
+        label: "Last Year",
+        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').startOf('year').unix()),
+        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').endOf('year').unix())
+    }, {
+        value: "custom",
+        label: "Custom",
+        start: -1,
+        end: -1
+    }]
+    periodRange.length = 0
+    temp.forEach(element => {
+        periodRange.push(element)
+    });
 }
 
 export function useInitShepherd() {
@@ -635,7 +730,8 @@ export function useScreenType() {
 export async function useSetSelectedLocalStorage() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Setting selected local storage")
-
+        //console.log("Period Range "+JSON.stringify(periodRange))
+        //console.log("now "+dayjs().tz(timeZoneTrade.value).startOf('month').unix())
         if (!localStorage.getItem('selectedDashTab')) localStorage.setItem('selectedDashTab', 'overviewTab')
         selectedDashTab.value = localStorage.getItem('selectedDashTab')
 
@@ -660,23 +756,23 @@ export async function useSetSelectedLocalStorage() {
         if (!localStorage.getItem('selectedBroker')) localStorage.setItem('selectedBroker', "tradeZero")
         selectedBroker.value = localStorage.getItem('selectedBroker')
 
-        if (!localStorage.getItem('selectedDateRange')) localStorage.setItem('selectedDateRange', JSON.stringify({ start: periodRange.value.filter(element => element.value == 'thisMonth')[0].start, end: periodRange.value.filter(element => element.value == 'thisMonth')[0].end }))
+        if (!localStorage.getItem('selectedDateRange')) localStorage.setItem('selectedDateRange', JSON.stringify({ start: periodRange.filter(element => element.value == 'thisMonth')[0].start, end: periodRange.filter(element => element.value == 'thisMonth')[0].end }))
         selectedDateRange.value = JSON.parse(localStorage.getItem('selectedDateRange'))
 
         if (!localStorage.getItem('selectedPeriodRange')) {
-            let tempFilter = periodRange.value.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
+            let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
             //console.log("selectedDateRange.value "+JSON.stringify(selectedDateRange.value))
             //console.log("tempFilter  "+tempFilter)
             if (tempFilter.length > 0) {
                 localStorage.setItem('selectedPeriodRange', JSON.stringify(tempFilter[0]))
             } else {
                 console.log(" -> Custom range in vue")
-                localStorage.setItem('selectedPeriodRange', JSON.stringify(periodRange.value.filter(element => element.start == -1)[0]))
+                localStorage.setItem('selectedPeriodRange', JSON.stringify(periodRange.filter(element => element.start == -1)[0]))
             }
         }
         selectedPeriodRange.value = JSON.parse(localStorage.getItem('selectedPeriodRange'))
 
-        if (!localStorage.getItem('selectedMonth')) localStorage.setItem('selectedMonth', JSON.stringify({ start: periodRange.value.filter(element => element.value == 'thisMonth')[0].start, end: periodRange.value.filter(element => element.value == 'thisMonth')[0].end }))
+        if (!localStorage.getItem('selectedMonth')) localStorage.setItem('selectedMonth', JSON.stringify({ start: periodRange.filter(element => element.value == 'thisMonth')[0].start, end: periodRange.filter(element => element.value == 'thisMonth')[0].end }))
         selectedMonth.value = JSON.parse(localStorage.getItem('selectedMonth'))
 
         if (Object.is(localStorage.getItem('selectedAccounts'), null) && currentUser.value && currentUser.value.hasOwnProperty("accounts") && currentUser.value.accounts.length > 0) {
@@ -689,7 +785,7 @@ export async function useSetSelectedLocalStorage() {
         }
 
         amountCase.value = localStorage.getItem('selectedGrossNet')
-        console.log('amount case '+amountCase.value)
+        //console.log('amount case '+amountCase.value)
         amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
         resolve()
     })
@@ -766,7 +862,7 @@ export function useDateTimeFormat(param) {
 }
 
 export function useChartFormat(param) {
-    return dayjs.unix(param).tz(timeZoneTrade.value).format("DD/MM/YY")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("l")
 }
 
 export function useMonthFormat(param) {

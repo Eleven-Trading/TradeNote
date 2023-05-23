@@ -41,6 +41,9 @@
             },
             "marketDataApiKey": {
                 "type": "String"
+            },
+            "timeZone": {
+                "type": "String"
             }
         },
         "classLevelPermissions": {

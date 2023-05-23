@@ -218,8 +218,8 @@ export async function useUpdateEditPattern() {
     if (updatePatternName.value == '') {
         alert("Name cannot be empty")
     } else {
-        const Object = Parse.Object.extend("patterns");
-        const query = new Parse.Query(Object);
+        const parseObject = Parse.Object.extend("patterns");
+        const query = new Parse.Query(parseObject);
         query.equalTo("objectId", patternToEdit.value)
         const results = await query.first();
         if (results) {
@@ -256,8 +256,8 @@ export async function useUpdateEditMistake() {
     if (updateMistakeName.value == '') {
         alert("Name cannot be empty")
     } else {
-        const Object = Parse.Object.extend("mistakes");
-        const query = new Parse.Query(Object);
+        const parseObject = Parse.Object.extend("mistakes");
+        const query = new Parse.Query(parseObject);
         query.equalTo("objectId", mistakeToEdit.value)
         const results = await query.first();
         if (results) {
@@ -294,7 +294,7 @@ export async function useSaveNewPattern() {
     if (newPatternName.value == '' || newPatternName.value == null) {
         alert("Name cannot be empty")
     } else {
-        const Object = Parse.Object.extend("patterns");
+        const parseObject = Parse.Object.extend("patterns");
         const object = new parseObject();
         object.set("user", Parse.User.current())
         object.set("name", newPatternName.value)
@@ -318,7 +318,7 @@ export async function useSaveNewMistake() {
     if (newMistakeName.value == '' || newMistakeName.value == null) {
         alert("Name cannot be empty")
     } else {
-        const Object = Parse.Object.extend("mistakes");
+        const parseObject = Parse.Object.extend("mistakes");
         const object = new parseObject();
         object.set("user", Parse.User.current())
         object.set("name", newMistakeName.value)

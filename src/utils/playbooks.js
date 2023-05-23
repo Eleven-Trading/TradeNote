@@ -4,8 +4,8 @@ import { useInitPopover, usePageRedirect } from "./utils";
 export async function useGetPlaybooks(param) {
     return new Promise(async(resolve, reject) => {
         console.log(" -> Getting playbooks");
-        const Object = Parse.Object.extend("playbooks");
-        const query = new Parse.Query(Object);
+        const parseObject = Parse.Object.extend("playbooks");
+        const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.limit(queryLimit.value); // limit to at most 10 results
@@ -21,12 +21,12 @@ export async function useGetPlaybooks(param) {
 }
 
 export async function useUploadPlaybook() {
-    const Object = Parse.Object.extend("playbooks");
+    const parseObject = Parse.Object.extend("playbooks");
 
 
     if (playbookIdToEdit.value) {
         console.log(" -> Updating playbook")
-        const query = new Parse.Query(Object);
+        const query = new Parse.Query(parseObject);
         query.equalTo("objectId", playbookIdToEdit.value);
         const results = await query.first();
         if (results) {
@@ -41,7 +41,7 @@ export async function useUploadPlaybook() {
     } else {
         console.log(" -> Check if playbook already exists")
 
-        const query = new Parse.Query(Object);
+        const query = new Parse.Query(parseObject);
         query.equalTo("dateUnix", playbookUpdate.dateUnix);
         const results = await query.first();
         if (results) {
@@ -70,8 +70,8 @@ export async function useUploadPlaybook() {
 export async function useDeletePlaybook() {
     //console.log("selected item " + selectedItem.value)
     console.log("\nDELETING PLAYBOOK ENTRY")
-    const Object = Parse.Object.extend("playbooks");
-    const query = new Parse.Query(Object);
+    const parseObject = Parse.Object.extend("playbooks");
+    const query = new Parse.Query(parseObject);
     query.equalTo("objectId", selectedItem.value);
     const results = await query.first();
 
