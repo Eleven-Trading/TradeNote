@@ -39,14 +39,14 @@ onMounted(() => {
 <template>
     <DashboardLayout>
         <SpinnerLoadingPage />
-        <div class="row mt-2 mb-2">
+        <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
             <div v-if="screenshots.length == 0">
                 <NoData />
             </div>
             <div v-else>
                 <Filters />
             </div>
-            <div v-show="!spinnerLoadingPage">
+            <div>
                 <div v-if="!expandedScreenshot" v-for="(screenshot, index) in screenshots" class="col-12 col-xl-6 mt-2">
                     <div class="dailyCard" v-bind:id="screenshot.objectId">
                         <div class="row">

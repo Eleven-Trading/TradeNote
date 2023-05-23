@@ -493,7 +493,7 @@ async function updateIndexedDB(param1) {
 <template>
     <DashboardLayout>
         <SpinnerLoadingPage />
-        <div class="row mt-2 mb-2">
+        <div v-if="!spinnerLoadingPage && filteredTrades" class="row mt-2 mb-2">
             <div v-if="!hasData">
                 <NoData />
             </div>
@@ -503,7 +503,7 @@ async function updateIndexedDB(param1) {
                 <!-- added v-if instead v-show because need to wait for patterns to load -->
 
                 <!-- ============ CARD ============ -->
-                <div v-if="!spinnerLoadingPage && filteredTrades" class="col-12 col-xl-8">
+                <div class="col-12 col-xl-8">
                     <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
                     <div v-for="(daily, index) in filteredTrades" class="row mt-2">
                         <div class="col-12">
@@ -744,10 +744,13 @@ async function updateIndexedDB(param1) {
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
                                                 <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == daily.dateUnix)"
                                                     class="mb-2">
-                                                    <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side" class="col mt-1">
-                                                        | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' : 'Long' }}
+                                                    <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side"
+                                                        class="col mt-1">
+                                                        | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
+                                                            'Long' }}
                                                         | {{ useTimeFormat(screenshot.dateUnix) }}</span>
-                                                    <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
+                                                    <span v-else class="col mb-2"> | {{
+                                                        useHourMinuteFormat(screenshot.dateUnix)
                                                     }}</span>
                                                     <span
                                                         v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
@@ -762,7 +765,8 @@ async function updateIndexedDB(param1) {
                                                             | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
                                                                 obj.tradeId == screenshot.name)].mistake.name }}</span></span>
 
-                                                    <img v-bind:id="screenshot.objectId" class="setupEntryImg mt-1 img-fluid"
+                                                    <img v-bind:id="screenshot.objectId"
+                                                        class="setupEntryImg mt-1 img-fluid"
                                                         v-bind:src="screenshot.annotatedBase64" />
                                                 </div>
                                             </div>
@@ -887,7 +891,7 @@ async function updateIndexedDB(param1) {
                                                     </div>
 
                                                     <!-- Patterns -->
-                                                    <div class="col-5" v-if="patterns.length>0">
+                                                    <div class="col-5" v-if="patterns.length > 0">
                                                         <select
                                                             v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
                                                             class="form-select">
@@ -899,11 +903,12 @@ async function updateIndexedDB(param1) {
                                                         </select>
                                                     </div>
                                                     <div class="col-5" v-else>
-                                                        <span class="form-control">Add pattern tags in <a href="/settings">settings</a></span>
+                                                        <span class="form-control">Add pattern tags in <a
+                                                                href="/settings">settings</a></span>
                                                     </div>
 
                                                     <!-- Mistakes -->
-                                                    <div class="col-5" v-if="mistakes.length>0">
+                                                    <div class="col-5" v-if="mistakes.length > 0">
                                                         <select
                                                             v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
                                                             class="form-select">
@@ -915,7 +920,8 @@ async function updateIndexedDB(param1) {
                                                         </select>
                                                     </div>
                                                     <div class="col-5" v-else>
-                                                        <span class="form-control">Add mistake tags in <a href="/settings">settings</a></span>
+                                                        <span class="form-control">Add mistake tags in <a
+                                                                href="/settings">settings</a></span>
                                                     </div>
 
                                                     <!-- Delete -->
@@ -1001,8 +1007,7 @@ async function updateIndexedDB(param1) {
                         </div>
                     </div>
 
-                </div>
             </div>
         </div>
-    </DashboardLayout>
-</template>
+    </div>
+</DashboardLayout></template>

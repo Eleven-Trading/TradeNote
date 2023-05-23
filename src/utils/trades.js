@@ -263,8 +263,8 @@ export async function useGetAllTrades(param, param2) {
         //await Promise.all([getPatterns.value(), getMistakes.value(), calculateProfitAnalysis.value()])
         //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
         await calculateProfitAnalysis()
-        await (dashboardIdMounted.value = true)
         await (spinnerLoadingPage.value = false)
+        await (dashboardIdMounted.value = true)
         
         if (hasData.value) {
             console.log("\nBUILDING CHARTS")
@@ -326,8 +326,8 @@ export async function useGetAllTrades(param, param2) {
     if (pageId.value == "calendar") {
 
         await useLoadCalendar(undefined, selectedRange.value)
-        await (renderingCharts.value = false)
         await (spinnerLoadingPage.value = false)
+        await (renderingCharts.value = false)
     }
 
 

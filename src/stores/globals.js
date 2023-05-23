@@ -68,7 +68,7 @@ export const indexedDBtoUpdate = ref(false)
 * LOADING AND MOUNTING
 **************************************/
 //General
-export const spinnerLoadingPage = ref()
+export const spinnerLoadingPage = ref(true)
 export const spinnerLoadingPageText = ref()
 export const renderData = ref(0) //this is for updating DOM
 

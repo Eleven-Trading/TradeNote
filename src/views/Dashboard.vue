@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent } from 'vue'
+import { computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData } from '../stores/globals';
@@ -34,8 +34,8 @@ const dashTabs = [{
 }
 ]
 
-const apptCompute = computed(()=>{
-    let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins']*totals['avg' + amountCapital.value + 'Wins'])-(totals['prob' + amountCapital.value + 'Loss']*totals['avg'+ amountCapital.value + 'Loss'])) 
+const apptCompute = computed(() => {
+    let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'Wins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'Loss']))
     return temp
 })
 
@@ -44,7 +44,7 @@ const appsptCompute = computed(() => {
     return temp
 })
 
-onBeforeMount(async() => {
+onBeforeMount(async () => {
     await useInitIndexedDB()
     await useGetAllTrades(true)
     useInitTab("dashboard")
@@ -64,13 +64,12 @@ onMounted(async () => {
     <DashboardLayout>
         <SpinnerLoadingPage />
         <div class="row mt-2">
-            <div v-if="!hasData">
-                <NoData />
-            </div>
-            <div v-else>
-                <Filters />
-
-                <div v-show="!spinnerLoadingPage">
+            <div v-show="!spinnerLoadingPage">
+                <div v-if="!hasData">
+                    <NoData />
+                </div>
+                <div v-else>
+                    <Filters />
                     <nav>
                         <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
                             <button v-for="dashTab in dashTabs" :key="dashTab.id"

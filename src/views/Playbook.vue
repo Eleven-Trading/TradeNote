@@ -16,7 +16,7 @@ onBeforeMount(async () => {
 <template>
     <DashboardLayout>
         <SpinnerLoadingPage />
-        <div class="row mt-2 mb-2">
+        <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
             <div v-if="playbooks.length == 0">
                 <NoData />
             </div>
