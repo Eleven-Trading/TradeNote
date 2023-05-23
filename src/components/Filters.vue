@@ -2,7 +2,7 @@
 import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage } from "../utils/utils.js";
 import { useGetPatterns, useGetMistakes } from '../utils/patternsMistakes';
-import { pageId, patterns, mistakes, currentUser, tradeTimeZone, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage } from "../stores/globals"
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage } from "../stores/globals"
 import { useGetAllTrades } from "../utils/trades"
 import { useLoadCalendar } from '../utils/calendar'
 import { useECharts } from "../utils/charts.js";
@@ -184,10 +184,10 @@ function inputDateRangeCal(param1, param2) {
     //console.log(" -> Initial selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     if (param1 == "start") {
-        selectedDateRange.value.start = dayjs.tz(param2, tradeTimeZone.value).unix()
+        selectedDateRange.value.start = dayjs.tz(param2, timeZoneTrade.value).unix()
     }
     if (param1 == "end") {
-        selectedDateRange.value.end = dayjs.tz(param2, tradeTimeZone.value).endOf("day").unix() // it must be tz(...). It cannot be dayjs().t
+        selectedDateRange.value.end = dayjs.tz(param2, timeZoneTrade.value).endOf("day").unix() // it must be tz(...). It cannot be dayjs().t
     }
 
 
@@ -206,8 +206,8 @@ function inputDateRangeCal(param1, param2) {
 function inputMonth(param1) {
     //console.log(" param1 " + param1)
     let temp = {}
-    temp.start = dayjs.tz(param1, tradeTimeZone.value).unix()
-    temp.end = dayjs.tz(param1, tradeTimeZone.value).endOf("month").unix()
+    temp.start = dayjs.tz(param1, timeZoneTrade.value).unix()
+    temp.end = dayjs.tz(param1, timeZoneTrade.value).endOf("month").unix()
     selectedMonth.value = temp
     //console.log(" -> Selected Month "+JSON.stringify(selectedMonth.value))
 }

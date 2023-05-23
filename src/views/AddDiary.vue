@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, onMounted } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, tradeTimeZone, diaryIdToEdit, diaryButton } from '../stores/globals';
+import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTrade, diaryIdToEdit, diaryButton } from '../stores/globals';
 import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
 
@@ -18,9 +18,9 @@ onBeforeMount(async () => {
 
 function diaryDateInput(param) {
     console.log(" -> diaryDateInput param: " + param)
-    diaryUpdate.dateUnix = dayjs.tz(param, tradeTimeZone.value).unix()
-    diaryUpdate.date = dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD")
-    diaryUpdate.dateDateFormat = new Date(dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD"))
+    diaryUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
+    diaryUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
+    diaryUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
     //console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
     //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
 }

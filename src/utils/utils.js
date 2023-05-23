@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, tradeTimeZone, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut } from "../stores/globals"
 import { useECharts } from './charts';
 import { useDeleteDiary } from "./diary";
 import { useDeleteScreenshot } from '../utils/screenshots'
@@ -742,15 +742,15 @@ export function useDateNumberFormat(param) {
 }
 
 export function useDateCalFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("YYYY-MM-DD")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("YYYY-MM-DD")
 }
 
 export function useDateCalFormatMonth(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("YYYY-MM")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("YYYY-MM")
 }
 
 export function useTimeFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("HH:mm:ss")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("HH:mm:ss")
 }
 
 export function useTimeDuration(param) {
@@ -758,30 +758,30 @@ export function useTimeDuration(param) {
 }
 
 export function useHourMinuteFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("HH:mm")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("HH:mm")
 }
 
 export function useDateTimeFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("YYYY-MM-DD HH:mm:ss")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm:ss")
 }
 
 export function useChartFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("DD/MM/YY")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("DD/MM/YY")
 }
 
 export function useMonthFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("MMMM YYYY")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("MMMM YYYY")
 }
 
 export function useMonthFormatShort(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("MMM YY")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("MMM YY")
 }
 
 export function useCreatedDateFormat(param) {
-    return dayjs.unix(param).tz(tradeTimeZone.value).format("ddd DD MMMM YYYY")
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("ddd DD MMMM YYYY")
 }
 export function useDatetimeLocalFormat(param) {
-    return dayjs.tz(param * 1000, tradeTimeZone.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
+    return dayjs.tz(param * 1000, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
 }
 
 /**************************************

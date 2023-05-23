@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, tradeTimeZone, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet } from "../stores/globals"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet } from "../stores/globals"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
@@ -1442,9 +1442,9 @@ export function useScatterChart(param1) { //chart ID, winShare, lossShare, page
                         temp.push(useTimeFormat(el.entryTime))
                         temp.push(el[selectedGrossNet.value + 'SharePLWins'])
                         temp.push(el[selectedGrossNet.value + 'Wins'])
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).hour())
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).minute())
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).second())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).hour())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).minute())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).second())
                         dataArray.push(temp)
                     }
                 }
@@ -1455,9 +1455,9 @@ export function useScatterChart(param1) { //chart ID, winShare, lossShare, page
                         temp.push(useTimeFormat(el.entryTime))
                         temp.push(el[selectedGrossNet.value + 'SharePLLoss'])
                         temp.push(-el[selectedGrossNet.value + 'Loss'])
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).hour())
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).minute())
-                        temp.push(dayjs(el.entryTime * 1000).tz(tradeTimeZone.value).second())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).hour())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).minute())
+                        temp.push(dayjs(el.entryTime * 1000).tz(timeZoneTrade.value).second())
                         dataArray.push(temp)
                     }
                 }

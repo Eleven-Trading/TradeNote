@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePageId, useInitPopover } from './utils.js'
 import { useGetPatternsMistakes, useDeletePatternMistake, useUpdatePatternsMistakes } from '../utils/patternsMistakes'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, patternsMistakes, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, tradeTimeZone, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, patternsMistakes, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
 import { useUpdateTrades } from './trades.js'
 
 let screenshotsQueryLimit = 6
@@ -128,7 +128,6 @@ export async function useSetupImageUpload(event, param1, param2, param3) {
         screenshot.side = param3
 
     }
-    //console.log(" day unix "+ dayjs(screenshot.dateUnix*1000).tz(tradeTimeZone.value).startOf("day").unix())
     const file = event.target.files[0];
 
     /* We convert to base64 so we can read src in markerArea */
@@ -190,8 +189,8 @@ export function useScreenshotUpdateDate(event) {
     }
     screenshot.date = event
     //console.log("screenshot date (local time, i.e. New York time) " + screenshot.date)
-    screenshot.dateUnix = dayjs.tz(screenshot.date, tradeTimeZone.value).unix()
-    //console.log("unix " + dayjs.tz(screenshot.date, tradeTimeZone.value).unix()) // we SPECIFY that it's New york time
+    screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
+    //console.log("unix " + dayjs.tz(screenshot.date, timeZoneTrade.value).unix()) // we SPECIFY that it's New york time
 }
 
 export async function useSaveScreenshot() {
@@ -213,7 +212,7 @@ export async function useSaveScreenshot() {
 
         if (pageId.value == "addScreenshot") { //if daily, we do not edit dateUnix. It's already formated
             if (!editingScreenshot.value || (editingScreenshot.value && dateScreenshotEdited.value)) {
-                screenshot.dateUnix = dayjs.tz(screenshot.date, tradeTimeZone.value).unix()
+                screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
             }
         }
         if (editingScreenshot.value && !dateScreenshotEdited.value) {
@@ -238,7 +237,7 @@ export async function useSaveScreenshot() {
         */
         tradeSetupId.value = screenshot.name
         tradeSetupDateUnix.value = screenshot.dateUnix
-        tradeSetupDateUnixDay.value = dayjs(screenshot.dateUnix * 1000).tz(tradeTimeZone.value).startOf("day").unix()
+        tradeSetupDateUnixDay.value = dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix()
 
         //console.log(" -> Trades modal hidden with indexDBUpdate " + indexedDBtoUpdate.value + " and screenshot changed " + tradeSetupChanged.value)
         if (indexedDBtoUpdate.value && tradeSetupChanged.value) {
@@ -308,9 +307,9 @@ export async function useUploadScreenshotToParse() {
             results.set("annotatedBase64", screenshot.annotatedBase64)
             results.set("maState", screenshot.maState)
             if (dateScreenshotEdited.value) {
-                results.set("date", new Date(dayjs.tz(screenshot.dateUnix, tradeTimeZone.value).format("YYYY-MM-DDTHH:mm:ss")))
+                results.set("date", new Date(dayjs.tz(screenshot.dateUnix, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
                 results.set("dateUnix", Number(screenshot.dateUnix))
-                results.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(tradeTimeZone.value).startOf("day").unix())
+                results.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix())
             }
             results.save().then(async () => {
                 console.log(' -> Updated screenshot with id ' + results.id)
@@ -348,9 +347,9 @@ export async function useUploadScreenshotToParse() {
             object.set("originalBase64", screenshot.originalBase64)
             object.set("annotatedBase64", screenshot.annotatedBase64)
             object.set("maState", screenshot.maState)
-            object.set("date", new Date(dayjs.tz(screenshot.date, tradeTimeZone.value).format("YYYY-MM-DDTHH:mm:ss")))
+            object.set("date", new Date(dayjs.tz(screenshot.date, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
             object.set("dateUnix", Number(screenshot.dateUnix))
-            object.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(tradeTimeZone.value).startOf("day").unix())
+            object.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix())
 
             object.setACL(new Parse.ACL(Parse.User.current()));
 

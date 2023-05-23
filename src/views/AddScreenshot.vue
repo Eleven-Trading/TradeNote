@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, screenshot, spinnerLoadingPage, tradeSetup, tradeTimeZone } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, screenshot, spinnerLoadingPage, tradeSetup, timeZoneTrade } from '../stores/globals';
 import { useGetScreenshots, useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat } from '../utils/utils';
 import { useGetMistakes, useGetPatterns, useGetPatternsMistakes, useTradeSetupChange } from '../utils/patternsMistakes'
@@ -48,8 +48,8 @@ function screenshotUpdateDate(event) {
     }
     screenshot.date = event
     //console.log("screenshot date (local time, i.e. New York time) " + this.screenshot.date)
-    screenshot.dateUnix = dayjs.tz(screenshot.date, tradeTimeZone.value).unix()
-    //console.log("unix " + dayjs.tz(this.screenshot.date, this.tradeTimeZone).unix()) // we SPECIFY that it's New york time
+    screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
+    //console.log("unix " + dayjs.tz(this.screenshot.date, this.timeZoneTrade).unix()) // we SPECIFY that it's New york time
 }
 
 async function getScreenshotToEdit(param) {

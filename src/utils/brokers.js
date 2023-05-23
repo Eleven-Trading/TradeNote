@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, tradeTimeZone } from "../stores/globals"
+import { tradesData, timeZoneTrade } from "../stores/globals"
 
 /****************************
  * TRADEZERO
@@ -459,7 +459,7 @@ export async function useBrokerHeldentrader(param) {
                     //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = element.Account
-                    //let tempDate = dayjs(element.Date).tz(tradeTimeZone.value).format('MM/DD/YYYYTHH:mm:ss')
+                    //let tempDate = dayjs(element.Date).tz(timeZoneTrade.value).format('MM/DD/YYYYTHH:mm:ss')
                     //console.log(" tempDate "+tempDate)
                     //console.log("element.TradeDate. " + element.TradeDate)
                     let tempDate = element.Date.split(" ")[0]
@@ -472,8 +472,8 @@ export async function useBrokerHeldentrader(param) {
 
                     let newTime = tempMM + "/" + tempDD + "/" + tempYYYY + " " + tempTime
                     //console.log(" newTime "+newTime)
-                    temp["T/D"] = dayjs(newTime).tz(tradeTimeZone.value).format('MM/DD/YYYY')
-                    temp["S/D"] = dayjs(newTime).tz(tradeTimeZone.value).format('MM/DD/YYYY')
+                    temp["T/D"] = dayjs(newTime).tz(timeZoneTrade.value).format('MM/DD/YYYY')
+                    temp["S/D"] = dayjs(newTime).tz(timeZoneTrade.value).format('MM/DD/YYYY')
                     //console.log("td "+temp["T/D"])
                     temp.Currency = "USD"
                     temp.Type = "0"
@@ -494,7 +494,7 @@ export async function useBrokerHeldentrader(param) {
                     temp.Qty = element.Amount
                     temp.Price = element.Price
 
-                    temp["Exec Time"] = dayjs(newTime).tz(tradeTimeZone.value).format('HH:mm:ss')
+                    temp["Exec Time"] = dayjs(newTime).tz(timeZoneTrade.value).format('HH:mm:ss')
 
                     temp.Comm = Number(-element["Execution fee"]).toString()
                     temp.SEC = "0"

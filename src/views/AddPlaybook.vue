@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, reactive, ref } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, itemToEditId, spinnerLoadingPage, tradeTimeZone, playbookUpdate, playbookButton, playbookIdToEdit } from '../stores/globals';
+import { currentDate, itemToEditId, spinnerLoadingPage, timeZoneTrade, playbookUpdate, playbookButton, playbookIdToEdit } from '../stores/globals';
 import { useDateCalFormat, useInitQuill } from '../utils/utils';
 import { useUploadPlaybook } from '../utils/playbooks';
 
@@ -18,9 +18,9 @@ onBeforeMount(async () => {
 
 function playbookDateInput(param) {
     //console.log(" param "+param)
-    playbookUpdate.dateUnix = dayjs.tz(param, tradeTimeZone.value).unix()
-    playbookUpdate.date = dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD")
-    playbookUpdate.dateDateFormat = new Date(dayjs(param, tradeTimeZone.value).format("YYYY-MM-DD"))
+    playbookUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
+    playbookUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
+    playbookUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
     console.log(" -> playbookDateUnix " + playbookUpdate.dateUnix + " and date " + playbookUpdate.date)
 }
 

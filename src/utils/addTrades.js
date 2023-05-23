@@ -1,4 +1,4 @@
-import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, tradeTimeZone, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, patternsMistakes, existingTradesArray } from '../stores/globals'
+import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, patternsMistakes, existingTradesArray } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
 import { useRefreshTrades } from './trades'
 import { useChartFormat, useDateTimeFormat, useTimeFormat } from './utils'
@@ -176,11 +176,11 @@ async function createTempExecutions() {
                 console.log("date "+usDate+" and fr ")*/
                 const dateArrayTD = tradesData[key]['T/D'].split('/');
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
-                temp2.td = dayjs.tz(formatedDateTD, tradeTimeZone.value).unix()
+                temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
 
                 const dateArraySD = tradesData[key]['S/D'].split('/');
                 const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
-                temp2.sd = dayjs.tz(formatedDateSD, tradeTimeZone.value).unix()
+                temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()
 
                 temp2.currency = tradesData[key].Currency;
                 temp2.type = tradesData[key].Type;
@@ -188,7 +188,7 @@ async function createTempExecutions() {
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
-                temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], tradeTimeZone.value).unix()
+                temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
                 let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
                 // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                 if (tempId != lastId) {
@@ -279,7 +279,7 @@ async function getOHLCV() {
                 temp.symbol = tradedSymbols[i]
                 //console.log(" -> From date " + tradedStartDate)
                 //console.log(" -> To " + tradedEndDate)
-                let toDate = dayjs(tradedEndDate * 1000).tz(tradeTimeZone.value).endOf('day').unix()
+                let toDate = dayjs(tradedEndDate * 1000).tz(timeZoneTrade.value).endOf('day').unix()
                 //console.log(" -> To date " + toDate)
 
                 axios.interceptors.response.use(undefined, (err) => {
@@ -675,13 +675,13 @@ async function createTrades() {
 
                                 //Get market close index
                                 //iterate from exit time and check if same day and <= 4 hour
-                                let endTimeDay = dayjs(endTime).tz(tradeTimeZone.value).get("date")
-                                let endTimeMonth = dayjs(endTime).tz(tradeTimeZone.value).get("month") + 1
-                                let endTimeYear = dayjs(endTime).tz(tradeTimeZone.value).get("year")
+                                let endTimeDay = dayjs(endTime).tz(timeZoneTrade.value).get("date")
+                                let endTimeMonth = dayjs(endTime).tz(timeZoneTrade.value).get("month") + 1
+                                let endTimeYear = dayjs(endTime).tz(timeZoneTrade.value).get("year")
                                 let endTimeDate = endTimeYear + "-" + endTimeMonth + "-" + endTimeDay + " 16:00:00" //VERY IMPORTANT : if i want to apply US time, it needs to be in US format, that is YYYY-MM-DD
                                 //console.log(" -> End time date "+endTimeDate)
                                 //    
-                                let marketCloseTime = dayjs.tz(endTimeDate, tradeTimeZone.value)
+                                let marketCloseTime = dayjs.tz(endTimeDate, timeZoneTrade.value)
 
                                 //console.log(" marketCloseTime "+marketCloseTime)
 
@@ -689,15 +689,15 @@ async function createTrades() {
                                 let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
                                 //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
 
-                                /*let timeDayOfWeek = dayjs(endTime * 1000).tz(tradeTimeZone.value).day()
+                                /*let timeDayOfWeek = dayjs(endTime * 1000).tz(timeZoneTrade.value).day()
                                 console.log(" timeDayOfWeek "+timeDayOfWeek)
-                                let timeHour = dayjs(endTime * 1000).tz(tradeTimeZone.value).get('hour')
+                                let timeHour = dayjs(endTime * 1000).tz(timeZoneTrade.value).get('hour')
                                 let time
                                 let i = tempEndIndex - 1;
                                 while (i < ohlcvSymbol.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
                                     time = ohlcvSymbol[i].t
-                                    timeDayOfWeek = dayjs(time * 1000).tz(tradeTimeZone.value).day()
-                                    timeHour = dayjs(time * 1000).tz(tradeTimeZone.value).get('hour')
+                                    timeDayOfWeek = dayjs(time * 1000).tz(timeZoneTrade.value).day()
+                                    timeHour = dayjs(time * 1000).tz(timeZoneTrade.value).get('hour')
                                         //console.log("time: "+time+", timeDayOfWeek "+timeDayOfWeek+" and hour "+timeHour)
                                     i++;
                                 }

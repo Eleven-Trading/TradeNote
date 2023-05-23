@@ -1,18 +1,19 @@
 <script setup>
 import { onBeforeMount } from 'vue';
-import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, tradeTimeZone, spinnerLoadingPage } from '../stores/globals';
+import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage, periodRange } from '../stores/globals';
 import { useMonthFormat, useThousandCurrencyFormat, useInitTab, useInitIndexedDB } from '../utils/utils';
 import { useGetAllTrades } from '../utils/trades';
 import { useLoadCalendar } from '../utils/calendar'
 
 const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
+//console.log("perdio range "+JSON.stringify(periodRange))
 
 async function monthLastNext(param) {
     await (spinnerLoadingPage.value = true)
-    selectedMonth.value.start = dayjs.tz(selectedMonth.value.start * 1000, tradeTimeZone.value).add(param, 'month').startOf('month').unix()
+    selectedMonth.value.start = dayjs.tz(selectedMonth.value.start * 1000, timeZoneTrade.value).add(param, 'month').startOf('month').unix()
     /* reuse just created .start because we only show one month at a time */
-    selectedMonth.value.end = dayjs.tz(selectedMonth.value.start * 1000, tradeTimeZone.value).endOf('month').unix()
+    selectedMonth.value.end = dayjs.tz(selectedMonth.value.start * 1000, timeZoneTrade.value).endOf('month').unix()
     //console.log("selectedMonth.value.start " + selectedMonth.value.start+" selectedMonth.value.end " + selectedMonth.value.end)
     localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     await useInitIndexedDB()

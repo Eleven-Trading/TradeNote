@@ -1,4 +1,4 @@
-import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, tradeTimeZone, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData } from "../stores/globals"
+import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData } from "../stores/globals"
 import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 import { useECharts } from './charts'
@@ -994,7 +994,7 @@ async function prepareTrades() {
                 //console.log("  --> entryTF "+entryTF)
                 var entryTimeTF = dayjs(Math.floor((+dayjs.unix(x.entryTime)) / msTimeFrame) * msTimeFrame);
                 //console.log("  --> entryTimeTF "+entryTimeTF)
-                return entryTimeTF.tz(tradeTimeZone.value).format("HH:mm")
+                return entryTimeTF.tz(timeZoneTrade.value).format("HH:mm")
             })
             .toPairs()
             .sortBy(0)
