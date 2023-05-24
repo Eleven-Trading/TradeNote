@@ -208,7 +208,7 @@ export async function useGetFilteredTrades(param) {
         filteredTrades.length = 0
         filteredTradesTrades.length = 0
         let loopTrades = (param1) => {
-            if (param1.length <= 0) hasData.value = false //I do reverse, that is start with true so that on page load No Data does not appear
+            if (param1.length > 0) hasData.value = true //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
                 //console.log(" element "+JSON.stringify(element))
                 let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL

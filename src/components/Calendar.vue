@@ -1,10 +1,9 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage, periodRange, renderingCharts } from '../stores/globals';
-import { useThousandCurrencyFormat, useInitTab, useInitIndexedDB } from '../utils/utils';
+import { useThousandCurrencyFormat, useInitTab, useInitIndexedDB, useMountCalendar, useMountDaily } from '../utils/utils';
 import { useGetFilteredTrades } from '../utils/trades';
 import { useLoadCalendar } from '../utils/calendar'
-import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 
 const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
@@ -18,15 +17,12 @@ async function monthLastNext(param) {
     //console.log("selectedMonth.value.start " + selectedMonth.value.start+" selectedMonth.value.end " + selectedMonth.value.end)
     localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     
-    await useInitIndexedDB()
-    await useGetFilteredTrades()
-    await useLoadCalendar() // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
-    await (spinnerLoadingPage.value = false)
+    if (pageId.value == "calendar") {
+        useMountCalendar()
+    }
 
     if (pageId.value == "daily") {
-        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        await (renderingCharts.value = false)
-        useInitTab("daily") // Only for daily else was causing multiple fires in dashboard
+        useMountDaily()
     }
 }
 </script>

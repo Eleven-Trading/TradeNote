@@ -4,13 +4,14 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, tradeSatisfactionArray } from '../stores/globals';
-import { useInitIndexedDB, useInitPopover, useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, tradeSatisfactionArray, excursions } from '../stores/globals';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup } from '../utils/patternsMistakes'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 import { useGetTradesSatisfaction } from '../utils/daily';
+import { useTest } from '../stores/counter';
 
 const dailyTabs = [{
     id: "trades",
@@ -50,6 +51,8 @@ onMounted(async () => {
     tradesModal = new bootstrap.Modal("#tradesModal")
 })
 
+const testing = useTest()
+console.log("testing "+testing.count)
 
 /**************
  * SATISFACTION
@@ -463,7 +466,7 @@ async function updateIndexedDB(param1) {
             <!-- ============ CARD ============ -->
             <div class="col-12 col-xl-8">
                 <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
-                <div v-for="(daily, index) in filteredTrades" class="row mt-2">
+                <div v-for="(itemTrade, index) in filteredTrades" class="row mt-2">
                     <div class="col-12">
                         <div class="dailyCard">
                             <div class="row">
@@ -472,16 +475,15 @@ async function updateIndexedDB(param1) {
                                 <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
 
                                 <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-                                    <div class="col-auto">{{ useCreatedDateFormat(daily.dateUnix) }}<i
-                                            v-on:click="updateDailySatisfaction(daily.dateUnix, true)"
-                                            v-bind:class="[daily.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
-                                        <i v-on:click="updateDailySatisfaction(daily.dateUnix, false)"
-                                            v-bind:class="[daily.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                    <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}<i
+                                            v-on:click="updateDailySatisfaction(itemTrade.dateUnix, true)"
+                                            v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
+                                        <i v-on:click="updateDailySatisfaction(itemTrade.dateUnix, false)"
+                                            v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                     </div>
-
                                     <div class="col-auto ms-auto">P&L: <span
-                                            v-bind:class="[daily.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                useTwoDecCurrencyFormat(daily.pAndL[amountCase + 'Proceeds']) }}</span>
+                                            v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
+                                                useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds']) }}</span>
                                     </div>
 
                                 </div>
@@ -494,12 +496,13 @@ async function updateIndexedDB(param1) {
                                         <div class="col-12 col-lg-6">
                                             <div class="row">
                                                 <div class="col-4">
-                                                    <div v-bind:id="'pieChart' + daily.dateUnix" class="chartIdDailyClass">
+                                                    <div v-bind:id="'pieChart' + itemTrade.dateUnix"
+                                                        class="chartIdDailyClass">
                                                     </div>
                                                 </div>
                                                 <!--  -> Win Loss evolution Chart -->
                                                 <div class="col-8 chartCard">
-                                                    <div v-bind:id="'doubleLineChart' + daily.dateUnix"
+                                                    <div v-bind:id="'doubleLineChart' + itemTrade.dateUnix"
                                                         class="chartIdDailyClass"></div>
                                                 </div>
                                             </div>
@@ -511,11 +514,11 @@ async function updateIndexedDB(param1) {
                                                 <div class="col row">
                                                     <div>
                                                         <label>Executions</label>
-                                                        <p>{{ daily.pAndL.executions }}</p>
+                                                        <p>{{ itemTrade.pAndL.executions }}</p>
                                                     </div>
                                                     <div>
                                                         <label>Trades</label>
-                                                        <p>{{ daily.pAndL.trades }}</p>
+                                                        <p>{{ itemTrade.pAndL.trades }}</p>
                                                     </div>
                                                 </div>
 
@@ -523,11 +526,11 @@ async function updateIndexedDB(param1) {
                                                 <div class="col row">
                                                     <div>
                                                         <label>Wins</label>
-                                                        <p>{{ daily.pAndL.grossWinsCount }}</p>
+                                                        <p>{{ itemTrade.pAndL.grossWinsCount }}</p>
                                                     </div>
                                                     <div>
                                                         <label>Losses</label>
-                                                        <p>{{ daily.pAndL.grossLossCount }}</p>
+                                                        <p>{{ itemTrade.pAndL.grossLossCount }}</p>
                                                     </div>
                                                 </div>
 
@@ -535,11 +538,11 @@ async function updateIndexedDB(param1) {
                                                 <div class="col row">
                                                     <div>
                                                         <label>Fees</label>
-                                                        <p>{{ useTwoDecCurrencyFormat(daily.pAndL.fees) }}</p>
+                                                        <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.fees) }}</p>
                                                     </div>
                                                     <div>
                                                         <label>P&L(g)</label>
-                                                        <p>{{ useTwoDecCurrencyFormat(daily.pAndL.grossProceeds) }}</p>
+                                                        <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds) }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -558,10 +561,10 @@ async function updateIndexedDB(param1) {
                                                 role="tab" aria-controls="nav-overview" aria-selected="true">{{
                                                     dashTab.label }}
                                                 <span
-                                                    v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == daily.dateUnix).length > 0"
+                                                    v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
                                                     class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                        daily.dateUnix).length }})</span>
-                                                <!--({{daily[dashTab.id].length}})-->
+                                                        itemTrade.dateUnix).length }})</span>
+                                                <!--({{itemTrade[dashTab.id].length}})-->
                                             </button>
                                         </div>
                                     </nav>
@@ -593,9 +596,9 @@ async function updateIndexedDB(param1) {
                                                     <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
                                                     <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
 
-                                                    <tr v-for="(trade, index2) in daily.trades" data-bs-toggle="modal"
+                                                    <tr v-for="(trade, index2) in itemTrade.trades" data-bs-toggle="modal"
                                                         data-bs-target="#tradesModal"
-                                                        v-on:click="clickTradesModal(trade.videoStart && trade.videoEnd ? true : false, index2, daily)"
+                                                        v-on:click="clickTradesModal(trade.videoStart && trade.videoEnd ? true : false, index2, itemTrade)"
                                                         class="pointerClass">
                                                         <td>{{ trade.symbol }}</td>
                                                         <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
@@ -699,7 +702,7 @@ async function updateIndexedDB(param1) {
                                         <!-- SCREENSHOTS TAB -->
                                         <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                             role="tabpanel" aria-labelledby="nav-overview-tab">
-                                            <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == daily.dateUnix)"
+                                            <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
                                                 class="mb-2">
                                                 <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side"
                                                     class="col mt-1">
@@ -730,24 +733,24 @@ async function updateIndexedDB(param1) {
                                         <!-- DIARY TAB -->
                                         <div class="tab-pane fade" v-bind:id="'diariesNav-' + index" role="tabpanel"
                                             aria-labelledby="nav-overview-tab">
-                                            <div v-if="diaries.findIndex(obj => obj.dateUnix == daily.dateUnix) != -1">
+                                            <div v-if="diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix) != -1">
                                                 <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive != '<p><br></p>'">
+                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive != '<p><br></p>'">
                                                     <span class="dashInfoTitle col mb-2">Positive aspect</span>
                                                     <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.positive"></span>
+                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive"></span>
                                                 </p>
                                                 <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative != '<p><br></p>'">
+                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative != '<p><br></p>'">
                                                     <span class="dashInfoTitle">Negative aspect</span>
                                                     <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.negative"></span>
+                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative"></span>
                                                 </p>
                                                 <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other != '<p><br></p>'">
+                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other != '<p><br></p>'">
                                                     <span class="dashInfoTitle">Observations</span>
                                                     <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == daily.dateUnix)].journal.other"></span>
+                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other"></span>
                                                 </p>
                                             </div>
                                         </div>
@@ -772,196 +775,195 @@ async function updateIndexedDB(param1) {
                 </div>
             </div>
 
-            <!-- ============ TRADES MODAL ============ -->
-            <div class="modal fade" id="tradesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div v-if="modalVideosOpen">
+        </div>
+    </div>
+    <!-- ============ TRADES MODAL ============ -->
+    <div class="modal fade" id="tradesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div v-if="modalVideosOpen">
 
-                            <div v-if="screenshot.annotatedBase64" class="mt-3" id="imagePreview"
-                                style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px;">
-                                <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;"
-                                    v-bind:key="renderData" crossorigin="anonymous" />
-                                <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;"
-                                    v-on:click="useSetupMarkerArea()" />
-                            </div>
+                    <div v-if="screenshot.annotatedBase64" class="mt-3" id="imagePreview"
+                        style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px;">
+                        <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;"
+                            v-bind:key="renderData" crossorigin="anonymous" />
+                        <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;"
+                            v-on:click="useSetupMarkerArea()" />
+                    </div>
 
-                            <!-- *** Table *** -->
-                            <div v-bind:class="[!hasVideo ? 'mt-3' : '']">
-                                <table class="table">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th scope="col">Symbol</th>
-                                            <th scope="col">Qty</th>
-                                            <th scope="col">Side</th>
-                                            <th scope="col">Time(i)</th>
-                                            <th scope="col">Time(o)</th>
-                                            <th scope="col">Duration</th>
-                                            <th scope="col">Price(i)</th>
-                                            <th scope="col">Price(o)</th>
-                                            <th scope="col">P&L/Sh(g)</th>
-                                            <th scope="col">P/L(n)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
-                                        <tr>
-                                            <td>{{ daily.trades[videosArrayIndex].symbol }}</td>
-                                            <td>{{ daily.trades[videosArrayIndex].buyQuantity +
-                                                daily.trades[videosArrayIndex].sellQuantity }}
-                                            </td>
-                                            <td>{{ daily.trades[videosArrayIndex].side == 'B' ? 'Long' : 'Short' }}</td>
-                                            <td>{{ useTimeFormat(daily.trades[videosArrayIndex].entryTime) }}</td>
-                                            <td>{{ useTimeFormat(daily.trades[videosArrayIndex].exitTime) }}</td>
-                                            <td>{{ useTimeDuration(daily.trades[videosArrayIndex].exitTime -
-                                                daily.trades[videosArrayIndex].entryTime) }}</td>
-                                            <td>{{ (daily.trades[videosArrayIndex].entryPrice).toFixed(2) }}</td>
-                                            <td>{{ (daily.trades[videosArrayIndex].exitPrice).toFixed(2) }}</td>
-                                            <td
-                                                v-bind:class="[(daily.trades[videosArrayIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
-                                                {{ (daily.trades[videosArrayIndex].grossSharePL).toFixed(2) }}</td>
-                                            <td
-                                                v-bind:class="[daily.trades[videosArrayIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                {{ (daily.trades[videosArrayIndex].netProceeds).toFixed(2) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    <!-- *** Table *** -->
+                    <div v-bind:class="[!hasVideo ? 'mt-3' : '']">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Symbol</th>
+                                    <th scope="col">Qty</th>
+                                    <th scope="col">Side</th>
+                                    <th scope="col">Time(i)</th>
+                                    <th scope="col">Time(o)</th>
+                                    <th scope="col">Duration</th>
+                                    <th scope="col">Price(i)</th>
+                                    <th scope="col">Price(o)</th>
+                                    <th scope="col">P&L/Sh(g)</th>
+                                    <th scope="col">P/L(n)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                                <tr>
+                                    <td>{{ daily.trades[videosArrayIndex].symbol }}</td>
+                                    <td>{{ daily.trades[videosArrayIndex].buyQuantity +
+                                        daily.trades[videosArrayIndex].sellQuantity }}
+                                    </td>
+                                    <td>{{ daily.trades[videosArrayIndex].side == 'B' ? 'Long' : 'Short' }}</td>
+                                    <td>{{ useTimeFormat(daily.trades[videosArrayIndex].entryTime) }}</td>
+                                    <td>{{ useTimeFormat(daily.trades[videosArrayIndex].exitTime) }}</td>
+                                    <td>{{ useTimeDuration(daily.trades[videosArrayIndex].exitTime -
+                                        daily.trades[videosArrayIndex].entryTime) }}</td>
+                                    <td>{{ (daily.trades[videosArrayIndex].entryPrice).toFixed(2) }}</td>
+                                    <td>{{ (daily.trades[videosArrayIndex].exitPrice).toFixed(2) }}</td>
+                                    <td
+                                        v-bind:class="[(daily.trades[videosArrayIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
+                                        {{ (daily.trades[videosArrayIndex].grossSharePL).toFixed(2) }}</td>
+                                    <td
+                                        v-bind:class="[daily.trades[videosArrayIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                        {{ (daily.trades[videosArrayIndex].netProceeds).toFixed(2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                            <!-- *** VARIABLES *** -->
-                            <div class="mt-1 mb-2 row align-items-center ms-1 me-1 tradeSetup">
-                                <div class="col-12">
+                    <!-- *** VARIABLES *** -->
+                    <div class="mt-1 mb-2 row align-items-center ms-1 me-1 tradeSetup">
+                        <div class="col-12">
+                            <div class="row">
+                                <!-- First line -->
+                                <div class="col-12" v-show="!spinnerSetups">
                                     <div class="row">
-                                        <!-- First line -->
-                                        <div class="col-12" v-show="!spinnerSetups">
-                                            <div class="row">
 
-                                                <!-- Satisfaction -->
-                                                <div class="col-1">
-                                                    <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)"
-                                                        v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
+                                        <!-- Satisfaction -->
+                                        <div class="col-1">
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)"
+                                                v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
 
-                                                    <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)"
-                                                        v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
-                                                </div>
-
-                                                <!-- Patterns -->
-                                                <div class="col-5" v-if="patterns.length > 0">
-                                                    <select
-                                                        v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
-                                                        class="form-select">
-                                                        <option value='null' selected>Pattern</option>
-                                                        <option v-for="item in patterns.filter(r => r.active == true)"
-                                                            v-bind:value="item.objectId"
-                                                            v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">
-                                                            {{ item.name }}</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-5" v-else>
-                                                    <span class="form-control">Add pattern tags in <a
-                                                            href="/settings">settings</a></span>
-                                                </div>
-
-                                                <!-- Mistakes -->
-                                                <div class="col-5" v-if="mistakes.length > 0">
-                                                    <select
-                                                        v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
-                                                        class="form-select">
-                                                        <option value='null' selected>Mistake</option>
-                                                        <option v-for="item in mistakes.filter(r => r.active == true)"
-                                                            v-bind:value="item.objectId"
-                                                            v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">
-                                                            {{ item.name }}</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-5" v-else>
-                                                    <span class="form-control">Add mistake tags in <a
-                                                            href="/settings">settings</a></span>
-                                                </div>
-
-                                                <!-- Delete -->
-                                                <div class="col-1">
-                                                    <i v-on:click="useDeletePatternMistake(daily.dateUnix, daily.trades[videosArrayIndex].id)"
-                                                        class="ps-2 uil uil-trash-alt pointerClass"></i>
-                                                </div>
-                                            </div>
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)"
+                                                v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
-                                        <!-- Second line -->
-                                        <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <input type="number" class="form-control" placeholder="Stop Loss"
-                                                        v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].stopLoss : ''"
-                                                        v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[videosArrayIndex].id)">
-                                                </div>
-                                                <div class="col-4">
-                                                    <input type="number" class="form-control" placeholder="MAE Price"
-                                                        v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].maePrice : ''"
-                                                        v-on:input="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
-                                                </div>
-                                                <div class="col-4">
-                                                    <input type="number" class="form-control" placeholder="MFE Price"
-                                                        v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].mfePrice : ''"
-                                                        v-on:input="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
-                                                </div>
-                                            </div>
+                                        <!-- Patterns -->
+                                        <div class="col-5" v-if="patterns.length > 0">
+                                            <select
+                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
+                                                class="form-select">
+                                                <option value='null' selected>Pattern</option>
+                                                <option v-for="item in patterns.filter(r => r.active == true)"
+                                                    v-bind:value="item.objectId"
+                                                    v-bind:selected="item.objectId == (tradeSetup.pattern != null ? tradeSetup.pattern : '')">
+                                                    {{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5" v-else>
+                                            <span class="form-control">Add pattern tags in <a
+                                                    href="/settings">settings</a></span>
                                         </div>
 
-                                        <!-- Third line -->
-                                        <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                            <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                                v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
-                                                v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"></textarea>
+                                        <!-- Mistakes -->
+                                        <div class="col-5" v-if="mistakes.length > 0">
+                                            <select
+                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
+                                                class="form-select">
+                                                <option value='null' selected>Mistake</option>
+                                                <option v-for="item in mistakes.filter(r => r.active == true)"
+                                                    v-bind:value="item.objectId"
+                                                    v-bind:selected="item.objectId == (tradeSetup.mistake != null ? tradeSetup.mistake : '')">
+                                                    {{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5" v-else>
+                                            <span class="form-control">Add mistake tags in <a
+                                                    href="/settings">settings</a></span>
                                         </div>
 
-                                        <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                            <input class="screenshotFile" type="file"
-                                                @change="useSetupImageUpload($event, daily.trades[videosArrayIndex].entryTime, daily.trades[videosArrayIndex].symbol, daily.trades[videosArrayIndex].side)" />
+                                        <!-- Delete -->
+                                        <div class="col-1">
+                                            <i v-on:click="useDeletePatternMistake(daily.dateUnix, daily.trades[videosArrayIndex].id)"
+                                                class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div>
-
-                                        <!-- Fifth line -->
-                                        <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                            <div class="row">
-                                                <div class="col-4 text-start">
-                                                    <button v-if="daily.trades.hasOwnProperty(videosArrayIndex - 1)"
-                                                        class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                                        v-on:click="clickTradesModal(daily.trades[videosArrayIndex - 1].videoStart && daily.trades[videosArrayIndex - 1].videoEnd ? true : false, videosArrayIndex - 1, '')"
-                                                        v-bind:disabled="spinnerSetups == true">
-                                                        <i class="fa fa-chevron-left me-2"></i>Back</button>
-                                                </div>
-                                                <div class="col-4 text-center">
-                                                    <button v-if="indexedDBtoUpdate" class="btn btn-outline-success btn-sm"
-                                                        v-on:click="hideTradesModal">Close & Save</button>
-                                                    <button v-else class="btn btn-outline-primary btn-sm"
-                                                        v-on:click="hideTradesModal">Close</button>
-                                                </div>
-                                                <div v-if="daily.trades.hasOwnProperty(videosArrayIndex + 1)"
-                                                    class="ms-auto col-2 text-end">
-                                                    <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                                        v-on:click="clickTradesModal(daily.trades[videosArrayIndex + 1].videoStart && daily.trades[videosArrayIndex + 1].videoEnd ? true : false, videosArrayIndex + 1, '')"
-                                                        v-bind:disabled="spinnerSetups == true">Next<i
-                                                            class="fa fa-chevron-right ms-2"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Spinner -->
-                                        <div v-show="spinnerSetups" class="col-12">
-                                            <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
-                                            <span>{{ spinnerSetupsText }}</span>
-                                        </div>
-
                                     </div>
                                 </div>
+
+                                <!-- Second line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="Stop Loss"
+                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].stopLoss : ''"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="MAE Price"
+                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].maePrice : ''"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" class="form-control" placeholder="MFE Price"
+                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].mfePrice : ''"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Third line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <textarea class="form-control" placeholder="note" id="floatingTextarea"
+                                        v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
+                                        v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"></textarea>
+                                </div>
+
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <input class="screenshotFile" type="file"
+                                        @change="useSetupImageUpload($event, daily.trades[videosArrayIndex].entryTime, daily.trades[videosArrayIndex].symbol, daily.trades[videosArrayIndex].side)" />
+                                </div>
+
+                                <!-- Fifth line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-4 text-start">
+                                            <button v-if="daily.trades.hasOwnProperty(videosArrayIndex - 1)"
+                                                class="btn btn-outline-primary btn-sm ms-3 mb-2"
+                                                v-on:click="clickTradesModal(daily.trades[videosArrayIndex - 1].videoStart && daily.trades[videosArrayIndex - 1].videoEnd ? true : false, videosArrayIndex - 1, '')"
+                                                v-bind:disabled="spinnerSetups == true">
+                                                <i class="fa fa-chevron-left me-2"></i>Back</button>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <button v-if="indexedDBtoUpdate" class="btn btn-outline-success btn-sm"
+                                                v-on:click="hideTradesModal">Close & Save</button>
+                                            <button v-else class="btn btn-outline-primary btn-sm"
+                                                v-on:click="hideTradesModal">Close</button>
+                                        </div>
+                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex + 1)"
+                                            class="ms-auto col-2 text-end">
+                                            <button class="btn btn-outline-primary btn-sm me-3 mb-2"
+                                                v-on:click="clickTradesModal(daily.trades[videosArrayIndex + 1].videoStart && daily.trades[videosArrayIndex + 1].videoEnd ? true : false, videosArrayIndex + 1, '')"
+                                                v-bind:disabled="spinnerSetups == true">Next<i
+                                                    class="fa fa-chevron-right ms-2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Spinner -->
+                                <div v-show="spinnerSetups" class="col-12">
+                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                    <span>{{ spinnerSetupsText }}</span>
+                                </div>
+
                             </div>
-                            <hr>
                         </div>
                     </div>
+                    <hr>
                 </div>
-
             </div>
         </div>
     </div>

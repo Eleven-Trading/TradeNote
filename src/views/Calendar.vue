@@ -5,15 +5,16 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import Calendar from '../components/Calendar.vue';
 import { spinnerLoadingPage, calendarData, filteredTrades } from '../stores/globals';
-import { useInitIndexedDB } from '../utils/utils'
+import { useMountCalendar } from '../utils/utils'
 import { useLoadCalendar } from '../utils/calendar';
+import { useTest } from '../stores/counter';
 
 onBeforeMount(async () => {
-    await (spinnerLoadingPage.value = true)
-    await useInitIndexedDB()
-    await useLoadCalendar(true) // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
-    await (spinnerLoadingPage.value = false)
+    useMountCalendar()
 })
+const testing = useTest()
+testing.count = 12
+console.log("testing "+testing.count)
 </script>
 
 <template>

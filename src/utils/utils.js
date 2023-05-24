@@ -745,19 +745,23 @@ export async function useMountDaily() {
         spinnerLoadingPage.value = true
         useInitPopover()
 
-        console.log("\nFIRST PART")
         await useGetFilteredTrades()
         await (spinnerLoadingPage.value = false)
+        useInitTab("daily")
+
         await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
         await (renderingCharts.value = false)
 
-        console.log("\nSECOND PART")
         await Promise.all([useGetTradesSatisfaction(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
         await useLoadCalendar()
-
-        useInitTab("daily")
 }
 
+export async function useMountCalendar(){
+    await (spinnerLoadingPage.value = true)
+    await useInitIndexedDB()
+    await useLoadCalendar() // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
+    await (spinnerLoadingPage.value = false)
+}
 /**************************************
 * MISC
 **************************************/
