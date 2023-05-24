@@ -1,7 +1,7 @@
 import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData } from "../stores/globals"
 import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
-import { useECharts } from './charts'
+import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts'
 import { useGetDiaries } from "./diary";
 import { useGetScreenshots } from "./screenshots";
 import { useLoadCalendar } from "./calendar";
@@ -18,6 +18,58 @@ export async function useGetAllTrades(param, param2) {
     //console.log("filtered "+JSON.stringify(filteredTrades))
     /* If true, getting all trades. Else juste the graphs */
     if (param) {
+        await useGetFilteredTrades(param)
+    }
+
+    /*============= 5 - Render data, charts, totals =============*/
+    if (pageId.value == "dashboard") {
+        spinnerLoadingPageText.value = "Rendering data, charts and totals"
+        await prepareTrades()
+        //await Promise.all([getPatterns.value(), getMistakes.value(), calculateProfitAnalysis.value()])
+        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
+        await calculateProfitAnalysis()
+        await (spinnerLoadingPage.value = false)
+        await (dashboardIdMounted.value = true)
+
+        if (hasData.value) {
+            console.log("\nBUILDING CHARTS")
+            await (renderData.value += 1)
+            await useECharts("init")
+            await (dashboardChartsMounted.value = true)
+        }
+
+    }
+
+    if (pageId.value == "daily") {
+        spinnerLoadingPageText.value = "Getting Daily Data"
+        await Promise.all([useGetDiaries(false), useGetScreenshots(true), useLoadCalendar(undefined, selectedRange.value)]) //setup etries here because take more time so spinner needs to still be running
+        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
+        spinnerLoadingPageText.value = "Loading Calendar"
+
+        await (spinnerLoadingPage.value = false) // must.value go before foreach
+
+        //Rendering double line chart
+        await useRenderDoubleLineChart()
+
+        //Rendering pie chart
+        await useRenderPieChart()
+
+        await (renderingCharts.value = false)
+
+    }
+
+    if (pageId.value == "calendar") {
+
+        await useLoadCalendar(undefined, selectedRange.value)
+        await (spinnerLoadingPage.value = false)
+        await (renderingCharts.value = false)
+    }
+
+
+}
+
+export async function useGetFilteredTrades(param) {
+    return new Promise(async (resolve, reject) => {
         /*============= 1- Get selected date range =============*/
 
         /*if (!localStorage.getItem('selectedMonth')) {
@@ -235,7 +287,7 @@ export async function useGetAllTrades(param, param2) {
             }
         }
         //console.log(" -> Filtered trades of trades "+JSON.stringify(filteredTradesTrades))
-        await useCreateBlotter(param)
+        await useCreateBlotter(true)
         await useCreatePnL()
         //console.log(" Blotter "+JSON.stringify(blotter))
         //console.log(" P and L "+JSON.stringify(pAndL))
@@ -253,84 +305,9 @@ export async function useGetAllTrades(param, param2) {
         filteredTrades.sort((a, b) => {
             return b.dateUnix - a.dateUnix
         })
-        //console.log(" -> Filtered trades "+JSON.stringify(filteredTrades))
-    }
-
-    /*============= 5 - Render data, charts, totals =============*/
-    if (pageId.value == "dashboard") {
-        spinnerLoadingPageText.value = "Rendering data, charts and totals"
-        await prepareTrades()
-        //await Promise.all([getPatterns.value(), getMistakes.value(), calculateProfitAnalysis.value()])
-        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
-        await calculateProfitAnalysis()
-        await (spinnerLoadingPage.value = false)
-        await (dashboardIdMounted.value = true)
-        
-        if (hasData.value) {
-            console.log("\nBUILDING CHARTS")
-            await (renderData.value += 1)
-            await useECharts("init")
-            await (dashboardChartsMounted.value = true)
-        }
-
-    }
-
-    if (pageId.value == "daily") {
-        spinnerLoadingPageText.value = "Getting Daily Data"
-        await Promise.all([useGetDiaries(false), useGetScreenshots(true), useLoadCalendar(undefined, selectedRange.value)]) //setup etries here because take more time so spinner needs to still be running
-        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
-        spinnerLoadingPageText.value = "Loading Calendar"
-
-        await (spinnerLoadingPage.value = false) // must.value go before foreach
-        await filteredTrades.forEach(el => {
-            //console.log(" date "+el.dateUnix)
-            var chartId = 'doubleLineChart' + el.dateUnix
-            var chartDataGross = []
-            var chartDataNet = []
-            var chartCategories = []
-            el.trades.forEach(element => {
-                var proceeds = Number((element.grossProceeds).toFixed(2))
-                //console.log("proceeds "+proceeds)
-                var proceedsNet = Number((element[amountCase.value + 'Proceeds']).toFixed(2))
-                if (chartDataGross.length == 0) {
-                    chartDataGross.push(proceeds)
-                } else {
-                    chartDataGross.push(chartDataGross.slice(-1).pop() + proceeds)
-                }
-
-                if (chartDataNet.length == 0) {
-                    chartDataNet.push(proceedsNet)
-                } else {
-                    chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
-                }
-                chartCategories.push(useHourMinuteFormat(element.exitTime))
-                //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
-                useDoubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
-            });
-        })
-        //Rendering pie chart
-        await filteredTrades.forEach(el => {
-            var chartId = "pieChart" + el.dateUnix
-            var probWins = (el.pAndL[amountCase.value + 'WinsCount'] / el.pAndL.trades)
-            var probLoss = (el.pAndL[amountCase.value + 'LossCount'] / el.pAndL.trades)
-            //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
-            //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
-            //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
-            usePieChart(chartId, probWins, probLoss, pageId.value)
-        })
-
-        await (renderingCharts.value = false)
-
-    }
-
-    if (pageId.value == "calendar") {
-
-        await useLoadCalendar(undefined, selectedRange.value)
-        await (spinnerLoadingPage.value = false)
-        await (renderingCharts.value = false)
-    }
-
-
+        //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
+        resolve()
+    })
 }
 
 /***************************************
@@ -495,7 +472,7 @@ async function saveAllTradesToIndexedDb(param) {
 * Create totals per date needed for grouping monthly, weekly and daily
 ***************************************/
 
-async function prepareTrades() {
+export async function usePrepareTrades() {
     console.log("\nPREPARING TRADES")
     return new Promise(async (resolve, reject) => {
         /* Variables */
@@ -1263,7 +1240,7 @@ async function prepareTrades() {
          * GETTING AND CALCULATING MFE
          ***************************************/
 //get data from excursions db
-async function calculateProfitAnalysis(param) {
+export async function useCalculateProfitAnalysis(param) {
     console.log("\nCALCULATING PROFIT ANALYSIS")
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting MFE Prices")

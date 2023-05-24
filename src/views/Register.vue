@@ -21,7 +21,5 @@ export default {
 </script>
 
 <template>
-    <LoginRegisterLayout>
-        <LoginRegister />
-    </LoginRegisterLayout>
+    <LoginRegister />
 </template>

@@ -2,11 +2,10 @@
 import { onBeforeMount } from 'vue';
 import { useCheckCurrentUser } from '../utils/utils';
 import { useGetMistakes, useGetPatterns } from '../utils/patternsMistakes'
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, renderProfile } from '../stores/globals';
 import { useEditPattern, useUpdateEditPattern, useSaveNewPattern, useEditMistake, useSaveNewMistake, useUpdateEditMistake } from '../utils/patternsMistakes'
 
 let profileAvatar = null
-let renderProfile = 0
 let marketDataApiKey = null
 
 onBeforeMount(async () => {
@@ -37,7 +36,7 @@ async function updateProfile() {
 
             await results.save().then(async () => { //very important to have await or else too quick to update
                 await useCheckCurrentUser()
-                await (renderProfile += 1)
+                await (renderProfile.value += 1)
                 console.log(" -> Profile updated")
             })
             //

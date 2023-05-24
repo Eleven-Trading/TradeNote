@@ -17,6 +17,7 @@ export const itemToEditId = ref(sessionStorage.getItem('editItemId'))
 export const currentDate = ref(dayjs().format("YYYY-MM-DD"))
 export const quill = ref()
 export const sideMenuMobileOut = ref(false)
+export const screenType = ref()
 
 /**************************************
 * PATTERNS, MISTAKES & SETUPS
@@ -147,6 +148,8 @@ export const tradeExcursionChanged = ref(false)
 export const tradeExcursionId = ref()
 export const tradeExcursionDateUnix = ref()
 
+export const tradeSatisfactionArray = reactive([])
+export const excursions = reactive([])
 /**************************************
 * SCREENSHOTS
 **************************************/
@@ -205,6 +208,11 @@ export const brokers = reactive([{
     label: "Heldentrader"
 }
 ])
+
+/**************************************
+* SETTINGS
+**************************************/
+export const renderProfile = ref(0)
 
 /**************************************
 * SELECTED & FILTERS

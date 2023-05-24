@@ -1,5 +1,5 @@
 import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet } from "../stores/globals"
-import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat } from "./utils"
+import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
 const cssColor60 = "rgba(255, 255, 255, 0.60)"
@@ -84,6 +84,53 @@ export function useECharts(param) {
     /*for (let index = 1; index <= 1; index++) {
         echarts.init(document.getElementById('boxPlotChart' + index)).clear()
     }*/
+}
+
+export function useRenderDoubleLineChart() {
+    return new Promise(async (resolve, reject) => {
+        await filteredTrades.forEach(el => {
+            //console.log(" date "+el.dateUnix)
+            var chartId = 'doubleLineChart' + el.dateUnix
+            var chartDataGross = []
+            var chartDataNet = []
+            var chartCategories = []
+            el.trades.forEach(element => {
+                var proceeds = Number((element.grossProceeds).toFixed(2))
+                //console.log("proceeds "+proceeds)
+                var proceedsNet = Number((element[amountCase.value + 'Proceeds']).toFixed(2))
+                if (chartDataGross.length == 0) {
+                    chartDataGross.push(proceeds)
+                } else {
+                    chartDataGross.push(chartDataGross.slice(-1).pop() + proceeds)
+                }
+
+                if (chartDataNet.length == 0) {
+                    chartDataNet.push(proceedsNet)
+                } else {
+                    chartDataNet.push(chartDataNet.slice(-1).pop() + proceedsNet)
+                }
+                chartCategories.push(useHourMinuteFormat(element.exitTime))
+                //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
+                useDoubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
+            });
+        })
+        resolve()
+    })
+}
+
+export function useRenderPieChart() {
+    return new Promise(async (resolve, reject) => {
+        await filteredTrades.forEach(el => {
+            var chartId = "pieChart" + el.dateUnix
+            var probWins = (el.pAndL[amountCase.value + 'WinsCount'] / el.pAndL.trades)
+            var probLoss = (el.pAndL[amountCase.value + 'LossCount'] / el.pAndL.trades)
+            //var probNetWins = (el.pAndL.netWinsCount / el.pAndL.trades)
+            //var probNetLoss = (el.pAndL.netLossCount / el.pAndL.trades)
+            //console.log("prob net win " + probNetWins + " and loss " + probNetLoss)
+            usePieChart(chartId, probWins, probLoss, pageId.value)
+        })
+        resolve()
+    })
 }
 
 export function useLineChart(param) { //chartID, chartDataGross, chartDataNet, chartCategories
@@ -355,7 +402,7 @@ export function useLineBarChart(param) {
         var weekOfYear = null
         var monthOfYear = null
         var i = 1
-        
+
         let objectY = JSON.parse(JSON.stringify(totalsByDate))
         const keys = Object.keys(objectY);
 

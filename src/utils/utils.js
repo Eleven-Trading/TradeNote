@@ -1,10 +1,13 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones } from "../stores/globals"
-import { useECharts } from './charts';
-import { useDeleteDiary } from "./diary";
-import { useDeleteScreenshot } from '../utils/screenshots'
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts } from "../stores/globals"
+import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
+import { useDeleteDiary, useGetDiaries } from "./diary";
+import { useDeleteScreenshot, useGetScreenshots } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
+import { useCalculateProfitAnalysis, useGetFilteredTrades, usePrepareTrades } from "./trades";
+import { useLoadCalendar } from "./calendar";
+import { useGetExcursions, useGetTradesSatisfaction } from "./daily";
 
 /**************************************
 * INITS
@@ -162,13 +165,13 @@ export function getCurrentUser() {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
 }
 
-export function useGetTimeZone(){
+export function useGetTimeZone() {
     //console.log("Getting timezone")
     timeZoneTrade.value = currentUser.value.hasOwnProperty("timeZone") ? currentUser.value.timeZone : 'America/New_York'
-    console.log(" -> TimeZone for Trades: "+timeZoneTrade.value)
+    console.log(" -> TimeZone for Trades: " + timeZoneTrade.value)
 }
 
-export function useGetPeriods(){
+export function useGetPeriods() {
     let temp = [{
         value: "all",
         label: "All",
@@ -241,7 +244,7 @@ export function useGetPeriods(){
         end: Number(dayjs().tz(timeZoneTrade.value).endOf('year').unix())
     }, {
         value: "lastYear",
-    
+
         label: "Last Year",
         start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').startOf('year').unix()),
         end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').endOf('year').unix())
@@ -712,6 +715,50 @@ export function useInitPopover() {
 }
 
 /**************************************
+* MOUNT 
+**************************************/
+export async function useMountDashboard() {
+    await useInitIndexedDB()
+
+    spinnerLoadingPage.value = true
+    dashboardChartsMounted.value = false
+    dashboardIdMounted.value = false
+
+    await useGetFilteredTrades()
+    await usePrepareTrades()
+    await useCalculateProfitAnalysis()
+    await (spinnerLoadingPage.value = false)
+    await (dashboardIdMounted.value = true)
+
+    if (hasData.value) {
+        console.log("\nBUILDING CHARTS")
+        await (renderData.value += 1)
+        await useECharts("init")
+        await (dashboardChartsMounted.value = true)
+    }
+
+    useInitTab("dashboard")
+}
+
+export async function useMountDaily() {
+        await useInitIndexedDB()
+        spinnerLoadingPage.value = true
+        useInitPopover()
+
+        console.log("\nFIRST PART")
+        await useGetFilteredTrades()
+        await (spinnerLoadingPage.value = false)
+        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+        await (renderingCharts.value = false)
+
+        console.log("\nSECOND PART")
+        await Promise.all([useGetTradesSatisfaction(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+        await useLoadCalendar()
+
+        useInitTab("daily")
+}
+
+/**************************************
 * MISC
 **************************************/
 export function usePageId() {
@@ -824,10 +871,10 @@ export function usePageRedirect() {
 }
 
 export function useToggleMobileMenu() {
-  let element = document.getElementById("sideMenu");
-  element.classList.toggle("toggleSideMenu");
-  sideMenuMobileOut.value = !sideMenuMobileOut.value
-  console.log("sideMenuMobileOut " + sideMenuMobileOut.value)
+    let element = document.getElementById("sideMenu");
+    element.classList.toggle("toggleSideMenu");
+    sideMenuMobileOut.value = !sideMenuMobileOut.value
+    console.log("sideMenuMobileOut " + sideMenuMobileOut.value)
 }
 
 /**************************************

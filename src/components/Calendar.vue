@@ -1,9 +1,10 @@
 <script setup>
 import { onBeforeMount } from 'vue';
-import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage, periodRange } from '../stores/globals';
-import { useMonthFormat, useThousandCurrencyFormat, useInitTab, useInitIndexedDB } from '../utils/utils';
-import { useGetAllTrades } from '../utils/trades';
+import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage, periodRange, renderingCharts } from '../stores/globals';
+import { useThousandCurrencyFormat, useInitTab, useInitIndexedDB } from '../utils/utils';
+import { useGetFilteredTrades } from '../utils/trades';
 import { useLoadCalendar } from '../utils/calendar'
+import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 
 const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 
@@ -16,13 +17,17 @@ async function monthLastNext(param) {
     selectedMonth.value.end = dayjs.tz(selectedMonth.value.start * 1000, timeZoneTrade.value).endOf('month').unix()
     //console.log("selectedMonth.value.start " + selectedMonth.value.start+" selectedMonth.value.end " + selectedMonth.value.end)
     localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
+    
     await useInitIndexedDB()
-    await useGetAllTrades(true)
-    //await useLoadCalendar(true)
+    await useGetFilteredTrades()
+    await useLoadCalendar() // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
+    await (spinnerLoadingPage.value = false)
+
     if (pageId.value == "daily") {
+        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+        await (renderingCharts.value = false)
         useInitTab("daily") // Only for daily else was causing multiple fires in dashboard
     }
-    await (spinnerLoadingPage.value = false)
 }
 </script>
 <template>
@@ -55,7 +60,8 @@ async function monthLastNext(param) {
                             <div v-if="pageId == 'calendar'" class="d-none d-md-block">
                                 <p v-show="line[index].pAndL.trades">{{ line[index].pAndL.trades }} trades</p>
                                 <p v-show="line[index].pAndL[amountCase + 'Proceeds']">
-                                    {{ useThousandCurrencyFormat(parseInt(line[index].pAndL[amountCase + 'Proceeds'])) }}</p>
+                                    {{ useThousandCurrencyFormat(parseInt(line[index].pAndL[amountCase + 'Proceeds'])) }}
+                                </p>
                             </div>
                         </div>
                     </div>

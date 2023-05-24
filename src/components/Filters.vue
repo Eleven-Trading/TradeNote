@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
-import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage } from "../utils/utils.js";
+import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage, useInitPopover } from "../utils/utils.js";
 import { useGetPatterns, useGetMistakes } from '../utils/patternsMistakes';
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage } from "../stores/globals"
-import { useGetAllTrades } from "../utils/trades"
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, renderData, hasData } from "../stores/globals"
+import { useCalculateProfitAnalysis, useGetAllTrades, useGetFilteredTrades, usePrepareTrades } from "../utils/trades"
 import { useLoadCalendar } from '../utils/calendar'
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
+import { useGetExcursions, useGetTradesSatisfaction } from "../utils/daily";
 
 /*============================================
     VARIABLES
@@ -234,7 +235,7 @@ async function saveFilter() {
     localStorage.setItem('selectedGrossNet', selectedGrossNet.value)
     amountCase.value = selectedGrossNet.value
     amountCapital.value = selectedGrossNet.value.charAt(0).toUpperCase() + selectedGrossNet.value.slice(1)
-    console.log("filter amountCapital "+amountCapital.value)
+    console.log("filter amountCapital " + amountCapital.value)
 
     localStorage.setItem('selectedPositions', selectedPositions.value)
 
@@ -256,19 +257,45 @@ async function saveFilter() {
         tempSelectedPlSatisfaction.value = null
     }
 
-    if (pageId.value == "screenshots") {
-        await useRefreshScreenshot()
-    } else if (pageId.value == "calendar") {
-        await (spinnerLoadingPage.value = true)
+    if (pageId.value == "dashboard") {
         await useInitIndexedDB()
-        await useLoadCalendar(true) // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
+        dashboardChartsMounted.value = false
+        spinnerLoadingPage.value = true
+        dashboardIdMounted.value = false
+        await useGetFilteredTrades()
+        await usePrepareTrades()
+        await useCalculateProfitAnalysis()
         await (spinnerLoadingPage.value = false)
-    } else {
-        await useGetAllTrades(true)
+        await (dashboardIdMounted.value = true)
+
+        if (hasData.value) {
+            console.log("\nBUILDING CHARTS")
+            await (renderData.value += 1)
+            await useECharts("init")
+            await (dashboardChartsMounted.value = true)
+        }
+        useInitTab("dashboard")
     }
 
     if (pageId.value == "daily") {
-        useInitTab("daily") // Only for daily else was causing multiple fires in dashboard
+        await useInitIndexedDB()
+        spinnerLoadingPage.value = true
+        await Promise.all([useInitPopover(), useGetTradesSatisfaction(), useGetExcursions(), useGetFilteredTrades(), useGetDiaries(false), useGetScreenshots(true)])
+        await useLoadCalendar()
+        await (spinnerLoadingPage.value = false)
+        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+        await (renderingCharts.value = false)
+        useInitTab("daily")
+    }
+
+    if (pageId.value == "screenshots") {
+        await useRefreshScreenshot()
+    }
+    if (pageId.value == "calendar") {
+        await (spinnerLoadingPage.value = true)
+        await useInitIndexedDB()
+        await useLoadCalendar() // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
+        await (spinnerLoadingPage.value = false)
     }
 }
 </script>

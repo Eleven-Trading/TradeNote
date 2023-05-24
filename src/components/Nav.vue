@@ -3,7 +3,7 @@ import { useInitIndexedDB, useScreenType, useToggleMobileMenu } from '../utils/u
 import { useInitShepherd } from "../utils/utils.js";
 import { useRefreshTrades } from "../utils/trades.js"
 import { useCheckCurrentUser } from '../utils/utils.js';
-import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion } from "../stores/globals"
+import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion, renderProfile } from "../stores/globals"
 
 const pages = [{
     id: "registerSignup",

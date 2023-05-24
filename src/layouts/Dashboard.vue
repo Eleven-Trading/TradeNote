@@ -3,6 +3,7 @@ import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import { ref, reactive, onMounted, onBeforeMount } from 'vue'
 import { useInitParse, usePageId, useScreenType, useSetSelectedLocalStorage, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
+import { sideMenuMobileOut } from '../stores/globals'
 
 /*========================================
   Functions used on all Dashboard components

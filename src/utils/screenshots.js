@@ -35,7 +35,6 @@ export async function useGetScreenshots(param) {
 
     let allPatternsMistakesIds = []
     let excludedIds = []
-
     patternsMistakes.forEach(element => {
         allPatternsMistakesIds.push(element.tradeId)
         //console.log(" - element mistake "+element.mistake)
@@ -45,8 +44,7 @@ export async function useGetScreenshots(param) {
             excludedIds.push(element.tradeId)
         }
     });
-
-    console.log("excluded Ids "+excludedIds)
+    //console.log("excluded Ids "+excludedIds)
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting screenshots");
         //console.log(" -> selectedPatterns " + selectedPatterns.value)

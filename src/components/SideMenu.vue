@@ -1,5 +1,5 @@
 <script setup>
-import { pageId } from "../stores/globals"
+import { pageId, screenType } from "../stores/globals"
 import { useToggleMobileMenu } from "../utils/utils";
 
 </script>

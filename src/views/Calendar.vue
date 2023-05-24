@@ -17,25 +17,23 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-    <DashboardLayout>
-        <SpinnerLoadingPage />
-        <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
-            <div v-if="filteredTrades.length == 0">
-                <NoData />
-            </div>
-            <div v-else>
-                <Filters />
-                <div>
-                    <!-- ============ CALENDAR ============ -->
-                    <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">
-                        <div class="dailyCard">
-                            <div class="row justify-content-center">
-                                <Calendar />
-                            </div>
+    <SpinnerLoadingPage />
+    <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
+        <div v-if="filteredTrades.length == 0">
+            <NoData />
+        </div>
+        <div v-else>
+            <Filters />
+            <div>
+                <!-- ============ CALENDAR ============ -->
+                <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">
+                    <div class="dailyCard">
+                        <div class="row justify-content-center">
+                            <Calendar />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </DashboardLayout>
+    </div>
 </template>

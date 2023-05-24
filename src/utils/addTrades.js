@@ -911,7 +911,7 @@ export async function useCreateBlotter(param) {
         spinnerLoadingPageText.value = "Creating blotter"
         //based on trades
         let objectZ
-        if (param) {
+        if (param) { // case when creating blotter for filteredTrades
             //console.log("param " + param)
             let temp = _
                 .chain(filteredTradesTrades)
