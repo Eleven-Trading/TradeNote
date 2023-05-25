@@ -69,6 +69,7 @@ export async function useGetAllTrades(param, param2) {
 }
 
 export async function useGetFilteredTrades(param) {
+    console.log("\nGETTING FILTERED TRADES")
     return new Promise(async (resolve, reject) => {
         /*============= 1- Get selected date range =============*/
 
@@ -213,6 +214,12 @@ export async function useGetFilteredTrades(param) {
                 //console.log(" element "+JSON.stringify(element))
                 let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                 temp.trades = []
+                
+                //we need to get date, month and year in order to compare for calendar creation
+                temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
+                temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
+                temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
+                
                 element.trades.forEach(element => {
                     /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
                     //console.log(" element "+JSON.stringify(element))
@@ -306,6 +313,7 @@ export async function useGetFilteredTrades(param) {
             return b.dateUnix - a.dateUnix
         })
         //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
+        console.log("\nFinished getting filtered trades\n\n")
         resolve()
     })
 }

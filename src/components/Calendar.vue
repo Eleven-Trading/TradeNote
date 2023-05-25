@@ -18,7 +18,7 @@ async function monthLastNext(param) {
     localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     
     if (pageId.value == "calendar") {
-        useMountCalendar()
+        useMountCalendar(true)
     }
 
     if (pageId.value == "daily") {

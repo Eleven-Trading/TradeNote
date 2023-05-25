@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
-import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage, useInitPopover } from "../utils/utils.js";
+import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage, useInitPopover, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
 import { useGetPatterns, useGetMistakes } from '../utils/patternsMistakes';
 import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, renderData, hasData } from "../stores/globals"
 import { useCalculateProfitAnalysis, useGetAllTrades, useGetFilteredTrades, usePrepareTrades } from "../utils/trades"
@@ -44,7 +44,7 @@ let filters = ref({
 ============================================*/
 onBeforeMount(async () => {
     let getPatMis = async () => {
-        console.log(" getting Pat Mis")
+        //console.log(" getting Pat Mis")
         await Promise.all([useGetPatterns(), useGetMistakes()])
     }
 
@@ -258,44 +258,18 @@ async function saveFilter() {
     }
 
     if (pageId.value == "dashboard") {
-        await useInitIndexedDB()
-        dashboardChartsMounted.value = false
-        spinnerLoadingPage.value = true
-        dashboardIdMounted.value = false
-        await useGetFilteredTrades()
-        await usePrepareTrades()
-        await useCalculateProfitAnalysis()
-        await (spinnerLoadingPage.value = false)
-        await (dashboardIdMounted.value = true)
-
-        if (hasData.value) {
-            console.log("\nBUILDING CHARTS")
-            await (renderData.value += 1)
-            await useECharts("init")
-            await (dashboardChartsMounted.value = true)
-        }
-        useInitTab("dashboard")
+        useMountDashboard()
     }
 
     if (pageId.value == "daily") {
-        await useInitIndexedDB()
-        spinnerLoadingPage.value = true
-        await Promise.all([useInitPopover(), useGetTradesSatisfaction(), useGetExcursions(), useGetFilteredTrades(), useGetDiaries(false), useGetScreenshots(true)])
-        await useLoadCalendar()
-        await (spinnerLoadingPage.value = false)
-        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        await (renderingCharts.value = false)
-        useInitTab("daily")
+        useMountDaily()
     }
 
     if (pageId.value == "screenshots") {
         await useRefreshScreenshot()
     }
     if (pageId.value == "calendar") {
-        await (spinnerLoadingPage.value = true)
-        await useInitIndexedDB()
-        await useLoadCalendar() // no need for filtered trades just 3months back or all. And you get them either from indexedDB or from Parse DB
-        await (spinnerLoadingPage.value = false)
+        useMountCalendar(true)
     }
 }
 </script>

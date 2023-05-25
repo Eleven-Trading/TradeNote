@@ -47,12 +47,11 @@ onBeforeMount(async () => {
 
 })
 onMounted(async () => {
-    console.log("mounting modal")
     tradesModal = new bootstrap.Modal("#tradesModal")
 })
 
 const testing = useTest()
-console.log("testing "+testing.count)
+console.log("testing " + testing.count)
 
 /**************
  * SATISFACTION
@@ -119,6 +118,7 @@ async function updateTradesDailySatisfaction(param1, param2) {
             results.save().then(async () => {
                 console.log(' -> Updated trades with id ' + results.id)
                 await updateIndexedDB()
+                useMountDaily()
                 resolve()
             })
         } else {
@@ -411,12 +411,13 @@ async function hideTradesModal() {
                 await useSaveScreenshot()
             }
             await updateIndexedDB()
+            useMountDaily()
 
+        }else{
+            useInitTab("daily")
         }
         indexedDBtoUpdate.value = false
-        if (pageId.value == "daily") {
-            await useInitTab("daily")
-        }
+        
     }
 }
 
@@ -443,10 +444,6 @@ async function updateIndexedDB(param1) {
             console.log(">6 months")
             await useGetTradesFromDb(0)
         }
-        await useGetFilteredTrades()
-        await (spinnerLoadingPage.value = false)
-        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        await (renderingCharts.value = false)
         resolve()
     })
 }
@@ -462,319 +459,322 @@ async function updateIndexedDB(param1) {
             <Filters />
 
             <!-- added v-if instead v-show because need to wait for patterns to load -->
+            <div class="row">
+                <!-- ============ CARD ============ -->
+                <div class="col-12 col-xl-8">
+                    <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
+                    <div v-for="(itemTrade, index) in filteredTrades" class="row mt-2">
+                        <div class="col-12">
+                            <div class="dailyCard">
+                                <div class="row">
+                                    <!-- ============ PART 1 ============ -->
+                                    <!-- Line 1 : Date and P&L -->
+                                    <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
 
-            <!-- ============ CARD ============ -->
-            <div class="col-12 col-xl-8">
-                <!-- v-show insead of v-if or else init tab does not work cause div is not created until spinner is false-->
-                <div v-for="(itemTrade, index) in filteredTrades" class="row mt-2">
-                    <div class="col-12">
-                        <div class="dailyCard">
-                            <div class="row">
-                                <!-- ============ PART 1 ============ -->
-                                <!-- Line 1 : Date and P&L -->
-                                <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
+                                    <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
+                                        <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}<i
+                                                v-on:click="updateDailySatisfaction(itemTrade.dateUnix, true)"
+                                                v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
+                                            <i v-on:click="updateDailySatisfaction(itemTrade.dateUnix, false)"
+                                                v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                        </div>
+                                        <div class="col-auto ms-auto">P&L: <span
+                                                v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
+                                                    useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds']) }}</span>
+                                        </div>
 
-                                <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-                                    <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}<i
-                                            v-on:click="updateDailySatisfaction(itemTrade.dateUnix, true)"
-                                            v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
-                                        <i v-on:click="updateDailySatisfaction(itemTrade.dateUnix, false)"
-                                            v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                     </div>
-                                    <div class="col-auto ms-auto">P&L: <span
-                                            v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds']) }}</span>
+
+                                    <!-- Line 2 : Charts and total data -->
+                                    <div class="col-12 d-flex align-items-center text-center">
+                                        <div class="row">
+
+                                            <!--  -> Win Loss Chart -->
+                                            <div class="col-12 col-lg-6">
+                                                <div class="row">
+                                                    <div class="col-4">
+                                                        <div v-bind:id="'pieChart' + itemTrade.dateUnix"
+                                                            class="chartIdDailyClass">
+                                                        </div>
+                                                    </div>
+                                                    <!--  -> Win Loss evolution Chart -->
+                                                    <div class="col-8 chartCard">
+                                                        <div v-bind:id="'doubleLineChart' + itemTrade.dateUnix"
+                                                            class="chartIdDailyClass"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!--  -> Tot trades and total executions -->
+                                            <div class="col-12 col-lg-6">
+                                                <div class="row">
+                                                    <div class="col row">
+                                                        <div>
+                                                            <label>Executions</label>
+                                                            <p>{{ itemTrade.pAndL.executions }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <label>Trades</label>
+                                                            <p>{{ itemTrade.pAndL.trades }}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <!--  -> Tot Wins and losses -->
+                                                    <div class="col row">
+                                                        <div>
+                                                            <label>Wins</label>
+                                                            <p>{{ itemTrade.pAndL.grossWinsCount }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <label>Losses</label>
+                                                            <p>{{ itemTrade.pAndL.grossLossCount }}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <!--  -> Tot commission and gross p&l -->
+                                                    <div class="col row">
+                                                        <div>
+                                                            <label>Fees</label>
+                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.fees) }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <label>P&L(g)</label>
+                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds) }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <!-- end PART 1 -->
+
+                                    <!-- ============ PART 2 ============ -->
+                                    <div class="col-12 table-responsive">
+                                        <nav>
+                                            <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
+                                                <button v-for="dashTab in dailyTabs" class="nav-link"
+                                                    v-bind:id="dashTab.id + '-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="dashTab.target + '-' + index" type="button"
+                                                    role="tab" aria-controls="nav-overview" aria-selected="true">{{
+                                                        dashTab.label }}
+                                                    <span
+                                                        v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
+                                                        class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
+                                                            itemTrade.dateUnix).length }})</span>
+                                                    <!--({{itemTrade[dashTab.id].length}})-->
+                                                </button>
+                                            </div>
+                                        </nav>
+                                        <div class="tab-content" id="nav-tabContent">
+                                            <!-- TRADES TAB -->
+                                            <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
+                                                role="tabpanel" aria-labelledby="nav-overview-tab">
+                                                <table class="table">
+                                                    <thead class="thead-dark">
+                                                        <tr>
+                                                            <th scope="col">Symbol</th>
+                                                            <th scope="col">Qty</th>
+                                                            <th scope="col">Entry</th>
+                                                            <th scope="col">Time</th>
+                                                            <th scope="col">Price</th>
+                                                            <!--<th scope="col">Duration</th>-->
+                                                            <th scope="col">P&L/Sh(g)</th>
+                                                            <th scope="col">P&L(n)</th>
+                                                            <th scope="col">Pattern</th>
+                                                            <th scope="col">Mistake</th>
+                                                            <th scope="col">Note</th>
+                                                            <!--<th scope="col">Video</th>-->
+                                                            <th scope="col"></th>
+                                                            <th scope="col"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                        <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
+                                                        <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
+
+                                                        <tr v-for="(trade, index2) in itemTrade.trades"
+                                                            data-bs-toggle="modal" data-bs-target="#tradesModal"
+                                                            v-on:click="clickTradesModal(trade.videoStart && trade.videoEnd ? true : false, index2, itemTrade)"
+                                                            class="pointerClass">
+                                                            <td>{{ trade.symbol }}</td>
+                                                            <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
+                                                            <td>{{ trade.strategy.charAt(0).toUpperCase() +
+                                                                trade.strategy.slice(1) }}</td>
+                                                            <td>{{ useTimeFormat(trade.entryTime) }}</td>
+                                                            <td>{{ (trade.entryPrice).toFixed(2) }}</td>
+                                                            <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
+                                                            <td
+                                                                v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">
+                                                                {{ (trade.grossSharePL).toFixed(2) }}</td>
+                                                            <td
+                                                                v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                                                {{ (trade.netProceeds).toFixed(2) }}</td>
+                                                            <td
+                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('pattern') && trade.setup.pattern != null && patterns.filter(x => x.objectId == trade.setup.pattern)[0] != undefined">
+                                                                {{ (JSON.parse(JSON.stringify(patterns.filter(x =>
+                                                                    x.objectId ==
+                                                                    trade.setup.pattern)[0])).name).substr(0, 15) + "..." }}
+                                                            </td>
+                                                            <td v-else>
+                                                                <!--<i class="uil uil-times-square"></i>-->
+                                                            </td>
+                                                            <td
+                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('mistake') && trade.setup.mistake != null && mistakes.filter(x => x.objectId == trade.setup.mistake)[0] != undefined">
+                                                                {{ (JSON.parse(JSON.stringify(mistakes.filter(x =>
+                                                                    x.objectId ==
+                                                                    trade.setup.mistake)[0])).name).substr(0, 15) + "..." }}
+                                                            </td>
+                                                            <td v-else>
+                                                                <!--<i class="uil uil-times-square"></i>-->
+                                                            </td>
+                                                            <td
+                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">
+                                                                {{ (trade.setup.note).substr(0, 15) + "..." }}
+                                                            </td>
+                                                            <td v-else>
+
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
+                                                                    <i class="greenTrade uil uil-thumbs-up"></i>
+                                                                </span>
+                                                                <span
+                                                                    v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
+                                                                    <i class="redTrade uil uil-thumbs-down"></i>
+                                                                </span>
+                                                            </td>
+
+                                                            <td>
+                                                                <span
+                                                                    v-if="screenshots.findIndex(f => f.name == trade.id) != -1">
+                                                                    <i class="uil uil-image-v"></i>
+                                                                </span>
+                                                            </td>
+
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- BLOTTER TAB -->
+                                            <div class="tab-pane fade txt-small" v-bind:id="'blotterNav-' + index"
+                                                role="tabpanel" aria-labelledby="nav-overview-tab">
+                                                <table v-bind:id="'table' + index" class="table">
+                                                    <thead class="thead-dark">
+                                                        <tr>
+                                                            <th scope="col">Symbol</th>
+                                                            <th scope="col">Quantity</th>
+                                                            <th scope="col">P&L(g)</th>
+                                                            <th scope="col">Fees</th>
+                                                            <th scope="col">P&L(n)</th>
+                                                            <th scope="col">Wins</th>
+                                                            <th scope="col">Losses</th>
+                                                            <th scope="col">Trades</th>
+                                                            <th scope="col">Executions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="blot in daily.blotter">
+
+                                                            <td>{{ blot.symbol }}</td>
+                                                            <td>{{ blot.buyQuantity + blot.sellQuantity }}</td>
+                                                            <td
+                                                                v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                                                {{ (blot.grossProceeds).toFixed(2) }}</td>
+                                                            <td>{{ (blot.fees).toFixed(2) }}</td>
+                                                            <td
+                                                                v-bind:class="[blot[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">
+                                                                {{ (blot[amountCase + 'Proceeds']).toFixed(2) }}</td>
+                                                            <td>{{ blot.grossWinsCount }}</td>
+                                                            <td>{{ blot.grossLossCount }}</td>
+                                                            <td>{{ blot.trades }}</td>
+                                                            <td>{{ blot.executions }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- SCREENSHOTS TAB -->
+                                            <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
+                                                role="tabpanel" aria-labelledby="nav-overview-tab">
+                                                <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
+                                                    class="mb-2">
+                                                    <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side"
+                                                        class="col mt-1">
+                                                        | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
+                                                            'Long' }}
+                                                        | {{ useTimeFormat(screenshot.dateUnix) }}</span>
+                                                    <span v-else class="col mb-2"> | {{
+                                                        useHourMinuteFormat(screenshot.dateUnix)
+                                                    }}</span>
+                                                    <span
+                                                        v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
+
+                                                        <span
+                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
+                                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                                                obj.tradeId == screenshot.name)].pattern.name }}</span>
+
+                                                        <span
+                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
+                                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                                                obj.tradeId == screenshot.name)].mistake.name }}</span></span>
+
+                                                    <img v-bind:id="screenshot.objectId"
+                                                        class="setupEntryImg mt-1 img-fluid"
+                                                        v-bind:src="screenshot.annotatedBase64" />
+                                                </div>
+                                            </div>
+
+                                            <!-- DIARY TAB -->
+                                            <div class="tab-pane fade" v-bind:id="'diariesNav-' + index" role="tabpanel"
+                                                aria-labelledby="nav-overview-tab">
+                                                <div
+                                                    v-if="diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix) != -1">
+                                                    <p
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive != '<p><br></p>'">
+                                                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
+                                                        <span
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive"></span>
+                                                    </p>
+                                                    <p
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative != '<p><br></p>'">
+                                                        <span class="dashInfoTitle">Negative aspect</span>
+                                                        <span
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative"></span>
+                                                    </p>
+                                                    <p
+                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other != '<p><br></p>'">
+                                                        <span class="dashInfoTitle">Observations</span>
+                                                        <span
+                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other"></span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <!-- end PART 2 -->
 
                                 </div>
-
-                                <!-- Line 2 : Charts and total data -->
-                                <div class="col-12 d-flex align-items-center text-center">
-                                    <div class="row">
-
-                                        <!--  -> Win Loss Chart -->
-                                        <div class="col-12 col-lg-6">
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <div v-bind:id="'pieChart' + itemTrade.dateUnix"
-                                                        class="chartIdDailyClass">
-                                                    </div>
-                                                </div>
-                                                <!--  -> Win Loss evolution Chart -->
-                                                <div class="col-8 chartCard">
-                                                    <div v-bind:id="'doubleLineChart' + itemTrade.dateUnix"
-                                                        class="chartIdDailyClass"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!--  -> Tot trades and total executions -->
-                                        <div class="col-12 col-lg-6">
-                                            <div class="row">
-                                                <div class="col row">
-                                                    <div>
-                                                        <label>Executions</label>
-                                                        <p>{{ itemTrade.pAndL.executions }}</p>
-                                                    </div>
-                                                    <div>
-                                                        <label>Trades</label>
-                                                        <p>{{ itemTrade.pAndL.trades }}</p>
-                                                    </div>
-                                                </div>
-
-                                                <!--  -> Tot Wins and losses -->
-                                                <div class="col row">
-                                                    <div>
-                                                        <label>Wins</label>
-                                                        <p>{{ itemTrade.pAndL.grossWinsCount }}</p>
-                                                    </div>
-                                                    <div>
-                                                        <label>Losses</label>
-                                                        <p>{{ itemTrade.pAndL.grossLossCount }}</p>
-                                                    </div>
-                                                </div>
-
-                                                <!--  -> Tot commission and gross p&l -->
-                                                <div class="col row">
-                                                    <div>
-                                                        <label>Fees</label>
-                                                        <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.fees) }}</p>
-                                                    </div>
-                                                    <div>
-                                                        <label>P&L(g)</label>
-                                                        <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds) }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- end PART 1 -->
-
-                                <!-- ============ PART 2 ============ -->
-                                <div class="col-12 table-responsive">
-                                    <nav>
-                                        <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-                                            <button v-for="dashTab in dailyTabs" class="nav-link"
-                                                v-bind:id="dashTab.id + '-' + index" data-bs-toggle="tab"
-                                                v-bind:data-bs-target="dashTab.target + '-' + index" type="button"
-                                                role="tab" aria-controls="nav-overview" aria-selected="true">{{
-                                                    dashTab.label }}
-                                                <span
-                                                    v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
-                                                    class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                        itemTrade.dateUnix).length }})</span>
-                                                <!--({{itemTrade[dashTab.id].length}})-->
-                                            </button>
-                                        </div>
-                                    </nav>
-                                    <div class="tab-content" id="nav-tabContent">
-                                        <!-- TRADES TAB -->
-                                        <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
-                                            role="tabpanel" aria-labelledby="nav-overview-tab">
-                                            <table class="table">
-                                                <thead class="thead-dark">
-                                                    <tr>
-                                                        <th scope="col">Symbol</th>
-                                                        <th scope="col">Qty</th>
-                                                        <th scope="col">Entry</th>
-                                                        <th scope="col">Time</th>
-                                                        <th scope="col">Price</th>
-                                                        <!--<th scope="col">Duration</th>-->
-                                                        <th scope="col">P&L/Sh(g)</th>
-                                                        <th scope="col">P&L(n)</th>
-                                                        <th scope="col">Pattern</th>
-                                                        <th scope="col">Mistake</th>
-                                                        <th scope="col">Note</th>
-                                                        <!--<th scope="col">Video</th>-->
-                                                        <th scope="col"></th>
-                                                        <th scope="col"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-
-                                                    <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
-                                                    <!--<tr v-if="/[^/]*$/.exec(videoBlob)[0]!='null'&&trade.videoStart&&trade.videoEnd">-->
-
-                                                    <tr v-for="(trade, index2) in itemTrade.trades" data-bs-toggle="modal"
-                                                        data-bs-target="#tradesModal"
-                                                        v-on:click="clickTradesModal(trade.videoStart && trade.videoEnd ? true : false, index2, itemTrade)"
-                                                        class="pointerClass">
-                                                        <td>{{ trade.symbol }}</td>
-                                                        <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
-                                                        <td>{{ trade.strategy.charAt(0).toUpperCase() +
-                                                            trade.strategy.slice(1) }}</td>
-                                                        <td>{{ useTimeFormat(trade.entryTime) }}</td>
-                                                        <td>{{ (trade.entryPrice).toFixed(2) }}</td>
-                                                        <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
-                                                        <td
-                                                            v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">
-                                                            {{ (trade.grossSharePL).toFixed(2) }}</td>
-                                                        <td
-                                                            v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                            {{ (trade.netProceeds).toFixed(2) }}</td>
-                                                        <td
-                                                            v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('pattern') && trade.setup.pattern != null && patterns.filter(x => x.objectId == trade.setup.pattern)[0] != undefined">
-                                                            {{ (JSON.parse(JSON.stringify(patterns.filter(x =>
-                                                                x.objectId ==
-                                                                trade.setup.pattern)[0])).name).substr(0, 15) + "..." }}
-                                                        </td>
-                                                        <td v-else>
-                                                            <!--<i class="uil uil-times-square"></i>-->
-                                                        </td>
-                                                        <td
-                                                            v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('mistake') && trade.setup.mistake != null && mistakes.filter(x => x.objectId == trade.setup.mistake)[0] != undefined">
-                                                            {{ (JSON.parse(JSON.stringify(mistakes.filter(x =>
-                                                                x.objectId ==
-                                                                trade.setup.mistake)[0])).name).substr(0, 15) + "..." }}
-                                                        </td>
-                                                        <td v-else>
-                                                            <!--<i class="uil uil-times-square"></i>-->
-                                                        </td>
-                                                        <td
-                                                            v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">
-                                                            {{ (trade.setup.note).substr(0, 15) + "..." }}
-                                                        </td>
-                                                        <td v-else>
-
-                                                        </td>
-                                                        <td>
-                                                            <span
-                                                                v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
-                                                                <i class="greenTrade uil uil-thumbs-up"></i>
-                                                            </span>
-                                                            <span
-                                                                v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
-                                                                <i class="redTrade uil uil-thumbs-down"></i>
-                                                            </span>
-                                                        </td>
-
-                                                        <td>
-                                                            <span
-                                                                v-if="screenshots.findIndex(f => f.name == trade.id) != -1">
-                                                                <i class="uil uil-image-v"></i>
-                                                            </span>
-                                                        </td>
-
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <!-- BLOTTER TAB -->
-                                        <div class="tab-pane fade txt-small" v-bind:id="'blotterNav-' + index"
-                                            role="tabpanel" aria-labelledby="nav-overview-tab">
-                                            <table v-bind:id="'table' + index" class="table">
-                                                <thead class="thead-dark">
-                                                    <tr>
-                                                        <th scope="col">Symbol</th>
-                                                        <th scope="col">Quantity</th>
-                                                        <th scope="col">P&L(g)</th>
-                                                        <th scope="col">Fees</th>
-                                                        <th scope="col">P&L(n)</th>
-                                                        <th scope="col">Wins</th>
-                                                        <th scope="col">Losses</th>
-                                                        <th scope="col">Trades</th>
-                                                        <th scope="col">Executions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr v-for="blot in daily.blotter">
-
-                                                        <td>{{ blot.symbol }}</td>
-                                                        <td>{{ blot.buyQuantity + blot.sellQuantity }}</td>
-                                                        <td
-                                                            v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                            {{ (blot.grossProceeds).toFixed(2) }}</td>
-                                                        <td>{{ (blot.fees).toFixed(2) }}</td>
-                                                        <td
-                                                            v-bind:class="[blot[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">
-                                                            {{ (blot[amountCase + 'Proceeds']).toFixed(2) }}</td>
-                                                        <td>{{ blot.grossWinsCount }}</td>
-                                                        <td>{{ blot.grossLossCount }}</td>
-                                                        <td>{{ blot.trades }}</td>
-                                                        <td>{{ blot.executions }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <!-- SCREENSHOTS TAB -->
-                                        <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
-                                            role="tabpanel" aria-labelledby="nav-overview-tab">
-                                            <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
-                                                class="mb-2">
-                                                <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side"
-                                                    class="col mt-1">
-                                                    | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
-                                                        'Long' }}
-                                                    | {{ useTimeFormat(screenshot.dateUnix) }}</span>
-                                                <span v-else class="col mb-2"> | {{
-                                                    useHourMinuteFormat(screenshot.dateUnix)
-                                                }}</span>
-                                                <span
-                                                    v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
-
-                                                    <span
-                                                        v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
-                                                        | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                            obj.tradeId == screenshot.name)].pattern.name }}</span>
-
-                                                    <span
-                                                        v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
-                                                        | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                            obj.tradeId == screenshot.name)].mistake.name }}</span></span>
-
-                                                <img v-bind:id="screenshot.objectId" class="setupEntryImg mt-1 img-fluid"
-                                                    v-bind:src="screenshot.annotatedBase64" />
-                                            </div>
-                                        </div>
-
-                                        <!-- DIARY TAB -->
-                                        <div class="tab-pane fade" v-bind:id="'diariesNav-' + index" role="tabpanel"
-                                            aria-labelledby="nav-overview-tab">
-                                            <div v-if="diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix) != -1">
-                                                <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive != '<p><br></p>'">
-                                                    <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                                                    <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive"></span>
-                                                </p>
-                                                <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative != '<p><br></p>'">
-                                                    <span class="dashInfoTitle">Negative aspect</span>
-                                                    <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative"></span>
-                                                </p>
-                                                <p
-                                                    v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other != '<p><br></p>'">
-                                                    <span class="dashInfoTitle">Observations</span>
-                                                    <span
-                                                        v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other"></span>
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <!-- end PART 2 -->
-
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- end card-->
+                <!-- end card-->
 
-            <!-- ============ CALENDAR ============ -->
-            <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
-                <div class="dailyCard calCard">
-                    <div class="row">
-                        <Calendar />
+                <!-- ============ CALENDAR ============ -->
+                <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+                    <div class="dailyCard calCard">
+                        <div class="row">
+                            <Calendar />
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     <!-- ============ TRADES MODAL ============ -->
@@ -966,5 +966,4 @@ async function updateIndexedDB(param1) {
                 </div>
             </div>
         </div>
-    </div>
-</template>
+</div></template>
