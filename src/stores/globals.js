@@ -96,7 +96,7 @@ export const modalVideosOpen = ref(false)
 * TRADES
 **************************************/
 export const selectedRange = ref()
-export const threeMonthsBack = ref(dayjs().startOf('month').subtract(3, 'month').unix())
+export const threeMonthsBack = ref()
 export const filteredTrades = reactive([])
 export const filteredTradesTrades = reactive([])
 export const allTrades = reactive([])
@@ -148,7 +148,8 @@ export const tradeExcursionChanged = ref(false)
 export const tradeExcursionId = ref()
 export const tradeExcursionDateUnix = ref()
 
-export const tradeSatisfactionArray = reactive([])
+export const satisfactionTradeArray = reactive([])
+export const satisfactionArray = reactive([])
 export const excursions = reactive([])
 /**************************************
 * SCREENSHOTS

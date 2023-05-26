@@ -389,6 +389,7 @@ export async function useGetTradesFromDb(param) {
     return new Promise((resolve, reject) => {
         (async () => {
             console.log(" -> Getting trades from ParseDB");
+            console.log(" -> threeMonthsBack "+threeMonthsBack.value)
             console.time("  --> Execution time");
             spinnerLoadingPageText.value = "Getting trades from ParseDB"
             const parseObject = Parse.Object.extend("trades");

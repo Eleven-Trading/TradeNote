@@ -7,7 +7,7 @@ import { useCalculateProfitAnalysis, useGetAllTrades, useGetFilteredTrades, useP
 import { useLoadCalendar } from '../utils/calendar'
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
-import { useGetExcursions, useGetTradesSatisfaction } from "../utils/daily";
+import { useGetExcursions, useGetSatisfactions } from "../utils/daily";
 
 /*============================================
     VARIABLES

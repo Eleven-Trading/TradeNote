@@ -1,24 +1,32 @@
-import { excursions, queryLimit, tradeSatisfactionArray } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedMonth } from "../stores/globals";
 
-export async function useGetTradesSatisfaction() {
+export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
-        console.log("\nGETTING SATISFACTION FOR EACH TRADE");
+        console.log("\nGETTING SATISFACTIONS");
+        satisfactionTradeArray.length = 0
+        satisfactionArray.length = 0
+
         const parseObject = Parse.Object.extend("satisfactions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
-        query.exists("tradeId") /// this is how we differentiate daily from trades satisfaction records
+        query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
         query.limit(queryLimit.value); // limit to at most 10 results
-        tradeSatisfactionArray.length = 0
+    
         const results = await query.find();
         for (let i = 0; i < results.length; i++) {
             let temp = {}
             const object = results[i];
-            temp.id = object.get('tradeId')
+            temp.tradeId = object.get('tradeId')
             temp.satisfaction = object.get('satisfaction')
-            tradeSatisfactionArray.push(temp)
+            temp.dateUnix = object.get('dateUnix')
+            if (temp.tradeId != undefined){
+                satisfactionTradeArray.push(temp)
+            }else{
+                satisfactionArray.push(temp)
+            }
+            
         }
-        //console.log(" -> Trades satisfaction " + JSON.stringify(tradeSatisfactionArray))
-
+        //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
         resolve()
 
     })

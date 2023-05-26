@@ -4,13 +4,13 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, tradeSatisfactionArray, excursions } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup } from '../utils/patternsMistakes'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
-import { useGetTradesSatisfaction } from '../utils/daily';
+import { useGetSatisfactions } from '../utils/daily';
 import { useTest } from '../stores/counter';
 
 const dailyTabs = [{
@@ -56,10 +56,17 @@ console.log("testing " + testing.count)
 /**************
  * SATISFACTION
  ***************/
+async function dailySatisfactionChange(param1, param2){
+    console.log("\nDAILY SATISFACTION CHANGE")
+    console.time("  --> Duration daily satisfaction change")
+    await updateDailySatisfaction(param1, param2)
+    await useGetSatisfactions()
+    await console.timeEnd("  --> Duration daily satisfaction change")
+}
+
 async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
-    console.log("\nUPDATING OR SAVING SATISFACTIONS IN PARSE")
     //console.log(" param 1 " + param1)
-    spinnerLoadingPage.value = true
+    console.log(" -> updating satisfactions")
     return new Promise(async (resolve, reject) => {
 
         const parseObject = Parse.Object.extend("satisfactions");
@@ -92,11 +99,6 @@ async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDa
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
         }
-
-        await updateTradesDailySatisfaction(param1, param2)
-        if (pageId.value == "daily") {
-            await useInitTab("daily")
-        }
         resolve()
 
 
@@ -118,7 +120,7 @@ async function updateTradesDailySatisfaction(param1, param2) {
             results.save().then(async () => {
                 console.log(' -> Updated trades with id ' + results.id)
                 await updateIndexedDB()
-                useMountDaily()
+                await useMountDaily()
                 resolve()
             })
         } else {
@@ -135,13 +137,12 @@ async function tradeSatisfactionChange(param1, param2, param3, param4) {
     tradeSatisfaction = param2
     tradeSatisfactionDateUnix = param3
     //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
-    tradeSatisfactionChanged = true
+    tradeSatisfactionChanged.value = true
     indexedDBtoUpdate.value = true
 
     await updateTradeSatisfaction()
-    await useUpdateTrades()
-    await useGetTradesSatisfaction()
-    tradeSatisfactionChanged = false
+    await useGetSatisfactions()
+    tradeSatisfactionChanged.value = false
 
 }
 
@@ -436,7 +437,7 @@ async function updateIndexedDB(param1) {
     console.log("\nUPDATING INDEXEDDB")
     return new Promise(async (resolve, reject) => {
         await (spinnerLoadingPageText.value = "Updating trades in IndexedDB")
-        //console.log("threeMonthsBack.value "+threeMonthsBack.value+" ; selectedMonth.value.start "+selectedMonth.value.start)
+        console.log("threeMonthsBack.value "+threeMonthsBack.value+" ; selectedMonth.value.start "+selectedMonth.value.start)
         if (threeMonthsBack.value <= selectedMonth.value.start) {
             console.log("3 months")
             await useGetTradesFromDb(6)
@@ -472,11 +473,13 @@ async function updateIndexedDB(param1) {
                                     <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
 
                                     <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-                                        <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}<i
-                                                v-on:click="updateDailySatisfaction(itemTrade.dateUnix, true)"
-                                                v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
-                                            <i v-on:click="updateDailySatisfaction(itemTrade.dateUnix, false)"
-                                                v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                        
+                                        <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}
+                                            <i
+                                                v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true)"
+                                                v-bind:class="[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix) != -1 && satisfactionArray[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix)].satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
+                                            <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false)"
+                                                v-bind:class="[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix) != -1 && satisfactionArray[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix)].satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
                                         <div class="col-auto ms-auto">P&L: <span
                                                 v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
@@ -638,11 +641,11 @@ async function updateIndexedDB(param1) {
                                                             </td>
                                                             <td>
                                                                 <span
-                                                                    v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == true">
+                                                                    v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == true">
                                                                     <i class="greenTrade uil uil-thumbs-up"></i>
                                                                 </span>
                                                                 <span
-                                                                    v-if="tradeSatisfactionArray.findIndex(f => f.id == trade.id) != -1 && tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == trade.id)].satisfaction == false">
+                                                                    v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == false">
                                                                     <i class="redTrade uil uil-thumbs-down"></i>
                                                                 </span>
                                                             </td>
@@ -845,10 +848,10 @@ async function updateIndexedDB(param1) {
                                         <!-- Satisfaction -->
                                         <div class="col-1">
                                             <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)"
-                                                v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
+                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
 
                                             <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)"
-                                                v-bind:class="[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id) != -1 ? tradeSatisfactionArray[tradeSatisfactionArray.findIndex(f => f.id == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
                                         <!-- Patterns -->

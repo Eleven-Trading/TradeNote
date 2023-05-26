@@ -1,13 +1,13 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, threeMonthsBack } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, usePrepareTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
-import { useGetExcursions, useGetTradesSatisfaction } from "./daily";
+import { useGetExcursions, useGetSatisfactions } from "./daily";
 
 /**************************************
 * INITS
@@ -258,6 +258,7 @@ export function useGetPeriods() {
     temp.forEach(element => {
         periodRange.push(element)
     });
+    threeMonthsBack.value = periodRange.filter(obj => obj.value == "lastThreeMonthsTilNow")[0].start
 }
 
 export function useInitShepherd() {
@@ -718,6 +719,8 @@ export function useInitPopover() {
 * MOUNT 
 **************************************/
 export async function useMountDashboard() {
+    console.log("\MOUNTING DASHBOARD")
+    console.time("  --> Duration mount dashboard");
     await useInitIndexedDB()
 
     spinnerLoadingPage.value = true
@@ -729,6 +732,8 @@ export async function useMountDashboard() {
     await useCalculateProfitAnalysis()
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)
+    useInitTab("dashboard")
+    console.timeEnd("  --> Duration mount dashboard");
 
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
@@ -737,27 +742,28 @@ export async function useMountDashboard() {
         await (dashboardChartsMounted.value = true)
     }
 
-    useInitTab("dashboard")
 }
 
 export async function useMountDaily() {
-        console.log("\MOUNTING DAILY")
-        await useInitIndexedDB()
-        spinnerLoadingPage.value = true
-        useInitPopover()
+    console.log("\MOUNTING DAILY")
+    await console.time("  --> Duration mount daily");
+    await useInitIndexedDB()
+    spinnerLoadingPage.value = true
+    useInitPopover()
+    await Promise.all([useGetSatisfactions(), useGetFilteredTrades()])
+    await useLoadCalendar()
+    await (spinnerLoadingPage.value = false)
+    useInitTab("daily")
+    console.timeEnd("  --> Duration mount daily")
 
-        await useGetFilteredTrades()
-        await useLoadCalendar()
-        await (spinnerLoadingPage.value = false)
-        useInitTab("daily")
 
-        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        await (renderingCharts.value = false)
+    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+    await (renderingCharts.value = false)
 
-        await Promise.all([useGetTradesSatisfaction(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    await Promise.all([useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
 }
 
-export async function useMountCalendar(param){
+export async function useMountCalendar(param) {
     await (spinnerLoadingPage.value = true)
     await useInitIndexedDB()
     await useLoadCalendar(param) // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
@@ -928,6 +934,7 @@ export function useMonthFormatShort(param) {
 export function useCreatedDateFormat(param) {
     return dayjs.unix(param).tz(timeZoneTrade.value).format("ddd DD MMMM YYYY")
 }
+
 export function useDatetimeLocalFormat(param) {
     return dayjs.tz(param * 1000, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
 }
