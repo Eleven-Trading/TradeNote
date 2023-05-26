@@ -1,4 +1,4 @@
-import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData } from "../stores/globals"
+import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData, patternsMistakes } from "../stores/globals"
 import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts'
@@ -214,13 +214,14 @@ export async function useGetFilteredTrades(param) {
                 //console.log(" element "+JSON.stringify(element))
                 let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                 temp.trades = []
-                
+
                 //we need to get date, month and year in order to compare for calendar creation
                 temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
                 temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
                 temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
-                
+
                 element.trades.forEach(element => {
+                    //console.log("id " + element.id)
                     /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
                     //console.log(" element "+JSON.stringify(element))
                     /* For specific pages, we only show per month, so we limit end date */
@@ -229,10 +230,41 @@ export async function useGetFilteredTrades(param) {
                     }
                     //console.log( " setup pattern "+selectedPatterns.value.includes(element.setup.pattern))
                     /* We use if here but then conditional inside to check all possibilities */
+              
                     let pattern
                     let mistake
                     // We need to include patterns and mistakes that are void or null
-                    if (element.hasOwnProperty('setup')) {
+                    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == element.id)
+                    //console.log("patternMistake "+JSON.stringify(patternMistake))
+                    if (patternMistake.length > 0) {
+                        if (patternMistake[0].pattern) {
+                            let tempPattern = patternMistake[0].pattern.objectId
+                            if (selectedPatterns.value.includes(tempPattern)) {
+                                pattern = tempPattern
+                            } else {
+                                pattern = "void"
+                            }
+                        } else {
+                            pattern = "void"
+                        }
+                        
+                        if (patternMistake[0].mistake) {
+                            let tempMistake = patternMistake[0].mistake.objectId
+                            if (selectedMistakes.value.includes(tempMistake)) {
+                                mistake = tempMistake
+                            } else {
+                                mistake = "void"
+                            }
+                        } else {
+                            mistake = "void"
+                        }
+
+                    }else{
+                        pattern = "void"
+                        mistake = "void"  
+                    }
+
+                    /*if (element.hasOwnProperty('setup')) {
                         if (element.setup.pattern == null) {
                             pattern = "void"
                         } else {
@@ -257,7 +289,7 @@ export async function useGetFilteredTrades(param) {
                     } else {
                         pattern = "void"
                         mistake = "void"
-                    }
+                    }*/
 
                     //console.log(" selected patterns "+selectedPatterns.value)
                     //console.log(" pattern "+pattern)
@@ -389,7 +421,7 @@ export async function useGetTradesFromDb(param) {
     return new Promise((resolve, reject) => {
         (async () => {
             console.log(" -> Getting trades from ParseDB");
-            console.log(" -> threeMonthsBack "+threeMonthsBack.value)
+            console.log(" -> threeMonthsBack " + threeMonthsBack.value)
             console.time("  --> Execution time");
             spinnerLoadingPageText.value = "Getting trades from ParseDB"
             const parseObject = Parse.Object.extend("trades");
@@ -1416,13 +1448,13 @@ export async function useRefreshTrades() {
     console.log("\nREFRESHING INFO")
     await (spinnerLoadingPage.value = true)
     await useGetTradesFromDb()
-    if (pageId.value == "dashboard"){
+    if (pageId.value == "dashboard") {
         useMountDashboard()
-    }else if (pageId.value == "daily"){
+    } else if (pageId.value == "daily") {
         useMountDaily()
     } else if (pageId.value == "calendar") {
         useMountCalendar()
-    }else{
+    } else {
         window.location.href = "/dashboard"
     }
 }

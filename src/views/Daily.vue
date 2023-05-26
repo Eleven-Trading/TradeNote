@@ -8,7 +8,7 @@ import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patterns
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
-import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup } from '../utils/patternsMistakes'
+import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup, useGetPatternsMistakes } from '../utils/patternsMistakes'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 import { useGetSatisfactions } from '../utils/daily';
 import { useTest } from '../stores/counter';
@@ -50,8 +50,6 @@ onMounted(async () => {
     tradesModal = new bootstrap.Modal("#tradesModal")
 })
 
-const testing = useTest()
-console.log("testing " + testing.count)
 
 /**************
  * SATISFACTION
@@ -284,7 +282,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         alert("Please save your screenshot annotation")
         return
     } else {
-
+        await (spinnerSetups.value = true)
         //clicking on modal from daily page
         if (param3) {
             for (let key in daily) delete daily[key]
@@ -292,7 +290,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         }
         //console.log(" -> Daily "+JSON.stringify(daily))
         if (!param3 && tradeSetupChanged.value) {
-            await Promise.all([useUpdatePatternsMistakes(), useUpdateTrades()])
+            await useUpdatePatternsMistakes()
         }
 
         if (!param3 && tradeExcursionChanged.value) {
@@ -355,20 +353,19 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
 
             //Before going next or back, check if Satisfaction or Pattern already exists in Parse DB
 
-            const parseObject = Parse.Object.extend("patternsMistakes");
-            const query = new Parse.Query(parseObject);
-            query.equalTo("tradeId", daily.trades[param2].id)
-            const results = await query.first();
-            if (results) {
-                let resultsParse = JSON.parse(JSON.stringify(results))
-                //console.log(" results "+JSON.stringify(resultsParse))
+            let patternMistake = patternsMistakes.filter(obj => obj.tradeId == daily.trades[param2].id)
+            
+            if (patternMistake.length) {
+                //console.log(" patternMistake "+JSON.stringify(patternMistake))
                 //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
-                resultsParse.pattern != null ? tradeSetup.pattern = resultsParse.pattern.objectId : null
-                resultsParse.mistake != null ? tradeSetup.mistake = resultsParse.mistake.objectId : null
-                resultsParse.note != null || resultsParse.note != 'null' ? tradeSetup.note = resultsParse.note : null
+                patternMistake[0].pattern != null ? tradeSetup.pattern = patternMistake[0].pattern.objectId : null
+                patternMistake[0].mistake != null ? tradeSetup.mistake = patternMistake[0].mistake.objectId : null
+                patternMistake[0].note != null || patternMistake[0].note != 'null' ? tradeSetup.note = patternMistake[0].note : null
+                console.log("pattern "+tradeSetup.pattern)
             }
         }
         await awaitClick()
+        await (spinnerSetups.value = false)
     }
 
 }
@@ -379,9 +376,14 @@ async function hideTradesModal() {
         alert("Please save your screenshot annotation")
         return
     } else {
+        await (spinnerSetups.value = true)
         if (tradeScreenshotChanged.value) {
             await useSaveScreenshot()
         }
+        if (tradeSetupChanged.value) {
+            await useUpdatePatternsMistakes()
+        }
+        await (spinnerSetups.value = false)
         if (pageId.value == "daily") tradesModal.hide()
 
 
@@ -443,6 +445,28 @@ async function updateIndexedDB(param1) {
         }
         resolve()
     })
+}
+
+function filterPatterns(param){
+    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+    
+    if (patternMistake.length>0 && (patternMistake[0].pattern != null || patternMistake[0].pattern != undefined)){
+        let patternName = patternMistake[0].pattern.name
+        return patternName.substr(0, 15) + "..."
+    }else{
+        return
+    }
+}
+
+function filterMistakes(param){
+    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+    
+    if (patternMistake.length>0 && (patternMistake[0].mistake != null || patternMistake[0].mistake != undefined)){
+        let mistakeName = patternMistake[0].mistake.name
+        return mistakeName.substr(0, 15) + "..."
+    }else{
+        return
+    }
 }
 </script>
 
@@ -609,23 +633,11 @@ async function updateIndexedDB(param1) {
                                                             <td
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
-                                                            <td
-                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('pattern') && trade.setup.pattern != null && patterns.filter(x => x.objectId == trade.setup.pattern)[0] != undefined">
-                                                                {{ (JSON.parse(JSON.stringify(patterns.filter(x =>
-                                                                    x.objectId ==
-                                                                    trade.setup.pattern)[0])).name).substr(0, 15) + "..." }}
+                                                            <td>
+                                                                {{filterPatterns(trade.id)}}
                                                             </td>
-                                                            <td v-else>
-                                                                <!--<i class="uil uil-times-square"></i>-->
-                                                            </td>
-                                                            <td
-                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('mistake') && trade.setup.mistake != null && mistakes.filter(x => x.objectId == trade.setup.mistake)[0] != undefined">
-                                                                {{ (JSON.parse(JSON.stringify(mistakes.filter(x =>
-                                                                    x.objectId ==
-                                                                    trade.setup.mistake)[0])).name).substr(0, 15) + "..." }}
-                                                            </td>
-                                                            <td v-else>
-                                                                <!--<i class="uil uil-times-square"></i>-->
+                                                            <td>
+                                                                {{ filterMistakes(trade.id) }}
                                                             </td>
                                                             <td
                                                                 v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">

@@ -79,7 +79,6 @@ export function useTradeSetupChange(param1, param2, param3, param4, param5) {
 
     //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
     tradeSetupChanged.value = true
-    indexedDBtoUpdate.value = true
 
 }
 
@@ -107,6 +106,7 @@ export async function useUpdatePatternsMistakes() {
                 results.save()
                     .then(async () => {
                         console.log(' -> Updated patternsMistakes with id ' + results.id)
+                        await useGetPatternsMistakes()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);
@@ -139,6 +139,7 @@ export async function useUpdatePatternsMistakes() {
                 object.save()
                     .then(async (object) => {
                         console.log('  --> Added new patterns mistake with id ' + object.id)
+                        await useGetPatternsMistakes()
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
                     }, (error) => {
@@ -159,7 +160,6 @@ export async function useDeletePatternMistake(param1, param2) {
     tradeSetupId.value = param2
     spinnerSetups.value = true
     tradeSetupChanged.value = true
-    indexedDBtoUpdate.value = true
     //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + tradeSetup)
 
     if (tradeSetupId.value != null) {

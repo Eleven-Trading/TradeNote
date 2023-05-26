@@ -8,6 +8,7 @@ import { useDeletePlaybook } from "./playbooks";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, usePrepareTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
 import { useGetExcursions, useGetSatisfactions } from "./daily";
+import { useGetPatternsMistakes } from "./patternsMistakes";
 
 /**************************************
 * INITS
@@ -726,7 +727,7 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
-
+    await useGetPatternsMistakes()
     await useGetFilteredTrades()
     await usePrepareTrades()
     await useCalculateProfitAnalysis()
@@ -750,7 +751,7 @@ export async function useMountDaily() {
     await useInitIndexedDB()
     spinnerLoadingPage.value = true
     useInitPopover()
-    await Promise.all([useGetSatisfactions(), useGetFilteredTrades()])
+    await Promise.all([useGetPatternsMistakes(), useGetSatisfactions(), useGetFilteredTrades()])
     await useLoadCalendar()
     await (spinnerLoadingPage.value = false)
     useInitTab("daily")
