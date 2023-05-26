@@ -118,7 +118,6 @@ export function useScrollToScreenshot() {
 export async function useSetupImageUpload(event, param1, param2, param3) {
     if (pageId.value == "daily") {
         tradeScreenshotChanged.value = true
-        indexedDBtoUpdate.value = true
         dateScreenshotEdited.value = true
 
         screenshot.dateUnix = param1
@@ -145,7 +144,6 @@ export async function useSetupImageUpload(event, param1, param2, param3) {
 export function useSetupMarkerArea() {
     if (pageId.value == "daily") {
         tradeScreenshotChanged.value = true
-        indexedDBtoUpdate.value = true
         dateScreenshotEdited.value = true
 
     }

@@ -1,5 +1,5 @@
 import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData } from "../stores/globals"
-import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB } from "./utils";
+import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts'
 import { useGetDiaries } from "./diary";
@@ -1415,26 +1415,16 @@ async function calculateSatisfaction(param) {
 export async function useRefreshTrades() {
     console.log("\nREFRESHING INFO")
     await (spinnerLoadingPage.value = true)
-    await useInitIndexedDB()
-    dashboardIdMounted.value = false
-    renderingCharts.value = true //for daily
-    spinnerLoadingPageText.value = "Refreshing info"
-    renderData.value += 1
-    dashboardChartsMounted.value = false
     await useGetTradesFromDb()
-    console.log(" -> Done refreshing")
-    if (pageId.value == "dashboard" || pageId.value == "calendar" || pageId.value == "daily") {
-        await useGetAllTrades(true)
-        useInitTab()
-    }
-
-    if (pageId.value == "addTrades") { //will.value redirect if we refresh data but is need when we upload trades
+    if (pageId.value == "dashboard"){
+        useMountDashboard()
+    }else if (pageId.value == "daily"){
+        useMountDaily()
+    } else if (pageId.value == "calendar") {
+        useMountCalendar()
+    }else{
         window.location.href = "/dashboard"
     }
-
-    await (spinnerLoadingPage.value = false)
-
-    //setTimeout(() => { window.location.href = "/dashboard" }, 5000)
 }
 
 //used in Dialy and screenshots

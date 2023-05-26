@@ -56,7 +56,7 @@ console.log("testing " + testing.count)
 /**************
  * SATISFACTION
  ***************/
-async function dailySatisfactionChange(param1, param2){
+async function dailySatisfactionChange(param1, param2) {
     console.log("\nDAILY SATISFACTION CHANGE")
     console.time("  --> Duration daily satisfaction change")
     await updateDailySatisfaction(param1, param2)
@@ -137,12 +137,9 @@ async function tradeSatisfactionChange(param1, param2, param3, param4) {
     tradeSatisfaction = param2
     tradeSatisfactionDateUnix = param3
     //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
-    tradeSatisfactionChanged.value = true
-    indexedDBtoUpdate.value = true
 
     await updateTradeSatisfaction()
     await useGetSatisfactions()
-    tradeSatisfactionChanged.value = false
 
 }
 
@@ -377,17 +374,19 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
 }
 
 async function hideTradesModal() {
-    //console.log(" clicked on hide trades modal")
+    console.log(" clicked on hide trades modal")
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
         return
     } else {
-
+        if (tradeScreenshotChanged.value) {
+            await useSaveScreenshot()
+        }
         if (pageId.value == "daily") tradesModal.hide()
+
 
         //console.log(" -> Trades modal hidden with indexDBUpdate " + indexedDBtoUpdate.value + " and setup changed " + tradeSetupChanged.value)
         if (indexedDBtoUpdate.value) {
-            spinnerLoadingPage.value = true
 
             if (tradeSetupChanged.value) { //in the case setup changed but did not click on next 
                 //console.log(" Setup type " + screenshot.type)
@@ -408,17 +407,14 @@ async function hideTradesModal() {
                 await getExcursions()
             }
 
-            if (tradeScreenshotChanged.value) {
-                await useSaveScreenshot()
-            }
             await updateIndexedDB()
             useMountDaily()
 
-        }else{
+        } else {
             useInitTab("daily")
         }
         indexedDBtoUpdate.value = false
-        
+
     }
 }
 
@@ -437,7 +433,7 @@ async function updateIndexedDB(param1) {
     console.log("\nUPDATING INDEXEDDB")
     return new Promise(async (resolve, reject) => {
         await (spinnerLoadingPageText.value = "Updating trades in IndexedDB")
-        console.log("threeMonthsBack.value "+threeMonthsBack.value+" ; selectedMonth.value.start "+selectedMonth.value.start)
+        console.log("threeMonthsBack.value " + threeMonthsBack.value + " ; selectedMonth.value.start " + selectedMonth.value.start)
         if (threeMonthsBack.value <= selectedMonth.value.start) {
             console.log("3 months")
             await useGetTradesFromDb(6)
@@ -473,10 +469,9 @@ async function updateIndexedDB(param1) {
                                     <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
 
                                     <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
-                                        
+
                                         <div class="col-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}
-                                            <i
-                                                v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true)"
+                                            <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true)"
                                                 v-bind:class="[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix) != -1 && satisfactionArray[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix)].satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                             <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false)"
                                                 v-bind:class="[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix) != -1 && satisfactionArray[satisfactionArray.findIndex(f => f.dateUnix == itemTrade.dateUnix)].satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
@@ -958,10 +953,10 @@ async function updateIndexedDB(param1) {
 
                                 <!-- Spinner -->
                                 <div v-show="spinnerSetups" class="col-12">
-                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
-                                    <span>{{ spinnerSetupsText }}</span>
+                                    <div class="d-flex justify-content-center">
+                                        <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                    </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -969,4 +964,5 @@ async function updateIndexedDB(param1) {
                 </div>
             </div>
         </div>
-</div></template>
+    </div>
+</template>

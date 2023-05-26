@@ -83,7 +83,7 @@ export const dashboardIdMounted = ref(false)
 export const renderingCharts = ref(true) // this is for spinner
 
 //Setups
-export const spinnerSetups = ref(false)
+export const spinnerSetups = ref(true)
 export const spinnerSetupsText = ref()
 
 
