@@ -69,7 +69,7 @@ export async function useGetScreenshots(param) {
         }
 
 
-        await query.find().then((results) => {
+        await query.find().then(async (results) => {
             //console.log("results " + JSON.stringify(results))
             if (results.length > 0) {
                 let parsedResult = JSON.parse(JSON.stringify(results))
@@ -99,7 +99,9 @@ export async function useGetScreenshots(param) {
             screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit
             spinnerSetups.value = false //spinner for trades in daily
             spinnerLoadMore.value = false
-            if (pageId.value != "daily") spinnerLoadingPage.value = false //we remove it later
+            if (pageId.value != "daily") {
+                await (spinnerLoadingPage.value = false) // need await or else scroll to screenshot doesn't work
+            }
 
         }).then(() => {
             if (sessionStorage.getItem('screenshotIdToEdit') && pageId.value == "screenshots") useScrollToScreenshot()
@@ -111,7 +113,9 @@ export async function useGetScreenshots(param) {
 
 export function useScrollToScreenshot() {
     let element = document.getElementById(sessionStorage.getItem('screenshotIdToEdit'))
-    element.scrollIntoView()
+    if (element) {
+        element.scrollIntoView()
+    }
     sessionStorage.removeItem('screenshotIdToEdit');
 }
 
@@ -235,20 +239,12 @@ export async function useSaveScreenshot() {
         tradeSetupDateUnix.value = screenshot.dateUnix
         tradeSetupDateUnixDay.value = dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix()
 
-        //console.log(" -> Trades modal hidden with indexDBUpdate " + indexedDBtoUpdate.value + " and screenshot changed " + tradeSetupChanged.value)
-        if (indexedDBtoUpdate.value && tradeSetupChanged.value) {
-            if (screenshot.type == null || screenshot.type == "entry") {
-                await Promise.all([useUpdatePatternsMistakes(), useUpdateTrades()])
-            }
-
-            //Case add screenshot is screenshot => do not update trades
-            if (screenshot.type == "setup") {
-                await useUpdatePatternsMistakes()
-            }
-        }
 
 
         /* UPLOAD SCREENSHOT */
+        if (tradeSetupChanged.value) {
+            await useUpdatePatternsMistakes() //here no param true because we get patterns on next page, after add screenshot page
+        }
         await useUploadScreenshotToParse()
 
         resolve()
@@ -266,7 +262,7 @@ export async function useUploadScreenshotToParse() {
         const annotatedName = screenshot.name + "-annotated." + screenshot.extension
 
         /* we convert image back from base64 to file cause base64 was making browser freez whenever image was larger (at least at 300ko) */
-        const dataURLtoFile = (dataurl, filename) => {
+        /*const dataURLtoFile = (dataurl, filename) => {
             var arr = dataurl.split(','),
                 mime = arr[0].match(/:(.*?);/)[1],
                 bstr = window.atob(arr[1]),
@@ -282,7 +278,7 @@ export async function useUploadScreenshotToParse() {
         const parseOriginalFile = new Parse.File(originalName, originalFile);
 
         let annotatedFile = dataURLtoFile(screenshot.annotatedBase64, originalName);
-        const parseAnnotatedFile = new Parse.File(annotatedName, annotatedFile);
+        const parseAnnotatedFile = new Parse.File(annotatedName, annotatedFile);*/
 
         const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
@@ -292,13 +288,13 @@ export async function useUploadScreenshotToParse() {
         //console.log("url orig " + screenshot.originalUrl + " annot " + screenshot.annotatedUrl)
         if (results) {
             console.log(" -> Updating")
-            await parseOriginalFile.save() // before I was using then. In that case it's possible to catch error. I had to change it to await because in daily trades it was triggering the rest of the functinos in clickTradesModal too fast
-            await parseAnnotatedFile.save()
+            //await parseOriginalFile.save() // before I was using then. In that case it's possible to catch error. I had to change it to await because in daily trades it was triggering the rest of the functinos in clickTradesModal too fast
+            //await parseAnnotatedFile.save()
             results.set("name", screenshot.name)
             results.set("symbol", screenshot.symbol)
             results.set("side", screenshot.side)
-            results.set("original", parseOriginalFile)
-            results.set("annotated", parseAnnotatedFile)
+            //results.set("original", parseOriginalFile)
+            //results.set("annotated", parseAnnotatedFile)
             results.set("originalBase64", screenshot.originalBase64)
             results.set("annotatedBase64", screenshot.annotatedBase64)
             results.set("maState", screenshot.maState)
@@ -330,16 +326,16 @@ export async function useUploadScreenshotToParse() {
         } else {
             console.log(" -> Saving")
 
-            await parseOriginalFile.save()
-            await parseAnnotatedFile.save()
+            //await parseOriginalFile.save()
+            //await parseAnnotatedFile.save()
             //console.log(" -> Setup to upload " + JSON.stringify(screenshot))
             const object = new parseObject();
             object.set("user", Parse.User.current())
             object.set("name", screenshot.name)
             object.set("symbol", screenshot.symbol)
             object.set("side", screenshot.side)
-            object.set("original", parseOriginalFile)
-            object.set("annotated", parseAnnotatedFile)
+            //object.set("original", parseOriginalFile)
+            //object.set("annotated", parseAnnotatedFile)
             object.set("originalBase64", screenshot.originalBase64)
             object.set("annotatedBase64", screenshot.annotatedBase64)
             object.set("maState", screenshot.maState)

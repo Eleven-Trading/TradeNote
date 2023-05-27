@@ -82,7 +82,7 @@ export function useTradeSetupChange(param1, param2, param3, param4, param5) {
 
 }
 
-export async function useUpdatePatternsMistakes() {
+export async function useUpdatePatternsMistakes(param) {
     console.log("\nUPDATING OR SAVING SETUPS IN PATTERNS MISTAKES PARSE DB")
     return new Promise(async (resolve, reject) => {
 
@@ -139,7 +139,9 @@ export async function useUpdatePatternsMistakes() {
                 object.save()
                     .then(async (object) => {
                         console.log('  --> Added new patterns mistake with id ' + object.id)
-                        await useGetPatternsMistakes()
+                        if(param){
+                            await useGetPatternsMistakes()
+                        }
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
                     }, (error) => {

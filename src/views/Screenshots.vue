@@ -11,12 +11,12 @@ import { endOfList } from '../stores/globals';
 let expandedScreenshot = ref(null)
 
 onBeforeMount(async () => {
-    await useGetScreenshots()
     await useInitPopover()
 })
 
-onMounted(() => {
+onMounted(async () => {
     useGetScreenshotsPagination()
+    await useGetScreenshots()
 
     window.addEventListener('scroll', () => {
         let scrollTop = window.scrollY
@@ -25,7 +25,8 @@ onMounted(() => {
         let difference = documentHeight - (scrollTop + visibleScreen)
 
         if (difference <= 0) {
-            if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value && !expandedScreenshot) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+
+            if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value && expandedScreenshot.value == null) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 console.log("  --> Loading more")
                 useGetScreenshots()
                 spinnerLoadMore.value = true
@@ -38,14 +39,14 @@ onMounted(() => {
 
 <template>
     <SpinnerLoadingPage />
-    <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
+    <div v-show="!spinnerLoadingPage" class="mt-2 mb-2">
         <div v-if="screenshots.length == 0">
             <NoData />
         </div>
         <div v-else>
             <Filters />
         </div>
-        <div>
+        <div class="row">
             <div v-if="!expandedScreenshot" v-for="(screenshot, index) in screenshots" class="col-12 col-xl-6 mt-2">
                 <div class="dailyCard" v-bind:id="screenshot.objectId">
                     <div class="row">
@@ -55,7 +56,8 @@ onMounted(() => {
                         <div class="col-12">
                             <div class="row mt-2 diaryRow">
                                 <span class="col mb-2 txt-small">{{ screenshot.symbol }}
-                                    <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ?
+                                    <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side ==
+                                        'BC' ?
                                         'Short'
                                         : 'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
                                     <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
@@ -92,40 +94,40 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Load more spinner -->
-            <div v-if="spinnerLoadMore" class="d-flex justify-content-center mt-3">
-                <div class="spinner-border text-blue" role="status"></div>
+        <!-- Load more spinner -->
+        <div v-if="spinnerLoadMore" class="d-flex justify-content-center mt-3">
+            <div class="spinner-border text-blue" role="status"></div>
+        </div>
+        <div v-if="expandedScreenshot">
+            <div class="row">
+                <i class="col ms-auto text-end uil uil-times pointerClass" v-on:click="expandedScreenshot = null"></i>
             </div>
-            <div v-if="expandedScreenshot">
-                <div class="row">
-                    <i class="col ms-auto text-end uil uil-times pointerClass" v-on:click="expandedScreenshot = null"></i>
-                </div>
-                <div id="setupsCarousel" class="carousel slide">
-                    <div class="carousel-inner">
-                        <div v-for="(screenshot, index) in screenshots"
-                            v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
-                            <img class="d-block w-100" v-bind:src="screenshot.annotatedBase64">
-                            <div class="carousel-caption d-none d-md-block">
-                                <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
-                                <p>{{ screenshot.symbol }}
-                                    <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ?
-                                        'Short' :
-                                        'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
-                                    <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
-                                    <span
-                                        v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
-                                        | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                            obj.tradeId == screenshot.name)].pattern.name }}</span>
-                                </p>
-                            </div>
+            <div id="setupsCarousel" class="carousel slide">
+                <div class="carousel-inner">
+                    <div v-for="(screenshot, index) in screenshots"
+                        v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
+                        <img class="d-block w-100" v-bind:src="screenshot.annotatedBase64">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
+                            <p>{{ screenshot.symbol }}
+                                <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ?
+                                    'Short' :
+                                    'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
+                                <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
+                                <span
+                                    v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
+                                    | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                        obj.tradeId == screenshot.name)].pattern.name }}</span>
+                            </p>
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#setupsCarousel"
-                        data-bs-slide="prev"></button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#setupsCarousel"
-                        data-bs-slide="next"></button>
                 </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#setupsCarousel"
+                    data-bs-slide="prev"></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#setupsCarousel"
+                    data-bs-slide="next"></button>
             </div>
         </div>
 

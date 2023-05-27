@@ -285,7 +285,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         }
         //console.log(" -> Daily "+JSON.stringify(daily))
         if (!param3 && tradeSetupChanged.value) {
-            await useUpdatePatternsMistakes()
+            await useUpdatePatternsMistakes(true) //true means also getPatternsMistakes after update 
         }
 
         if (!param3 && tradeExcursionChanged.value) {
@@ -356,7 +356,7 @@ async function hideTradesModal() {
             await useSaveScreenshot()
         }
         if (tradeSetupChanged.value) {
-            await useUpdatePatternsMistakes()
+            await useUpdatePatternsMistakes(true)
         }
         if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
             await updateExcursions()
