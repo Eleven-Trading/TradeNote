@@ -90,7 +90,7 @@ export const spinnerSetupsText = ref()
 /**************************************
 * MODALS
 **************************************/
-export const modalVideosOpen = ref(false)
+export const modalDailyTradeOpen = ref(false)
 
 /**************************************
 * TRADES

@@ -172,7 +172,7 @@ export async function useDeletePatternMistake(param1, param2) {
             results.destroy().then(async () => {
                 console.log('  --> Deleted patterns mistakes with id ' + results.id)
                 useResetSetup()
-                await useUpdateTrades(true) // delete = true
+                await useGetPatternsMistakes()
             }, (error) => {
                 console.log('Failed to delete setup, with error code: ' + error.message);
             });

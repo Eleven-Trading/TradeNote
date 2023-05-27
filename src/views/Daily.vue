@@ -4,13 +4,13 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalVideosOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup, useGetPatternsMistakes } from '../utils/patternsMistakes'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
-import { useGetSatisfactions } from '../utils/daily';
+import { useGetExcursions, useGetSatisfactions } from '../utils/daily';
 import { useTest } from '../stores/counter';
 
 const dailyTabs = [{
@@ -36,7 +36,7 @@ const dailyTabs = [{
 ]
 
 let tradesModal = null
-let videosArrayIndex
+let tradeIndex
 let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
@@ -193,24 +193,17 @@ function tradeExcursionChange(param1, param2, param3, param4) {
     //console.log("param 1: " + param1 + " param2: " + param2, ", param3: " + param3 + ", param4: " + param4)
     if (param2 == "stopLoss") {
         excursion.stopLoss = parseFloat(param1)
-        excursion.maePrice = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].maePrice : null
-        excursion.mfePrice = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].mfePrice : null
     }
     if (param2 == "maePrice") {
-        excursion.stopLoss = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].stopLoss : null
         excursion.maePrice = parseFloat(param1)
-        excursion.mfePrice = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].mfePrice : null
     }
     if (param2 == "mfePrice") {
-        excursion.stopLoss = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].stopLoss : null
-        excursion.maePrice = excursions[excursions.findIndex(f => f.tradeId == param4)] ? excursions[excursions.findIndex(f => f.tradeId == param4)].maePrice : null
         excursion.mfePrice = parseFloat(param1)
     }
     tradeExcursionDateUnix.value = param3
     tradeExcursionId.value = param4
     console.log("Excursion has changed: " + JSON.stringify(excursion))
     tradeExcursionChanged.value = true
-    indexedDBtoUpdate.value = true
 
 }
 
@@ -236,6 +229,7 @@ async function updateExcursions() {
                 results.save()
                     .then(async () => {
                         console.log(' -> Updated excursions with id ' + results.id)
+                        await useGetExcursions()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);
@@ -256,6 +250,7 @@ async function updateExcursions() {
                 object.save()
                     .then(async (object) => {
                         console.log(' -> Added new excursion with id ' + object.id)
+                        await useGetExcursions()
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeExcursionId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
                     }, (error) => {
@@ -294,27 +289,29 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         }
 
         if (!param3 && tradeExcursionChanged.value) {
-            await Promise.all([updateExcursions(), useUpdateTrades()])
-            await getExcursions()
+            await updateExcursions()
         }
 
         if (!param3 && tradeScreenshotChanged.value) {
             await useSaveScreenshot()
         }
 
-        videosArrayIndex = param2
+        tradeIndex = param2
 
         let awaitClick = async () => {
-            //console.log(" index "+param2)
-            //console.log("daily "+JSON.stringify(param3))
-            //console.log(" trade "+JSON.stringify(param3.trades[param2]))
-            //console.log(" trade id "+param3.trades[param2].id)
-            //console.log(" Find " + JSON.stringify(screenshots.find(obj => obj.name == screenshots.trades[param2].id)))
-            if (screenshots.find(obj => obj.name == daily.trades[param2].id)) {
+            tradeSetupChanged.value = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
+            tradeExcursionChanged.value = false
+            tradeScreenshotChanged.value = false
+            modalDailyTradeOpen.value = true
+
+            await useResetSetup()
+            await resetExcursion()
+
+            let findScreenshot = screenshots.find(obj => obj.name == daily.trades[param2].id)
+            if (findScreenshot) {
                 for (let key in screenshot) delete screenshot[key]
-                let setupObj = screenshots.find(obj => obj.name == daily.trades[param2].id)
-                for (let key in setupObj) {
-                    screenshot[key] = setupObj[key]
+                for (let key in findScreenshot) {
+                    screenshot[key] = findScreenshot[key]
                 }
             } else {
                 for (let key in screenshot) delete screenshot[key]
@@ -322,47 +319,25 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
                 screenshot.type = null
             }
 
+            let findPatternMistake = patternsMistakes.filter(obj => obj.tradeId == daily.trades[param2].id)
 
-            tradeSetupChanged.value = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
-            tradeExcursionChanged.value = false
-            tradeScreenshotChanged.value = false
-
-            await useResetSetup()
-            await resetExcursion()
-
-            modalVideosOpen.value = true
-
-            /*if (param1 == true) {
-                hasVideo.value = true
-            }*/
-
-            //console.log("Has video ? "+hasVideo.value)
-
-            //console.log("param3 trades "+JSON.stringify(param3))
-            //console.log("daily trades " + JSON.stringify(daily.trades[param2]))
-            /*console.log("daily trades " + JSON.stringify(daily.trades[param2]))
-            if (Object.keys(daily.trades[param2].setup).length != 0) {
-                console.log(" -> Trade with ID " + daily.trades[param2].id + " has setup in DB. Let's get tradeSetup names")
-                tradeId.value = tradeId.value.trades[param2].id
-                tradeSetup = tradeSetup.trades[param2].setup
-                    //await getTradeSetupNames.value(getTradeSetupNames.value.trades[param2].setup)
-            } else {
-                console.log(" -> Trade has No setup in DB")
-                tradeId.value = null
-            }*/
-
-            //Before going next or back, check if Satisfaction or Pattern already exists in Parse DB
-
-            let patternMistake = patternsMistakes.filter(obj => obj.tradeId == daily.trades[param2].id)
-            
-            if (patternMistake.length) {
+            if (findPatternMistake.length) {
                 //console.log(" patternMistake "+JSON.stringify(patternMistake))
                 //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
-                patternMistake[0].pattern != null ? tradeSetup.pattern = patternMistake[0].pattern.objectId : null
-                patternMistake[0].mistake != null ? tradeSetup.mistake = patternMistake[0].mistake.objectId : null
-                patternMistake[0].note != null || patternMistake[0].note != 'null' ? tradeSetup.note = patternMistake[0].note : null
-                console.log("pattern "+tradeSetup.pattern)
+                findPatternMistake[0].pattern != null ? tradeSetup.pattern = findPatternMistake[0].pattern.objectId : null
+                findPatternMistake[0].mistake != null ? tradeSetup.mistake = findPatternMistake[0].mistake.objectId : null
+                findPatternMistake[0].note != null || findPatternMistake[0].note != 'null' ? tradeSetup.note = findPatternMistake[0].note : null
+                //console.log("pattern "+tradeSetup.pattern)
             }
+
+            let findExcursion = excursions.filter(obj => obj.tradeId == daily.trades[param2].id)
+            if (findExcursion.length) {
+                findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+            }
+
         }
         await awaitClick()
         await (spinnerSetups.value = false)
@@ -383,39 +358,11 @@ async function hideTradesModal() {
         if (tradeSetupChanged.value) {
             await useUpdatePatternsMistakes()
         }
-        await (spinnerSetups.value = false)
-        if (pageId.value == "daily") tradesModal.hide()
-
-
-        //console.log(" -> Trades modal hidden with indexDBUpdate " + indexedDBtoUpdate.value + " and setup changed " + tradeSetupChanged.value)
-        if (indexedDBtoUpdate.value) {
-
-            if (tradeSetupChanged.value) { //in the case setup changed but did not click on next 
-                //console.log(" Setup type " + screenshot.type)
-
-                //We're also using hideTradesModal in addScreenshot, so we need to distinguish two cases
-                //Case for daily page (null) or add screenshot entry => Update trades
-                if (screenshot.type == null || screenshot.type == "entry") {
-                    await Promise.all([useUpdatePatternsMistakes(), useUpdateTrades()])
-                }
-
-                //Case add screenshot is screenshot => do not update trades
-                if (screenshot.type == "setup") {
-                    await useUpdatePatternsMistakes()
-                }
-            }
-            if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
-                await Promise.all([updateExcursions(), useUpdateTrades()])
-                await getExcursions()
-            }
-
-            await updateIndexedDB()
-            useMountDaily()
-
-        } else {
-            useInitTab("daily")
+        if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
+            await updateExcursions()
         }
-        indexedDBtoUpdate.value = false
+        await (spinnerSetups.value = false)
+        tradesModal.hide()
 
     }
 }
@@ -447,27 +394,47 @@ async function updateIndexedDB(param1) {
     })
 }
 
-function filterPatterns(param){
+function filterPatterns(param, param2) {
     let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
-    
-    if (patternMistake.length>0 && (patternMistake[0].pattern != null || patternMistake[0].pattern != undefined)){
+
+    if (patternMistake.length > 0 && (patternMistake[0].pattern != null || patternMistake[0].pattern != undefined)) {
         let patternName = patternMistake[0].pattern.name
-        return patternName.substr(0, 15) + "..."
-    }else{
+        if (param2 == "full") {
+            return " | " + patternName
+        } else {
+            return patternName.substr(0, 15) + "..."
+        }
+    } else {
         return
     }
 }
 
-function filterMistakes(param){
+function filterMistakes(param, param2) {
     let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
-    
-    if (patternMistake.length>0 && (patternMistake[0].mistake != null || patternMistake[0].mistake != undefined)){
+
+    if (patternMistake.length > 0 && (patternMistake[0].mistake != null || patternMistake[0].mistake != undefined)) {
         let mistakeName = patternMistake[0].mistake.name
-        return mistakeName.substr(0, 15) + "..."
-    }else{
+        if (param2 == "full") {
+            return " | " + mistakeName
+        } else {
+            return mistakeName.substr(0, 15) + "..."
+        }
+    } else {
         return
     }
 }
+
+function filterNotes(param) {
+    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+
+    if (patternMistake.length > 0 && (patternMistake[0].note != null || patternMistake[0].note != undefined)) {
+        let note = patternMistake[0].note
+        return note.substr(0, 15) + "..."
+    } else {
+        return
+    }
+}
+
 </script>
 
 <template>
@@ -634,18 +601,15 @@ function filterMistakes(param){
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
                                                             <td>
-                                                                {{filterPatterns(trade.id)}}
+                                                                {{ filterPatterns(trade.id) }}
                                                             </td>
                                                             <td>
                                                                 {{ filterMistakes(trade.id) }}
                                                             </td>
-                                                            <td
-                                                                v-if="trade.hasOwnProperty('setup') && trade.setup.hasOwnProperty('note') && trade.setup.note != null">
-                                                                {{ (trade.setup.note).substr(0, 15) + "..." }}
+                                                            <td>
+                                                                {{ filterNotes(trade.id) }}
                                                             </td>
-                                                            <td v-else>
 
-                                                            </td>
                                                             <td>
                                                                 <span
                                                                     v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == true">
@@ -720,18 +684,10 @@ function filterMistakes(param){
                                                     <span v-else class="col mb-2"> | {{
                                                         useHourMinuteFormat(screenshot.dateUnix)
                                                     }}</span>
-                                                    <span
-                                                        v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
 
-                                                        <span
-                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
-                                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                                obj.tradeId == screenshot.name)].pattern.name }}</span>
+                                                    <span>{{ filterPatterns(screenshot.name, "full") }}</span>
 
-                                                        <span
-                                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
-                                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
-                                                                obj.tradeId == screenshot.name)].mistake.name }}</span></span>
+                                                    <span>{{ filterMistakes(screenshot.name, "full") }}</span>
 
                                                     <img v-bind:id="screenshot.objectId"
                                                         class="setupEntryImg mt-1 img-fluid"
@@ -792,7 +748,7 @@ function filterMistakes(param){
         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div v-if="modalVideosOpen">
+                <div v-if="modalDailyTradeOpen">
 
                     <div v-if="screenshot.annotatedBase64" class="mt-3" id="imagePreview"
                         style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px;">
@@ -822,23 +778,23 @@ function filterMistakes(param){
                             <tbody>
                                 <!-- the page loads faster than the video blob => check if blob, that is after slash, is not null, and then load -->
                                 <tr>
-                                    <td>{{ daily.trades[videosArrayIndex].symbol }}</td>
-                                    <td>{{ daily.trades[videosArrayIndex].buyQuantity +
-                                        daily.trades[videosArrayIndex].sellQuantity }}
+                                    <td>{{ daily.trades[tradeIndex].symbol }}</td>
+                                    <td>{{ daily.trades[tradeIndex].buyQuantity +
+                                        daily.trades[tradeIndex].sellQuantity }}
                                     </td>
-                                    <td>{{ daily.trades[videosArrayIndex].side == 'B' ? 'Long' : 'Short' }}</td>
-                                    <td>{{ useTimeFormat(daily.trades[videosArrayIndex].entryTime) }}</td>
-                                    <td>{{ useTimeFormat(daily.trades[videosArrayIndex].exitTime) }}</td>
-                                    <td>{{ useTimeDuration(daily.trades[videosArrayIndex].exitTime -
-                                        daily.trades[videosArrayIndex].entryTime) }}</td>
-                                    <td>{{ (daily.trades[videosArrayIndex].entryPrice).toFixed(2) }}</td>
-                                    <td>{{ (daily.trades[videosArrayIndex].exitPrice).toFixed(2) }}</td>
+                                    <td>{{ daily.trades[tradeIndex].side == 'B' ? 'Long' : 'Short' }}</td>
+                                    <td>{{ useTimeFormat(daily.trades[tradeIndex].entryTime) }}</td>
+                                    <td>{{ useTimeFormat(daily.trades[tradeIndex].exitTime) }}</td>
+                                    <td>{{ useTimeDuration(daily.trades[tradeIndex].exitTime -
+                                        daily.trades[tradeIndex].entryTime) }}</td>
+                                    <td>{{ (daily.trades[tradeIndex].entryPrice).toFixed(2) }}</td>
+                                    <td>{{ (daily.trades[tradeIndex].exitPrice).toFixed(2) }}</td>
                                     <td
-                                        v-bind:class="[(daily.trades[videosArrayIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
-                                        {{ (daily.trades[videosArrayIndex].grossSharePL).toFixed(2) }}</td>
+                                        v-bind:class="[(daily.trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
+                                        {{ (daily.trades[tradeIndex].grossSharePL).toFixed(2) }}</td>
                                     <td
-                                        v-bind:class="[daily.trades[videosArrayIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                        {{ (daily.trades[videosArrayIndex].netProceeds).toFixed(2) }}</td>
+                                        v-bind:class="[daily.trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                        {{ (daily.trades[tradeIndex].netProceeds).toFixed(2) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -854,17 +810,17 @@ function filterMistakes(param){
 
                                         <!-- Satisfaction -->
                                         <div class="col-1">
-                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, true, daily.dateUnix)"
-                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[tradeIndex].id, true, daily.dateUnix)"
+                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[tradeIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[tradeIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
 
-                                            <i v-on:click="tradeSatisfactionChange(daily.trades[videosArrayIndex].id, false, daily.dateUnix)"
-                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                            <i v-on:click="tradeSatisfactionChange(daily.trades[tradeIndex].id, false, daily.dateUnix)"
+                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[tradeIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == daily.trades[tradeIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
                                         <!-- Patterns -->
                                         <div class="col-5" v-if="patterns.length > 0">
                                             <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
+                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"
                                                 class="form-select">
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="item in patterns.filter(r => r.active == true)"
@@ -881,7 +837,7 @@ function filterMistakes(param){
                                         <!-- Mistakes -->
                                         <div class="col-5" v-if="mistakes.length > 0">
                                             <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"
+                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"
                                                 class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in mistakes.filter(r => r.active == true)"
@@ -897,7 +853,7 @@ function filterMistakes(param){
 
                                         <!-- Delete -->
                                         <div class="col-1">
-                                            <i v-on:click="useDeletePatternMistake(daily.dateUnix, daily.trades[videosArrayIndex].id)"
+                                            <i v-on:click="useDeletePatternMistake(daily.dateUnix, daily.trades[tradeIndex].id)"
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div>
                                     </div>
@@ -908,18 +864,18 @@ function filterMistakes(param){
                                     <div class="row">
                                         <div class="col-4">
                                             <input type="number" class="form-control" placeholder="Stop Loss"
-                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].stopLoss : ''"
-                                                v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                                v-bind:value="excursion.stopLoss"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[tradeIndex].id)">
                                         </div>
                                         <div class="col-4">
                                             <input type="number" class="form-control" placeholder="MAE Price"
-                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].maePrice : ''"
-                                                v-on:input="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                                v-bind:value="excursion.maePrice"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[tradeIndex].id)">
                                         </div>
                                         <div class="col-4">
                                             <input type="number" class="form-control" placeholder="MFE Price"
-                                                v-bind:value="excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id) != -1 ? excursions[excursions.findIndex(f => f.tradeId == daily.trades[videosArrayIndex].id)].mfePrice : ''"
-                                                v-on:input="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[videosArrayIndex].id)">
+                                                v-bind:value="excursion.mfePrice"
+                                                v-on:input="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[tradeIndex].id)">
                                         </div>
                                     </div>
                                 </div>
@@ -928,21 +884,21 @@ function filterMistakes(param){
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
                                         v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
-                                        v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[videosArrayIndex].id, daily.trades[videosArrayIndex].entryTime)"></textarea>
+                                        v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"></textarea>
                                 </div>
 
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <input class="screenshotFile" type="file"
-                                        @change="useSetupImageUpload($event, daily.trades[videosArrayIndex].entryTime, daily.trades[videosArrayIndex].symbol, daily.trades[videosArrayIndex].side)" />
+                                        @change="useSetupImageUpload($event, daily.trades[tradeIndex].entryTime, daily.trades[tradeIndex].symbol, daily.trades[tradeIndex].side)" />
                                 </div>
 
                                 <!-- Fifth line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <div class="row">
                                         <div class="col-4 text-start">
-                                            <button v-if="daily.trades.hasOwnProperty(videosArrayIndex - 1)"
+                                            <button v-if="daily.trades.hasOwnProperty(tradeIndex - 1)"
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                                v-on:click="clickTradesModal(daily.trades[videosArrayIndex - 1].videoStart && daily.trades[videosArrayIndex - 1].videoEnd ? true : false, videosArrayIndex - 1, '')"
+                                                v-on:click="clickTradesModal(daily.trades[tradeIndex - 1].videoStart && daily.trades[tradeIndex - 1].videoEnd ? true : false, tradeIndex - 1, '')"
                                                 v-bind:disabled="spinnerSetups == true">
                                                 <i class="fa fa-chevron-left me-2"></i>Back</button>
                                         </div>
@@ -952,10 +908,10 @@ function filterMistakes(param){
                                             <button v-else class="btn btn-outline-primary btn-sm"
                                                 v-on:click="hideTradesModal">Close</button>
                                         </div>
-                                        <div v-if="daily.trades.hasOwnProperty(videosArrayIndex + 1)"
+                                        <div v-if="daily.trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-2 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                                v-on:click="clickTradesModal(daily.trades[videosArrayIndex + 1].videoStart && daily.trades[videosArrayIndex + 1].videoEnd ? true : false, videosArrayIndex + 1, '')"
+                                                v-on:click="clickTradesModal(daily.trades[tradeIndex + 1].videoStart && daily.trades[tradeIndex + 1].videoEnd ? true : false, tradeIndex + 1, '')"
                                                 v-bind:disabled="spinnerSetups == true">Next<i
                                                     class="fa fa-chevron-right ms-2"></i>
                                             </button>
