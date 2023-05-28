@@ -3,7 +3,7 @@ import { useInitIndexedDB, useScreenType, useToggleMobileMenu } from '../utils/u
 import { useInitShepherd } from "../utils/utils.js";
 import { useRefreshTrades } from "../utils/trades.js"
 import { useCheckCurrentUser } from '../utils/utils.js';
-import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion, renderProfile } from "../stores/globals"
+import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion, renderProfile, screenType } from "../stores/globals"
 
 const pages = [{
     id: "registerSignup",
@@ -140,7 +140,7 @@ function logout() {
 <template>
     <div class="justify-content-between navbar">
         <div class="col-6">
-            <span v-if="useScreenType() == 'mobile'">
+            <span v-if="screenType == 'mobile'">
                 <a v-on:click="useToggleMobileMenu">
                     <i v-bind:class="pages.filter(item => item.id == pageId)[0].icon" class="me-1"></i>{{
                         pages.filter(item => item.id == pageId)[0].name }}</a>

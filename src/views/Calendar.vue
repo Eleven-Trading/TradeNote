@@ -12,9 +12,7 @@ import { useTest } from '../stores/counter';
 onBeforeMount(async () => {
     useMountCalendar()
 })
-const testing = useTest()
-testing.count = 12
-console.log("testing "+testing.count)
+
 </script>
 
 <template>
