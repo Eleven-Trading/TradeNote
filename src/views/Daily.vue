@@ -356,7 +356,7 @@ function resetExcursion() {
 async function updateIndexedDB(param1) {
     console.log("\nUPDATING INDEXEDDB")
     return new Promise(async (resolve, reject) => {
-        await (spinnerLoadingPageText.value = "Updating trades in IndexedDB")
+        //await (spinnerLoadingPageText.value = "Updating trades in IndexedDB")
         console.log("threeMonthsBack.value " + threeMonthsBack.value + " ; selectedMonth.value.start " + selectedMonth.value.start)
         if (threeMonthsBack.value <= selectedMonth.value.start) {
             console.log("3 months")

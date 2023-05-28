@@ -55,6 +55,9 @@ export async function useGetScreenshots(param) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
+        if(pageId.value == "screenshots"){
+            query.exclude("originalBase64");
+        }
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
         if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in setups table
@@ -204,7 +207,7 @@ export async function useSaveScreenshot() {
         }
         if (pageId.value == "addScreenshot") {
             spinnerLoadingPage.value = true
-            spinnerLoadingPageText.value = "Uploading screenshot ..."
+            //spinnerLoadingPageText.value = "Uploading screenshot ..."
         }
 
         if (pageId.value == "daily") {
@@ -256,7 +259,7 @@ export async function useUploadScreenshotToParse() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Uploading to database")
 
-        spinnerLoadingPageText.value = "Uploading Screenshot ..."
+        //spinnerLoadingPageText.value = "Uploading Screenshot ..."
 
         /* creating names, recreating files and new parse files */
         const originalName = screenshot.name + "-original." + screenshot.extension

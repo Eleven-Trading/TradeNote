@@ -19,7 +19,7 @@ export async function useImportTrades(e) {
     console.log("IMPORTING FILE")
     // Using Papa Parse : https://www.papaparse.com/docs
     spinnerLoadingPage.value = true
-    spinnerLoadingPageText.value = "Importing file ..."
+    //spinnerLoadingPageText.value = "Importing file ..."
     let files = e.target.files || e.dataTransfer.files;
     console.log(" got existing " + gotExistingTradesArray.value)
     if (!files.length) {
@@ -158,7 +158,7 @@ export async function useImportTrades(e) {
 async function createTempExecutions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING TEMP EXECUTION")
-        spinnerLoadingPageText.value = "Creating temp executions"
+        //spinnerLoadingPageText.value = "Creating temp executions"
         const keys = Object.keys(tradesData);
         var temp = [];
         var i = 0
@@ -250,7 +250,7 @@ async function createTempExecutions() {
 async function createExecutions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING EXECUTIONS")
-        spinnerLoadingPageText.value = "Creating executions"
+        //spinnerLoadingPageText.value = "Creating executions"
         var a = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
@@ -272,7 +272,7 @@ async function createExecutions() {
 async function getOHLCV() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OHLCV")
-        spinnerLoadingPageText.value = "Getting OHLCV"
+        //spinnerLoadingPageText.value = "Getting OHLCV"
         const asyncLoop = async () => {
             for (let i = 0; i < tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
                 let temp = {}
@@ -288,7 +288,7 @@ async function getOHLCV() {
                         console.log(" -> Interceptors status " + err.response.status)
                         console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
                         console.log(" -> Interceptors message " + message)
-                        spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                        //spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
                     }
                     if (!config || !config.retry) {
                         return Promise.reject(err);
@@ -341,7 +341,7 @@ async function getOHLCV() {
 async function createTrades() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING TRADES")
-        spinnerLoadingPageText.value = "Creating trades"
+        //spinnerLoadingPageText.value = "Creating trades"
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
@@ -826,7 +826,7 @@ async function createTrades() {
 async function updateMfePrices(param) {
     return new Promise(async (resolve, reject) => {
         console.log("  --> Updating excursion DB with MFE price")
-        spinnerLoadingPageText.value = "Updating MFE prices in excursions"
+        //spinnerLoadingPageText.value = "Updating MFE prices in excursions"
         //console.log(" MFE Prices " + JSON.stringify(mfePrices))
         mfePrices.forEach(element => {
             //console.log(" element " + element)
@@ -853,7 +853,7 @@ async function updateMfePrices(param) {
 async function filterExisting(param) {
     return new Promise(async (resolve, reject) => {
         console.log("\nFILTERING EXISTING")
-        spinnerLoadingPageText.value = "Filtering existing"
+        //spinnerLoadingPageText.value = "Filtering existing"
         // We can only filter at this point.value because trades depend on executions. So, once trades are created, we can filter out existing trades
 
         //await getExistingTradesArray.value(param) => Here, I no longer call it here but on page load, so it's quicker to load
@@ -898,7 +898,7 @@ async function filterExisting(param) {
 export async function useCreateBlotter(param) {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING BLOTTER BY SYMBOL")
-        spinnerLoadingPageText.value = "Creating blotter"
+        //spinnerLoadingPageText.value = "Creating blotter"
         //based on trades
         let objectZ
         if (param) { // case when creating blotter for filteredTrades
@@ -1134,7 +1134,7 @@ export async function useCreateBlotter(param) {
 export async function useCreatePnL() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING P&L")
-        spinnerLoadingPageText.value = "Creating P&L"
+        //spinnerLoadingPageText.value = "Creating P&L"
         //based on blotter
         let objectQ = blotter
         const keys7 = Object.keys(objectQ);
@@ -1326,7 +1326,7 @@ export async function useUploadTrades() {
 
     console.log("\nUPLOADING TRADES")
     spinnerLoadingPage.value = true
-    spinnerLoadingPageText.value = "Uploading and storing trades(s) ..."
+    //spinnerLoadingPageText.value = "Uploading and storing trades(s) ..."
 
     let numberOfDates = 0
     let i = 0
@@ -1334,7 +1334,7 @@ export async function useUploadTrades() {
     const uploadToParse = async (param1, param2) => {
         return new Promise(async (resolve, reject) => {
             //console.log(" -> Parse param2 is " + param2)
-            spinnerLoadingPageText.value = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
+            //spinnerLoadingPageText.value = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
             const parseObject = Parse.Object.extend(param2);
             const object = new parseObject();
 

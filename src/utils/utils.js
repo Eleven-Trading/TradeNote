@@ -721,7 +721,7 @@ export function useInitPopover() {
 **************************************/
 export async function useMountDashboard() {
     console.log("\MOUNTING DASHBOARD")
-    console.time("  --> Duration mount dashboard");
+    await console.time("  --> Duration mount dashboard");
     await useInitIndexedDB()
 
     spinnerLoadingPage.value = true
@@ -734,7 +734,7 @@ export async function useMountDashboard() {
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
-    console.timeEnd("  --> Duration mount dashboard");
+    await console.timeEnd("  --> Duration mount dashboard");
 
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
@@ -766,13 +766,17 @@ export async function useMountDaily() {
 }
 
 export async function useMountCalendar(param) {
+    console.log("\MOUNTING CALENDAR")
+    await console.time("  --> Duration mount calendar");
     await (spinnerLoadingPage.value = true)
     await useInitIndexedDB()
     await useLoadCalendar(param) // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)
+    await console.timeEnd("  --> Duration mount calendar")
 }
 
 export async function useMountScreenshots(){
+    console.log("\MOUNTING SCREENSHOTS")
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
     await Promise.all([useInitPopover(), useGetPatterns(), useGetMistakes()])
