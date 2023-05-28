@@ -15,6 +15,7 @@ export async function useGetFilteredTrades(param) {
             localStorage.setItem('selectedDateRange', JSON.stringify(selectedMonth.value))
         }*/
 
+        console.log("selectedDateRange "+JSON.stringify(selectedDateRange.value))
         if (pageId.value == "dashboard") {
             selectedRange.value = selectedDateRange.value
         } else {
@@ -142,8 +143,9 @@ export async function useGetFilteredTrades(param) {
 
         filteredTrades.length = 0
         filteredTradesTrades.length = 0
-        //console.log("selected patterns "+selectedPatterns.value)
+
         let loopTrades = (param1) => {
+            //console.log("param1 "+JSON.stringify(param1))
             if (param1.length > 0) hasData.value = true //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
                 //console.log(" element "+JSON.stringify(element))
@@ -174,9 +176,9 @@ export async function useGetFilteredTrades(param) {
                     //console.log("patternMistake "+JSON.stringify(patternMistake))
                     //if patternMistake is present in patternsMistakes, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
                     if (patternMistake.length > 0) {
+                        //console.log("pattern mistake has length")
                         if (patternMistake[0].pattern) {
                             let tempPattern = patternMistake[0].pattern.objectId
-                            //console.log("includes or not "+selectedPatterns.value.includes(tempPattern))
                             if (selectedPatterns.value.includes(tempPattern)) {
                                 pattern = tempPattern
                             }

@@ -26,7 +26,7 @@ const startIndex = async () => {
         console.log("\nSTARTING NODEJS SERVER")
         return new Promise(async (resolve, reject) => {
             server = app.listen(port, function () {
-                console.log('\nTradeNote server started on http://localhost:' + port)
+                console.log(' -> TradeNote server started on http://localhost:' + port)
             });
             resolve(server)
         })
@@ -69,7 +69,7 @@ const startIndex = async () => {
     }
 
     const setupParseServer = async () => {
-        console.log("\nSETTING UP PARSE SERVER")
+        console.log("\nSTARTING PARSE SERVER")
         return new Promise(async (resolve, reject) => {
             const serv = new ParseServer({
                 databaseURI: databaseURI,
@@ -83,6 +83,7 @@ const startIndex = async () => {
             // EXPRESS USE
             await serv.start().then(() => {
                 app.use('/parse', serv.app);
+                console.log(" -> Parse server started")
                 resolve()
             })
         })

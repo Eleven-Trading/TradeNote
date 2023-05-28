@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, threeMonthsBack } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, threeMonthsBack, selectedPatterns, selectedMistakes } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -848,9 +848,28 @@ export async function useSetSelectedLocalStorage() {
             currentUser.value.accounts.forEach(element => {
                 selectedAccounts.value.push(element.value)
             });
-            console.log("selected accounts " + JSON.stringify(selectedAccounts))
+            //console.log("selected accounts " + JSON.stringify(selectedAccounts))
             localStorage.setItem('selectedAccounts', selectedAccounts.value)
             selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
+        }
+
+        if (Object.is(localStorage.getItem('selectedPatterns'), null)) {
+            selectedPatterns.value.push("void")
+            await useGetPatterns() //This will just trigger the first time we login, when selectedPatterns is null
+            patterns.filter(obj => obj.active == true).forEach(element => {
+                selectedPatterns.value.push(element.objectId)
+            });
+    
+            localStorage.setItem('selectedPatterns', selectedPatterns.value)
+        }
+    
+        if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
+            selectedMistakes.value.push("void")
+            await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
+            mistakes.filter(obj => obj.active == true).forEach(element => {
+                selectedMistakes.value.push(element.objectId)
+            });
+            localStorage.setItem('selectedMistakes', selectedMistakes.value)
         }
 
         amountCase.value = localStorage.getItem('selectedGrossNet')
