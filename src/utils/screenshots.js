@@ -4,7 +4,7 @@ import { useGetSetups, useDeleteSetup, useUpdateSetups } from '../utils/setups'
 import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
 import { useUpdateTrades } from './trades.js'
 
-let screenshotsQueryLimit = 6
+let screenshotsQueryLimit = 4
 
 export function useGetScreenshotsPagination() {
     if (sessionStorage.getItem('screenshotsPagination')) {

@@ -18,11 +18,14 @@ onMounted(async () => {
     
 
     window.addEventListener('scroll', () => {
-        let scrollTop = window.scrollY
-        let visibleScreen = window.innerHeight
+        let scrollFromTop = window.scrollY
+        let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
         let documentHeight = document.documentElement.scrollHeight
-        let difference = documentHeight - (scrollTop + visibleScreen)
-
+        let difference = documentHeight - (scrollFromTop + visibleScreen)
+        //console.log("scroll top "+scrollFromTop)
+        //console.log("visible screen "+visibleScreen)
+        //console.log("documentHeight "+documentHeight)
+        //console.log("difference "+difference)
         if (difference <= 0) {
 
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value && expandedScreenshot.value == null) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
