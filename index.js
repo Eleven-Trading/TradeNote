@@ -171,12 +171,13 @@ const startIndex = async () => {
             //console.log("Class name " + getExistingSchema[i].className)
             
             //we check for classes/collections that need to be renamed
-            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
+            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals" || getExistingSchema[i].className == "patternsMistakes") {
                 let oldName = getExistingSchema[i].className
                 let newName
 
                 if (getExistingSchema[i].className == "setupsEntries") newName = "screenshots"
                 if (getExistingSchema[i].className == "journals") newName = "diaries"
+                if (getExistingSchema[i].className == "patternsMistakes") newName = "setups"
 
                 await renameMongoDb(oldName, newName)
             } else {

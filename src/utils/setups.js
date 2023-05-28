@@ -44,7 +44,7 @@ export async function useGetSetups(param) {
 
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination.value);
         //console.log(" selected start date " + selectedMonth.start.value)
-        const parseObject = Parse.Object.extend("patternsMistakes");
+        const parseObject = Parse.Object.extend("setups");
         const query = new Parse.Query(parseObject);
         //if (pageId.value == "screenshots" ||  pageId.value == "addScreenshot") query.containedIn("tradeId", screenshotsNames.value);
         query.include("pattern")
@@ -166,7 +166,7 @@ export async function useDeleteSetup(param1, param2) {
 
     if (tradeSetupId.value != null) {
         console.log(" -> Deleting setups")
-        const parseObject = Parse.Object.extend("patternsMistakes");
+        const parseObject = Parse.Object.extend("setups");
         const query = new Parse.Query(parseObject);
         query.equalTo("tradeId", tradeSetupId.value)
         const results = await query.first();

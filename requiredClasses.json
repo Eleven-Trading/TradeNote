@@ -780,7 +780,7 @@
         }
     },
     {
-        "className": "patternsMistakes",
+        "className": "setups",
         "fields": {
             "objectId": {
                 "type": "String"
