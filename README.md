@@ -108,10 +108,13 @@ Run the image with the following environment variables
 ### TradeNote
 #### 1_ Pull image from DockerHub
 Pull image from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
+- Stable, production tags are simply identified by version number. Example 7.7.7. The community and myself do our best to test and limit bugs on stable versions but if you encounter any please let me know via GitHub issues or Discord. 
+- Development, beta or test tags are marked with an underscore and description. Example : 7.7.7_beta
 
 ```
 docker pull eleventrading/tradenote:<tag>
 ```
+Alternatively, you can [build the image](#build-image-locally) yourself 
 
 #### 2_ Run image
 ```
@@ -146,7 +149,7 @@ For advanced users, you can also build the TradeNote image locally, directly fro
 (replace <tag> with the number you wish / with latest tag number)
 4. Run the image
 ```
-docker run -e MONGO_URI=<MONGO_URI> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d tradenote:<TAG>
+docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
 
 ```
 #### Parse

@@ -108,7 +108,7 @@ const startIndex = async () => {
     if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
 
     //INIT
-    console.log("\nInitializing Parse")
+    //console.log("\nInitializing Parse")
     Parse.initialize(process.env.APP_ID)
     Parse.serverURL = "http://localhost:" + port + "/parse"
     Parse.masterKey = process.env.MASTER_KEY
@@ -116,7 +116,7 @@ const startIndex = async () => {
     //API
 
     app.post("/parseAppId", (req, res) => {
-        console.log("\nAPI : post APP ID")
+        //console.log("\nAPI : post APP ID")
         res.send(process.env.APP_ID)
     });
 
