@@ -7,7 +7,7 @@ import Calendar from '../components/Calendar.vue';
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
-import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
+import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup, useGetPatternsMistakes } from '../utils/patternsMistakes'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 import { useGetExcursions, useGetSatisfactions } from '../utils/daily';

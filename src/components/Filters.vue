@@ -43,31 +43,25 @@ let filters = ref({
     LIFECYCLE
 ============================================*/
 onBeforeMount(async () => {
-    let getPatMis = async () => {
-        //console.log(" getting Pat Mis")
-        await Promise.all([useGetPatterns(), useGetMistakes()])
+
+    //console.log(" -> patterns " + JSON.stringify(patterns[0].name))
+    //console.log(" -> Mistakes " + JSON.stringify(mistakes))
+    if (Object.is(localStorage.getItem('selectedPatterns'), null)) {
+        selectedPatterns.value.push("void")
+        patterns.filter(obj => obj.active == true).forEach(element => {
+            selectedPatterns.value.push(element.objectId)
+        });
+
+        localStorage.setItem('selectedPatterns', selectedPatterns.value)
     }
 
-    await getPatMis().then(() => {
-        //console.log(" -> patterns "+JSON.stringify(patterns[0].name))
-        //console.log(" -> Mistakes "+JSON.stringify(mistakes))
-        if (Object.is(localStorage.getItem('selectedPatterns'), null)) {
-            selectedPatterns.value.push("void")
-            patterns.filter(obj => obj.active == true).forEach(element => {
-                selectedPatterns.value.push(element.objectId)
-            });
-
-            localStorage.setItem('selectedPatterns', selectedPatterns.value)
-        }
-
-        if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
-            selectedMistakes.value.push("void")
-            mistakes.filter(obj => obj.active == true).forEach(element => {
-                selectedMistakes.value.push(element.objectId)
-            });
-            localStorage.setItem('selectedMistakes', selectedMistakes.value)
-        }
-    })
+    if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
+        selectedMistakes.value.push("void")
+        mistakes.filter(obj => obj.active == true).forEach(element => {
+            selectedMistakes.value.push(element.objectId)
+        });
+        localStorage.setItem('selectedMistakes', selectedMistakes.value)
+    }
 
 })
 /*============================================

@@ -4,19 +4,18 @@ import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { pageId, patternsMistakes, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
-import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat } from '../utils/utils';
-import { useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots';
+import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots } from '../utils/utils';
+import { useGetScreenshots} from '../utils/screenshots';
 import { endOfList } from '../stores/globals';
 
 let expandedScreenshot = ref(null)
 
 onBeforeMount(async () => {
-    await useInitPopover()
+    useMountScreenshots()
 })
 
 onMounted(async () => {
-    useGetScreenshotsPagination()
-    await useGetScreenshots()
+    
 
     window.addEventListener('scroll', () => {
         let scrollTop = window.scrollY

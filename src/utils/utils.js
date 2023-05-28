@@ -3,12 +3,12 @@ import { useRoute, useRouter } from "vue-router";
 import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, patternsMistakes, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, threeMonthsBack } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
-import { useDeleteScreenshot, useGetScreenshots } from '../utils/screenshots'
+import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, usePrepareTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
 import { useGetExcursions, useGetSatisfactions } from "./daily";
-import { useGetPatternsMistakes } from "./patternsMistakes";
+import { useGetMistakes, useGetPatterns, useGetPatternsMistakes } from "./patternsMistakes";
 
 /**************************************
 * INITS
@@ -727,7 +727,7 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
-    await useGetPatternsMistakes()
+    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes()])
     await useGetFilteredTrades()
     await usePrepareTrades()
     await useCalculateProfitAnalysis()
@@ -751,11 +751,11 @@ export async function useMountDaily() {
     await useInitIndexedDB()
     spinnerLoadingPage.value = true
     useInitPopover()
-    await Promise.all([useGetPatternsMistakes(), useGetSatisfactions(), useGetFilteredTrades()])
+    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes(), useGetSatisfactions(), useGetFilteredTrades()])
     await useLoadCalendar()
     await (spinnerLoadingPage.value = false)
     useInitTab("daily")
-    console.timeEnd("  --> Duration mount daily")
+    await console.timeEnd("  --> Duration mount daily")
 
 
     await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
@@ -769,6 +769,15 @@ export async function useMountCalendar(param) {
     await useInitIndexedDB()
     await useLoadCalendar(param) // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)
+}
+
+export async function useMountScreenshots(){
+    await console.time("  --> Duration mount screenshots");
+    useGetScreenshotsPagination()
+    await Promise.all([useInitPopover(), useGetPatterns(), useGetMistakes()])
+    await useGetPatternsMistakes()
+    await useGetScreenshots()
+    await console.timeEnd("  --> Duration mount screenshots")
 }
 /**************************************
 * MISC

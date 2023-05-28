@@ -14,23 +14,24 @@ export function useGetScreenshotsPagination() {
 }
 
 export async function useGetScreenshots(param) {
-    await useGetPatternsMistakes()
+    console.log("\nGETTING SCREENSHOTS")
     //console.log(" -> Selected patterns " + selectedPatterns.value)
-    let allPatterns = []
-    //console.log(" patterns " + JSON.stringify(patterns))
+    //console.log("patterns "+JSON.stringify(patterns))
+    //console.log("patternsmistakes "+JSON.stringify(patternsMistakes))
+    let activePatterns = []
     patterns.filter(obj => obj.active == true).forEach(element => {
-        allPatterns.push(element.objectId)
+        activePatterns.push(element.objectId)
     });
 
-    let allMistakes = []
+    let activeMistakes = []
     mistakes.filter(obj => obj.active == true).forEach(element => {
-        allMistakes.push(element.objectId)
+        activeMistakes.push(element.objectId)
     });
 
     //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
-    let exclPatterns = allPatterns.filter(x => !selectedPatterns.value.includes(x));
+    let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x));
     //console.log(" -> Excluded patterns "+exclPatterns);
-    let exclMistakes = allMistakes.filter(x => !selectedMistakes.value.includes(x));
+    let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x));
     //console.log(" -> Excluded mistakes "+exclMistakes);
 
     let allPatternsMistakesIds = []
@@ -46,7 +47,6 @@ export async function useGetScreenshots(param) {
     });
     //console.log("excluded Ids "+excludedIds)
     return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting screenshots");
         //console.log(" -> selectedPatterns " + selectedPatterns.value)
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination);
         //console.log(" selected start date " + selectedMonth.value.start)
@@ -54,6 +54,7 @@ export async function useGetScreenshots(param) {
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
+        query.exclude("originalBase64", "original", "annotated");
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
         if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
