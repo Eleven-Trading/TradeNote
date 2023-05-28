@@ -750,19 +750,18 @@ export async function useMountDaily() {
     await console.time("  --> Duration mount daily");
     await useInitIndexedDB()
     spinnerLoadingPage.value = true
-    useInitPopover()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await useGetFilteredTrades()
-    await useLoadCalendar()
+    await 
     await (spinnerLoadingPage.value = false)
     useInitTab("daily")
     await console.timeEnd("  --> Duration mount daily")
 
-
     await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
     await (renderingCharts.value = false)
 
-    await Promise.all([useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    await Promise.all([useLoadCalendar(), useGetSatisfactions(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    useInitPopover()
 }
 
 export async function useMountCalendar(param) {

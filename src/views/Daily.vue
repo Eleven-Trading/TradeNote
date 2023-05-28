@@ -734,7 +734,7 @@ function filterNotes(param) {
                     </div>
 
                     <!-- *** Table *** -->
-                    <div v-bind:class="[!hasVideo ? 'mt-3' : '']">
+                    <div class="mt-3">
                         <table class="table">
                             <thead class="thead-dark">
                                 <tr>

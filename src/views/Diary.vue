@@ -36,9 +36,6 @@ onMounted(() => {
         <div v-if="diaries.length == 0">
             <NoData />
         </div>
-        <div v-else>
-            <Filters />
-        </div>
         <div class="col-12">
             <div v-for="(itemDiary, index) in diaries" class="row mt-2">
                 <div class="col-12">
