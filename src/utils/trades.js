@@ -1,4 +1,4 @@
-import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData, patternsMistakes } from "../stores/globals"
+import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData, setups } from "../stores/globals"
 import { useFormatBytes, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -171,18 +171,18 @@ export async function useGetFilteredTrades(param) {
                     let pattern
                     let mistake
                     // We need to include patterns and mistakes that are void or null
-                    //console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
-                    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == element.id)
-                    //console.log("patternMistake "+JSON.stringify(patternMistake))
-                    //if patternMistake is present in patternsMistakes, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
-                    if (patternMistake.length > 0) {
-                        //console.log("pattern mistake has length")
-                        if (patternMistake[0].pattern) {
-                            let tempPattern = patternMistake[0].pattern.objectId
+                    //console.log("setups "+JSON.stringify(setups))
+                    let setup = setups.filter(obj => obj.tradeId == element.id)
+                    //console.log("setup "+JSON.stringify(setup))
+                    //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
+                    if (setup.length > 0) {
+                        //console.log("setup has length")
+                        if (setup[0].pattern) {
+                            let tempPattern = setup[0].pattern.objectId
                             if (selectedPatterns.value.includes(tempPattern)) {
                                 pattern = tempPattern
                             }
-                            //else null and not void. However, if not present in patternsMistakes table then we consider as void
+                            //else null and not void. However, if not present in setups table then we consider as void
                             /*else {
                                 pattern = "void"
                             }*/
@@ -190,8 +190,8 @@ export async function useGetFilteredTrades(param) {
                             pattern = "void"
                         }
                         
-                        if (patternMistake[0].mistake) {
-                            let tempMistake = patternMistake[0].mistake.objectId
+                        if (setup[0].mistake) {
+                            let tempMistake = setup[0].mistake.objectId
                             if (selectedMistakes.value.includes(tempMistake)) {
                                 mistake = tempMistake
                             } 

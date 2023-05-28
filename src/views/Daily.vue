@@ -4,11 +4,11 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, patternsMistakes, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, setups, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
 import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
-import { useTradeSetupChange, useUpdatePatternsMistakes, useDeletePatternMistake, useResetSetup, useGetPatternsMistakes } from '../utils/patternsMistakes'
+import { useTradeSetupChange, useUpdateSetups, useDeleteSetup, useResetSetup, useGetSetups } from '../utils/setups'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 import { useGetExcursions, useGetSatisfactions } from '../utils/daily';
 import { useTest } from '../stores/counter';
@@ -260,7 +260,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         }
         //console.log(" -> Daily "+JSON.stringify(daily))
         if (!param3 && tradeSetupChanged.value) {
-            await useUpdatePatternsMistakes(true) //true means also getPatternsMistakes after update 
+            await useUpdateSetups(true) //true means also getSetups after update 
         }
 
         if (!param3 && tradeExcursionChanged.value) {
@@ -274,7 +274,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         tradeIndex = param2
 
         let awaitClick = async () => {
-            tradeSetupChanged.value = false //we updated patterns mistakes and trades so false cause not need to do it again when we hide modal
+            tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
             tradeExcursionChanged.value = false
             tradeScreenshotChanged.value = false
             modalDailyTradeOpen.value = true
@@ -294,14 +294,14 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
                 screenshot.type = null
             }
 
-            let findPatternMistake = patternsMistakes.filter(obj => obj.tradeId == daily.trades[param2].id)
+            let findSetup = setups.filter(obj => obj.tradeId == daily.trades[param2].id)
 
-            if (findPatternMistake.length) {
-                //console.log(" patternMistake "+JSON.stringify(patternMistake))
+            if (findSetup.length) {
+                //console.log(" setup "+JSON.stringify(setup))
                 //console.log("mistake " + resultsParse.mistake + " note " + resultsParse.note)
-                findPatternMistake[0].pattern != null ? tradeSetup.pattern = findPatternMistake[0].pattern.objectId : null
-                findPatternMistake[0].mistake != null ? tradeSetup.mistake = findPatternMistake[0].mistake.objectId : null
-                findPatternMistake[0].note != null || findPatternMistake[0].note != 'null' ? tradeSetup.note = findPatternMistake[0].note : null
+                findSetup[0].pattern != null ? tradeSetup.pattern = findSetup[0].pattern.objectId : null
+                findSetup[0].mistake != null ? tradeSetup.mistake = findSetup[0].mistake.objectId : null
+                findSetup[0].note != null || findSetup[0].note != 'null' ? tradeSetup.note = findSetup[0].note : null
                 //console.log("pattern "+tradeSetup.pattern)
             }
 
@@ -331,7 +331,7 @@ async function hideTradesModal() {
             await useSaveScreenshot()
         }
         if (tradeSetupChanged.value) {
-            await useUpdatePatternsMistakes(true)
+            await useUpdateSetups(true)
         }
         if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
             await updateExcursions()
@@ -370,10 +370,10 @@ async function updateIndexedDB(param1) {
 }
 
 function filterPatterns(param, param2) {
-    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+    let setup = setups.filter(obj => obj.tradeId == param)
 
-    if (patternMistake.length > 0 && (patternMistake[0].pattern != null || patternMistake[0].pattern != undefined)) {
-        let patternName = patternMistake[0].pattern.name
+    if (setup.length > 0 && (setup[0].pattern != null || setup[0].pattern != undefined)) {
+        let patternName = setup[0].pattern.name
         if (param2 == "full") {
             return " | " + patternName
         } else {
@@ -385,10 +385,10 @@ function filterPatterns(param, param2) {
 }
 
 function filterMistakes(param, param2) {
-    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+    let setup = setups.filter(obj => obj.tradeId == param)
 
-    if (patternMistake.length > 0 && (patternMistake[0].mistake != null || patternMistake[0].mistake != undefined)) {
-        let mistakeName = patternMistake[0].mistake.name
+    if (setup.length > 0 && (setup[0].mistake != null || setup[0].mistake != undefined)) {
+        let mistakeName = setup[0].mistake.name
         if (param2 == "full") {
             return " | " + mistakeName
         } else {
@@ -400,10 +400,10 @@ function filterMistakes(param, param2) {
 }
 
 function filterNotes(param) {
-    let patternMistake = patternsMistakes.filter(obj => obj.tradeId == param)
+    let setup = setups.filter(obj => obj.tradeId == param)
 
-    if (patternMistake.length > 0 && (patternMistake[0].note != null || patternMistake[0].note != undefined)) {
-        let note = patternMistake[0].note
+    if (setup.length > 0 && (setup[0].note != null || setup[0].note != undefined)) {
+        let note = setup[0].note
         return note.substr(0, 15) + "..."
     } else {
         return
@@ -828,7 +828,7 @@ function filterNotes(param) {
 
                                         <!-- Delete -->
                                         <div class="col-1">
-                                            <i v-on:click="useDeletePatternMistake(daily.dateUnix, daily.trades[tradeIndex].id)"
+                                            <i v-on:click="useDeleteSetup(daily.dateUnix, daily.trades[tradeIndex].id)"
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div>
                                     </div>

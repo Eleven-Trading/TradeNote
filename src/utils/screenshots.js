@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { usePageId, useInitPopover } from './utils.js'
-import { useGetPatternsMistakes, useDeletePatternMistake, useUpdatePatternsMistakes } from '../utils/patternsMistakes'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, patternsMistakes, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
+import { useGetSetups, useDeleteSetup, useUpdateSetups } from '../utils/setups'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
 import { useUpdateTrades } from './trades.js'
 
 let screenshotsQueryLimit = 6
@@ -17,7 +17,7 @@ export async function useGetScreenshots(param) {
     console.log("\nGETTING SCREENSHOTS")
     //console.log(" -> Selected patterns " + selectedPatterns.value)
     //console.log("patterns "+JSON.stringify(patterns))
-    //console.log("patternsmistakes "+JSON.stringify(patternsMistakes))
+    //console.log("patternsmistakes "+JSON.stringify(setups))
     let activePatterns = []
     patterns.filter(obj => obj.active == true).forEach(element => {
         activePatterns.push(element.objectId)
@@ -34,10 +34,10 @@ export async function useGetScreenshots(param) {
     let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x));
     //console.log(" -> Excluded mistakes "+exclMistakes);
 
-    let allPatternsMistakesIds = []
+    let allSetupsIds = []
     let excludedIds = []
-    patternsMistakes.forEach(element => {
-        allPatternsMistakesIds.push(element.tradeId)
+    setups.forEach(element => {
+        allSetupsIds.push(element.tradeId)
         //console.log(" - element mistake "+element.mistake)
 
         if ((element.pattern != null && exclPatterns.includes(element.pattern.objectId)) || (element.mistake != null && exclMistakes.includes(element.mistake.objectId))) {
@@ -57,8 +57,8 @@ export async function useGetScreenshots(param) {
         query.exclude("original", "annotated");
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
-        if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
-            query.containedIn("name", allPatternsMistakesIds)
+        if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in setups table
+            query.containedIn("name", allSetupsIds)
         }
 
         if (param) { // if param == true then we're not on screenshots page
@@ -232,7 +232,7 @@ export async function useSaveScreenshot() {
         //console.log("name " + screenshot.name)
 
         /*
-        UPDATE PATTERNS MISTAKES
+        UPDATE setups
         //updating variables used in dailyMixin
         //Pattern and mistake are already updated on change/input
         */
@@ -244,7 +244,7 @@ export async function useSaveScreenshot() {
 
         /* UPLOAD SCREENSHOT */
         if (tradeSetupChanged.value) {
-            await useUpdatePatternsMistakes() //here no param true because we get patterns on next page, after add screenshot page
+            await useUpdateSetups() //here no param true because we get patterns on next page, after add screenshot page
         }
         await useUploadScreenshotToParse()
 
@@ -375,11 +375,11 @@ export async function useDeleteScreenshot(param1, param2) {
     console.log("selected item " + selectedItem.value)
     //console.log("screenshot "+JSON.stringify(screenshots))
 
-    /* First, let's delete patterns mistakes */
+    /* First, let's delete setups */
     let setupToDelete = screenshots.filter(obj => obj.objectId == screenshots)[0]
     //console.log("setupToDelete "+JSON.stringify(setupToDelete))
     //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
-    if (setupToDelete) await useDeletePatternMistake(setupToDelete.dateUnixDay, setupToDelete.name)
+    if (setupToDelete) await useDeleteSetup(setupToDelete.dateUnixDay, setupToDelete.name)
 
     /* Now, let's delete screenshot */
     const parseObject = Parse.Object.extend("screenshots");

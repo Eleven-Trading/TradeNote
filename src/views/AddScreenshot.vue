@@ -1,14 +1,14 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, patternsMistakes, screenshot, spinnerLoadingPage, tradeSetup, timeZoneTrade } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, tradeSetup, timeZoneTrade } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat } from '../utils/utils';
-import { useGetMistakes, useGetPatterns, useGetPatternsMistakes, useTradeSetupChange } from '../utils/patternsMistakes'
+import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
-    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes()])
+    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await getScreenshotToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
@@ -73,13 +73,13 @@ async function getScreenshotToEdit(param) {
             screenshot.type = "setup"
         }
 
-        let index = patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)
+        let index = setups.findIndex(obj => obj.tradeId == screenshot.name)
         console.log("index "+index)
 
         if (index != -1) {
-            if (patternsMistakes[index].hasOwnProperty('pattern') && patternsMistakes[index].pattern != null && patternsMistakes[index].pattern != undefined && patternsMistakes[index].pattern.hasOwnProperty('objectId')) screenshot.pattern = patternsMistakes[index].pattern.objectId
+            if (setups[index].hasOwnProperty('pattern') && setups[index].pattern != null && setups[index].pattern != undefined && setups[index].pattern.hasOwnProperty('objectId')) screenshot.pattern = setups[index].pattern.objectId
 
-            if (patternsMistakes[index].hasOwnProperty('mistake') && patternsMistakes[index].mistake != null && patternsMistakes[index].mistake != undefined && patternsMistakes[index].mistake.hasOwnProperty('objectId')) screenshot.mistake = patternsMistakes[index].mistake.objectId
+            if (setups[index].hasOwnProperty('mistake') && setups[index].mistake != null && setups[index].mistake != undefined && setups[index].mistake.hasOwnProperty('objectId')) screenshot.mistake = setups[index].mistake.objectId
 
             //updating patterns and mistakes used in dailyMixin
             tradeSetup.pattern = screenshot.pattern

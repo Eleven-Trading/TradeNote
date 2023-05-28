@@ -1,5 +1,5 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, patternsMistakes, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetupsText, spinnerSetups, pageId, tradeId } from '../stores/globals';
-import { useUpdateTrades } from '../utils/trades'
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetupsText, spinnerSetups, pageId, tradeId } from '../stores/globals';
+import { useUpdateTrades } from './trades'
 
 
 
@@ -38,9 +38,9 @@ export async function useGetMistakes() {
     })
 }
 
-export async function useGetPatternsMistakes(param) {
+export async function useGetSetups(param) {
     return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting patternsMistakes");
+        console.log(" -> Getting setups");
 
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination.value);
         //console.log(" selected start date " + selectedMonth.start.value)
@@ -51,11 +51,11 @@ export async function useGetPatternsMistakes(param) {
         query.include("mistake")
         query.limit(queryLimit.value)
         const results = await query.find();
-        patternsMistakes.length = 0
+        setups.length = 0
         results.forEach(element => {
-            patternsMistakes.push(JSON.parse(JSON.stringify(element)))
+            setups.push(JSON.parse(JSON.stringify(element)))
         });
-        //console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
+        //console.log("setups "+JSON.stringify(setups))
         resolve()
     })
 }
@@ -82,22 +82,22 @@ export function useTradeSetupChange(param1, param2, param3, param4, param5) {
 
 }
 
-export async function useUpdatePatternsMistakes(param) {
-    console.log("\nUPDATING OR SAVING SETUPS IN PATTERNS MISTAKES PARSE DB")
+export async function useUpdateSetups(param) {
+    console.log("\nUPDATING OR SAVING SETUPS IN PARSE DB")
     return new Promise(async (resolve, reject) => {
 
         if (tradeSetup.pattern != null || tradeSetup.mistake != null || tradeSetup.note != null) {
             //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + param2)
             spinnerSetups.value = true
             //tradeSetupChanged.value = true
-            const parseObject = Parse.Object.extend("patternsMistakes");
+            const parseObject = Parse.Object.extend("setups");
             const query = new Parse.Query(parseObject);
             query.equalTo("tradeId", tradeSetupId.value)
             const results = await query.first();
 
             //UPDATING
             if (results) {
-                console.log(" -> Updating patterns mistakes")
+                console.log(" -> Updating setups")
                 spinnerSetupsText.value = "Updating"
                 results.set("pattern", tradeSetup.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: tradeSetup.pattern })
                 results.set("mistake", tradeSetup.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: tradeSetup.mistake })
@@ -105,8 +105,8 @@ export async function useUpdatePatternsMistakes(param) {
 
                 results.save()
                     .then(async () => {
-                        console.log(' -> Updated patternsMistakes with id ' + results.id)
-                        await useGetPatternsMistakes()
+                        console.log(' -> Updated setups with id ' + results.id)
+                        await useGetSetups()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);
@@ -115,7 +115,7 @@ export async function useUpdatePatternsMistakes(param) {
 
             //SAVING
             else {
-                console.log(" -> Saving patterns mistakes")
+                console.log(" -> Saving setups")
                 spinnerSetupsText.value = "Saving"
 
                 const object = new parseObject();
@@ -140,7 +140,7 @@ export async function useUpdatePatternsMistakes(param) {
                     .then(async (object) => {
                         console.log('  --> Added new patterns mistake with id ' + object.id)
                         if(param){
-                            await useGetPatternsMistakes()
+                            await useGetSetups()
                         }
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
@@ -156,8 +156,8 @@ export async function useUpdatePatternsMistakes(param) {
     })
 }
 
-export async function useDeletePatternMistake(param1, param2) {
-    console.log("\nDELETING PATTERN MISTAKE")
+export async function useDeleteSetup(param1, param2) {
+    console.log("\nDELETING SETUP")
     tradeSetupDateUnixDay.value = param1 // not used here but when when deleting trades (updateTrades(true))
     tradeSetupId.value = param2
     spinnerSetups.value = true
@@ -165,16 +165,16 @@ export async function useDeletePatternMistake(param1, param2) {
     //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + tradeSetup)
 
     if (tradeSetupId.value != null) {
-        console.log(" -> Deleting patterns mistakes")
+        console.log(" -> Deleting setups")
         const parseObject = Parse.Object.extend("patternsMistakes");
         const query = new Parse.Query(parseObject);
         query.equalTo("tradeId", tradeSetupId.value)
         const results = await query.first();
         if (results) {
             results.destroy().then(async () => {
-                console.log('  --> Deleted patterns mistakes with id ' + results.id)
+                console.log('  --> Deleted setups with id ' + results.id)
                 useResetSetup()
-                await useGetPatternsMistakes()
+                await useGetSetups()
             }, (error) => {
                 console.log('Failed to delete setup, with error code: ' + error.message);
             });

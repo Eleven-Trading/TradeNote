@@ -1,9 +1,9 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import { useCheckCurrentUser } from '../utils/utils';
-import { useGetMistakes, useGetPatterns } from '../utils/patternsMistakes'
+import { useGetMistakes, useGetPatterns } from '../utils/setups'
 import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, renderProfile } from '../stores/globals';
-import { useEditPattern, useUpdateEditPattern, useSaveNewPattern, useEditMistake, useSaveNewMistake, useUpdateEditMistake } from '../utils/patternsMistakes'
+import { useEditPattern, useUpdateEditPattern, useSaveNewPattern, useEditMistake, useSaveNewMistake, useUpdateEditMistake } from '../utils/setups'
 
 let profileAvatar = null
 let marketDataApiKey = null

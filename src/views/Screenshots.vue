@@ -3,7 +3,7 @@ import { ref, reactive, onBeforeMount, onMounted } from 'vue'
 import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { pageId, patternsMistakes, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
+import { pageId, setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
 import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots } from '../utils/utils';
 import { useGetScreenshots} from '../utils/screenshots';
 import { endOfList } from '../stores/globals';
@@ -61,15 +61,15 @@ onMounted(async () => {
                                         : 'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
                                     <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
                                     }}</span>
-                                    <span v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1">
+                                    <span v-if="setups.findIndex(obj => obj.tradeId == screenshot.name) != -1">
                                         <span
-                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
-                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                            v-if="setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
+                                            | {{ setups[setups.findIndex(obj =>
                                                 obj.tradeId == screenshot.name)].pattern.name }}</span>
 
                                         <span
-                                            v-if="patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
-                                            | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                            v-if="setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
+                                            | {{ setups[setups.findIndex(obj =>
                                                 obj.tradeId == screenshot.name)].mistake.name }}</span></span>
                                 </span>
                                 <span class="col mb-2 ms-auto text-end">
@@ -116,8 +116,8 @@ onMounted(async () => {
                                     'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
                                 <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
                                 <span
-                                    v-if="patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name) != -1 && patternsMistakes[patternsMistakes.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
-                                    | {{ patternsMistakes[patternsMistakes.findIndex(obj =>
+                                    v-if="setups.findIndex(obj => obj.tradeId == screenshot.name) != -1 && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
+                                    | {{ setups[setups.findIndex(obj =>
                                         obj.tradeId == screenshot.name)].pattern.name }}</span>
                             </p>
                         </div>

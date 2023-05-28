@@ -24,7 +24,7 @@ export const screenType = ref()
 **************************************/
 export const patterns = reactive([])
 export const mistakes = reactive([])
-export const patternsMistakes = reactive([])
+export const setups = reactive([])
 export const tradeSetup = reactive({
     pattern: null,
     mistake: null,
