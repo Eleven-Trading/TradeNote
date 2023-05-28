@@ -626,7 +626,7 @@ function filterNotes(param) {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="blot in daily.blotter">
+                                                        <tr v-for="blot in itemTrade.blotter">
 
                                                             <td>{{ blot.symbol }}</td>
                                                             <td>{{ blot.buyQuantity + blot.sellQuantity }}</td>
@@ -636,7 +636,7 @@ function filterNotes(param) {
                                                             <td>{{ (blot.fees).toFixed(2) }}</td>
                                                             <td
                                                                 v-bind:class="[blot[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">
-                                                                {{ (blot[amountCase + 'Proceeds']).toFixed(2) }}</td>
+                                                                {{ (blot.netProceeds).toFixed(2) }}</td>
                                                             <td>{{ blot.grossWinsCount }}</td>
                                                             <td>{{ blot.grossLossCount }}</td>
                                                             <td>{{ blot.trades }}</td>
