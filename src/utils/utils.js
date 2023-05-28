@@ -751,7 +751,8 @@ export async function useMountDaily() {
     await useInitIndexedDB()
     spinnerLoadingPage.value = true
     useInitPopover()
-    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes(), useGetSatisfactions(), useGetFilteredTrades()])
+    await Promise.all([useGetPatternsMistakes(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    await useGetFilteredTrades()
     await useLoadCalendar()
     await (spinnerLoadingPage.value = false)
     useInitTab("daily")

@@ -54,14 +54,14 @@ export async function useGetScreenshots(param) {
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
-        query.exclude("originalBase64", "original", "annotated");
+        query.exclude("original", "annotated");
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
         if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in Patterns Mistakes table
             query.containedIn("name", allPatternsMistakesIds)
         }
 
-        if (param) { // if "full" false (case for daily page), then only certain limit. Else sull
+        if (param) { // if param == true then we're not on screenshots page
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
         } else {

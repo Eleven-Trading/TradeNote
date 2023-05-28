@@ -6,8 +6,8 @@ let diaryPagination = 0
 export async function useGetDiaries(param1, param2) {
     //param1: true is diary page
     //param2: true is diary delete
-    console.log("param 1 "+ param1)
-    console.log("param 2 "+ param2)
+    //console.log("param 1 "+ param1)
+    //console.log("param 2 "+ param2)
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting diaries");
         const parseObject = Parse.Object.extend("diaries");

@@ -1,72 +1,6 @@
 import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData, patternsMistakes } from "../stores/globals"
-import { useFormatBytes, useInitTab, useHourMinuteFormat, useInitIndexedDB, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
+import { useFormatBytes, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
-import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts'
-import { useGetDiaries } from "./diary";
-import { useGetScreenshots } from "./screenshots";
-import { useLoadCalendar } from "./calendar";
-import { useDoubleLineChart, usePieChart } from "./charts";
-
-
-export async function useGetAllTrades(param, param2) {
-    console.log("\nGETTING TRADES")
-
-    dashboardChartsMounted.value = false
-    spinnerLoadingPage.value = true
-    dashboardIdMounted.value = false
-    spinnerLoadingPageText.value = "Getting trades"
-    //console.log("filtered "+JSON.stringify(filteredTrades))
-    /* If true, getting all trades. Else juste the graphs */
-    if (param) {
-        await useGetFilteredTrades(param)
-    }
-
-    /*============= 5 - Render data, charts, totals =============*/
-    if (pageId.value == "dashboard") {
-        spinnerLoadingPageText.value = "Rendering data, charts and totals"
-        await prepareTrades()
-        //await Promise.all([getPatterns.value(), getMistakes.value(), calculateProfitAnalysis.value()])
-        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
-        await calculateProfitAnalysis()
-        await (spinnerLoadingPage.value = false)
-        await (dashboardIdMounted.value = true)
-
-        if (hasData.value) {
-            console.log("\nBUILDING CHARTS")
-            await (renderData.value += 1)
-            await useECharts("init")
-            await (dashboardChartsMounted.value = true)
-        }
-
-    }
-
-    if (pageId.value == "daily") {
-        spinnerLoadingPageText.value = "Getting Daily Data"
-        await Promise.all([useGetDiaries(false), useGetScreenshots(true), useLoadCalendar(undefined, selectedRange.value)]) //setup etries here because take more time so spinner needs to still be running
-        //await Promise.all([checkLocalPatterns(), checkLocalMistakes()])
-        spinnerLoadingPageText.value = "Loading Calendar"
-
-        await (spinnerLoadingPage.value = false) // must.value go before foreach
-
-        //Rendering double line chart
-        await useRenderDoubleLineChart()
-
-        //Rendering pie chart
-        await useRenderPieChart()
-
-        await (renderingCharts.value = false)
-
-    }
-
-    if (pageId.value == "calendar") {
-
-        await useLoadCalendar(undefined, selectedRange.value)
-        await (spinnerLoadingPage.value = false)
-        await (renderingCharts.value = false)
-    }
-
-
-}
 
 export async function useGetFilteredTrades(param) {
     console.log("\nGETTING FILTERED TRADES")
@@ -208,6 +142,7 @@ export async function useGetFilteredTrades(param) {
 
         filteredTrades.length = 0
         filteredTradesTrades.length = 0
+        //console.log("selected patterns "+selectedPatterns.value)
         let loopTrades = (param1) => {
             if (param1.length > 0) hasData.value = true //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
@@ -234,16 +169,21 @@ export async function useGetFilteredTrades(param) {
                     let pattern
                     let mistake
                     // We need to include patterns and mistakes that are void or null
+                    //console.log("patternsMistakes "+JSON.stringify(patternsMistakes))
                     let patternMistake = patternsMistakes.filter(obj => obj.tradeId == element.id)
                     //console.log("patternMistake "+JSON.stringify(patternMistake))
+                    //if patternMistake is present in patternsMistakes, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
                     if (patternMistake.length > 0) {
                         if (patternMistake[0].pattern) {
                             let tempPattern = patternMistake[0].pattern.objectId
+                            //console.log("includes or not "+selectedPatterns.value.includes(tempPattern))
                             if (selectedPatterns.value.includes(tempPattern)) {
                                 pattern = tempPattern
-                            } else {
-                                pattern = "void"
                             }
+                            //else null and not void. However, if not present in patternsMistakes table then we consider as void
+                            /*else {
+                                pattern = "void"
+                            }*/
                         } else {
                             pattern = "void"
                         }
@@ -252,9 +192,11 @@ export async function useGetFilteredTrades(param) {
                             let tempMistake = patternMistake[0].mistake.objectId
                             if (selectedMistakes.value.includes(tempMistake)) {
                                 mistake = tempMistake
-                            } else {
+                            } 
+                            //else null and not void
+                            /*else {
                                 mistake = "void"
-                            }
+                            }*/
                         } else {
                             mistake = "void"
                         }

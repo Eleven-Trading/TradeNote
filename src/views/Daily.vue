@@ -58,7 +58,6 @@ async function dailySatisfactionChange(param1, param2) {
     console.log("\nDAILY SATISFACTION CHANGE")
     console.time("  --> Duration daily satisfaction change")
     await updateDailySatisfaction(param1, param2)
-    await useGetSatisfactions()
     await console.timeEnd("  --> Duration daily satisfaction change")
 }
 
@@ -79,6 +78,7 @@ async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDa
             results.save()
                 .then(async () => {
                     console.log(' -> Updated satisfaction with id ' + results.id)
+                    await useGetSatisfactions()
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
@@ -93,6 +93,7 @@ async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDa
             object.save()
                 .then(async (object) => {
                     console.log(' -> Added new satisfaction with id ' + object.id)
+                    await useGetSatisfactions()
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
@@ -103,41 +104,13 @@ async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDa
     })
 }
 
-async function updateTradesDailySatisfaction(param1, param2) {
-    //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
-    //spinnerSetupsText.value = "Updating trades"
-    //query trade to update
-    //console.log("date unix "+param1+" is type "+typeof(videoToLoad.value)+" and trade id "+param)
-    return new Promise(async (resolve, reject) => {
-        const parseObject = Parse.Object.extend("trades");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", param1)
-        const results = await query.first();
-        if (results) {
-            results.set("satisfaction", param2)
-            results.save().then(async () => {
-                console.log(' -> Updated trades with id ' + results.id)
-                await updateIndexedDB()
-                await useMountDaily()
-                resolve()
-            })
-        } else {
-            alert("Update query did not return any results")
-            resolve()
-        }
-
-    })
-}
 
 async function tradeSatisfactionChange(param1, param2, param3, param4) {
 
     tradeSatisfactionId = param1
     tradeSatisfaction = param2
     tradeSatisfactionDateUnix = param3
-    //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
-
     await updateTradeSatisfaction()
-    await useGetSatisfactions()
 
 }
 
@@ -155,6 +128,7 @@ async function updateTradeSatisfaction(param1, param2) { //param1 : daily unixDa
             results.save()
                 .then(async () => {
                     console.log(' -> Updated satisfaction with id ' + results.id + " to " + tradeSatisfaction)
+                    await useGetSatisfactions()
                     //spinnerSetupsText.value = "Updated setup"
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
@@ -171,6 +145,7 @@ async function updateTradeSatisfaction(param1, param2) { //param1 : daily unixDa
             object.save()
                 .then(async (object) => {
                     console.log(' -> Added new satisfaction with id ' + object.id)
+                    await useGetSatisfactions()
                     //spinnerSetupsText.value = "Added new setup"
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);

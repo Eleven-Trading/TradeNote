@@ -1,4 +1,4 @@
-import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, patternsMistakes, existingTradesArray } from '../stores/globals'
+import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
 import { useRefreshTrades } from './trades'
 import { useChartFormat, useDateTimeFormat, useTimeFormat } from './utils'
@@ -490,16 +490,6 @@ async function createTrades() {
                     /*******************
                      * Other
                      *******************/
-                    temp7.setup = {}
-                    let existingPatternsMistakes = patternsMistakes.filter(obj => obj.tradeId == temp7.id)
-                    //console.log(" -> Existing patterns mistakes "+JSON.stringify(existingPatternsMistakes))
-                    if (existingPatternsMistakes.length > 0) {
-                        console.log("  --> Pattern or mistake exist already")
-                        if (existingPatternsMistakes[0].hasOwnProperty('pattern') && existingPatternsMistakes[0].pattern != null && existingPatternsMistakes[0].pattern != undefined && existingPatternsMistakes[0].pattern.hasOwnProperty('objectId')) temp7.setup.pattern = existingPatternsMistakes[0].pattern.objectId
-
-                        if (existingPatternsMistakes[0].hasOwnProperty('mistake') && existingPatternsMistakes[0].mistake != null && existingPatternsMistakes[0].mistake != undefined && existingPatternsMistakes[0].mistake.hasOwnProperty('objectId')) temp7.setup.mistake = existingPatternsMistakes[0].mistake.objectId
-                    }
-                    //console.log("   ---> Setup "+JSON.stringify(temp7.setup))
                     temp7.note = tempExec.note
                     temp7.executions = []
                     temp7

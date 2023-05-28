@@ -1,13 +1,9 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
-import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useInitTab, useInitIndexedDB, useSetSelectedLocalStorage, useInitPopover, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
-import { useGetPatterns, useGetMistakes } from '../utils/patternsMistakes';
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, renderData, hasData } from "../stores/globals"
-import { useCalculateProfitAnalysis, useGetAllTrades, useGetFilteredTrades, usePrepareTrades } from "../utils/trades"
-import { useLoadCalendar } from '../utils/calendar'
+import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital} from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
-import { useGetExcursions, useGetSatisfactions } from "../utils/daily";
 
 /*============================================
     VARIABLES
