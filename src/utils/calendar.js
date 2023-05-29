@@ -3,7 +3,7 @@ import { useMonthFormat, useFormatBytes, useMonthFormatShort } from "./utils"
 import { useCheckTradesInIndexedDB, useGetTradesFromDb } from "./trades"
 
 
-export async function useLoadCalendar(param) {
+export async function useLoadCalendar() {
     console.log("\nLOADING CALENDAR")
     return new Promise(async (resolve, reject) => {
         renderingCharts.value = true
@@ -46,7 +46,7 @@ export async function useLoadCalendar(param) {
              * calendarize / calendarizeData is where you get the date number for a given month (so 31 days for May for example and if May starts on monday that given year then 1 or if starts on tuesday then 0, 1). the month must be in date format.It does not work with just convert in to timezonetrade. I need a date. And if the local computer is in another timezone it did not work. So i convert with format
              */
             //console.log("  --> Getting days and position of day for given month")
-            let dateForCalendarize = new Date(dayjs.unix(param1).tz(timeZoneTrade.value).format("YYYY MM DD"))
+            let dateForCalendarize = new Date(dayjs.unix(param1).tz(timeZoneTrade.value).format("YYYY-MM-DD"))
             //console.log(" date for calendarize "+dateForCalendarize)
             let calendarizeData = calendarize(dateForCalendarize, 1) // this creates.value calendar date numbers needed for a table calendar
             //console.log("calendarizeData "+calendarizeData)

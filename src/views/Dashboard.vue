@@ -192,7 +192,7 @@ useMountDashboard()
                                                                 (profitAnalysis[amountCase + 'R']).toFixed(2) }}</span>
                                                             <span v-else>-</span>
                                                         </h4>
-                                                        <span class="dashInfoTitle">Risk&Reward Ratio</span>
+                                                        <span class="dashInfoTitle">Profit/Loss Ratio</span>
                                                     </div>
                                                     <div class="col-6">
                                                         <h4 class="titleWithDesc">

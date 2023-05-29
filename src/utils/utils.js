@@ -766,7 +766,7 @@ export async function useMountCalendar(param) {
     await (spinnerLoadingPage.value = true)
     //await useInitIndexedDB()
     await useGetFilteredTrades()
-    await useLoadCalendar(param) // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
+    await useLoadCalendar() // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)
     await console.timeEnd("  --> Duration mount calendar")
 }
