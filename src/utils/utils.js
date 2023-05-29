@@ -691,7 +691,6 @@ export function useInitPopover() {
     $(document).on('click', '.popoverDelete', (e) => {
         popDel = $(e.currentTarget);
         $('.popoverDelete').not(popDel.popover('hide'));
-        //console.log(""+JSON.stringify($)
     });
 
     $(document).on('click', '.popoverYes', (e) => {
@@ -777,10 +776,11 @@ export async function useMountScreenshots() {
     console.log("\MOUNTING SCREENSHOTS")
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
-    await Promise.all([useInitPopover(), useGetPatterns(), useGetMistakes()])
+    await Promise.all([useGetPatterns(), useGetMistakes()])
     await useGetSetups()
     await useGetScreenshots()
     await console.timeEnd("  --> Duration mount screenshots")
+    useInitPopover()
 }
 /**************************************
 * MISC
