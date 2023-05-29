@@ -181,10 +181,10 @@ function logout() {
                             <a class="dropdown-item" v-on:click="useInitShepherd()">
                                 <i class="uil uil-question-circle me-2"></i>Tutorial</a>
                         </li>
-                        <li>
+                        <!--<li>
                             <a class="dropdown-item" v-on:click="useRefreshTrades()">
                                 <i class="uil uil-sync me-2"></i>Refresh Data</a>
-                        </li>
+                        </li>-->
                         <li>
                             <a class="dropdown-item" href="settings">
                                 <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>

@@ -41,9 +41,8 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
-
+useMountDaily()
 onBeforeMount(async () => {
-    useMountDaily()
 
 })
 onMounted(async () => {

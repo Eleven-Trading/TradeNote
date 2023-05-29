@@ -1,5 +1,5 @@
 import { renderingCharts, pageId, threeMonthsBack, threeMonthsTrades, filteredTrades, allTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade } from "../stores/globals"
-import { useMonthFormat, useFormatBytes } from "./utils"
+import { useMonthFormat, useFormatBytes, useMonthFormatShort } from "./utils"
 import { useCheckTradesInIndexedDB, useGetTradesFromDb } from "./trades"
 
 
@@ -12,7 +12,7 @@ export async function useLoadCalendar(param) {
         let fromUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(currentMonthNumber, 'month').startOf('month').unix()
         let toUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(0, 'month').endOf('month').unix()
 
-        if (pageId.value == "calendar") {
+        /*if (pageId.value == "calendar") {
             //if on page load, we already have filtered trade then do nothing or if param == true, the request comes from next or filter
             if (!filteredTrades.length > 0 || param) {
                 console.log(" -> Creating filteredTrades from "+fromUnix+" until "+toUnix)
@@ -37,10 +37,9 @@ export async function useLoadCalendar(param) {
                 });
             }
             //console.log(" -> filteredTrades "+JSON.stringify(filteredTrades))
-        }
-        console.log(" -> Creating calendar")
-        //console.log(" -> filteredTrades "+JSON.stringify(filteredTrades))
+        }*/
         const createCalendar = async (param1, param2) => {
+            //console.log(" -> Creating calendar for "+useMonthFormat(param1))
             //console.log("param 1 " + param1)
 
              /* https://github.com/lukeed/calendarize/
@@ -76,7 +75,7 @@ export async function useLoadCalendar(param) {
                     //Getting trade that is from the same day
                     //console.log("filtering")
                     //console.log("length "+filteredTrades.length)
-
+                    //console.log("filteredTrade "+JSON.stringify(filteredTrades))
                     let trade
                     for (let i = 0; i < filteredTrades.length; i++) {
                         let element = filteredTrades[i]
@@ -84,9 +83,10 @@ export async function useLoadCalendar(param) {
                             trade = element
                         }
                     }
-
+                    //console.log("trade "+JSON.stringify(trade))
 
                     if (trade != undefined && Object.keys(trade).length != 0 && element2 != 0) { //Check also if not null because day in date cannot be 0
+                        //console.log("pAndL "+JSON.stringify(trade.pAndL))
                         tempData.pAndL = trade.pAndL
                         tempData.satisfaction = trade.satisfaction
                     } else {
@@ -123,6 +123,7 @@ export async function useLoadCalendar(param) {
                 while (i <= currentMonthNumber) {
                     let tempUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(i, 'month').startOf('month').unix()
                     //this.calendarMonths.push(this.monthFormat(tempUnix))
+                    //console.log("tempUnix "+tempUnix)
                     createCalendar(tempUnix)
                     i++
                 }

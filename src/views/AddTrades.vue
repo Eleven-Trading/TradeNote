@@ -8,7 +8,7 @@ import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
 
 onMounted(async () => {
     await useInitStepper()
-    await Promise.all([getExistingTradesArray(), useInitIndexedDB()])
+    await Promise.all([getExistingTradesArray()/*, useInitIndexedDB()*/])
 })
 
 function inputChooseBroker(param) {

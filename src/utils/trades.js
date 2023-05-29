@@ -2,6 +2,8 @@ import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted,
 import { useFormatBytes, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
+let trades = []
+
 export async function useGetFilteredTrades(param) {
     console.log("\nGETTING FILTERED TRADES")
     return new Promise(async (resolve, reject) => {
@@ -15,13 +17,18 @@ export async function useGetFilteredTrades(param) {
             localStorage.setItem('selectedDateRange', JSON.stringify(selectedMonth.value))
         }*/
 
-        console.log("selectedDateRange "+JSON.stringify(selectedDateRange.value))
+        //console.log("selectedDateRange "+JSON.stringify(selectedDateRange.value))
         if (pageId.value == "dashboard") {
             selectedRange.value = selectedDateRange.value
-        } else {
+        }else if (pageId.value == "calendar"){
+            selectedRange.value = {}
+            selectedRange.value.start =  dayjs.unix(selectedMonth.value.start).tz(timeZoneTrade.value).startOf('year').unix()
+            selectedRange.value.end = selectedMonth.value.end
+            //console.log("SelectedRange "+JSON.stringify(selectedRange.value))
+        }
+         else {
             selectedRange.value = selectedMonth.value
         }
-
 
 
         /*============= 2 - Check last date in parse db =============
@@ -30,8 +37,7 @@ export async function useGetFilteredTrades(param) {
          ***************************************************/
 
         let lastDateParse
-
-        (async () => {
+        const checkLastDateParse = async () =>{
             return new Promise(async (resolve, reject) => { //put return is very important or else it was not waiting for the promise
                 console.log(" -> Getting last date from ParseDB");
                 const parseObject = Parse.Object.extend("trades");
@@ -41,11 +47,12 @@ export async function useGetFilteredTrades(param) {
                 const results = await query.first()
                 if (results) {
                     lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
-                    //console.log("  --> Last date parse " + lastDateParse)
+                    console.log("  --> Last date parse " + lastDateParse)
                 }
                 resolve()
             })
-        })()
+        }
+        //await checkLastDateParse()
 
         /*============= 3 - Check if trades data exists in variable =============
 
@@ -54,33 +61,36 @@ export async function useGetFilteredTrades(param) {
          * If not in IndexedDB, then get from Parse
          ***************************************************/
 
-        console.log(" -> Checking local storage");
+        //console.log(" -> Getting trades")
+        await useGetTrades()
+        //console.log(" trades "+JSON.stringify(trades))
+        /*console.log(" -> Checking local storage");
         //spinnerLoadingPageText.value = "Getting trades - Checking local storage"
         let lastDateLocal
         if (threeMonthsBack.value <= selectedRange.value.start) {
 
-            /*Check if variable exists*/
+            //Check if variable exists
             if (threeMonthsTrades.length > 0) {
                 console.log("  --> 3 Months trades already exists")
                 console.log("  --> Size of threeMonths.value: " + useFormatBytes(new Blob([JSON.stringify(threeMonthsTrades)]).size))
                 //spinnerLoadingPageText.value = "Getting trades - 3 Months trades already exists"
 
-                /*Compare last dateUnix with last date from #2*/
+                //Compare last dateUnix with last date from #2
                 lastDateLocal = threeMonthsTrades[threeMonthsTrades.length - 1].dateUnix
                 //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
 
-                /*If new date, we update IndexedDB by getting trades from Parse*/
+                //If new date, we update IndexedDB by getting trades from Parse
                 if (lastDateLocal < lastDateParse) {
                     //spinnerLoadingPageText.value = "New data. Updating IndexedDB"
                     await useGetTradesFromDb(6)
                 }
 
-                /* If variable does not exist, we check IndexedDB or get from Parse */
+                //If variable does not exist, we check IndexedDB or get from Parse
             } else {
                 console.log("  --> 3 months trades is null. Getting data")
                 //spinnerLoadingPageText.value = "Getting trades - 3 months trades is null. Getting data"
 
-                /* Check if data exists in indexed db */
+                //Check if data exists in indexed db
                 let dataExistsInIndexedDB = await useCheckTradesInIndexedDB(6)
                 ////spinnerLoadingPageText.value = "Getting trades - data exists is "+dataExistsInIndexedDB
 
@@ -92,7 +102,7 @@ export async function useGetFilteredTrades(param) {
                 ////spinnerLoadingPageText.value = "Getting trades - last date is "+lastDateLocal +" and last date parse "+lastDateParse
                 //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
 
-                /* Get from parse db if not exist in indexed db (resolve returns false in useCheckTradesInIndexedDB) or if there is a new date in parse db */
+                //Get from parse db if not exist in indexed db (resolve returns false in useCheckTradesInIndexedDB) or if there is a new date in parse db
                 if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
                     await useGetTradesFromDb(6)
                 }
@@ -162,9 +172,6 @@ export async function useGetFilteredTrades(param) {
                     /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
                     //console.log(" element "+JSON.stringify(element))
                     /* For specific pages, we only show per month, so we limit end date */
-                    if (pageId.value == "daily" || pageId.value == "videos" || pageId.value == "calendar") {
-                        selectedRange.value.end = dayjs(selectedRange.value.start * 1000).add(1, "month").unix()
-                    }
                     //console.log( " setup pattern "+selectedPatterns.value.includes(element.setup.pattern))
                     /* We use if here but then conditional inside to check all possibilities */
               
@@ -250,16 +257,17 @@ export async function useGetFilteredTrades(param) {
                 }
             });
         }
-
+        //console.log("trades "+JSON.stringify(trades))
+        loopTrades(trades)
         //console.log(" selectedRange.value.start "+selectedRange.value.start)
         /* If all dates selected, we use allTrades */
-        if (selectedRange.value.start == 0 && selectedRange.value.end == 0) {
+        /*if (selectedRange.value.start == 0 && selectedRange.value.end == 0) {
             loopTrades(allTrades)
         }
 
-        /* If not, we per selected range */
+        //If not, we per selected range
         else {
-            /* We must check if we are in in 3 months range or full range */
+            //We must check if we are in in 3 months range or full range
             if (threeMonthsBack.value <= selectedRange.value.start) {
                 console.log(" -> Using 3 months")
                 //console.log("threeMonthsTrades "+JSON.stringify(threeMonthsTrades))
@@ -268,7 +276,7 @@ export async function useGetFilteredTrades(param) {
                 console.log(" -> Using all trades")
                 loopTrades(allTrades)
             }
-        }
+        }*/
         //console.log(" -> Filtered trades of trades "+JSON.stringify(filteredTradesTrades))
         await useCreateBlotter(true)
         await useCreatePnL()
@@ -360,7 +368,29 @@ export async function useCheckTradesInIndexedDB(param) {
  * (see #3)
  * We get the data and save it to IndexedDB
  ***************************************/
+export async function useGetTrades(){
+    return new Promise(async(resolve, reject) => {
+            console.log("\nGETTING TRADES");
+            console.time("  --> Duration getting trades");
+            //spinnerLoadingPageText.value = "Getting trades from ParseDB"
+            const parseObject = Parse.Object.extend("trades");
+            const query = new Parse.Query(parseObject)
+            query.equalTo("user", Parse.User.current());
+            query.ascending("dateUnix");
+            query.exclude("executions", "blotter", "pAndL") // we omit to make it lighter
+            query.greaterThanOrEqualTo("dateUnix", selectedRange.value.start)
+            query.lessThanOrEqualTo("dateUnix", selectedDateRange.value.end)
+            query.limit(queryLimit.value); // limit to at most 10 results
+            const results = await query.find();
+            console.timeEnd("  --> Duration getting trades");
 
+            if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
+                trades = []
+                trades = JSON.parse(JSON.stringify(results))
+            }
+            resolve()
+    })
+}
 export async function useGetTradesFromDb(param) {
     return new Promise((resolve, reject) => {
         (async () => {

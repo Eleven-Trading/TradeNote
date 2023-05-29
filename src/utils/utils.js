@@ -9,6 +9,7 @@ import { useCalculateProfitAnalysis, useGetFilteredTrades, usePrepareTrades } fr
 import { useLoadCalendar } from "./calendar";
 import { useGetExcursions, useGetSatisfactions } from "./daily";
 import { useGetMistakes, useGetPatterns, useGetSetups } from "./setups";
+import { useTest } from "../stores/counter";
 
 /**************************************
 * INITS
@@ -722,8 +723,7 @@ export function useInitPopover() {
 export async function useMountDashboard() {
     console.log("\MOUNTING DASHBOARD")
     await console.time("  --> Duration mount dashboard");
-    await useInitIndexedDB()
-
+    //await useInitIndexedDB()
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
@@ -735,7 +735,6 @@ export async function useMountDashboard() {
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
     await console.timeEnd("  --> Duration mount dashboard");
-
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
         await (renderData.value += 1)
@@ -748,33 +747,32 @@ export async function useMountDashboard() {
 export async function useMountDaily() {
     console.log("\MOUNTING DAILY")
     await console.time("  --> Duration mount daily");
-    await useInitIndexedDB()
+    //await useInitIndexedDB()
     spinnerLoadingPage.value = true
     await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await useGetFilteredTrades()
-    await 
     await (spinnerLoadingPage.value = false)
     useInitTab("daily")
     await console.timeEnd("  --> Duration mount daily")
-
-    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetSatisfactions(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
     await (renderingCharts.value = false)
+    //useInitPopover()
 
-    await Promise.all([useLoadCalendar(), useGetSatisfactions(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
-    useInitPopover()
+    
 }
 
 export async function useMountCalendar(param) {
     console.log("\MOUNTING CALENDAR")
     await console.time("  --> Duration mount calendar");
     await (spinnerLoadingPage.value = true)
-    await useInitIndexedDB()
+    //await useInitIndexedDB()
+    await useGetFilteredTrades()
     await useLoadCalendar(param) // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)
     await console.timeEnd("  --> Duration mount calendar")
 }
 
-export async function useMountScreenshots(){
+export async function useMountScreenshots() {
     console.log("\MOUNTING SCREENSHOTS")
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
@@ -861,10 +859,10 @@ export async function useSetSelectedLocalStorage() {
             patterns.filter(obj => obj.active == true).forEach(element => {
                 selectedPatterns.value.push(element.objectId)
             });
-    
+
             localStorage.setItem('selectedPatterns', selectedPatterns.value)
         }
-    
+
         if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
             selectedMistakes.value.push("void")
             await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null

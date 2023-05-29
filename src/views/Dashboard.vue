@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent } from 'vue'
+import { computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent, onUpdated } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData, spinnerLoadingPageText } from '../stores/globals';
@@ -7,6 +7,7 @@ import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurren
 import { useGetFilteredTrades, usePrepareTrades, useCalculateProfitAnalysis } from '../utils/trades';
 import NoData from '../components/NoData.vue';
 import { useECharts } from '../utils/charts';
+import { useTest } from "../stores/counter";
 
 const dashTabs = [{
     id: "overviewTab",
@@ -45,23 +46,14 @@ const appsptCompute = computed(() => {
     return temp
 })
 
-onBeforeMount(async () => {
-    useMountDashboard()
-})
-
-onMounted(async () => {
-})
-
-/*if (currentUser.value && !currentUser.value.guidedTour) {
-    //console.log(" currentUser.value.guidedTour " + currentUser.value.guidedTour)
-    useInitShepherd()
-}*/
+useMountDashboard()
 
 </script>
 
 <template>
     <SpinnerLoadingPage />
     <div class="row mt-2">
+        
         <div v-show="!spinnerLoadingPage">
             <div v-if="!hasData">
                 <NoData />

@@ -16,6 +16,7 @@ export const useTest = defineStore('testing', () => {
 
   }
   const testNumber = ref()
+  
   function changeTestNumber(param) {
     console.log("Store param "+param)
     testNumber.value = param
