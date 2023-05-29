@@ -181,7 +181,7 @@ function inputMonth(param1) {
     temp.start = dayjs.tz(param1, timeZoneTrade.value).unix()
     temp.end = dayjs.tz(param1, timeZoneTrade.value).endOf("month").unix()
     selectedMonth.value = temp
-    console.log(" -> Selected Month "+JSON.stringify(selectedMonth.value))
+    //console.log(" -> Selected Month "+JSON.stringify(selectedMonth.value))
 }
 
 async function saveFilter() {

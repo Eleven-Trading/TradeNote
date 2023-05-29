@@ -773,6 +773,7 @@ export async function useMountCalendar(param) {
 }
 
 export async function useMountScreenshots() {
+    await (spinnerLoadingPage.value = true)
     console.log("\MOUNTING SCREENSHOTS")
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()

@@ -402,7 +402,8 @@ export async function useDeleteScreenshot(param1, param2) {
 
 export async function useRefreshScreenshot() {
     return new Promise(async (resolve, reject) => {
-        screenshotsQueryLimit = 6
+        await (spinnerLoadingPage.value = true)
+        screenshotsQueryLimit = 4
         screenshotsPagination.value = 0
         screenshots.length = 0
         await useGetScreenshots()

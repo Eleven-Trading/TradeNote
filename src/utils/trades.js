@@ -373,21 +373,24 @@ export async function useGetTrades(){
             console.log("\nGETTING TRADES");
             console.time("  --> Duration getting trades");
             //spinnerLoadingPageText.value = "Getting trades from ParseDB"
+            let startD = selectedRange.value.start
+            let endD = selectedRange.value.end
             const parseObject = Parse.Object.extend("trades");
             const query = new Parse.Query(parseObject)
             query.equalTo("user", Parse.User.current());
             query.ascending("dateUnix");
             query.exclude("executions", "blotter", "pAndL") // we omit to make it lighter
-            query.greaterThanOrEqualTo("dateUnix", selectedRange.value.start)
-            query.lessThanOrEqualTo("dateUnix", selectedDateRange.value.end)
-            query.limit(queryLimit.value); // limit to at most 10 results
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.limit(queryLimit.value);
             const results = await query.find();
             console.timeEnd("  --> Duration getting trades");
-
+            //console.log("results "+JSON.stringify(results))
             if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
                 trades = []
                 trades = JSON.parse(JSON.stringify(results))
             }
+            //console.log("trades "+JSON.stringify(trades))
             resolve()
     })
 }
