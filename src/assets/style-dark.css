@@ -53,11 +53,11 @@ main {
 }
 
 .greenTrade {
-    color: #00CA73;
+    color: #00CA73 !important;
 }
 
 .redTrade {
-    color: var(--red-color);
+    color: var(--red-color) !important;
 }
 
 .greenTradeDiv {
@@ -837,6 +837,11 @@ ul.timeline>li:before {
 
 table {
     color: var(--white-87) !important;
+}
+
+.table>:not(caption)>*>* {
+    background-color: var(--black-bg-7) !important;
+    color: var(--white-87);
 }
 
 .scrolling-wrapper {

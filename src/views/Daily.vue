@@ -5,7 +5,7 @@ import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, setups, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton } from '../stores/globals';
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup, useResetSetup, useGetSetups } from '../utils/setups'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
@@ -203,6 +203,7 @@ async function updateExcursions() {
                 results.save()
                     .then(async () => {
                         console.log(' -> Updated excursions with id ' + results.id)
+                        await useGetSelectedRange()
                         await useGetExcursions()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
@@ -224,6 +225,7 @@ async function updateExcursions() {
                 object.save()
                     .then(async (object) => {
                         console.log(' -> Added new excursion with id ' + object.id)
+                        await useGetSelectedRange()
                         await useGetExcursions()
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeExcursionId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
@@ -519,7 +521,7 @@ function filterNotes(param) {
                                             <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
                                                 <table class="table">
-                                                    <thead class="thead-dark">
+                                                    <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
                                                             <th scope="col">Qty</th>
@@ -596,7 +598,7 @@ function filterNotes(param) {
                                             <div class="tab-pane fade txt-small" v-bind:id="'blotterNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
                                                 <table v-bind:id="'table' + index" class="table">
-                                                    <thead class="thead-dark">
+                                                    <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
                                                             <th scope="col">Quantity</th>
@@ -720,7 +722,7 @@ function filterNotes(param) {
                     <!-- *** Table *** -->
                     <div class="mt-3">
                         <table class="table">
-                            <thead class="thead-dark">
+                            <thead>
                                 <tr>
                                     <th scope="col">Symbol</th>
                                     <th scope="col">Qty</th>
@@ -820,18 +822,20 @@ function filterNotes(param) {
 
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <textarea class="form-control" placeholder="note" id="floatingTextarea"
+                                        v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
+                                        v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"></textarea>
+                                </div>
+                                
+                                <!-- Third line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <div class="row">
-                                        <div class="col-4">
+                                        <div class="col-6">
                                             <input type="number" class="form-control" placeholder="Stop Loss"
                                                 v-bind:value="excursion.stopLoss"
                                                 v-on:input="tradeExcursionChange($event.target.value, 'stopLoss', daily.dateUnix, daily.trades[tradeIndex].id)">
                                         </div>
-                                        <div class="col-4">
-                                            <input type="number" class="form-control" placeholder="MAE Price"
-                                                v-bind:value="excursion.maePrice"
-                                                v-on:input="tradeExcursionChange($event.target.value, 'maePrice', daily.dateUnix, daily.trades[tradeIndex].id)">
-                                        </div>
-                                        <div class="col-4">
+                                        <div class="col-6">
                                             <input type="number" class="form-control" placeholder="MFE Price"
                                                 v-bind:value="excursion.mfePrice"
                                                 v-on:input="tradeExcursionChange($event.target.value, 'mfePrice', daily.dateUnix, daily.trades[tradeIndex].id)">
@@ -839,17 +843,12 @@ function filterNotes(param) {
                                     </div>
                                 </div>
 
-                                <!-- Third line -->
-                                <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                    <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
-                                        v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"></textarea>
-                                </div>
-
+                                <!-- Forth line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <input class="screenshotFile" type="file"
                                         @change="useSetupImageUpload($event, daily.trades[tradeIndex].entryTime, daily.trades[tradeIndex].symbol, daily.trades[tradeIndex].side)" />
                                 </div>
+
 
                                 <!-- Fifth line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">

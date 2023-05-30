@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, currentDate } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -774,7 +774,7 @@ export function useScreenType() {
     screenType.value = (screenWidth >= 992) ? 'computer' : 'mobile'
 }
 
-export async function useSetSelectedLocalStorage() {
+export async function useSetValues() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Setting selected local storage")
         //console.log("Period Range "+JSON.stringify(periodRange))
@@ -853,6 +853,7 @@ export async function useSetSelectedLocalStorage() {
         amountCase.value = localStorage.getItem('selectedGrossNet')
         //console.log('amount case '+amountCase.value)
         amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
+        currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
         resolve()
     })
 }

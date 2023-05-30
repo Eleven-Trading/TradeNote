@@ -2,7 +2,7 @@
 import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import { ref, reactive, onMounted, onBeforeMount } from 'vue'
-import { useInitParse, usePageId, useScreenType, useSetSelectedLocalStorage, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
+import { useInitParse, usePageId, useScreenType, useSetValues, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
 import { screenType, sideMenuMobileOut } from '../stores/globals'
 
 /*========================================
@@ -14,7 +14,7 @@ onBeforeMount(async () => {
   useGetTimeZone()
   useGetPeriods()
   useScreenType()
-  await useSetSelectedLocalStorage()
+  await useSetValues()
 })
 
 

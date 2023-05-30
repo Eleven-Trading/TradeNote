@@ -103,7 +103,7 @@ async function getExistingTradesArray() {
                     v-for="(execution, index) in executions">
                     <h3 class="ml-2 mt-2 text-blue">{{ useCreatedDateFormat(index) }}</h3>
                     <table class="table">
-                        <thead class="thead-dark">
+                        <thead>
                             <tr>
                                 <th scope="col">Symbol</th>
                                 <th scope="col">Tot Qty</th>

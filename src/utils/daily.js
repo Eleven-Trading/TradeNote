@@ -38,10 +38,14 @@ export async function useGetSatisfactions() {
 export async function useGetExcursions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING EXCURSIONS")
+        let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
         const parseObject = Parse.Object.extend("excursions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.ascending("order");
+        query.greaterThanOrEqualTo("dateUnix", startD)
+        query.lessThan("dateUnix", endD)
         query.limit(queryLimit.value); // limit to at most 10 results
         excursions.length = 0
         const results = await query.find();

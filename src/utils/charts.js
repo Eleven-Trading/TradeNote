@@ -628,7 +628,7 @@ export function useLineBarChart(param) {
 export function usePieChart(param1, param2, param3) { //chart ID, green, red, page
     return new Promise((resolve, reject) => {
         //console.log("  --> " + param1)
-        console.log("para 2 " + param2 + " and 3 " + param3)
+        //console.log("para 2 " + param2 + " and 3 " + param3)
         let myChart = echarts.init(document.getElementById(param1));
         let green = param2
         let red = param3

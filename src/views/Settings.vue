@@ -89,7 +89,7 @@ async function updateProfile() {
 
                     <!--=============== PATTERN ===============-->
                     <table class="table">
-                        <thead class="thead-dark">
+                        <thead>
                             <tr>
                                 <th scope="col" class="col-md-4">Pattern</th>
                                 <th scope="col" class="col-md-6">Description</th>
@@ -138,7 +138,7 @@ async function updateProfile() {
             <div class="tab-pane fade" id="nav-mistakes" role="tabpanel" aria-labelledby="nav-profile-tab">
                 <div class="mt-3">
                     <table class="table">
-                        <thead class="thead-dark">
+                        <thead>
                             <tr>
                                 <th scope="col" class="col-md-4">Mistake</th>
                                 <th scope="col" class="col-md-6">Description</th>
