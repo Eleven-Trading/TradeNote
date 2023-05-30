@@ -1,9 +1,7 @@
 <script setup>
-import { useInitIndexedDB, useScreenType, useToggleMobileMenu } from '../utils/utils.js'
+import { useToggleMobileMenu } from '../utils/utils.js'
 import { useInitShepherd } from "../utils/utils.js";
-import { useRefreshTrades } from "../utils/trades.js"
-import { useCheckCurrentUser } from '../utils/utils.js';
-import { pageId, currentUser, indexedDB, indexedOpenRequest, indexedDBVersion, renderProfile, screenType } from "../stores/globals"
+import { pageId, currentUser, renderProfile, screenType } from "../stores/globals"
 
 const pages = [{
     id: "registerSignup",
@@ -98,37 +96,6 @@ function logout() {
         Parse.User.current(); // this will now be null
         localStorage.clear()
 
-        indexedOpenRequest.value = window.indexedDB.open("tradeNote", indexedDBVersion.value);
-
-        indexedOpenRequest.value.onsuccess = () => {
-
-            // Clear all the data from the object store
-            clearData();
-        };
-        const clearData = () => {
-            // open a read/write db transaction, ready for clearing the data
-            const transaction = indexedDB.value.transaction(["trades"], "readwrite");
-
-            // report on the success of the transaction completing, when everything is done
-            transaction.oncomplete = (event) => {
-                console.log("Transaction completed")
-            };
-
-            transaction.onerror = (event) => {
-                console.log("Transaction not opened due to error: " + transaction.error)
-            };
-
-            // create an object store on the transaction
-            const objectStore = transaction.objectStore("trades");
-
-            // Make a request to clear all the data out of the object store
-            const objectStoreRequest = objectStore.clear();
-
-            objectStoreRequest.onsuccess = (event) => {
-                // report the success of our request
-                console.log("Data clear successful")
-            }
-        }
         console.log("Logging out")
         window.location.replace("/");
     });
@@ -181,10 +148,6 @@ function logout() {
                             <a class="dropdown-item" v-on:click="useInitShepherd()">
                                 <i class="uil uil-question-circle me-2"></i>Tutorial</a>
                         </li>
-                        <!--<li>
-                            <a class="dropdown-item" v-on:click="useRefreshTrades()">
-                                <i class="uil uil-sync me-2"></i>Refresh Data</a>
-                        </li>-->
                         <li>
                             <a class="dropdown-item" href="settings">
                                 <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>

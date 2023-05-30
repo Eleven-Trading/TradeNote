@@ -4,9 +4,8 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, setups, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, indexedDBtoUpdate, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, threeMonthsBack, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, timeZoneTrade, tradeSatisfactionChanged } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, setups, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, tradeSetup, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, daily, pageId, excursion, tradeExcursionChanged, spinnerLoadingPageText, selectedMonth, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily } from '../utils/utils';
-import { useUpdateTrades, useGetTradesFromDb, useGetFilteredTrades } from '../utils/trades';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup, useResetSetup, useGetSetups } from '../utils/setups'
 import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
@@ -178,6 +177,7 @@ function tradeExcursionChange(param1, param2, param3, param4) {
     tradeExcursionId.value = param4
     console.log("Excursion has changed: " + JSON.stringify(excursion))
     tradeExcursionChanged.value = true
+    saveButton.value = true
 
 }
 
@@ -315,12 +315,12 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
         }
         await awaitClick()
         await (spinnerSetups.value = false)
+        saveButton.value = false
     }
 
 }
 
 async function hideTradesModal() {
-    console.log(" clicked on hide trades modal")
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
         return
@@ -352,21 +352,6 @@ function resetExcursion() {
 }
 
 
-async function updateIndexedDB(param1) {
-    console.log("\nUPDATING INDEXEDDB")
-    return new Promise(async (resolve, reject) => {
-        //await (spinnerLoadingPageText.value = "Updating trades in IndexedDB")
-        console.log("threeMonthsBack.value " + threeMonthsBack.value + " ; selectedMonth.value.start " + selectedMonth.value.start)
-        if (threeMonthsBack.value <= selectedMonth.value.start) {
-            console.log("3 months")
-            await useGetTradesFromDb(6)
-        } else {
-            console.log(">6 months")
-            await useGetTradesFromDb(0)
-        }
-        resolve()
-    })
-}
 
 function filterPatterns(param, param2) {
     let setup = setups.filter(obj => obj.tradeId == param)
@@ -877,7 +862,7 @@ function filterNotes(param) {
                                                 <i class="fa fa-chevron-left me-2"></i>Back</button>
                                         </div>
                                         <div class="col-4 text-center">
-                                            <button v-if="indexedDBtoUpdate" class="btn btn-outline-success btn-sm"
+                                            <button v-if="saveButton" class="btn btn-outline-success btn-sm"
                                                 v-on:click="hideTradesModal">Close & Save</button>
                                             <button v-else class="btn btn-outline-primary btn-sm"
                                                 v-on:click="hideTradesModal">Close</button>

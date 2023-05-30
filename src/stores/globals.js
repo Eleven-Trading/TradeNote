@@ -18,6 +18,7 @@ export const currentDate = ref(dayjs().format("YYYY-MM-DD"))
 export const quill = ref()
 export const sideMenuMobileOut = ref(false)
 export const screenType = ref()
+export const saveButton = ref(false)
 
 /**************************************
 * PATTERNS, MISTAKES & SETUPS
@@ -56,13 +57,6 @@ export const updateMistakeActive = ref(null)
 export const newMistakeName = ref(null)
 export const newMistakeDescription = ref(null)
 
-/**************************************
-* INDEXEDDB
-**************************************/
-export const indexedDBVersion = ref(10)
-export const indexedOpenRequest = ref(null)
-export const indexedDB = reactive({})
-export const indexedDBtoUpdate = ref(false)
 
 
 /**************************************
@@ -96,11 +90,8 @@ export const modalDailyTradeOpen = ref(false)
 * TRADES
 **************************************/
 export const selectedRange = ref()
-export const threeMonthsBack = ref()
 export const filteredTrades = reactive([])
 export const filteredTradesTrades = reactive([])
-export const allTrades = reactive([])
-export const threeMonthsTrades = reactive([])
 export const totals = reactive({})
 export const totalsByDate = reactive({})
 export const groups = reactive({})

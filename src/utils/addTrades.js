@@ -1440,7 +1440,9 @@ export async function useUploadTrades() {
             }
         })
     }
+    
     checkTradeAccounts()
+    
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
     if (Object.keys(mfePrices).length > 0) await updateMfePrices()
     useRefreshTrades()

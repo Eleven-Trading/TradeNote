@@ -1,6 +1,5 @@
-import { renderingCharts, pageId, threeMonthsBack, threeMonthsTrades, filteredTrades, allTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade } from "../stores/globals"
-import { useMonthFormat, useFormatBytes, useMonthFormatShort } from "./utils"
-import { useCheckTradesInIndexedDB, useGetTradesFromDb } from "./trades"
+import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade } from "../stores/globals"
+import { useMonthFormat } from "./utils"
 
 
 export async function useLoadCalendar() {
@@ -9,35 +8,7 @@ export async function useLoadCalendar() {
         renderingCharts.value = true
         miniCalendarsData.length = 0
         let currentMonthNumber = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).month()
-        let fromUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(currentMonthNumber, 'month').startOf('month').unix()
-        let toUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(0, 'month').endOf('month').unix()
 
-        /*if (pageId.value == "calendar") {
-            //if on page load, we already have filtered trade then do nothing or if param == true, the request comes from next or filter
-            if (!filteredTrades.length > 0 || param) {
-                console.log(" -> Creating filteredTrades from "+fromUnix+" until "+toUnix)
-                let dataExistsInIndexedDB = await useCheckTradesInIndexedDB(0)
-                if (!dataExistsInIndexedDB) {
-                    await useGetTradesFromDb(0)
-                }
-                filteredTrades.length = 0
-                //console.log(" all trades "+JSON.stringify(allTrades))
-                console.log("    ----> foreach trades")
-                allTrades.forEach(element => {
-                    if (element.dateUnix >= fromUnix && element.dateUnix <= toUnix) {
-                        let temp = {}
-                        temp.dateUnix = element.dateUnix
-                        temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
-                        temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
-                        temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
-                        temp.pAndL = element.pAndL
-                        temp.satisfaction = element.satisfaction
-                        filteredTrades.push(temp)
-                    }
-                });
-            }
-            //console.log(" -> filteredTrades "+JSON.stringify(filteredTrades))
-        }*/
         const createCalendar = async (param1, param2) => {
             //console.log(" -> Creating calendar for "+useMonthFormat(param1))
             //console.log("param 1 " + param1)

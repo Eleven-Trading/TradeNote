@@ -1,8 +1,5 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import { usePageId, useInitPopover } from './utils.js'
-import { useGetSetups, useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, indexedDBtoUpdate, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPageText, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
-import { useUpdateTrades } from './trades.js'
+import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
 
 let screenshotsQueryLimit = 4
 
@@ -126,6 +123,7 @@ export function useScrollToScreenshot() {
 export async function useSetupImageUpload(event, param1, param2, param3) {
     if (pageId.value == "daily") {
         tradeScreenshotChanged.value = true
+        saveButton.value = true
         dateScreenshotEdited.value = true
 
         screenshot.dateUnix = param1

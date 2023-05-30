@@ -1,5 +1,5 @@
-import { pageId, dashboardChartsMounted, spinnerLoadingPage, dashboardIdMounted, spinnerLoadingPageText, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, threeMonthsBack, threeMonthsTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, amountCase, allTrades, renderData, indexedDB, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, mistakes, selectedMonth, renderingCharts, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, noData, hasData, setups } from "../stores/globals"
-import { useFormatBytes, useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, selectedMonth, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, hasData, setups } from "../stores/globals"
+import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
 let trades = []
@@ -7,15 +7,7 @@ let trades = []
 export async function useGetFilteredTrades(param) {
     console.log("\nGETTING FILTERED TRADES")
     return new Promise(async (resolve, reject) => {
-        /*============= 1- Get selected date range =============*/
-
-        /*if (!localStorage.getItem('selectedMonth')) {
-            localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
-        }
-
-        if (!localStorage.getItem('selectedDateRange')) {
-            localStorage.setItem('selectedDateRange', JSON.stringify(selectedMonth.value))
-        }*/
+        /*============= 1- Set selected date range =============*/
 
         //console.log("selectedDateRange "+JSON.stringify(selectedDateRange.value))
         if (pageId.value == "dashboard") {
@@ -30,115 +22,13 @@ export async function useGetFilteredTrades(param) {
             selectedRange.value = selectedMonth.value
         }
 
-
-        /*============= 2 - Check last date in parse db =============
-
-         * If there is a new date we will update indexedDB
-         ***************************************************/
-
-        let lastDateParse
-        const checkLastDateParse = async () =>{
-            return new Promise(async (resolve, reject) => { //put return is very important or else it was not waiting for the promise
-                console.log(" -> Getting last date from ParseDB");
-                const parseObject = Parse.Object.extend("trades");
-                const query = new Parse.Query(parseObject);
-                query.equalTo("user", Parse.User.current());
-                query.descending("dateUnix");
-                const results = await query.first()
-                if (results) {
-                    lastDateParse = JSON.parse(JSON.stringify(results)).dateUnix
-                    console.log("  --> Last date parse " + lastDateParse)
-                }
-                resolve()
-            })
-        }
-        //await checkLastDateParse()
-
-        /*============= 3 - Check if trades data exists in variable =============
-
-         * I've put it in variable for quicker extract
-         * If does not exist in variable, check IndexedDB
-         * If not in IndexedDB, then get from Parse
+        /*============= 3 - Get data from DB =============
          ***************************************************/
 
         //console.log(" -> Getting trades")
         await useGetTrades()
         //console.log(" trades "+JSON.stringify(trades))
-        /*console.log(" -> Checking local storage");
-        //spinnerLoadingPageText.value = "Getting trades - Checking local storage"
-        let lastDateLocal
-        if (threeMonthsBack.value <= selectedRange.value.start) {
 
-            //Check if variable exists
-            if (threeMonthsTrades.length > 0) {
-                console.log("  --> 3 Months trades already exists")
-                console.log("  --> Size of threeMonths.value: " + useFormatBytes(new Blob([JSON.stringify(threeMonthsTrades)]).size))
-                //spinnerLoadingPageText.value = "Getting trades - 3 Months trades already exists"
-
-                //Compare last dateUnix with last date from #2
-                lastDateLocal = threeMonthsTrades[threeMonthsTrades.length - 1].dateUnix
-                //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
-
-                //If new date, we update IndexedDB by getting trades from Parse
-                if (lastDateLocal < lastDateParse) {
-                    //spinnerLoadingPageText.value = "New data. Updating IndexedDB"
-                    await useGetTradesFromDb(6)
-                }
-
-                //If variable does not exist, we check IndexedDB or get from Parse
-            } else {
-                console.log("  --> 3 months trades is null. Getting data")
-                //spinnerLoadingPageText.value = "Getting trades - 3 months trades is null. Getting data"
-
-                //Check if data exists in indexed db
-                let dataExistsInIndexedDB = await useCheckTradesInIndexedDB(6)
-                ////spinnerLoadingPageText.value = "Getting trades - data exists is "+dataExistsInIndexedDB
-
-                if (dataExistsInIndexedDB && threeMonthsTrades.length > 0) {
-                    //console.log("  --> Three Months Trades "+JSON.stringify(threeMonthsTrades))
-                    lastDateLocal = threeMonthsTrades[threeMonthsTrades.length - 1].dateUnix
-                    console.log("  --> threeMonthsBack size in indexedDB: " + useFormatBytes(new Blob([JSON.stringify(threeMonthsTrades)]).size))
-                }
-                ////spinnerLoadingPageText.value = "Getting trades - last date is "+lastDateLocal +" and last date parse "+lastDateParse
-                //console.log("  --> Checking for updates: last date local " + lastDateLocal + " vs last date parse " + lastDateParse)
-
-                //Get from parse db if not exist in indexed db (resolve returns false in useCheckTradesInIndexedDB) or if there is a new date in parse db
-                if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
-                    await useGetTradesFromDb(6)
-                }
-
-            }
-        } else {
-            if (allTrades.length > 0) {
-                console.log("  --> All trades already exists")
-                console.log("  --> Size of allTrades: " + useFormatBytes(new Blob([JSON.stringify(allTrades)]).size))
-                //spinnerLoadingPageText.value = "Getting trades - All trades already exists"
-
-                lastDateLocal = allTrades[allTrades.length - 1].dateUnix
-                if (lastDateLocal < lastDateParse) {
-                    //spinnerLoadingPageText.value = "New data. Updating IndexedDB"
-                    await useGetTradesFromDb(0)
-                }
-
-            } else {
-                console.log("  --> All trades is null. Getting data")
-
-                //spinnerLoadingPageText.value = "Getting trades - All trades is null. Getting data"
-                let dataExistsInIndexedDB = await useCheckTradesInIndexedDB(0)
-                //spinnerLoadingPageText.value = "Getting trades - data exists is " + dataExistsInIndexedDB
-
-                if (dataExistsInIndexedDB && allTrades.length > 0) {
-                    lastDateLocal = allTrades[allTrades.length - 1].dateUnix
-                    console.log("  --> allTrades size in indexedDB: " + useFormatBytes(new Blob([JSON.stringify(allTrades)]).size))
-                }
-                ////spinnerLoadingPageText.value = "Getting trades - lastDateLocal is "+lastDateLocal
-
-                if (!dataExistsInIndexedDB || lastDateLocal < lastDateParse) {
-                    //spinnerLoadingPageText.value = "New data. Updating IndexedDB"
-                    await useGetTradesFromDb(0)
-                }
-            }
-        }
 
         /*============= 4 - Apply filter to trades =============
          
@@ -260,23 +150,6 @@ export async function useGetFilteredTrades(param) {
         //console.log("trades "+JSON.stringify(trades))
         loopTrades(trades)
         //console.log(" selectedRange.value.start "+selectedRange.value.start)
-        /* If all dates selected, we use allTrades */
-        /*if (selectedRange.value.start == 0 && selectedRange.value.end == 0) {
-            loopTrades(allTrades)
-        }
-
-        //If not, we per selected range
-        else {
-            //We must check if we are in in 3 months range or full range
-            if (threeMonthsBack.value <= selectedRange.value.start) {
-                console.log(" -> Using 3 months")
-                //console.log("threeMonthsTrades "+JSON.stringify(threeMonthsTrades))
-                loopTrades(threeMonthsTrades)
-            } else {
-                console.log(" -> Using all trades")
-                loopTrades(allTrades)
-            }
-        }*/
         //console.log(" -> Filtered trades of trades "+JSON.stringify(filteredTradesTrades))
         await useCreateBlotter(true)
         await useCreatePnL()
@@ -302,71 +175,9 @@ export async function useGetFilteredTrades(param) {
     })
 }
 
-/***************************************
-         * CHECKING AND GETTING DATA FROM DB 
-         * (see #3)
-         ***************************************/
-
-export async function useCheckTradesInIndexedDB(param) {
-    return new Promise((resolve, reject) => {
-        console.log("\nChecking Trades in indexedDB")
-        //spinnerLoadingPageText.value = "Getting trades - Checking data in IndexedDB"
-        let transaction = indexedDB.value.transaction(["trades"], "readwrite");
-
-        if (param == 6) {
-            var objectToGet = transaction.objectStore("trades").get("2")
-        }
-        if (param == 0) {
-            var objectToGet = transaction.objectStore("trades").get("1")
-        }
-        objectToGet.onsuccess = (event) => {
-            if (event.target.result != undefined) {
-                console.log("  --> Data exists in IndexedDB. Retreiving trades")
-                //spinnerLoadingPageText.value = "Getting trades - Data exists in IndexedDB. Retreiving trades"
-                if (param == 6) {
-                    //console.log(" data "+event.target.result.data)
-                    threeMonthsTrades.length = 0
-                    event.target.result.data.forEach(element => {
-                        threeMonthsTrades.push(element)
-                    });
-                }
-                if (param == 0) {
-                    allTrades.length = 0
-                    event.target.result.data.forEach(element => {
-                        allTrades.push(element)
-                    });
-                }
-                //console.log("all trades " + JSON.stringify(allTrades))
-                (async () => {
-                    if (!navigator.storage) return;
-
-                    const
-                        estimate = await navigator.storage.estimate(),
-                        // calculate remaining storage in MB
-                        quota = useFormatBytes(estimate.quota)
-                    let usage = useFormatBytes(estimate.usage)
-                    //console.log("Local storage quota " + quota + " and usage " + usage);
-                })();
-                resolve(true)
-            } else {
-                console.log("  --> Data does not exist in IndexedDB. Retreiving from DB")
-                //spinnerLoadingPageText.value = "Getting trades - Data does not exist in IndexedDB. Retreiving from DB"
-                resolve(false)
-            }
-
-        }
-        objectToGet.onerror = (event) => {
-            console.log("  --> There was an error getting trades from IndexedDB")
-            //spinnerLoadingPageText.value = "Getting trades - There was an error getting trades from IndexedDB"
-            return
-        }
-    })
-}
 
 /***************************************
  * GETTING DATA FROM PARSE DB 
- * (see #3)
- * We get the data and save it to IndexedDB
  ***************************************/
 export async function useGetTrades(){
     return new Promise(async(resolve, reject) => {
@@ -394,93 +205,7 @@ export async function useGetTrades(){
             resolve()
     })
 }
-export async function useGetTradesFromDb(param) {
-    return new Promise((resolve, reject) => {
-        (async () => {
-            console.log(" -> Getting trades from ParseDB");
-            console.log(" -> threeMonthsBack " + threeMonthsBack.value)
-            console.time("  --> Execution time");
-            //spinnerLoadingPageText.value = "Getting trades from ParseDB"
-            const parseObject = Parse.Object.extend("trades");
-            const query = new Parse.Query(parseObject)
-            query.equalTo("user", Parse.User.current());
-            query.ascending("dateUnix");
-            query.exclude("executions") // we omit to make it lighter
-            query.limit(queryLimit.value); // limit to at most 10 results
-            const results = await query.find();
-            console.timeEnd("  --> Execution time");
 
-            if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
-                console.log("  --> Size: " + useFormatBytes(JSON.stringify(results).length))
-                allTrades.length = 0
-                threeMonthsTrades.length = 0
-                //allTrades = JSON.parse(JSON.stringify(results))
-                //allTrades = JSON.parse(JSON.stringify(results))
-                console.log(" -> Parsing data from ParseDB");
-                //spinnerLoadingPageText.value = "Parsing data from ParseDB"
-
-                JSON.parse(JSON.stringify(results)).forEach(element => {
-                    if (element.dateUnix >= threeMonthsBack.value) {
-                        threeMonthsTrades.push(element)
-                    }
-                    allTrades.push(element)
-                });
-                //console.log("3 months back " + JSON.stringify(threeMonthsTrades) +" and type "+typeof threeMonthsTrades)
-                //console.log("all trades before "+JSON.stringify(allTrades))
-                threeMonthsTrades.sort(function (a, b) {
-                    return a.dateUnix - b.dateUnix
-                })
-
-                if (param == 0 || param == 6) {
-                    //console.log("has param")
-                    await saveAllTradesToIndexedDb(param)
-                } else {
-                    //console.log("no param")
-                    await Promise.all([saveAllTradesToIndexedDb(0), saveAllTradesToIndexedDb(6)])
-                }
-            }
-            resolve()
-        })()
-    })
-}
-
-async function saveAllTradesToIndexedDb(param) {
-    return new Promise((resolve, reject) => {
-        console.log(" -> Saving trades to IndexedDB (param: " + param + ")");
-        // Open a transaction to the database
-        let transaction = indexedDB.value.transaction(["trades"], "readwrite");
-        //console.log("all trades after "+JSON.stringify(allTrades))
-        //console.log(" threeMonthsTrades "+JSON.stringify(threeMonthsTrades))
-        let data = {}
-        if (param == 0) {
-            data = {
-                id: "1",
-                data: JSON.parse(JSON.stringify(allTrades))
-            };
-        }
-        if (param == 6) {
-            data = {
-                id: "2",
-                data: JSON.parse(JSON.stringify(threeMonthsTrades))
-            };
-        }
-        var objectToAdd = transaction.objectStore("trades").put(data)
-
-        objectToAdd.onsuccess = (event) => {
-            console.log(" -> Success saving to IndexedDB")
-
-        }
-        objectToAdd.onserror = (event) => {
-            console.log(" -> Error saving to IndexedDB")
-            return
-        }
-
-        //Resolve on transaction complete because when adding the page redirects to dashboard and the indexeddb object did not have time to update when I was putting resolve in onsuccess
-        transaction.oncomplete = function (event) {
-            resolve()
-        };
-    })
-}
 
 
 /*============= Prepare Trades (#4) =============
@@ -1424,7 +1149,6 @@ async function calculateSatisfaction(param) {
 export async function useRefreshTrades() {
     console.log("\nREFRESHING INFO")
     await (spinnerLoadingPage.value = true)
-    await useGetTradesFromDb()
     if (pageId.value == "dashboard") {
         useMountDashboard()
     } else if (pageId.value == "daily") {

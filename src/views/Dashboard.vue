@@ -3,7 +3,7 @@ import { computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData, spinnerLoadingPageText } from '../stores/globals';
-import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTwoDecPercentFormat, useInitIndexedDB, useSetSelectedLocalStorage, useMountDashboard } from '../utils/utils';
+import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTwoDecPercentFormat,  useMountDashboard } from '../utils/utils';
 import { useGetFilteredTrades, usePrepareTrades, useCalculateProfitAnalysis } from '../utils/trades';
 import NoData from '../components/NoData.vue';
 import { useECharts } from '../utils/charts';
@@ -192,7 +192,7 @@ useMountDashboard()
                                                                 (profitAnalysis[amountCase + 'R']).toFixed(2) }}</span>
                                                             <span v-else>-</span>
                                                         </h4>
-                                                        <span class="dashInfoTitle">Profit/Loss Ratio</span>
+                                                        <span class="dashInfoTitle">P/L Ratio</span>
                                                     </div>
                                                     <div class="col-6">
                                                         <h4 class="titleWithDesc">
@@ -201,7 +201,7 @@ useMountDashboard()
                                                             }}</span>
                                                             <span v-else>-</span>
                                                         </h4>
-                                                        <span class="dashInfoTitle">MFE Risk&Reward</span>
+                                                        <span class="dashInfoTitle">MFE P/L Ratio</span>
                                                     </div>
                                                 </div>
                                             </div>

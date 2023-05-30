@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, setups, indexedOpenRequest, indexedDBVersion, indexedDB, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetups, spinnerSetupsText, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, threeMonthsBack, selectedPatterns, selectedMistakes, screenType } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -49,7 +49,6 @@ export function useInitTab(param) {
                 selectedDashTab.value = event.target.getAttribute('id')
                 //console.log("selected tab " + selectedDashTab.value)
                 localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                //self.getAllTrades(false)
                 await (renderData.value += 1)
                 await useECharts("init")
                 //console.log("related" + event.relatedTarget) // previous active tab
@@ -260,7 +259,6 @@ export function useGetPeriods() {
     temp.forEach(element => {
         periodRange.push(element)
     });
-    threeMonthsBack.value = periodRange.filter(obj => obj.value == "lastThreeMonthsTilNow")[0].start
 }
 
 export function useInitShepherd() {
@@ -615,45 +613,6 @@ export function useInitStepper() {
     })
 }
 
-let i = 1
-export async function useInitIndexedDB() {
-    return new Promise((resolve, reject) => {
-        console.log("\nINITIATING INDEXEDDB")
-        /*window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB,
-            IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.OIDBTransaction || window.msIDBTransaction*/
-
-        // Create/open database
-        indexedOpenRequest.value = window.indexedDB.open("tradeNote", indexedDBVersion.value);
-
-        indexedOpenRequest.value.onupgradeneeded = () => {
-            //console.log("onupgradeneeded")
-            // triggers if the client had no database
-            // ...perform initialization...
-            indexedDB.value = indexedOpenRequest.value.result;
-            if (!indexedDB.value.objectStoreNames.contains('videos')) {
-                console.log("creating videos object store in tradeNote")
-                indexedDB.value.createObjectStore('videos', { keyPath: 'id' })
-            }
-            if (!indexedDB.value.objectStoreNames.contains('trades')) {
-                console.log("creating trades object store in tradeNote")
-                indexedDB.value.createObjectStore('trades', { keyPath: 'id' })
-            }
-        };
-
-        indexedOpenRequest.value.onerror = () => {
-            console.error("Error", indexedOpenRequest.value.error);
-            resolve()
-        };
-
-        indexedOpenRequest.value.onsuccess = () => {
-            indexedDB.value = indexedOpenRequest.value.result;
-            //console.log(" -> indexedDB "+JSON.stringify(indexedDB.value))
-            resolve()
-
-        };
-    })
-}
-
 export function useInitWheelEvent() {
     var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
     var mouseDirection
@@ -722,7 +681,6 @@ export function useInitPopover() {
 export async function useMountDashboard() {
     console.log("\MOUNTING DASHBOARD")
     await console.time("  --> Duration mount dashboard");
-    //await useInitIndexedDB()
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
@@ -746,7 +704,6 @@ export async function useMountDashboard() {
 export async function useMountDaily() {
     console.log("\MOUNTING DAILY")
     await console.time("  --> Duration mount daily");
-    //await useInitIndexedDB()
     spinnerLoadingPage.value = true
     await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await useGetFilteredTrades()
@@ -764,7 +721,6 @@ export async function useMountCalendar(param) {
     console.log("\MOUNTING CALENDAR")
     await console.time("  --> Duration mount calendar");
     await (spinnerLoadingPage.value = true)
-    //await useInitIndexedDB()
     await useGetFilteredTrades()
     await useLoadCalendar() // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)

@@ -2,13 +2,13 @@
 import { onBeforeMount, onMounted } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, spinnerLoadingPageText, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray } from '../stores/globals';
-import { useInitStepper, useInitIndexedDB } from '../utils/utils';
+import { useInitStepper } from '../utils/utils';
 import { useImportTrades, useUploadTrades } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
 
 onMounted(async () => {
     await useInitStepper()
-    await Promise.all([getExistingTradesArray()/*, useInitIndexedDB()*/])
+    await Promise.all([getExistingTradesArray()])
 })
 
 function inputChooseBroker(param) {

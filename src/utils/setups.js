@@ -1,4 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, indexedDBtoUpdate, spinnerSetupsText, spinnerSetups, pageId, tradeId } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton } from '../stores/globals';
 import { useUpdateTrades } from './trades'
 
 
@@ -79,6 +79,7 @@ export function useTradeSetupChange(param1, param2, param3, param4, param5) {
 
     //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
     tradeSetupChanged.value = true
+    saveButton.value = true
 
 }
 
@@ -162,6 +163,7 @@ export async function useDeleteSetup(param1, param2) {
     tradeSetupId.value = param2
     spinnerSetups.value = true
     tradeSetupChanged.value = true
+    saveButton.value = true
     //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + tradeSetup)
 
     if (tradeSetupId.value != null) {
