@@ -1,5 +1,5 @@
 import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, selectedMonth, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, hasData, setups } from "../stores/globals"
-import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
+import { useMountDashboard, useMountDaily, useMountCalendar, useGetSelectedRange } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
 let trades = []
@@ -7,20 +7,6 @@ let trades = []
 export async function useGetFilteredTrades(param) {
     console.log("\nGETTING FILTERED TRADES")
     return new Promise(async (resolve, reject) => {
-        /*============= 1- Set selected date range =============*/
-
-        //console.log("selectedDateRange "+JSON.stringify(selectedDateRange.value))
-        if (pageId.value == "dashboard") {
-            selectedRange.value = selectedDateRange.value
-        }else if (pageId.value == "calendar"){
-            selectedRange.value = {}
-            selectedRange.value.start =  dayjs.unix(selectedMonth.value.start).tz(timeZoneTrade.value).startOf('year').unix()
-            selectedRange.value.end = selectedMonth.value.end
-            //console.log("SelectedRange "+JSON.stringify(selectedRange.value))
-        }
-         else {
-            selectedRange.value = selectedMonth.value
-        }
 
         /*============= 3 - Get data from DB =============
          ***************************************************/

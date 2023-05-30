@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet } from "../stores/globals"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
@@ -16,17 +16,34 @@ const maxChartValues = 20
 export function useECharts(param) {
     //console.log(" -> eCharts " + param)
 
-    for (let index = 1; index <= 1; index++) {
+    for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
         }
-        if (param == "init" || "pieChart") {
-            //console.log("totals "+JSON.stringify(totals))
-            var probWins = (totals[amountCase.value + 'WinsCount'] / totals.trades)
-            var probLoss = (totals[amountCase.value + 'LossCount'] / totals.trades)
-            usePieChart(chartId, probWins, probLoss)
+
+        if (param == "init") {
+            let green
+            let red
+            if(index == 1){
+                //green = probWins
+                //red = probLoss
+                green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
+                red = (totals[amountCase.value + 'LossCount'] / totals.trades)
+                
+            }
+            if (index == 2){
+                //green = satisfied
+                //red = dissatisfied
+                let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
+                let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
+                if (satisfactionArray.length>0){
+                    green = satisfied/satisfactionArray.length
+                    red = dissatisfied/satisfactionArray.length
+                }
+            }
+            usePieChart(chartId, green, red)
         }
     }
 
@@ -608,21 +625,21 @@ export function useLineBarChart(param) {
     })
 }
 
-export function usePieChart(param1, param2, param3) { //chart ID, winShare, lossShare, page
+export function usePieChart(param1, param2, param3) { //chart ID, green, red, page
     return new Promise((resolve, reject) => {
         //console.log("  --> " + param1)
-        //console.log("para 2 " + param2 + " and 3 " + param3)
-        var myChart = echarts.init(document.getElementById(param1));
-        var winShare = param2
-        var lossShare = param3
+        console.log("para 2 " + param2 + " and 3 " + param3)
+        let myChart = echarts.init(document.getElementById(param1));
+        let green = param2
+        let red = param3
         const option = {
             series: [{
                 type: 'pie',
                 radius: ['70%', '100%'],
                 avoidLabelOverlap: false,
                 data: [
-                    { value: winShare, name: "Win Share" },
-                    { value: lossShare, name: "Loss Share" },
+                    { value: green },
+                    { value: red},
                 ],
                 itemStyle: {
                     color: (params) => {
@@ -640,10 +657,17 @@ export function usePieChart(param1, param2, param3) { //chart ID, winShare, loss
                     color: cssColor87,
                     formatter: (params) => {
                         if (pageId.value == "dashboard") {
-                            return useOneDecPercentFormat(winShare) + "\nWin rate"
+                            let rate
+                            if(param1 == "pieChart1"){
+                                rate = "\nWin rate"
+                            }
+                            if(param1 == "pieChart2"){
+                                rate = "\nSatisfaction"
+                            }
+                            return useOneDecPercentFormat(green) + rate
                         }
                         if (pageId.value == "daily") {
-                            return useOneDecPercentFormat(winShare)
+                            return useOneDecPercentFormat(green)
                         }
                     }
                 }
@@ -1471,7 +1495,7 @@ export function useBoxPlotChart() {
     })
 }
 
-export function useScatterChart(param1) { //chart ID, winShare, lossShare, page
+export function useScatterChart(param1) { //chart ID, green, red, page
     //console.log(" param1 " + param1)
     return new Promise((resolve, reject) => {
         //console.log("  --> " + param1)

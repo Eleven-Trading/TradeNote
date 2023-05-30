@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -684,8 +684,9 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
-    await useGetFilteredTrades()
+    await useGetSelectedRange()
+    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    await Promise.all([useGetFilteredTrades()])
     await usePrepareTrades()
     await useCalculateProfitAnalysis()
     await (spinnerLoadingPage.value = false)
@@ -705,6 +706,7 @@ export async function useMountDaily() {
     console.log("\MOUNTING DAILY")
     await console.time("  --> Duration mount daily");
     spinnerLoadingPage.value = true
+    await useGetSelectedRange()
     await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await useGetFilteredTrades()
     await (spinnerLoadingPage.value = false)
@@ -714,13 +716,14 @@ export async function useMountDaily() {
     await (renderingCharts.value = false)
     //useInitPopover()
 
-    
+
 }
 
 export async function useMountCalendar(param) {
     console.log("\MOUNTING CALENDAR")
     await console.time("  --> Duration mount calendar");
     await (spinnerLoadingPage.value = true)
+    await useGetSelectedRange()
     await useGetFilteredTrades()
     await useLoadCalendar() // if param (true), then its coming from next or filter so we need to get filteredTrades (again)
     await (spinnerLoadingPage.value = false)
@@ -732,6 +735,7 @@ export async function useMountScreenshots() {
     console.log("\MOUNTING SCREENSHOTS")
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
+    await useGetSelectedRange()
     await Promise.all([useGetPatterns(), useGetMistakes()])
     await useGetSetups()
     await useGetScreenshots()
@@ -746,6 +750,23 @@ export function usePageId() {
     pageId.value = route.name
     console.log("\n======== " + pageId.value.charAt(0).toUpperCase() + pageId.value.slice(1) + " Page/View ========\n")
     return pageId.value
+}
+
+export function useGetSelectedRange() {
+    return new Promise(async (resolve, reject) => {
+        if (pageId.value == "dashboard") {
+            selectedRange.value = selectedDateRange.value
+        } else if (pageId.value == "calendar") {
+            selectedRange.value = {}
+            selectedRange.value.start = dayjs.unix(selectedMonth.value.start).tz(timeZoneTrade.value).startOf('year').unix()
+            selectedRange.value.end = selectedMonth.value.end
+            //console.log("SelectedRange "+JSON.stringify(selectedRange.value))
+        }
+        else {
+            selectedRange.value = selectedMonth.value
+        }
+        resolve()
+    })
 }
 
 export function useScreenType() {

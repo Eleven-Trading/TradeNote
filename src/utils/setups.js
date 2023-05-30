@@ -1,5 +1,6 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange } from '../stores/globals';
 import { useUpdateTrades } from './trades'
+import { useGetSelectedRange } from './utils';
 
 
 
@@ -41,7 +42,8 @@ export async function useGetMistakes() {
 export async function useGetSetups(param) {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting setups");
-
+        let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination.value);
         //console.log(" selected start date " + selectedMonth.start.value)
         const parseObject = Parse.Object.extend("setups");
@@ -49,6 +51,8 @@ export async function useGetSetups(param) {
         //if (pageId.value == "screenshots" ||  pageId.value == "addScreenshot") query.containedIn("tradeId", screenshotsNames.value);
         query.include("pattern")
         query.include("mistake")
+        query.greaterThanOrEqualTo("dateUnix", startD)
+        query.lessThan("dateUnix", endD)
         query.limit(queryLimit.value)
         const results = await query.find();
         setups.length = 0
@@ -107,6 +111,7 @@ export async function useUpdateSetups(param) {
                 results.save()
                     .then(async () => {
                         console.log(' -> Updated setups with id ' + results.id)
+                        await useGetSelectedRange()
                         await useGetSetups()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
@@ -140,7 +145,8 @@ export async function useUpdateSetups(param) {
                 object.save()
                     .then(async (object) => {
                         console.log('  --> Added new patterns mistake with id ' + object.id)
-                        if(param){
+                        if (param) {
+                            await useGetSelectedRange()
                             await useGetSetups()
                         }
                         //spinnerSetupsText.value = "Added new setup"
@@ -176,6 +182,7 @@ export async function useDeleteSetup(param1, param2) {
             results.destroy().then(async () => {
                 console.log('  --> Deleted setups with id ' + results.id)
                 useResetSetup()
+                await useGetSelectedRange()
                 await useGetSetups()
             }, (error) => {
                 console.log('Failed to delete setup, with error code: ' + error.message);
@@ -233,9 +240,9 @@ export async function useUpdateEditPattern() {
             results.set("active", updatePatternActive.value)
 
             results.save()
-                .then(async() => {
+                .then(async () => {
                     console.log(' -> Updated edited pattern with id ' + results.id)
-                        //spinnerSetupsText.value = "Updated setup"
+                    //spinnerSetupsText.value = "Updated setup"
                 }, (error) => {
                     alert('Failed to create new object, with error code: ' + error.message);
                 })
@@ -243,14 +250,14 @@ export async function useUpdateEditPattern() {
             alert("There is no corresponding pattern id")
         }
         await useGetPatterns().then(() => {
-                updatePatternName.value = null
-                updatePatternDescription.value = null
-                updatePatternActive.value = null
-                patternToEdit.value = null
-            })
-            //console.log("Patterns "+JSON.stringify(patterns.value))
-            localStorage.removeItem("selectedPatterns")
-            localStorage.removeItem("selectedMistakes")
+            updatePatternName.value = null
+            updatePatternDescription.value = null
+            updatePatternActive.value = null
+            patternToEdit.value = null
+        })
+        //console.log("Patterns "+JSON.stringify(patterns.value))
+        localStorage.removeItem("selectedPatterns")
+        localStorage.removeItem("selectedMistakes")
 
     }
 }
@@ -271,9 +278,9 @@ export async function useUpdateEditMistake() {
             results.set("active", updateMistakeActive.value)
 
             results.save()
-                .then(async() => {
+                .then(async () => {
                     console.log(' -> Updated edited mistake with id ' + results.id)
-                        //spinnerSetupsText.value = "Updated setup"
+                    //spinnerSetupsText.value = "Updated setup"
                 }, (error) => {
                     alert('Failed to create new object, with error code: ' + error.message);
                 })
@@ -281,12 +288,12 @@ export async function useUpdateEditMistake() {
             alert("There is no corresponding mistake id")
         }
         await useGetMistakes().then(() => {
-                updateMistakeName.value = null
-                updateMistakeDescription.value = null
-                updateMistakeActive.value = null
-                mistakeToEdit.value = null
-            })
-            //console.log("Mistakes "+JSON.stringify(mistakes.value))
+            updateMistakeName.value = null
+            updateMistakeDescription.value = null
+            updateMistakeActive.value = null
+            mistakeToEdit.value = null
+        })
+        //console.log("Mistakes "+JSON.stringify(mistakes.value))
 
 
     }
@@ -294,7 +301,7 @@ export async function useUpdateEditMistake() {
 
 export async function useSaveNewPattern() {
     console.log(" -> \n SAVING NEW PATTERN")
-    console.log(" newPatternName "+newPatternName.value)
+    console.log(" newPatternName " + newPatternName.value)
     if (newPatternName.value == '' || newPatternName.value == null) {
         alert("Name cannot be empty")
     } else {
@@ -306,7 +313,7 @@ export async function useSaveNewPattern() {
         object.set("active", true)
         object.setACL(new Parse.ACL(Parse.User.current()));
         object.save()
-            .then(async(object) => {
+            .then(async (object) => {
                 console.log(' -> Added new pattern with id ' + object.id)
                 await useGetPatterns()
             }, (error) => {
@@ -330,7 +337,7 @@ export async function useSaveNewMistake() {
         object.set("active", true)
         object.setACL(new Parse.ACL(Parse.User.current()));
         object.save()
-            .then(async(object) => {
+            .then(async (object) => {
                 console.log(' -> Added new mistake with id ' + object.id)
                 await useGetMistakes()
             }, (error) => {
