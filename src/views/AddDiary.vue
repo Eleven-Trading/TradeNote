@@ -6,6 +6,7 @@ import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
 
 let diary = {}
+currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)

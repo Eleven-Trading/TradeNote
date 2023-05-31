@@ -35,9 +35,11 @@ const dashTabs = [{
     target: "#financialsNav"
 }
 ]
+amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
 
 const apptCompute = computed(() => {
     let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'Wins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'Loss']))
+    console.log("temp "+temp)
     return temp
 })
 

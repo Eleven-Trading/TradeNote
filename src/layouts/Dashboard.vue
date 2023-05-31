@@ -3,18 +3,18 @@ import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import { ref, reactive, onMounted, onBeforeMount } from 'vue'
 import { useInitParse, usePageId, useScreenType, useSetValues, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
-import { screenType, sideMenuMobileOut } from '../stores/globals'
+import { mistakes, patterns, screenType, selectedMistakes, selectedPatterns, sideMenuMobileOut } from '../stores/globals'
+import { useGetMistakes, useGetPatterns } from '../utils/setups'
 
 /*========================================
   Functions used on all Dashboard components
 ========================================*/
-onBeforeMount(async () => {
+onBeforeMount (async () => {
   usePageId()
   useInitParse()
   useGetTimeZone()
   useGetPeriods()
   useScreenType()
-  await useSetValues()
 })
 
 

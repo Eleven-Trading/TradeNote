@@ -8,9 +8,9 @@ import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, setups, 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup, useResetSetup, useGetSetups } from '../utils/setups'
-import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 import { useGetExcursions, useGetSatisfactions } from '../utils/daily';
-import { useTest } from '../stores/counter';
+import { useGetFilteredTrades } from '../utils/trades'
+import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 
 const dailyTabs = [{
     id: "trades",
@@ -41,6 +41,8 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 useMountDaily()
+
+
 onBeforeMount(async () => {
 
 })
@@ -322,7 +324,7 @@ async function clickTradesModal(param1, param2, param3) { //When we click on the
 
 }
 
-async function hideTradesModal() {
+async function hideTradesModal(param) {
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
         return
@@ -333,13 +335,26 @@ async function hideTradesModal() {
         }
         if (tradeSetupChanged.value) {
             await useUpdateSetups(true)
+            if (tradeSetup.pattern == null) {
+                param.pattern = null
+            }else{
+                param.patternName = patterns.filter(obj => obj.objectId == tradeSetup.pattern)[0].name
+                param.patternNameShort = patterns.filter(obj => obj.objectId == tradeSetup.pattern)[0].name.substr(0, 15) + "..."
+            }
+            if (tradeSetup.mistake == null) {
+                param.mistake = null
+            }else{
+                param.mistakeName = mistakes.filter(obj => obj.objectId == tradeSetup.mistake)[0].name
+                param.mistakeNameShort = mistakes.filter(obj => obj.objectId == tradeSetup.mistake)[0].name.substr(0, 15) + "..."
+            }  
+            param.note = tradeSetup.note
+            if (param.note != null) param.noteShort = tradeSetup.note.substr(0, 15) + "..."
         }
         if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
             await updateExcursions()
         }
         await (spinnerSetups.value = false)
         tradesModal.hide()
-
     }
 }
 
@@ -354,12 +369,20 @@ function resetExcursion() {
 }
 
 
-
 function filterPatterns(param, param2) {
-    let setup = setups.filter(obj => obj.tradeId == param)
+    console.log("filtering patterns")
+    let setup
+    for (let index = 0; index < setups.length; index++) {
+        const element = setups[index];
+        if (element.tradeId == param) {
+            setup = element
+        }
 
-    if (setup.length > 0 && (setup[0].pattern != null || setup[0].pattern != undefined)) {
-        let patternName = setup[0].pattern.name
+    }
+    //let setup = setups.filter(obj => obj.tradeId == param)
+
+    if (setup && setup.hasOwnProperty("pattern") && (setup.pattern != null || setup.pattern != undefined)) {
+        let patternName = setup.pattern.name
         if (param2 == "full") {
             return " | " + patternName
         } else {
@@ -371,10 +394,16 @@ function filterPatterns(param, param2) {
 }
 
 function filterMistakes(param, param2) {
-    let setup = setups.filter(obj => obj.tradeId == param)
+    let setup
+    for (let index = 0; index < setups.length; index++) {
+        const element = setups[index];
+        if (element.tradeId == param) {
+            setup = element
+        }
 
-    if (setup.length > 0 && (setup[0].mistake != null || setup[0].mistake != undefined)) {
-        let mistakeName = setup[0].mistake.name
+    }
+    if (setup && setup.hasOwnProperty("mistake") && (setup.mistake != null || setup.mistake != undefined)) {
+        let mistakeName = setup.mistake.name
         if (param2 == "full") {
             return " | " + mistakeName
         } else {
@@ -396,6 +425,32 @@ function filterNotes(param) {
     }
 }
 
+function filterRRR(param, param2, param3, param4) {
+    //console.log("filtering RRR")
+    let excursion = excursions.filter(obj => obj.tradeId == param)
+    if (excursion.length > 0 && (excursion[0].stopLoss != null || excursion[0].stopLoss != undefined)) {
+        let stopLoss = excursion[0].stopLoss
+        let entryPrice = param2
+        let exitPrice = param3
+        //console.log("entryPrice " + entryPrice)
+        //console.log("exitPrice " + exitPrice)
+        //console.log("stopLoss " + stopLoss)
+        let risk
+        let reward
+        if (param4 == "long") {
+            risk = stopLoss - entryPrice
+            reward = exitPrice - entryPrice
+        } else {
+            risk = entryPrice - stopLoss
+            reward = entryPrice - exitPrice
+        }
+
+        //console.log("risk " + risk)
+        //console.log("reward " + reward)
+        let RRR = risk / reward
+        return RRR
+    }
+}
 </script>
 
 <template>
@@ -531,10 +586,10 @@ function filterNotes(param) {
                                                             <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Sh(g)</th>
                                                             <th scope="col">P&L(n)</th>
+                                                            <th scope="col">RRR</th>
                                                             <th scope="col">Pattern</th>
                                                             <th scope="col">Mistake</th>
                                                             <th scope="col">Note</th>
-                                                            <!--<th scope="col">Video</th>-->
                                                             <th scope="col"></th>
                                                             <th scope="col"></th>
                                                         </tr>
@@ -562,15 +617,17 @@ function filterNotes(param) {
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
                                                             <td>
-                                                                {{ filterPatterns(trade.id) }}
-                                                            </td>
-                                                            <td>
-                                                                {{ filterMistakes(trade.id) }}
-                                                            </td>
-                                                            <td>
-                                                                {{ filterNotes(trade.id) }}
-                                                            </td>
 
+                                                            </td>
+                                                            <td>
+                                                                {{ trade.patternNameShort }}
+                                                            </td>
+                                                            <td>
+                                                                {{ trade.mistakeNameShort }}
+                                                            </td>
+                                                            <td>
+                                                                {{ trade.noteShort }}
+                                                            </td>
                                                             <td>
                                                                 <span
                                                                     v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == true">
@@ -646,9 +703,9 @@ function filterNotes(param) {
                                                         useHourMinuteFormat(screenshot.dateUnix)
                                                     }}</span>
 
-                                                    <span>{{ filterPatterns(screenshot.name, "full") }}</span>
+                                                    <span>{{ screenshot.patternName }}</span>
 
-                                                    <span>{{ filterMistakes(screenshot.name, "full") }}</span>
+                                                    <span>{{ screenshot.mistakeName }}</span>
 
                                                     <img v-bind:id="screenshot.objectId"
                                                         class="setupEntryImg mt-1 img-fluid"
@@ -826,7 +883,7 @@ function filterNotes(param) {
                                         v-bind:value="tradeSetup.note != null ? tradeSetup.note : ''"
                                         v-on:input="useTradeSetupChange($event.target.value, 'note', daily.dateUnix, daily.trades[tradeIndex].id, daily.trades[tradeIndex].entryTime)"></textarea>
                                 </div>
-                                
+
                                 <!-- Third line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <div class="row">
@@ -862,9 +919,9 @@ function filterNotes(param) {
                                         </div>
                                         <div class="col-4 text-center">
                                             <button v-if="saveButton" class="btn btn-outline-success btn-sm"
-                                                v-on:click="hideTradesModal">Close & Save</button>
+                                                v-on:click="hideTradesModal(daily.trades[tradeIndex])">Close & Save</button>
                                             <button v-else class="btn btn-outline-primary btn-sm"
-                                                v-on:click="hideTradesModal">Close</button>
+                                                v-on:click="hideTradesModal(daily.trades[tradeIndex])">Close</button>
                                         </div>
                                         <div v-if="daily.trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-2 text-end">

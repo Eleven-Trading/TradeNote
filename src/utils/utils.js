@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, currentDate } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, currentDate, spinnerSetups } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -830,30 +830,49 @@ export async function useSetValues() {
             localStorage.setItem('selectedAccounts', selectedAccounts.value)
             selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
         }
+        let selectedPatternsNull = Object.is(localStorage.getItem('selectedPatterns'), null)
+        let selectedMistakesNull = Object.is(localStorage.getItem('selectedMistakes'), null)
+        console.log("selectedPatternsNull "+selectedPatternsNull)
+        console.log("selectedMistakesNull "+selectedMistakesNull)
+        if (selectedPatternsNull || selectedMistakesNull) {
+            await Promise.all([useGetPatterns(), useGetMistakes()])
+            if (selectedPatternsNull) {
+                console.log("selected patterns is null ")
+                selectedPatterns.value.push("void")
+                let activePatterns = patterns.filter(obj => obj.active == true)
+                console.log("active Patterns " + JSON.stringify(activePatterns))
+                if (activePatterns) {
+                    activePatterns.forEach(element => {
+                        selectedPatterns.value.push(element.objectId)
+                    });
+                }
+                patterns.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
+                localStorage.setItem('selectedPatterns', selectedPatterns.value)
+                console.log("selectedPatterns " + JSON.stringify(selectedPatterns.value))
+            }
 
-        if (Object.is(localStorage.getItem('selectedPatterns'), null)) {
-            selectedPatterns.value.push("void")
-            await useGetPatterns() //This will just trigger the first time we login, when selectedPatterns is null
-            patterns.filter(obj => obj.active == true).forEach(element => {
-                selectedPatterns.value.push(element.objectId)
-            });
+            if (selectedMistakesNull) {
+                console.log("selected Mistakes is null ")
+                selectedMistakes.value.push("void")
+                await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
+                let activeMistakes = mistakes.filter(obj => obj.active == true)
+                console.log("active Mistakes " + JSON.stringify(activeMistakes))
+                if (activeMistakes) {
+                    activeMistakes.forEach(element => {
+                        selectedMistakes.value.push(element.objectId)
+                    });
+                }
 
-            localStorage.setItem('selectedPatterns', selectedPatterns.value)
+                mistakes.length = 0
+                localStorage.setItem('selectedMistakes', selectedMistakes.value)
+                console.log("selectedMistakes " + JSON.stringify(selectedMistakes.value))
+            }
+            
         }
 
-        if (Object.is(localStorage.getItem('selectedMistakes'), null)) {
-            selectedMistakes.value.push("void")
-            await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
-            mistakes.filter(obj => obj.active == true).forEach(element => {
-                selectedMistakes.value.push(element.objectId)
-            });
-            localStorage.setItem('selectedMistakes', selectedMistakes.value)
-        }
 
         amountCase.value = localStorage.getItem('selectedGrossNet')
         //console.log('amount case '+amountCase.value)
-        amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
-        currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
         resolve()
     })
 }

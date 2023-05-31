@@ -7,17 +7,16 @@ import { useGetSelectedRange } from './utils';
 export async function useGetPatterns() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting Patterns");
+        patterns.length = 0
         const parseObject = Parse.Object.extend("patterns");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.ascending("order");
         query.limit(queryLimit.value); // limit to at most 10 results
-        patterns.length = 0
         const results = await query.find();
         results.forEach(element => {
             patterns.push(JSON.parse(JSON.stringify(element)))
         });
-
         resolve()
     })
 }

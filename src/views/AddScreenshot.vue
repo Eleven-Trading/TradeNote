@@ -14,6 +14,7 @@ onBeforeMount(async () => {
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
 })
+currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
 
 let setupType = [{
     value: null,

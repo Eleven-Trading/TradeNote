@@ -44,6 +44,7 @@ export async function useGetFilteredTrades(param) {
                 temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
 
                 element.trades.forEach(element => {
+                    //console.log("element "+JSON.stringify(element))
                     //console.log("id " + element.id)
                     /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
                     //console.log(" element "+JSON.stringify(element))
@@ -52,18 +53,30 @@ export async function useGetFilteredTrades(param) {
                     /* We use if here but then conditional inside to check all possibilities */
               
                     let pattern
+                    let patternName
                     let mistake
+                    let mistakeName
                     // We need to include patterns and mistakes that are void or null
                     //console.log("setups "+JSON.stringify(setups))
-                    let setup = setups.filter(obj => obj.tradeId == element.id)
+                    let setup
+                        for (let index = 0; index < setups.length; index++) {
+                            const element2 = setups[index];
+                            if (element2.tradeId == element.id){
+                                setup = element2
+                            } 
+                            
+                        }
+                    //let setup = setups.filter(obj => obj.tradeId == element.id)
                     //console.log("setup "+JSON.stringify(setup))
                     //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
-                    if (setup.length > 0) {
+                    if (setup) {
                         //console.log("setup has length")
-                        if (setup[0].pattern) {
-                            let tempPattern = setup[0].pattern.objectId
+                        if (setup.pattern) {
+                            let tempPattern = setup.pattern.objectId
                             if (selectedPatterns.value.includes(tempPattern)) {
                                 pattern = tempPattern
+                                //console.log("setup pattern "+JSON.stringify(setup.pattern.name))
+                                patternName = setup.pattern.name
                             }
                             //else null and not void. However, if not present in setups table then we consider as void
                             /*else {
@@ -73,10 +86,11 @@ export async function useGetFilteredTrades(param) {
                             pattern = "void"
                         }
                         
-                        if (setup[0].mistake) {
-                            let tempMistake = setup[0].mistake.objectId
+                        if (setup.mistake) {
+                            let tempMistake = setup.mistake.objectId
                             if (selectedMistakes.value.includes(tempMistake)) {
                                 mistake = tempMistake
+                                mistakeName = setup.mistake.name
                             } 
                             //else null and not void
                             /*else {
@@ -122,6 +136,18 @@ export async function useGetFilteredTrades(param) {
                     //console.log(" pattern "+pattern)
                     //console.log(" Account "+element.account)
                     if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
+                        if (patternName != undefined){
+                            element.patternName = patternName
+                            element.patternNameShort = patternName.substr(0, 15) + "..."
+                        }
+                        if (mistakeName != undefined){
+                            element.mistakeName = mistakeName
+                            element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
+                        }
+                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined){
+                            element.note = setup.note
+                            element.noteShort = setup.note.substr(0, 15) + "..."
+                        }
                         temp.trades.push(element)
                         filteredTradesTrades.push(element)
                         //console.log(" -> Temp trades "+JSON.stringify(temp.trades))

@@ -6,6 +6,7 @@ import { useDateCalFormat, useInitQuill } from '../utils/utils';
 import { useUploadPlaybook } from '../utils/playbooks';
 
 let playbook = {} //this is first time or when load
+currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)

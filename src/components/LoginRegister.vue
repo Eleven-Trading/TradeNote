@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { pageId, timeZones } from '../stores/globals';
-import { useInitParse, usePageId } from '../utils/utils';
+import { getCurrentUser, useGetPeriods, useGetTimeZone, useInitParse, usePageId, useSetValues } from '../utils/utils';
 
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)
@@ -22,6 +22,10 @@ async function login() {
     try {
       console.log(" -> Parse logIn")
       await Parse.User.logIn(loginForm.username, loginForm.password)
+      getCurrentUser()
+      useGetTimeZone()
+      useGetPeriods()
+      await useSetValues()
       console.log("Hooray! You are logged in")
       signingUp.value = false
       window.location.replace("/dashboard");
@@ -87,7 +91,7 @@ async function updateSchema() {
   <main class="container" id="registerSignup">
     <form class="text-center col-md-4 offset-md-4 mt-5" v-on:submit.prevent="pageId == 'login' ? login() : register()">
       <img class="mb-4" src="">
-      <h1 class="h3 mb-3 fw-normal">{{ pageId == 'login' ? "Please Login" : "Please Register" }}</h1>
+      <h1 class="h3 mb-3 fw-normal">{{ pageId == 'login' ? "Please Log in" : "Please Register" }}</h1>
       <input type="email" id="inputEmail" class="form-control" placeholder="Email" required="" autofocus=""
         v-model="loginForm.username">
       <input type="password" id="inputPassword" class="mt-1 form-control" placeholder="Password" required=""
@@ -98,7 +102,8 @@ async function updateSchema() {
           <option v-for="item in timeZones" :key="item.value" :value="item">{{ item }}</option>
         </select>
       </div>
-      <button class="mt-3 w-100 btn btn-lg btn-primary" type="submit" :disabled="signingUp">{{ pageId == 'login' ? 'SignIn' : 'Register' }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
+      <button class="mt-3 w-100 btn btn-lg btn-primary" type="submit" :disabled="signingUp">{{ pageId == 'login' ?
+        "Log&nbsp;in" : "Register" }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
           aria-hidden="true"></span></button>
     </form>
     <div class="text-center mt-3"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :

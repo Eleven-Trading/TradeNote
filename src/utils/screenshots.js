@@ -16,6 +16,7 @@ export async function useGetScreenshots(param) {
     //console.log("patterns "+JSON.stringify(patterns))
     //console.log("patternsmistakes "+JSON.stringify(setups))
     let activePatterns = []
+
     patterns.filter(obj => obj.active == true).forEach(element => {
         activePatterns.push(element.objectId)
     });
@@ -83,6 +84,25 @@ export async function useGetScreenshots(param) {
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
                     screenshots.length = 0
                     parsedResult.forEach(element => {
+                        let setup
+                        for (let index = 0; index < setups.length; index++) {
+                            const element2 = setups[index];
+                            if (element2.tradeId == element.name){
+                                setup = element2
+                            } 
+                            
+                        }
+                        //let setup = setups.filter(obj => obj.tradeId == element.name )
+                        if (setup){
+                            if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
+                                element.patternName = setup.pattern.name
+                            }
+                            if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
+                                //console.log("setup mistake "+JSON.stringify(setup[0]))
+                                element.mistakeName = setup.mistake.name
+                            }
+                            //console.log(" patternname "+element.patternName)
+                        } 
                         screenshots.push(element)
                     });
 

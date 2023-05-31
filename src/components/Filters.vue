@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital} from "../stores/globals"
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
 
@@ -206,7 +206,7 @@ async function saveFilter() {
     localStorage.setItem('selectedGrossNet', selectedGrossNet.value)
     amountCase.value = selectedGrossNet.value
     amountCapital.value = selectedGrossNet.value.charAt(0).toUpperCase() + selectedGrossNet.value.slice(1)
-    console.log("filter amountCapital " + amountCapital.value)
+    //console.log("filter amountCapital " + amountCapital.value)
 
     localStorage.setItem('selectedPositions', selectedPositions.value)
 
@@ -262,7 +262,7 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('periodRange')">
-                        {{ selectedPeriodRange.label }}
+                        {{ selectedPeriodRange.label }} |
                         <span v-show="selectedPeriodRange.value == 'custom'"> range |</span>
                     </span>
 
@@ -270,8 +270,8 @@ async function saveFilter() {
                         {{ useMonthFormat(selectedMonth.start) }} |
                     </span>
 
-                    <span v-show="filters[pageId].includes('grossNet')">
-                        {{ selectedGrossNet.charAt(0).toUpperCase() + selectedGrossNet.slice(1) }} data |
+                    <span v-show="filters[pageId].includes('grossNet')">{{ selectedGrossNet.charAt(0).toUpperCase() +
+                        selectedGrossNet.slice(1) }} data |
                     </span>
 
                     <span v-show="filters[pageId].includes('positions')">
