@@ -74,6 +74,10 @@ main {
     background-color: var(--black);
 }
 
+input::placeholder, textarea::placeholder {
+    color: var(--white-65) !important;
+}
+
 .form-control {
     background-color: var(--black-bg-7);
     color: var(--white-87);
@@ -100,8 +104,7 @@ main {
 }
 
 input[type="datetime-local"],
-input[type="date"], input[type="month"] {
-    background: transparent;
+input[type="date"], input[type="month"]{
     color: var(--white-87);
     border: 1px solid var(--white-38);
 }

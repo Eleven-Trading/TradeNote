@@ -54,7 +54,7 @@ function screenshotUpdateDate(event) {
 }
 
 async function getScreenshotToEdit(param) {
-    console.log("getting screenshot to edit")
+    console.log(" -> Getting screenshot to edit "+param)
     if (!param) {
         return
     }
@@ -74,18 +74,23 @@ async function getScreenshotToEdit(param) {
         } else {
             screenshot.type = "setup"
         }
+        for (let index = 0; index < setups.length; index++) {
+            const element = setups[index];
+            if (element.tradeId == screenshot.name){
+                //console.log("element "+JSON.stringify(element))
+                //console.log("pattern "+element.pattern.objectId)
+                //console.log("mistake "+element.mistake.objectId)
+                if (element.pattern != null){
+                    screenshot.pattern = element.pattern.objectId  
+                    tradeSetup.pattern = element.pattern.objectId  
+                } 
+                if (element.mistake != null){
+                    screenshot.mistake = element.mistake.objectId
+                    tradeSetup.mistake = element.mistake.objectId
+                } 
+            }
 
-        let index = setups.findIndex(obj => obj.tradeId == screenshot.name)
-        console.log("index "+index)
-
-        if (index != -1) {
-            if (setups[index].hasOwnProperty('pattern') && setups[index].pattern != null && setups[index].pattern != undefined && setups[index].pattern.hasOwnProperty('objectId')) screenshot.pattern = setups[index].pattern.objectId
-
-            if (setups[index].hasOwnProperty('mistake') && setups[index].mistake != null && setups[index].mistake != undefined && setups[index].mistake.hasOwnProperty('objectId')) screenshot.mistake = setups[index].mistake.objectId
-
-            //updating patterns and mistakes used in dailyMixin
-            tradeSetup.pattern = screenshot.pattern
-            tradeSetup.mistake = screenshot.mistake
+            
         }
 
     } else {

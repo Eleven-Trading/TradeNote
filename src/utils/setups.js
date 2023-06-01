@@ -1,4 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes, itemToEditId } from '../stores/globals';
 import { useUpdateTrades } from './trades'
 import { useGetSelectedRange } from './utils';
 
@@ -17,7 +17,7 @@ export async function useGetPatterns() {
         const results = await query.find();
         results.forEach(element => {
             const parsedElement = JSON.parse(JSON.stringify(element))
-            if(parsedElement.active == true){
+            if (parsedElement.active == true) {
                 activePatterns.push(parsedElement)
             }
             patterns.push(parsedElement)
@@ -39,7 +39,7 @@ export async function useGetMistakes() {
         const results = await query.find();
         results.forEach(element => {
             const parsedElement = JSON.parse(JSON.stringify(element))
-            if(parsedElement.active == true){
+            if (parsedElement.active == true) {
                 activeMistakes.push(parsedElement)
             }
             mistakes.push(parsedElement)
@@ -50,25 +50,25 @@ export async function useGetMistakes() {
 
 export async function useGetSetups(param) {
     return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting setups");
         let startD = selectedRange.value.start
         let endD = selectedRange.value.end
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination.value);
         //console.log(" selected start date " + selectedMonth.start.value)
         const parseObject = Parse.Object.extend("setups");
         const query = new Parse.Query(parseObject);
-        //if (pageId.value == "screenshots" ||  pageId.value == "addScreenshot") query.containedIn("tradeId", screenshotsNames.value);
         query.include("pattern")
         query.include("mistake")
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
+        if (pageId.value == "diary") {
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+        }
         query.limit(queryLimit.value)
         const results = await query.find();
         setups.length = 0
         results.forEach(element => {
             setups.push(JSON.parse(JSON.stringify(element)))
         });
-        //console.log("setups "+JSON.stringify(setups))
+        //console.log("setups " + JSON.stringify(setups))
         resolve()
     })
 }
