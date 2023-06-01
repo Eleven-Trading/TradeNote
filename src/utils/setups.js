@@ -1,4 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange } from '../stores/globals';
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes } from '../stores/globals';
 import { useUpdateTrades } from './trades'
 import { useGetSelectedRange } from './utils';
 
@@ -8,6 +8,7 @@ export async function useGetPatterns() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting Patterns");
         patterns.length = 0
+        activePatterns.length = 0
         const parseObject = Parse.Object.extend("patterns");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
@@ -15,7 +16,11 @@ export async function useGetPatterns() {
         query.limit(queryLimit.value); // limit to at most 10 results
         const results = await query.find();
         results.forEach(element => {
-            patterns.push(JSON.parse(JSON.stringify(element)))
+            const parsedElement = JSON.parse(JSON.stringify(element))
+            if(parsedElement.active == true){
+                activePatterns.push(parsedElement)
+            }
+            patterns.push(parsedElement)
         });
         resolve()
     })
@@ -24,15 +29,20 @@ export async function useGetPatterns() {
 export async function useGetMistakes() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting Mistakes");
+        mistakes.length = 0
+        activeMistakes.length = 0
         const parseObject = Parse.Object.extend("mistakes");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.ascending("order");
         query.limit(queryLimit.value); // limit to at most 10 results
-        mistakes.length = 0
         const results = await query.find();
         results.forEach(element => {
-            mistakes.push(JSON.parse(JSON.stringify(element)))
+            const parsedElement = JSON.parse(JSON.stringify(element))
+            if(parsedElement.active == true){
+                activeMistakes.push(parsedElement)
+            }
+            mistakes.push(parsedElement)
         });
         resolve()
     })
@@ -165,7 +175,7 @@ export async function useUpdateSetups(param) {
 export async function useDeleteSetup(param1, param2) {
     console.log("\nDELETING SETUP")
     tradeSetupDateUnixDay.value = param1 // not used here but when when deleting trades (updateTrades(true))
-    tradeSetupId.value = param2
+    tradeSetupId.value = param2.id
     spinnerSetups.value = true
     tradeSetupChanged.value = true
     saveButton.value = true
@@ -180,6 +190,15 @@ export async function useDeleteSetup(param1, param2) {
         if (results) {
             results.destroy().then(async () => {
                 console.log('  --> Deleted setups with id ' + results.id)
+                param2.patternName = null
+                param2.patternNameShort = null
+
+                param2.mistakeName = null
+                param2.mistakeNameShort = null
+
+                param2.note = null
+                param2.noteShort = null
+
                 useResetSetup()
                 await useGetSelectedRange()
                 await useGetSetups()

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital } from "../stores/globals"
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, activeMistakes, activePatterns } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
 
@@ -289,13 +289,13 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('patterns')">
-                        <span v-if="patterns.filter(obj => obj.active == true).length + 1 == selectedPatterns.length">All
+                        <span v-if="activePatterns.length + 1 == selectedPatterns.length">All
                             patterns |</span>
                         <span v-else>Selected patterns |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('mistakes')">
-                        <span v-if="mistakes.filter(obj => obj.active == true).length + 1 == selectedMistakes.length">All
+                        <span v-if="activeMistakes.length + 1 == selectedMistakes.length">All
                             mistakes <span v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
                         <span v-else>Selected mistakes <span
                                 v-show="filters[pageId].includes('plSatisfaction')">|</span></span>

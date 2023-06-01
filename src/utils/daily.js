@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedMonth, selectedRange } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedMonth, selectedRange, showRRR } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -50,9 +50,12 @@ export async function useGetExcursions() {
         excursions.length = 0
         const results = await query.find();
         results.forEach(element => {
-            excursions.push(JSON.parse(JSON.stringify(element)))
+            const parseElement = JSON.parse(JSON.stringify(element))
+            if(parseElement.stopLoss != null || parseElement.stopLoss != undefined){
+                showRRR.value = true
+            }
+            excursions.push(parseElement)
         });
-
         //console.log(" -> excursions " + JSON.stringify(excursions))
         resolve()
     })

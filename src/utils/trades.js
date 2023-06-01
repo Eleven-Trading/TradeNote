@@ -137,11 +137,11 @@ export async function useGetFilteredTrades(param) {
                     //console.log(" Account "+element.account)
                     if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
                         if (patternName != undefined){
-                            element.patternName = patternName
+                            element.patternName = " | "+patternName
                             element.patternNameShort = patternName.substr(0, 15) + "..."
                         }
                         if (mistakeName != undefined){
-                            element.mistakeName = mistakeName
+                            element.mistakeName = " | "+mistakeName
                             element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
                         }
                         if (setup && setup.hasOwnProperty("note") && setup.note != undefined){

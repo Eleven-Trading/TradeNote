@@ -1,5 +1,5 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged } from '../stores/globals.js'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes } from '../stores/globals.js'
 
 let screenshotsQueryLimit = 4
 
@@ -15,16 +15,6 @@ export async function useGetScreenshots(param) {
     //console.log(" -> Selected patterns " + selectedPatterns.value)
     //console.log("patterns "+JSON.stringify(patterns))
     //console.log("patternsmistakes "+JSON.stringify(setups))
-    let activePatterns = []
-
-    patterns.filter(obj => obj.active == true).forEach(element => {
-        activePatterns.push(element.objectId)
-    });
-
-    let activeMistakes = []
-    mistakes.filter(obj => obj.active == true).forEach(element => {
-        activeMistakes.push(element.objectId)
-    });
 
     //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
     let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x));
@@ -53,7 +43,7 @@ export async function useGetScreenshots(param) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
-        if(pageId.value == "screenshots"){
+        if (pageId.value == "screenshots") {
             query.exclude("originalBase64");
         }
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
@@ -83,34 +73,30 @@ export async function useGetScreenshots(param) {
                     //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
                     screenshots.length = 0
-                    parsedResult.forEach(element => {
-                        let setup
-                        for (let index = 0; index < setups.length; index++) {
-                            const element2 = setups[index];
-                            if (element2.tradeId == element.name){
-                                setup = element2
-                            } 
-                            
-                        }
-                        //let setup = setups.filter(obj => obj.tradeId == element.name )
-                        if (setup){
-                            if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
-                                element.patternName = setup.pattern.name
-                            }
-                            if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
-                                //console.log("setup mistake "+JSON.stringify(setup[0]))
-                                element.mistakeName = setup.mistake.name
-                            }
-                            //console.log(" patternname "+element.patternName)
-                        } 
-                        screenshots.push(element)
-                    });
-
-                } else {
-                    parsedResult.forEach(element => {
-                        screenshots.push(element)
-                    });
                 }
+                parsedResult.forEach(element => {
+                    let setup
+                    for (let index = 0; index < setups.length; index++) {
+                        const element2 = setups[index];
+                        if (element2.tradeId == element.name) {
+                            setup = element2
+                        }
+
+                    }
+                    //let setup = setups.filter(obj => obj.tradeId == element.name )
+                    if (setup) {
+                        if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
+                            element.patternName = " | "+setup.pattern.name
+                        }
+                        if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
+                            //console.log("setup mistake "+JSON.stringify(setup[0]))
+                            element.mistakeName = " | "+setup.mistake.name
+                        }
+                        //console.log(" patternname " + element.patternName)
+                    }
+                    screenshots.push(element)
+                });
+
             } else {
                 endOfList.value = true
             }

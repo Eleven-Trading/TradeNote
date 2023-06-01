@@ -57,6 +57,9 @@ export const updateMistakeActive = ref(null)
 export const newMistakeName = ref(null)
 export const newMistakeDescription = ref(null)
 
+export const activePatterns = reactive([])
+export const activeMistakes = reactive([])
+
 
 
 /**************************************
@@ -131,6 +134,9 @@ export const excursion = reactive({
     maePrice: null,
     mfePrice: null
 })
+
+export const showRRR = ref(false)
+
 export const tradeSatisfactionChanged = ref(false)
 export const tradeSatisfactionDateUnix = ref()
 export const tradeSatisfactionId = ref()

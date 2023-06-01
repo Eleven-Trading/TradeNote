@@ -64,16 +64,9 @@ onMounted(async () => {
                                         : 'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
                                     <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix)
                                     }}</span>
-                                    <span v-if="setups.findIndex(obj => obj.tradeId == screenshot.name) != -1">
-                                        <span
-                                            v-if="setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('pattern') && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern != null && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern.hasOwnProperty('name')">
-                                            | {{ setups[setups.findIndex(obj =>
-                                                obj.tradeId == screenshot.name)].pattern.name }}</span>
-
-                                        <span
-                                            v-if="setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].hasOwnProperty('mistake') && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].mistake != null && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].mistake.hasOwnProperty('name')">
-                                            | {{ setups[setups.findIndex(obj =>
-                                                obj.tradeId == screenshot.name)].mistake.name }}</span></span>
+                                    <span>{{ screenshot.patternName }}</span>
+                                    <span>{{ screenshot.mistakeName }}</span>
+                                    
                                 </span>
                                 <span class="col mb-2 ms-auto text-end">
                                     <i class="uil uil-expand-arrows-alt pointerClass me-4"
