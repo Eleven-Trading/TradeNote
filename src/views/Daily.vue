@@ -445,11 +445,11 @@ function filterRRR(param, param2, param3, param4) {
 <template>
     <SpinnerLoadingPage />
     <div v-if="!spinnerLoadingPage && filteredTrades" class="row mt-2 mb-2">
+        <Filters />
         <div v-if="!hasData">
             <NoData />
         </div>
         <div v-show="hasData">
-            <Filters />
             showRRR {{ showRRR }}
             <!-- added v-if instead v-show because need to wait for patterns to load -->
             <div class="row">

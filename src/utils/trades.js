@@ -198,6 +198,8 @@ export async function useGetTrades(){
             //spinnerLoadingPageText.value = "Getting trades from ParseDB"
             let startD = selectedRange.value.start
             let endD = selectedRange.value.end
+            //console.log("start D "+startD)
+            //console.log("end D "+endD)
             const parseObject = Parse.Object.extend("trades");
             const query = new Parse.Query(parseObject)
             query.equalTo("user", Parse.User.current());

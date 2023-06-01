@@ -18,11 +18,11 @@ onBeforeMount(async () => {
 <template>
     <SpinnerLoadingPage />
     <div v-show="!spinnerLoadingPage" class="row mt-2 mb-2">
+        <Filters />
         <div v-if="filteredTrades.length == 0">
             <NoData />
         </div>
         <div v-else>
-            <Filters />
             <div>
                 <!-- ============ CALENDAR ============ -->
                 <div v-show="calendarData" class="col-12 text-center mt-2 align-self-start">

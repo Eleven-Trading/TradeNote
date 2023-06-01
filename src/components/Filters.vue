@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily } from "../utils/utils.js";
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, activeMistakes, activePatterns } from "../stores/globals"
+import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, activeMistakes, activePatterns, hasData } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
 
@@ -196,7 +196,7 @@ async function saveFilter() {
     }
 
 
-    if (pageId.value == "dashboard" && selectedDateRange.value.end >= selectedDateRange.value.start) {
+    if (pageId.value == "dashboard" && selectedDateRange.value.end >= selectedDateRange.value.start && hasData.value) {
         useECharts("clear")
     }
 

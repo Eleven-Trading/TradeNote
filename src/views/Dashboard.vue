@@ -57,11 +57,11 @@ useMountDashboard()
     <div class="row mt-2">
 
         <div v-show="!spinnerLoadingPage">
+            <Filters />
             <div v-if="!hasData">
                 <NoData />
             </div>
             <div v-else>
-                <Filters />
                 <nav>
                     <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
                         <button v-for="dashTab in dashTabs" :key="dashTab.id"
