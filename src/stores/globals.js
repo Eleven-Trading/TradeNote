@@ -136,8 +136,6 @@ export const excursion = reactive({
     mfePrice: null
 })
 
-export const showRRR = ref(false)
-
 export const tradeSatisfactionChanged = ref(false)
 export const tradeSatisfactionDateUnix = ref()
 export const tradeSatisfactionId = ref()

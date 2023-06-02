@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedMonth, selectedRange, showRRR } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedRange } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -51,9 +51,6 @@ export async function useGetExcursions() {
         const results = await query.find();
         results.forEach(element => {
             const parseElement = JSON.parse(JSON.stringify(element))
-            if(parseElement.stopLoss != null || parseElement.stopLoss != undefined){
-                showRRR.value = true
-            }
             excursions.push(parseElement)
         });
         //console.log(" -> excursions " + JSON.stringify(excursions))

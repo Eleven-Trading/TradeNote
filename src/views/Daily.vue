@@ -4,7 +4,7 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton, activePatterns, activeMistakes, showRRR, itemTradeIndex, tradeIndex, tradeIndexPrevious } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange, useTwoDecFormat } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup } from '../utils/setups'
@@ -345,33 +345,6 @@ function resetExcursion() {
 
 }
 
-
-function filterRRR(param, param2, param3, param4) {
-    //console.log("param "+param)
-    let excursion = excursions.filter(obj => obj.tradeId == param)
-    if (excursion.length > 0 && (excursion[0].stopLoss != null || excursion[0].stopLoss != undefined)) {
-        let stopLoss = excursion[0].stopLoss
-        let entryPrice = param2
-        let exitPrice = param3
-        //console.log("entryPrice " + entryPrice)
-        //console.log("exitPrice " + exitPrice)
-        //console.log("stopLoss " + stopLoss)
-        let risk
-        let reward
-        if (param4 == "long") {
-            risk = stopLoss - entryPrice
-            reward = exitPrice - entryPrice
-        } else {
-            risk = entryPrice - stopLoss
-            reward = entryPrice - exitPrice
-        }
-
-        //console.log("risk " + risk)
-        //console.log("reward " + reward)
-        let RRR = risk / reward
-        return useTwoDecFormat(RRR)
-    }
-}
 </script>
 
 <template>
@@ -382,7 +355,6 @@ function filterRRR(param, param2, param3, param4) {
             <NoData />
         </div>
         <div v-show="hasData">
-            showRRR {{ showRRR }}
             <!-- added v-if instead v-show because need to wait for patterns to load -->
             <div class="row">
                 <!-- ============ CARD ============ -->
@@ -506,7 +478,6 @@ function filterRRR(param, param2, param3, param4) {
                                                             <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Sh(g)</th>
                                                             <th scope="col">P&L(n)</th>
-                                                            <th v-if="showRRR" scope="col">RRR</th>
                                                             <th scope="col">Pattern</th>
                                                             <th scope="col">Mistake</th>
                                                             <th scope="col">Note</th>
@@ -536,10 +507,6 @@ function filterRRR(param, param2, param3, param4) {
                                                             <td
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
-                                                            <td v-if="showRRR">
-                                                                {{ filterRRR(trade.id, trade.entryPrice, trade.exitPrice,
-                                                                    trade.strategy) }}
-                                                            </td>
                                                             <td>
                                                                 {{ trade.patternNameShort }}
                                                             </td>

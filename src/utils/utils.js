@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, currentDate, spinnerSetups, showRRR } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -706,7 +706,6 @@ export async function useMountDaily() {
     console.log("\MOUNTING DAILY")
     await console.time("  --> Duration mount daily");
     spinnerLoadingPage.value = true
-    showRRR.value = false
     await useGetSelectedRange()
     await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
     await useGetFilteredTrades()
@@ -714,7 +713,6 @@ export async function useMountDaily() {
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
     await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
-    console.log(" -> Show RRR: "+showRRR.value)
     await (renderingCharts.value = false)
     
     //useInitPopover()
