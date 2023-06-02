@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, tradeSetup, timeZoneTrade, renderData } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade, renderData } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
 import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'
@@ -82,11 +82,9 @@ async function getScreenshotToEdit(param) {
                 //console.log("mistake "+element.mistake.objectId)
                 if (element.pattern != null){
                     screenshot.pattern = element.pattern.objectId  
-                    tradeSetup.pattern = element.pattern.objectId  
                 } 
                 if (element.mistake != null){
                     screenshot.mistake = element.mistake.objectId
-                    tradeSetup.mistake = element.mistake.objectId
                 } 
             }
 

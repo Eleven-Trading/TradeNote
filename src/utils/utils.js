@@ -708,14 +708,15 @@ export async function useMountDaily() {
     spinnerLoadingPage.value = true
     showRRR.value = false
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
+    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
     await useGetFilteredTrades()
     await (spinnerLoadingPage.value = false)
-    useInitTab("daily")
     await console.timeEnd("  --> Duration mount daily")
-    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetSatisfactions(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    useInitTab("daily")
+    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
     console.log(" -> Show RRR: "+showRRR.value)
     await (renderingCharts.value = false)
+    
     //useInitPopover()
 
 

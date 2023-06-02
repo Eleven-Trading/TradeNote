@@ -1,5 +1,5 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, selectedMonth, tradeSetupDateUnixDay, tradeSatisfactionDateUnix, tradeSetupChanged, tradeSatisfactionChanged, tradeExcursionChanged, tradeSetupId, tradeSatisfactionId, tradeExcursionId, excursion, spinnerSetups, tradeSetup, tradeExcursionDateUnix, hasData, setups } from "../stores/globals"
-import { useMountDashboard, useMountDaily, useMountCalendar, useGetSelectedRange } from "./utils";
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray } from "../stores/globals"
+import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
 let trades = []
@@ -34,6 +34,7 @@ export async function useGetFilteredTrades(param) {
             //console.log("param1 "+JSON.stringify(param1))
             if (param1.length > 0) hasData.value = true //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
+                //console.log(" -> Looping "+element.dateUnix)
                 //console.log(" element "+JSON.stringify(element))
                 let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                 temp.trades = []
@@ -42,6 +43,17 @@ export async function useGetFilteredTrades(param) {
                 temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
                 temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
                 temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
+
+                //Daily satisfaction
+                temp.satisfaction = null
+                for (let index = 0; index < satisfactionArray.length; index++) {
+                    const el = satisfactionArray[index];
+                    if (el.dateUnix == element.dateUnix){
+                        //console.log("satisfaction "+el.satisfaction)
+                        temp.satisfaction = el.satisfaction
+                    }
+                }
+                //console.log("temp "+JSON.stringify(temp))
 
                 element.trades.forEach(element => {
                     //console.log("element "+JSON.stringify(element))
@@ -105,42 +117,25 @@ export async function useGetFilteredTrades(param) {
                         mistake = "void"  
                     }
 
-                    /*if (element.hasOwnProperty('setup')) {
-                        if (element.setup.pattern == null) {
-                            pattern = "void"
-                        } else {
-                            // If they are not null, it may happen that the pattern or mistake has been deleted. So we make sure to search for pattern that are only in the filtered array. Or else, we include them using void. 
-                            if (selectedPatterns.value.includes(element.setup.pattern)) {
-                                pattern = element.setup.pattern
-                            } else {
-                                pattern = "void"
-                            }
-
+                    let tradeSatisfaction = null
+                    for (let index = 0; index < satisfactionTradeArray.length; index++) {
+                        const el = satisfactionTradeArray[index];
+                        if (el.tradeId == element.id){
+                            tradeSatisfaction = el.satisfaction
                         }
-
-                        if (element.setup.mistake == null) {
-                            mistake = "void"
-                        } else {
-                            if (selectedMistakes.value.includes(element.setup.mistake)) {
-                                mistake = element.setup.mistake
-                            } else {
-                                mistake = "void"
-                            }
-                        }
-                    } else {
-                        pattern = "void"
-                        mistake = "void"
-                    }*/
+                    }
 
                     //console.log(" selected patterns "+selectedPatterns.value)
                     //console.log(" pattern "+pattern)
                     //console.log(" Account "+element.account)
                     if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
                         if (patternName != undefined){
+                            element.pattern = pattern
                             element.patternName = " | "+patternName
                             element.patternNameShort = patternName.substr(0, 15) + "..."
                         }
                         if (mistakeName != undefined){
+                            element.mistake = mistake
                             element.mistakeName = " | "+mistakeName
                             element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
                         }
@@ -148,6 +143,9 @@ export async function useGetFilteredTrades(param) {
                             element.note = setup.note
                             element.noteShort = setup.note.substr(0, 15) + "..."
                         }
+                        
+                        element.satisfaction = tradeSatisfaction
+
                         temp.trades.push(element)
                         filteredTradesTrades.push(element)
                         //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
@@ -182,7 +180,7 @@ export async function useGetFilteredTrades(param) {
             return b.dateUnix - a.dateUnix
         })
         //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
-        console.log("\nFinished getting filtered trades\n\n")
+        //console.log("\nFinished getting filtered trades\n\n")
         resolve()
     })
 }
@@ -1172,84 +1170,4 @@ export async function useRefreshTrades() {
     } else {
         window.location.href = "/dashboard"
     }
-}
-
-//used in Dialy and screenshots
-export async function useUpdateTrades(param3) {
-    //console.log(" param1 " + param1 + " param2 " + param2 + " param3 " + param3)
-    //spinnerSetupsText.value = "Updating trades"
-    //query trade to update
-    //console.log("date unix "+param1+" is type "+typeof(videoToLoad.value)+" and trade id "+param)
-    console.log("\nUPDATING TRADES IN PARSE DB")
-    return new Promise(async (resolve, reject) => {
-        const parseObject = Parse.Object.extend("trades");
-        const query = new Parse.Query(parseObject);
-
-        if (tradeSetupChanged.value) {
-            query.equalTo("dateUnix", tradeSetupDateUnixDay.value)
-        }
-        if (tradeSatisfactionChanged.value) {
-            query.equalTo("dateUnix", tradeSatisfactionDateUnix.value)
-        }
-        if (tradeExcursionChanged.value) {
-            query.equalTo("dateUnix", tradeExcursionDateUnix.value)
-        }
-
-        const results = await query.first();
-        if (results) {
-            //console.log("result from query " + JSON.stringify(results))
-            let objectResults = JSON.parse(JSON.stringify(results))
-            let arrayTrades = objectResults.trades
-            let id
-            if (tradeSetupChanged.value) id = tradeSetupId.value
-            if (tradeSatisfactionChanged.value) id = tradeSatisfactionId.value
-            if (tradeExcursionChanged.value) id = tradeExcursionId.value
-
-            var tradeIndex = arrayTrades.findIndex(f => f.id == id)
-            console.log(" -> Updating trade with id " + id)
-            if (param3 == true) { //Delete == true
-                arrayTrades[tradeIndex].setup = {}
-            } else {
-                if (tradeSetupChanged.value) {
-                    console.log("  --> Updating setup")
-                    arrayTrades[tradeIndex].setup = {
-                        pattern: tradeSetup.pattern,
-                        mistake: tradeSetup.mistake,
-                        note: tradeSetup.note
-                    }
-                }
-                if (tradeSatisfactionChanged.value) {
-                    console.log("  --> Updating satisfaction")
-                    arrayTrades[tradeIndex].satisfaction = tradeSatisfaction.value
-                }
-                if (tradeExcursionChanged.value) {
-                    console.log("  --> Updating excursion")
-                    arrayTrades[tradeIndex].excursion = {
-                        stopLoss: excursion.stopLoss,
-                        maePrice: excursion.maePrice,
-                        mfePrice: excursion.mfePrice
-                    }
-                }
-
-            }
-            //console.log("result after " + JSON.stringify(arrayTrades)+" type "+typeof(arrayTrades))
-            results.set("trades", arrayTrades)
-            results.save().then(async () => {
-                console.log(' -> Updated trades with id ' + results.id)
-                //await (spinnerSetupsText.value = "Updated trade")
-                spinnerSetups.value = false
-                resolve()
-
-            })
-        } else {
-            if (pageId.value == "daily") {
-
-            } else {
-                console.log(" -> Query in trades DB did not return any results")
-            }
-            spinnerSetups.value = false
-            resolve()
-        }
-
-    })
 }

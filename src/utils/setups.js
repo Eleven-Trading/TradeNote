@@ -1,5 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetup, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes, itemToEditId } from '../stores/globals';
-import { useUpdateTrades } from './trades'
+import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes, itemToEditId, filteredTrades, itemTradeIndex, tradeIndex, tradeIndexPrevious, screenshot } from '../stores/globals';
 import { useGetSelectedRange } from './utils';
 
 
@@ -75,33 +74,49 @@ export async function useGetSetups(param) {
 
 export function useTradeSetupChange(param1, param2, param3, param4, param5) {
     //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
-    if (param2 == "pattern") {
-        tradeSetup.pattern = param1
-    }
-    if (param2 == "mistake") {
-        tradeSetup.mistake = param1
-    }
-    if (param2 == "note") {
-        tradeSetup.note = param1
-    }
+
     if (pageId.value == "daily") {
+        if (param2 == "pattern") {
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = param1
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternName = patterns.filter(obj => obj.objectId == param1)[0].name
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternNameShort = patterns.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
+        }
+        if (param2 == "mistake") {
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistake = param1
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeName = mistakes.filter(obj => obj.objectId == param1)[0].name
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeNameShort = mistakes.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
+        }
+        if (param2 == "note") {
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].note = param1
+            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = param1.substr(0, 15) + "..."
+        }
+
         tradeSetupDateUnixDay.value = param3
         tradeSetupId.value = param4
         tradeSetupDateUnix.value = param5
     } // else in Screenhsot mixin, we define them on edit
 
-    //console.log("tradesetup in change " + JSON.stringify(tradeSetup))
+    if (pageId.value == "addScreenshot") {
+        if (param2 == "pattern") {
+            screenshot.pattern = param1
+        }
+        if (param2 == "mistake") {
+            screenshot.mistake = param1
+        }
+    }
+
     tradeSetupChanged.value = true
     saveButton.value = true
 
 }
 
-export async function useUpdateSetups(param) {
+export async function useUpdateSetups() {
     console.log("\nUPDATING OR SAVING SETUPS IN PARSE DB")
     return new Promise(async (resolve, reject) => {
+        let temp
 
-        if (tradeSetup.pattern != null || tradeSetup.mistake != null || tradeSetup.note != null) {
-            //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + param2)
+        const upsertSetups = async () => {
+            console.log("pattern " + temp.pattern)
             spinnerSetups.value = true
             //tradeSetupChanged.value = true
             const parseObject = Parse.Object.extend("setups");
@@ -113,15 +128,15 @@ export async function useUpdateSetups(param) {
             if (results) {
                 console.log(" -> Updating setups")
                 spinnerSetupsText.value = "Updating"
-                results.set("pattern", tradeSetup.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: tradeSetup.pattern })
-                results.set("mistake", tradeSetup.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: tradeSetup.mistake })
-                results.set("note", tradeSetup.note)
+                results.set("pattern", temp.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: temp.pattern })
+                results.set("mistake", temp.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: temp.mistake })
+                results.set("note", temp.note)
 
                 results.save()
                     .then(async () => {
                         console.log(' -> Updated setups with id ' + results.id)
-                        await useGetSelectedRange()
-                        await useGetSetups()
+                        //await useGetSelectedRange()
+                        //await useGetSetups()
                         //spinnerSetupsText.value = "Updated setup"
                     }, (error) => {
                         console.log('Failed to create new object, with error code: ' + error.message);
@@ -135,14 +150,14 @@ export async function useUpdateSetups(param) {
 
                 const object = new parseObject();
                 object.set("user", Parse.User.current())
-                object.set("pattern", { __type: "Pointer", className: "patterns", objectId: tradeSetup.pattern })
-                if (tradeSetup.mistake != null) {
-                    object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: tradeSetup.mistake })
+                object.set("pattern", { __type: "Pointer", className: "patterns", objectId: temp.pattern })
+                if (temp.mistake != null) {
+                    object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: temp.mistake })
                 } else {
                     object.set("mistake", null)
                 }
-                if (tradeSetup.note != null) {
-                    object.set("note", tradeSetup.note)
+                if (temp.note != null) {
+                    object.set("note", temp.note)
                 } else {
                     object.set("note", null)
                 }
@@ -154,10 +169,6 @@ export async function useUpdateSetups(param) {
                 object.save()
                     .then(async (object) => {
                         console.log('  --> Added new patterns mistake with id ' + object.id)
-                        if (param) {
-                            await useGetSelectedRange()
-                            await useGetSetups()
-                        }
                         //spinnerSetupsText.value = "Added new setup"
                         tradeId.value = tradeId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
                     }, (error) => {
@@ -166,6 +177,18 @@ export async function useUpdateSetups(param) {
             }
 
         }
+
+        if (pageId.value == "daily") {
+            temp = filteredTrades[itemTradeIndex.value].trades[tradeIndexPrevious.value]
+            if (temp.pattern != null || temp.mistake != null || temp.note != null) {
+                upsertSetups()
+            }
+        }
+        if (pageId.value == "addScreenshot") {
+            temp = screenshot
+            upsertSetups()
+        }
+
         resolve()
 
 
@@ -179,7 +202,6 @@ export async function useDeleteSetup(param1, param2) {
     spinnerSetups.value = true
     tradeSetupChanged.value = true
     saveButton.value = true
-    //console.log("trade setup " + JSON.stringify(tradeSetup) + " with ID " + tradeSetup)
 
     if (tradeSetupId.value != null) {
         console.log(" -> Deleting setups")
@@ -190,16 +212,17 @@ export async function useDeleteSetup(param1, param2) {
         if (results) {
             results.destroy().then(async () => {
                 console.log('  --> Deleted setups with id ' + results.id)
+                param2.pattern = null
                 param2.patternName = null
                 param2.patternNameShort = null
 
+                param2.mistake = null
                 param2.mistakeName = null
                 param2.mistakeNameShort = null
 
                 param2.note = null
                 param2.noteShort = null
 
-                useResetSetup()
                 await useGetSelectedRange()
                 await useGetSetups()
             }, (error) => {
@@ -213,15 +236,6 @@ export async function useDeleteSetup(param1, param2) {
         return
     }
     spinnerSetups.value = false
-}
-
-export function useResetSetup() {
-    //console.log(" -> Resetting tradeSetup")
-    //we need to reset the setup variable each time
-    for (let key in tradeSetup) delete tradeSetup[key]
-    tradeSetup.pattern = null
-    tradeSetup.mistake = null
-    tradeSetup.note = null
 }
 
 export function useEditPattern(param) {

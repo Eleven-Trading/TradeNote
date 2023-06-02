@@ -26,11 +26,7 @@ export const saveButton = ref(false)
 export const patterns = reactive([])
 export const mistakes = reactive([])
 export const setups = reactive([])
-export const tradeSetup = reactive({
-    pattern: null,
-    mistake: null,
-    note: null,
-})
+
 export const screenshot = reactive({
     "side": null,
     "type": null
@@ -129,6 +125,11 @@ export const uploadMfePrices = ref(true)
 * DAILY
 **************************************/
 export const daily = reactive({})
+
+export const itemTradeIndex = ref()
+export const tradeIndex = ref()
+export const tradeIndexPrevious = ref()
+
 export const excursion = reactive({
     stopLoss: null,
     maePrice: null,
