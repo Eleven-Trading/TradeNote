@@ -685,7 +685,11 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    //await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    useGetSetups()
+    useGetPatterns()
+    useGetMistakes()
+    useGetSatisfactions()
     await Promise.all([useGetFilteredTrades()])
     await usePrepareTrades()
     await useCalculateProfitAnalysis()
@@ -710,13 +714,24 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    //await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
+    useGetSetups()
+    useGetPatterns()
+    useGetMistakes()
+    useGetSatisfactions()
     await useGetFilteredTrades()
     await useGetFilteredTradesForDaily()
-    await (spinnerLoadingPage.value = false)
+    spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
-    await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    //await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
+    useInitTab("daily")
+    useRenderDoubleLineChart()
+    useRenderPieChart()
+    useLoadCalendar()
+    useGetExcursions()
+    useGetDiaries(false)
+    useGetScreenshots(true)
     await (renderingCharts.value = false)
     
     //useInitPopover()
