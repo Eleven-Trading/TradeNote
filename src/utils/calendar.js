@@ -1,4 +1,4 @@
-import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade } from "../stores/globals"
+import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade, filteredTradesDaily } from "../stores/globals"
 import { useMonthFormat } from "./utils"
 
 
@@ -8,6 +8,12 @@ export async function useLoadCalendar() {
         renderingCharts.value = true
         miniCalendarsData.length = 0
         let currentMonthNumber = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).month()
+        let tradesArray = []
+        if(pageId.value == "daily"){
+            tradesArray = filteredTradesDaily
+        }else{
+            tradesArray = filteredTrades
+        }
 
         const createCalendar = async (param1, param2) => {
             //console.log(" -> Creating calendar for "+useMonthFormat(param1))
@@ -45,11 +51,11 @@ export async function useLoadCalendar() {
 
                     //Getting trade that is from the same day
                     //console.log("filtering")
-                    //console.log("length "+filteredTrades.length)
-                    //console.log("filteredTrade "+JSON.stringify(filteredTrades))
+                    //console.log("length "+tradesArray.length)
+                    //console.log("filteredTrade "+JSON.stringify(tradesArray))
                     let trade
-                    for (let i = 0; i < filteredTrades.length; i++) {
-                        let element = filteredTrades[i]
+                    for (let i = 0; i < tradesArray.length; i++) {
+                        let element = tradesArray[i]
                         if (Number(element.date) == Number(element2) && (Number(element.month) + 1 == Number(month)) && Number(element.year) == Number(year)) {
                             trade = element
                         }
@@ -84,9 +90,6 @@ export async function useLoadCalendar() {
 
         //let currentMonthNumber = dayjs(selectedMonth.value.start * 1000).month()
         //console.log("currentMonthNumber "+currentMonthNumber)
-        let i = 0
-
-        let threeTempUnix = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()
 
         if (pageId.value == 'calendar') {
             let i = 0

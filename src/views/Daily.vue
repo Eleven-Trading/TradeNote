@@ -4,11 +4,13 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange, useTwoDecFormat } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup } from '../utils/setups'
 import { useGetExcursions, useGetSatisfactions } from '../utils/daily';
+import { useGetFilteredTradesForDaily } from '../utils/trades'
+import { useRenderDoubleLineChart, useRenderPieChart } from '../utils/charts';
 
 const dailyTabs = [{
     id: "trades",
@@ -37,7 +39,6 @@ let tradesModal = null
 let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
-
 useMountDaily()
 
 
@@ -46,6 +47,27 @@ onBeforeMount(async () => {
 })
 onMounted(async () => {
     tradesModal = new bootstrap.Modal("#tradesModal")
+    window.addEventListener('scroll', async () => {
+        let scrollFromTop = window.scrollY
+        let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
+        let documentHeight = document.documentElement.scrollHeight
+        let difference = documentHeight - (scrollFromTop + visibleScreen)
+        //console.log("scroll top "+scrollFromTop)
+        //console.log("visible screen "+visibleScreen)
+        //console.log("documentHeight "+documentHeight)
+        if (difference <= 0) {
+            if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
+                console.log("  --> Loading more")
+                await (spinnerLoadMore.value = true)
+                await useGetFilteredTradesForDaily()
+                await (spinnerLoadMore.value = false)
+                await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+                useInitTab("daily")
+                await (renderingCharts.value = false)
+            }
+        }
+    })
+
 })
 
 
@@ -102,16 +124,17 @@ async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDa
 }
 
 
-async function tradeSatisfactionChange(param1, param2, param3, param4) {
+async function tradeSatisfactionChange(param1, param2) {
 
-    tradeSatisfactionId = param1
+    tradeSatisfactionId = param1.id
+    tradeSatisfactionDateUnix = param1.dateUnix
     tradeSatisfaction = param2
-    tradeSatisfactionDateUnix = param3
+    param1.satisfaction = tradeSatisfaction
     await updateTradeSatisfaction()
 
 }
 
-async function updateTradeSatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
+async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
     console.log("\nUPDATING OR SAVING TRADES SATISFACTION IN PARSE")
     return new Promise(async (resolve, reject) => {
         const parseObject = Parse.Object.extend("satisfactions");
@@ -125,7 +148,6 @@ async function updateTradeSatisfaction(param1, param2) { //param1 : daily unixDa
             results.save()
                 .then(async () => {
                     console.log(' -> Updated satisfaction with id ' + results.id + " to " + tradeSatisfaction)
-                    await useGetSatisfactions()
                     //spinnerSetupsText.value = "Updated setup"
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
@@ -142,7 +164,6 @@ async function updateTradeSatisfaction(param1, param2) { //param1 : daily unixDa
             object.save()
                 .then(async (object) => {
                     console.log(' -> Added new satisfaction with id ' + object.id)
-                    await useGetSatisfactions()
                     //spinnerSetupsText.value = "Added new setup"
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
@@ -517,12 +538,10 @@ function resetExcursion() {
                                                                 {{ trade.noteShort }}
                                                             </td>
                                                             <td>
-                                                                <span
-                                                                    v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == true">
+                                                                <span v-if="trade.satisfaction == true">
                                                                     <i class="greenTrade uil uil-thumbs-up"></i>
                                                                 </span>
-                                                                <span
-                                                                    v-if="satisfactionTradeArray.findIndex(f => f.tradeId == trade.id) != -1 && satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == trade.id)].satisfaction == false">
+                                                                <span v-if="trade.satisfaction == false">
                                                                     <i class="redTrade uil uil-thumbs-down"></i>
                                                                 </span>
                                                             </td>
@@ -605,24 +624,18 @@ function resetExcursion() {
                                             <div class="tab-pane fade" v-bind:id="'diariesNav-' + index" role="tabpanel"
                                                 aria-labelledby="nav-overview-tab">
                                                 <div
-                                                    v-if="diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix) != -1">
-                                                    <p
-                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive != '<p><br></p>'">
+                                                    v-for="itemDiary in diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix)">
+                                                    <p v-if="itemDiary.journal.positive != '<p><br></p>'">
                                                         <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                                                        <span
-                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.positive"></span>
+                                                        <span v-html="itemDiary.journal.positive"></span>
                                                     </p>
-                                                    <p
-                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative != '<p><br></p>'">
+                                                    <p v-if="itemDiary.journal.negative != '<p><br></p>'">
                                                         <span class="dashInfoTitle">Negative aspect</span>
-                                                        <span
-                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.negative"></span>
+                                                        <span v-html="itemDiary.journal.negative"></span>
                                                     </p>
-                                                    <p
-                                                        v-if="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other != '<p><br></p>'">
+                                                    <p v-if="itemDiary.journal.other != '<p><br></p>'">
                                                         <span class="dashInfoTitle">Observations</span>
-                                                        <span
-                                                            v-html="diaries[diaries.findIndex(obj => obj.dateUnix == itemTrade.dateUnix)].journal.other"></span>
+                                                        <span v-html="itemDiary.journal.other"></span>
                                                     </p>
                                                 </div>
                                             </div>
@@ -647,6 +660,12 @@ function resetExcursion() {
                     </div>
                 </div>
             </div>
+
+            <!-- Load more spinner -->
+            <div v-if="spinnerLoadMore" class="d-flex justify-content-center mt-3">
+                <div class="spinner-border text-blue" role="status"></div>
+            </div>
+
         </div>
     </div>
     <!-- ============ TRADES MODAL ============ -->
@@ -720,11 +739,11 @@ function resetExcursion() {
 
                                         <!-- Satisfaction -->
                                         <div class="col-1">
-                                            <i v-on:click="tradeSatisfactionChange(filteredTrades[itemTradeIndex].trades[tradeIndex].id, true, filteredTrades[itemTradeIndex].dateUnix)"
-                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == filteredTrades[itemTradeIndex].trades[tradeIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == filteredTrades[itemTradeIndex].trades[tradeIndex].id)].satisfaction == true ? 'greenTrade' : '' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
+                                            <i v-on:click="tradeSatisfactionChange(filteredTrades[itemTradeIndex].trades[tradeIndex], true)"
+                                                v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'pointerClass', 'me-1']"></i>
 
-                                            <i v-on:click="tradeSatisfactionChange(filteredTrades[itemTradeIndex].trades[tradeIndex].id, false, filteredTrades[itemTradeIndex].dateUnix)"
-                                                v-bind:class="[satisfactionTradeArray.findIndex(f => f.tradeId == filteredTrades[itemTradeIndex].trades[tradeIndex].id) != -1 ? satisfactionTradeArray[satisfactionTradeArray.findIndex(f => f.tradeId == filteredTrades[itemTradeIndex].trades[tradeIndex].id)].satisfaction == false ? 'redTrade' : '' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                            <i v-on:click="tradeSatisfactionChange(filteredTrades[itemTradeIndex].trades[tradeIndex], false)"
+                                                v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == false ? 'redTrade' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
                                         <!-- Patterns -->
@@ -837,8 +856,9 @@ function resetExcursion() {
                             </div>
                         </div>
                     </div>
-                <hr>
+                    <hr>
+                </div>
             </div>
         </div>
     </div>
-</div></template>
+</template>

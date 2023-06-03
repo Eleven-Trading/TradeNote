@@ -90,6 +90,7 @@ export const modalDailyTradeOpen = ref(false)
 **************************************/
 export const selectedRange = ref()
 export const filteredTrades = reactive([])
+export const filteredTradesDaily = reactive([])
 export const filteredTradesTrades = reactive([])
 export const totals = reactive({})
 export const totalsByDate = reactive({})
@@ -125,6 +126,8 @@ export const uploadMfePrices = ref(true)
 * DAILY
 **************************************/
 export const daily = reactive({})
+export const dailyPagination = ref(0)
+export const dailyQueryLimit = ref(3) 
 
 export const itemTradeIndex = ref()
 export const tradeIndex = ref()

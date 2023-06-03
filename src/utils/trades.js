@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, spinnerLoadMore } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -28,6 +28,7 @@ export async function useGetFilteredTrades(param) {
         //console.log("Range (Date or Call) start " + selectedRange.value.start + " Range (Date or Call) end " + selectedRange.value.end)
 
         filteredTrades.length = 0
+        filteredTradesDaily.length = 0
         filteredTradesTrades.length = 0
 
         let loopTrades = (param1) => {
@@ -48,7 +49,7 @@ export async function useGetFilteredTrades(param) {
                 temp.satisfaction = null
                 for (let index = 0; index < satisfactionArray.length; index++) {
                     const el = satisfactionArray[index];
-                    if (el.dateUnix == element.dateUnix){
+                    if (el.dateUnix == element.dateUnix) {
                         //console.log("satisfaction "+el.satisfaction)
                         temp.satisfaction = el.satisfaction
                     }
@@ -63,7 +64,7 @@ export async function useGetFilteredTrades(param) {
                     /* For specific pages, we only show per month, so we limit end date */
                     //console.log( " setup pattern "+selectedPatterns.value.includes(element.setup.pattern))
                     /* We use if here but then conditional inside to check all possibilities */
-              
+
                     let pattern
                     let patternName
                     let mistake
@@ -71,13 +72,13 @@ export async function useGetFilteredTrades(param) {
                     // We need to include patterns and mistakes that are void or null
                     //console.log("setups "+JSON.stringify(setups))
                     let setup
-                        for (let index = 0; index < setups.length; index++) {
-                            const element2 = setups[index];
-                            if (element2.tradeId == element.id){
-                                setup = element2
-                            } 
-                            
+                    for (let index = 0; index < setups.length; index++) {
+                        const element2 = setups[index];
+                        if (element2.tradeId == element.id) {
+                            setup = element2
                         }
+
+                    }
                     //let setup = setups.filter(obj => obj.tradeId == element.id)
                     //console.log("setup "+JSON.stringify(setup))
                     //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
@@ -97,13 +98,13 @@ export async function useGetFilteredTrades(param) {
                         } else {
                             pattern = "void"
                         }
-                        
+
                         if (setup.mistake) {
                             let tempMistake = setup.mistake.objectId
                             if (selectedMistakes.value.includes(tempMistake)) {
                                 mistake = tempMistake
                                 mistakeName = setup.mistake.name
-                            } 
+                            }
                             //else null and not void
                             /*else {
                                 mistake = "void"
@@ -112,15 +113,15 @@ export async function useGetFilteredTrades(param) {
                             mistake = "void"
                         }
 
-                    }else{
+                    } else {
                         pattern = "void"
-                        mistake = "void"  
+                        mistake = "void"
                     }
 
                     let tradeSatisfaction = null
                     for (let index = 0; index < satisfactionTradeArray.length; index++) {
                         const el = satisfactionTradeArray[index];
-                        if (el.tradeId == element.id){
+                        if (el.tradeId == element.id) {
                             tradeSatisfaction = el.satisfaction
                         }
                     }
@@ -129,21 +130,21 @@ export async function useGetFilteredTrades(param) {
                     //console.log(" pattern "+pattern)
                     //console.log(" Account "+element.account)
                     if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
-                        if (patternName != undefined){
+                        if (patternName != undefined) {
                             element.pattern = pattern
-                            element.patternName = " | "+patternName
+                            element.patternName = " | " + patternName
                             element.patternNameShort = patternName.substr(0, 15) + "..."
                         }
-                        if (mistakeName != undefined){
+                        if (mistakeName != undefined) {
                             element.mistake = mistake
-                            element.mistakeName = " | "+mistakeName
+                            element.mistakeName = " | " + mistakeName
                             element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
                         }
-                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined){
+                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined) {
                             element.note = setup.note
                             element.noteShort = setup.note.substr(0, 15) + "..."
                         }
-                        
+
                         element.satisfaction = tradeSatisfaction
 
                         temp.trades.push(element)
@@ -153,7 +154,11 @@ export async function useGetFilteredTrades(param) {
                 });
                 /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
                 if (temp.trades.length > 0) {
-                    filteredTrades.push(temp)
+                    if (pageId.value == "daily") {
+                        filteredTradesDaily.push(temp)
+                    } else {
+                        filteredTrades.push(temp)
+                    }
                 }
             });
         }
@@ -168,17 +173,28 @@ export async function useGetFilteredTrades(param) {
         let keys = Object.keys(pAndL)
         //console.log(" keys "+keys)
         for (const key of keys) {
-            //console.log(" pAndL Key "+JSON.stringify(pAndL[key]))
-            //console.log("key "+key)
-            let index = filteredTrades.findIndex(obj => obj.dateUnix == key)
-            //console.log(" filtered trades key "+JSON.stringify(filteredTrades[index]))
-            filteredTrades[index].pAndL = pAndL[key]
-            filteredTrades[index].blotter = blotter[key]
+            let index
+            if (pageId.value == "daily") {
+                index = filteredTradesDaily.findIndex(obj => obj.dateUnix == key)
+                filteredTradesDaily[index].pAndL = pAndL[key]
+                filteredTradesDaily[index].blotter = blotter[key]
+            } else {
+                index = filteredTrades.findIndex(obj => obj.dateUnix == key)
+                filteredTrades[index].pAndL = pAndL[key]
+                filteredTrades[index].blotter = blotter[key]
+            }
+
+        }
+        if (pageId.value == "daily") {
+            filteredTradesDaily.sort((a, b) => {
+                return b.dateUnix - a.dateUnix
+            })
+        } else {
+            filteredTrades.sort((a, b) => {
+                return b.dateUnix - a.dateUnix
+            })
         }
 
-        filteredTrades.sort((a, b) => {
-            return b.dateUnix - a.dateUnix
-        })
         //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
         //console.log("\nFinished getting filtered trades\n\n")
         resolve()
@@ -189,36 +205,46 @@ export async function useGetFilteredTrades(param) {
 /***************************************
  * GETTING DATA FROM PARSE DB 
  ***************************************/
-export async function useGetTrades(){
-    return new Promise(async(resolve, reject) => {
-            console.log("\nGETTING TRADES");
-            console.time("  --> Duration getting trades");
-            //spinnerLoadingPageText.value = "Getting trades from ParseDB"
-            let startD = selectedRange.value.start
-            let endD = selectedRange.value.end
-            //console.log("start D "+startD)
-            //console.log("end D "+endD)
-            const parseObject = Parse.Object.extend("trades");
-            const query = new Parse.Query(parseObject)
-            query.equalTo("user", Parse.User.current());
-            query.ascending("dateUnix");
-            query.exclude("executions", "blotter", "pAndL") // we omit to make it lighter
-            query.greaterThanOrEqualTo("dateUnix", startD)
-            query.lessThan("dateUnix", endD)
-            query.limit(queryLimit.value);
-            const results = await query.find();
-            console.timeEnd("  --> Duration getting trades");
-            //console.log("results "+JSON.stringify(results))
-            if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
-                trades = []
-                trades = JSON.parse(JSON.stringify(results))
-            }
-            //console.log("trades "+JSON.stringify(trades))
-            resolve()
+export async function useGetTrades() {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nGETTING TRADES");
+        console.time("  --> Duration getting trades");
+        //spinnerLoadingPageText.value = "Getting trades from ParseDB"
+        let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
+        //console.log("start D "+startD)
+        //console.log("end D "+endD)
+        const parseObject = Parse.Object.extend("trades");
+        const query = new Parse.Query(parseObject)
+        query.equalTo("user", Parse.User.current());
+        query.ascending("dateUnix");
+        query.exclude("executions", "blotter", "pAndL") // we omit to make it lighter
+        query.greaterThanOrEqualTo("dateUnix", startD)
+        query.lessThan("dateUnix", endD)
+        query.limit(queryLimit.value);
+        const results = await query.find();
+        console.timeEnd("  --> Duration getting trades");
+        //console.log("results "+JSON.stringify(results))
+        if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
+            trades = []
+            trades = JSON.parse(JSON.stringify(results))
+        }
+        //console.log("trades "+JSON.stringify(trades))
+        resolve()
     })
 }
 
-
+export function useGetFilteredTradesForDaily() {
+    for (let index = dailyPagination.value; index < (dailyPagination.value + dailyQueryLimit.value); index++) {
+        const element = filteredTradesDaily[index];
+        if (!element){
+            endOfList.value = true
+        }else{
+            filteredTrades.push(element)
+        }
+    }
+    dailyPagination.value = dailyPagination.value + dailyQueryLimit.value
+}
 
 /*============= Prepare Trades (#4) =============
 
