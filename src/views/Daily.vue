@@ -684,7 +684,7 @@ function resetExcursion() {
                     </div>
 
                     <!-- *** Table *** -->
-                    <div class="mt-3">
+                    <div class="mt-3 table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -779,7 +779,7 @@ function resetExcursion() {
                                                     href="/settings">settings</a></span>
                                         </div>
                                         <div class="col-3">
-                                            <input type="number" class="form-control" placeholder="MFE Price"
+                                            <input type="number" class="form-control" placeholder="MFE Price" style="font-size: small;"
                                                 v-bind:value="excursion.mfePrice"
                                                 v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)">
                                         </div>
@@ -816,14 +816,14 @@ function resetExcursion() {
                                 </div>-->
 
                                 <!-- Forth line -->
-                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                <div class="col-12 mt-3" v-show="!spinnerSetups">
                                     <input class="screenshotFile" type="file"
                                         @change="useSetupImageUpload($event, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime, filteredTrades[itemTradeIndex].trades[tradeIndex].symbol, filteredTrades[itemTradeIndex].trades[tradeIndex].side)" />
                                 </div>
 
 
                                 <!-- Fifth line -->
-                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                <div class="col-12 mt-3" v-show="!spinnerSetups">
                                     <div class="row">
                                         <div class="col-4 text-start">
                                             <button
@@ -831,7 +831,7 @@ function resetExcursion() {
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
                                                 v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
                                                 v-bind:disabled="spinnerSetups == true">
-                                                <i class="fa fa-chevron-left me-2"></i>Back</button>
+                                                <i class="fa fa-chevron-left me-2"></i></button>
                                         </div>
                                         <div class="col-4 text-center">
                                             <button v-if="saveButton" class="btn btn-outline-success btn-sm"
@@ -841,10 +841,10 @@ function resetExcursion() {
                                                 v-on:click="hideTradesModal()">Close</button>
                                         </div>
                                         <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
-                                            class="ms-auto col-2 text-end">
+                                            class="ms-auto col-4 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
                                                 v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
-                                                v-bind:disabled="spinnerSetups == true">Next<i
+                                                v-bind:disabled="spinnerSetups == true"><i
                                                     class="fa fa-chevron-right ms-2"></i>
                                             </button>
                                         </div>

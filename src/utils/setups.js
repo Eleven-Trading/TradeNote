@@ -57,7 +57,7 @@ export async function useGetSetups(param) {
         const query = new Parse.Query(parseObject);
         query.include("pattern")
         query.include("mistake")
-        if (pageId.value == "diary") {
+        if (pageId.value == "daily") {
             query.greaterThanOrEqualTo("dateUnix", startD)
             query.lessThan("dateUnix", endD)
         }

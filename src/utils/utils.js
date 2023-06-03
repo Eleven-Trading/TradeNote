@@ -685,11 +685,12 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    //await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
-    useGetSetups()
+    await Promise.all([useGetSetups(), useGetSatisfactions()])
+    useGetPatterns(), useGetMistakes()
+    /*useGetSetups()
     useGetPatterns()
     useGetMistakes()
-    useGetSatisfactions()
+    useGetSatisfactions()*/
     await Promise.all([useGetFilteredTrades()])
     await usePrepareTrades()
     await useCalculateProfitAnalysis()
@@ -714,11 +715,12 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    //await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes(), useGetSatisfactions()])
-    useGetSetups()
+    await Promise.all([useGetSetups(), useGetSatisfactions()])
+    useGetPatterns(), useGetMistakes()
+    /*useGetSetups()
     useGetPatterns()
     useGetMistakes()
-    useGetSatisfactions()
+    useGetSatisfactions()*/
     await useGetFilteredTrades()
     await useGetFilteredTradesForDaily()
     spinnerLoadingPage.value = false

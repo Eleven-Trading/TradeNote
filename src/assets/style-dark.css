@@ -594,6 +594,11 @@ img.logo {
     border-color: #2ea2d9;
     background-color: #2ea2d9;
 }
+.btn-outline-primary:active {
+    color: white;
+    border-color: #2ea2d9;
+    background-color:var(--blue-color) !important;
+}
 
 .btn-red {
     color: white;
