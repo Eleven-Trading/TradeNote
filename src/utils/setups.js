@@ -73,22 +73,22 @@ export async function useGetSetups(param) {
 }
 
 export function useTradeSetupChange(param1, param2, param3, param4, param5) {
-    //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
+    console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
 
     if (pageId.value == "daily") {
         if (param2 == "pattern") {
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = param1
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternName = patterns.filter(obj => obj.objectId == param1)[0].name
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternNameShort = patterns.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = param1
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternName = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternName = patterns.filter(obj => obj.objectId == param1)[0].name
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternNameShort = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].patternNameShort = patterns.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
         }
         if (param2 == "mistake") {
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistake = param1
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeName = mistakes.filter(obj => obj.objectId == param1)[0].name
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeNameShort = mistakes.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistake = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistake = param1
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeName = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeName = mistakes.filter(obj => obj.objectId == param1)[0].name
+            param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeNameShort = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].mistakeNameShort = mistakes.filter(obj => obj.objectId == param1)[0].name.substr(0, 15) + "..."
         }
         if (param2 == "note") {
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].note = param1
-            filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = param1.substr(0, 15) + "..."
+            param1 == "" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].note = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].note = param1
+            param1 == "" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = param1.substr(0, 15) + "..."
         }
 
         tradeSetupDateUnixDay.value = param3
