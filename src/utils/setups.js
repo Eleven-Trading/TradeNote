@@ -73,7 +73,7 @@ export async function useGetSetups(param) {
 }
 
 export function useTradeSetupChange(param1, param2, param3, param4, param5) {
-    console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
+    //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
 
     if (pageId.value == "daily") {
         if (param2 == "pattern") {
