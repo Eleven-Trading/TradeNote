@@ -747,7 +747,7 @@ function resetExcursion() {
                                         </div>
 
                                         <!-- Patterns -->
-                                        <div class="col-5" v-if="patterns.length > 0">
+                                        <div class="col-4" v-if="patterns.length > 0">
                                             <select
                                                 v-on:change="useTradeSetupChange($event.target.value, 'pattern', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"
                                                 class="form-select">
@@ -758,13 +758,13 @@ function resetExcursion() {
                                                     {{ itemActivePattern.name }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-5" v-else>
+                                        <div class="col-4" v-else>
                                             <span class="form-control">Add pattern tags in <a
                                                     href="/settings">settings</a></span>
                                         </div>
 
                                         <!-- Mistakes -->
-                                        <div class="col-5" v-if="mistakes.length > 0">
+                                        <div class="col-4" v-if="mistakes.length > 0">
                                             <select
                                                 v-on:change="useTradeSetupChange($event.target.value, 'mistake', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"
                                                 class="form-select">
@@ -774,16 +774,20 @@ function resetExcursion() {
                                                     {{ item.name }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-5" v-else>
+                                        <div class="col-4" v-else>
                                             <span class="form-control">Add mistake tags in <a
                                                     href="/settings">settings</a></span>
                                         </div>
-
-                                        <!-- Delete -->
+                                        <div class="col-3">
+                                            <input type="number" class="form-control" placeholder="MFE Price"
+                                                v-bind:value="excursion.mfePrice"
+                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)">
+                                        </div>
+                                        <!-- Delete
                                         <div class="col-1">
                                             <i v-on:click="useDeleteSetup(filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex])"
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
 
@@ -794,7 +798,7 @@ function resetExcursion() {
                                         v-on:change="useTradeSetupChange($event.target.value, 'note', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></textarea>
                                 </div>
 
-                                <!-- Third line -->
+                                <!-- Third line
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <div class="row">
                                         <div class="col-6">
@@ -809,7 +813,7 @@ function resetExcursion() {
                                                 v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)">
                                         </div>
                                     </div>
-                                </div>
+                                </div>-->
 
                                 <!-- Forth line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
