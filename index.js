@@ -13,7 +13,7 @@ let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
 var app = express();
 
-const port = 7777;
+const port = process.env.TRADENOTE_PORT;
 const PROXY_PORT = 39482;
 
 // SERVER

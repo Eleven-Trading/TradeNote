@@ -118,7 +118,7 @@ Alternatively, you can [build the image](#build-image-locally) yourself
 
 #### 2_ Run image
 ```
-docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
+docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e TRADENOTE_PORT=<TRADENOTE_PORT> -p <TRADENOTE_PORT>:<TRADENOTE_PORT> --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
 ```
 Run the image with the following environment variables
 - <MONGO_URL>: Enter one of the following information : 
@@ -131,11 +131,12 @@ Run the image with the following environment variables
 - <TRADENOTE_DATABASE>: The TradeNote database name in the MongoDB. You can use whatever name you like. 
 - <APP_ID>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
 - <MASTER_KEY>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
+- <TRADENOTE_PORT>: TradeNote port number
 - < TAG >: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 
 #### 3_ First Steps
-1. Start by registering a user. Visit `http://<your_server>:7777/register` to register a TradeNote user. Use any email and set a password
+1. Start by registering a user. Visit `http://<your_server>:<TRADENOTE_PORT>/register` to register a TradeNote user. Use any email and set a password
 2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
 2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
 
@@ -149,7 +150,7 @@ For advanced users, you can also build the TradeNote image locally, directly fro
 (replace <tag> with the number you wish / with latest tag number)
 4. Run the image
 ```
-docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -p 7777:7777 --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
+docker run -e MONGO_URL=<MONGO_URL> -e MONGO_PORT=<MONGO_PORT> -e MONGO_USER=<MONGO_USER> -e MONGO_USER=<MONGO_PASSWORD> -e TRADENOTE_DATABASE=<TRADENOTE_DATABASE> -e APP_ID=<APP_ID> -e MASTER_KEY=<MASTER_KEY> -e TRADENOTE_PORT=<TRADENOTE_PORT> -p <TRADENOTE_PORT>:<TRADENOTE_PORT> --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<TAG>
 
 ```
 #### Parse
