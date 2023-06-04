@@ -4,5 +4,4 @@ WORKDIR /app
 ADD ./ .
 RUN npm install
 RUN npm run build
-EXPOSE 7777
 CMD ["npm", "start"]
