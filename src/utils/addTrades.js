@@ -828,8 +828,8 @@ async function updateMfePrices(param) {
         console.log("  --> Updating excursion DB with MFE price")
         //spinnerLoadingPageText.value = "Updating MFE prices in excursions"
         //console.log(" MFE Prices " + JSON.stringify(mfePrices))
-        mfePrices.forEach(element => {
-            //console.log(" element " + element)
+        for (let index = 0; index < mfePrices.length; index++) {
+            const element = mfePrices[index];
             const parseObject = Parse.Object.extend("excursions");
             const object = new parseObject();
             object.set("user", Parse.User.current())
@@ -842,11 +842,15 @@ async function updateMfePrices(param) {
                     console.log(' -> Added new excursion with id ' + object.id)
                     //spinnerSetupsText.value = "Added new setup"
                     tradeId.value = tradeExcursionId.value // we need to do this if.value I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+                    if(index == (mfePrices.length-1)){
+                        resolve()
+                    }
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
+                    reject()
                 })
-        });
-        resolve()
+            
+        }
     })
 }
 
@@ -1445,6 +1449,6 @@ export async function useUploadTrades() {
     
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
     if (Object.keys(mfePrices).length > 0) await updateMfePrices()
-    useRefreshTrades()
+    window.location.href = "/dashboard"
 
 }
