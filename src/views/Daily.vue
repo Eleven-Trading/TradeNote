@@ -181,13 +181,19 @@ async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : 
  * EXCURSIONS
  ***************/
 
+ function noteClicked() {
+    //console.log("click")
+    tradeSetupChanged.value = true
+    saveButton.value = true
+}
+
 function tradeExcursionClicked() {
     //console.log("click")
     tradeExcursionChanged.value = true
     saveButton.value = true
 }
-function tradeExcursionChange(param1, param2, param3, param4) {
-    console.log("param 1: " + param1 + " param2: " + param2, ", param3: " + param3 + ", param4: " + param4)
+function tradeExcursionChange(param1, param2) {
+    console.log("param 1: " + param1 + " param2: " + param2)
     if (param2 == "stopLoss") {
         if (param1) {
             excursion.stopLoss = parseFloat(param1)
@@ -202,8 +208,8 @@ function tradeExcursionChange(param1, param2, param3, param4) {
     if (param2 == "mfePrice") {
         excursion.mfePrice = parseFloat(param1)
     }
-    tradeExcursionDateUnix.value = param3
-    tradeExcursionId.value = param4
+    tradeExcursionDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
+    tradeExcursionId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
     //console.log("Excursion has changed: " + JSON.stringify(excursion))
 
 }
@@ -749,7 +755,7 @@ function resetExcursion() {
                                         <!-- Patterns -->
                                         <div class="col-4" v-if="patterns.length > 0">
                                             <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"
+                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
                                                 class="form-select">
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="itemActivePattern in activePatterns"
@@ -766,7 +772,7 @@ function resetExcursion() {
                                         <!-- Mistakes -->
                                         <div class="col-4" v-if="mistakes.length > 0">
                                             <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"
+                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
                                                 class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in activeMistakes" v-bind:value="item.objectId"
@@ -781,7 +787,8 @@ function resetExcursion() {
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price" style="font-size: small;"
                                                 v-bind:value="excursion.mfePrice"
-                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)">
+                                                v-on:click="tradeExcursionClicked"
+                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
                                         </div>
                                         <!-- Delete
                                         <div class="col-1">
@@ -795,25 +802,8 @@ function resetExcursion() {
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
                                         v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
-                                        v-on:change="useTradeSetupChange($event.target.value, 'note', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></textarea>
+                                        v-on:change="useTradeSetupChange($event.target.value, 'note')" v-on:click="noteClicked"></textarea>
                                 </div>
-
-                                <!-- Third line
-                                <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <input type="number" class="form-control" placeholder="Stop Loss"
-                                                v-bind:value="excursion.stopLoss"
-                                                v-on:change="tradeExcursionChange($event.target.value, 'stopLoss', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)"
-                                                v-on:click="tradeExcursionClicked">
-                                        </div>
-                                        <div class="col-6">
-                                            <input type="number" class="form-control" placeholder="MFE Price"
-                                                v-bind:value="excursion.mfePrice"
-                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice', filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex].id)">
-                                        </div>
-                                    </div>
-                                </div>-->
 
                                 <!-- Forth line -->
                                 <div class="col-12 mt-3" v-show="!spinnerSetups">

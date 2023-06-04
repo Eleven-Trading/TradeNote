@@ -685,12 +685,8 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetSatisfactions()])
-    useGetPatterns(), useGetMistakes()
-    /*useGetSetups()
-    useGetPatterns()
-    useGetMistakes()
-    useGetSatisfactions()*/
+    useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions()
+    await useGetSetups()
     await Promise.all([useGetFilteredTrades()])
     await usePrepareTrades()
     await useCalculateProfitAnalysis()

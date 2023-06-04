@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, spinnerLoadMore } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, spinnerLoadMore, excursions } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -45,32 +45,29 @@ export async function useGetFilteredTrades(param) {
                 temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
                 temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
 
-                //Daily satisfaction
-                temp.satisfaction = null
-                for (let index = 0; index < satisfactionArray.length; index++) {
-                    const el = satisfactionArray[index];
-                    if (el.dateUnix == element.dateUnix) {
-                        //console.log("satisfaction "+el.satisfaction)
-                        temp.satisfaction = el.satisfaction
+                //Adding satisfaction for daily page
+                if (pageId.value == "daily") {
+
+                    temp.satisfaction = null
+                    for (let index = 0; index < satisfactionArray.length; index++) {
+                        const el = satisfactionArray[index];
+                        if (el.dateUnix == element.dateUnix) {
+                            //console.log("satisfaction "+el.satisfaction)
+                            temp.satisfaction = el.satisfaction
+                        }
                     }
                 }
                 //console.log("temp "+JSON.stringify(temp))
 
                 element.trades.forEach(element => {
-                    //console.log("element "+JSON.stringify(element))
-                    //console.log("id " + element.id)
-                    /* Here we do not .tz because it's done at source, in periodRange variable (vue.js) */
-                    //console.log(" element "+JSON.stringify(element))
-                    /* For specific pages, we only show per month, so we limit end date */
-                    //console.log( " setup pattern "+selectedPatterns.value.includes(element.setup.pattern))
-                    /* We use if here but then conditional inside to check all possibilities */
-
                     let pattern
                     let patternName
                     let mistake
                     let mistakeName
                     // We need to include patterns and mistakes that are void or null
                     //console.log("setups "+JSON.stringify(setups))
+                    
+                    //Getting setup needed for filter and creating setup key needed for daily
                     let setup
                     for (let index = 0; index < setups.length; index++) {
                         const element2 = setups[index];
@@ -237,9 +234,9 @@ export async function useGetTrades() {
 export function useGetFilteredTradesForDaily() {
     for (let index = dailyPagination.value; index < (dailyPagination.value + dailyQueryLimit.value); index++) {
         const element = filteredTradesDaily[index];
-        if (!element){
+        if (!element) {
             endOfList.value = true
-        }else{
+        } else {
             filteredTrades.push(element)
         }
     }
@@ -1025,19 +1022,9 @@ export async function useCalculateProfitAnalysis(param) {
     console.log("\nCALCULATING PROFIT ANALYSIS")
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting MFE Prices")
-        //console.log(" -> Start " + dateCalFormat.value(selectedDateRange.value.start) + " and end " + dateCalFormat.value(selectedDateRange.value.end))
-        const parseObject = Parse.Object.extend("excursions");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("user", Parse.User.current())
-        query.greaterThanOrEqualTo("dateUnix", selectedDateRange.value.start)
-        query.lessThanOrEqualTo("dateUnix", selectedDateRange.value.end)
-        query.ascending("order");
-        query.limit(queryLimit.value); // limit to at most 10 results
         let mfePricesArray = []
         for (let key in profitAnalysis) delete profitAnalysis[key]
-
-        const results = await query.find();
-        mfePricesArray = JSON.parse(JSON.stringify(results))
+        mfePricesArray = excursions
         //console.log("  --> MFE prices array "+JSON.stringify(mfePricesArray))
         /*console.log(" -> Getting average quantity")
         let averageQuantity = totals.quantity / 2 / totals.trades

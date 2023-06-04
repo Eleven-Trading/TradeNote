@@ -72,9 +72,8 @@ export async function useGetSetups(param) {
     })
 }
 
-export function useTradeSetupChange(param1, param2, param3, param4, param5) {
-    //console.log("param 1: " + param1 + " - param2: " + param2 + " - param3: " + param3 + " - param4: " + param4 + " - param5: " + param5)
-
+export function useTradeSetupChange(param1, param2) {
+    //console.log("param 1: " + param1 + " - param2: " + param2)
     if (pageId.value == "daily") {
         if (param2 == "pattern") {
             param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = param1
@@ -91,9 +90,9 @@ export function useTradeSetupChange(param1, param2, param3, param4, param5) {
             param1 == "" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].noteShort = param1.substr(0, 15) + "..."
         }
 
-        tradeSetupDateUnixDay.value = param3
-        tradeSetupId.value = param4
-        tradeSetupDateUnix.value = param5
+        tradeSetupDateUnixDay.value = filteredTrades[itemTradeIndex.value].dateUnix
+        tradeSetupId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        tradeSetupDateUnix.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].entryTime
     } // else in Screenhsot mixin, we define them on edit
 
     if (pageId.value == "addScreenshot") {
