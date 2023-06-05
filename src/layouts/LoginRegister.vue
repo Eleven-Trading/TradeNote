@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeMount, onMounted } from 'vue';
-import { useInitParse, usePageId } from '../utils/utils.js'
+import { useInitParse, useInitPostHog, usePageId } from '../utils/utils.js'
 onBeforeMount(async() =>{
   usePageId()
   await getParseId()
@@ -9,6 +9,8 @@ onBeforeMount(async() =>{
 onMounted(async() => {
   
 })
+
+useInitPostHog()
 
 async function getParseId() {
   return new Promise((resolve, reject) => {

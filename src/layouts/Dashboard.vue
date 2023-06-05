@@ -2,7 +2,7 @@
 import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import { ref, reactive, onMounted, onBeforeMount } from 'vue'
-import { useInitParse, usePageId, useScreenType, useSetValues, useGetTimeZone, useGetPeriods } from '../utils/utils.js'
+import { useInitParse, usePageId, useScreenType, useSetValues, useGetTimeZone, useGetPeriods, useInitPostHog } from '../utils/utils.js'
 import { mistakes, patterns, screenType, selectedMistakes, selectedPatterns, sideMenuMobileOut } from '../stores/globals'
 import { useGetMistakes, useGetPatterns } from '../utils/setups'
 
@@ -16,8 +16,7 @@ onBeforeMount (async () => {
   useGetPeriods()
   useScreenType()
 })
-
-
+useInitPostHog()
 </script>
 <template>
   <div v-cloak class="container-fluid g-0">
