@@ -24,7 +24,7 @@ async function login() {
       await Parse.User.logIn(loginForm.username, loginForm.password)
       getCurrentUser()
       useGetTimeZone()
-      useGetPeriods()
+      await useGetPeriods()
       await useSetValues()
       console.log("Hooray! You are logged in")
       signingUp.value = false
@@ -57,8 +57,12 @@ async function register() {
 
     try {
       await user.signUp();
+      getCurrentUser()
+      useGetTimeZone()
+      await useGetPeriods()
+      await useSetValues()
       console.log("Hooray! Let them use the app now")
-      window.location.replace("/");
+      window.location.replace("/dashboard");
     } catch (error) {
       // Show the error message somewhere and let the user try again.
       alert("Error: " + error.code + " " + error.message);

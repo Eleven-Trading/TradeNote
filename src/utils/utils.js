@@ -164,6 +164,7 @@ export function useCheckCurrentUser() {
 
 export function getCurrentUser() {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
+    //console.log("currentUser " + JSON.stringify(currentUser))
 }
 
 export function useGetTimeZone() {
@@ -172,92 +173,96 @@ export function useGetTimeZone() {
     console.log(" -> TimeZone for Trades: " + timeZoneTrade.value)
 }
 
-export function useGetPeriods() {
-    let temp = [{
-        value: "all",
-        label: "All",
-        start: 0,
-        end: 0
-    }, {
-        value: "thisWeek",
-        label: "This Week",
-        start: Number(dayjs().tz(timeZoneTrade.value).startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
-    }, {
-        value: "lastWeek",
-        label: "Last Week",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
-    }, {
-        value: "lastWeekTilNow",
-        label: "Last Week Until Now",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
-    }, {
-        value: "lastTwoWeeks",
-        label: "Last Two Weeks",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
-    }, {
-        value: "lastTwoWeeksTilNow",
-        label: "Last Two Weeks Until Now",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
-    }, {
-        value: "thisMonth",
-        label: "This Month",
-        start: Number(dayjs().tz(timeZoneTrade.value).startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
-    }, {
-        value: "lastMonth",
-        label: "Last Month",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
-    }, {
-        value: "lastMonthTilNow",
-        label: "Last Month Until Now",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
-    }, {
-        value: "lastTwoMonths",
-        label: "Last Two Months",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
-    }, {
-        value: "lastTwoMonthsTilNow",
-        label: "Last Two Months Until Now",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
-    }, {
-        value: "lastThreeMonths",
-        label: "Last Three Months",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
-    }, {
-        value: "lastThreeMonthsTilNow",
-        label: "Last Three Months Until Now",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
-    }, {
-        value: "thisYear",
-        label: "This Year",
-        start: Number(dayjs().tz(timeZoneTrade.value).startOf('year').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).endOf('year').unix())
-    }, {
-        value: "lastYear",
+export async function useGetPeriods() {
+    console.log(" -> Getting periods")
+    return new Promise((resolve, reject) => {
+        let temp = [{
+            value: "all",
+            label: "All",
+            start: 0,
+            end: 0
+        }, {
+            value: "thisWeek",
+            label: "This Week",
+            start: Number(dayjs().tz(timeZoneTrade.value).startOf('week').add(1, 'day').unix()), // we need to transform as number because later it's stringified and this becomes date format and note unix format
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastWeek",
+            label: "Last Week",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastWeekTilNow",
+            label: "Last Week Until Now",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').startOf('week').add(1, 'day').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastTwoWeeks",
+            label: "Last Two Weeks",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'week').endOf('week').add(1, 'day').unix())
+        }, {
+            value: "lastTwoWeeksTilNow",
+            label: "Last Two Weeks Until Now",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'week').startOf('week').add(1, 'day').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('week').add(1, 'day').unix())
+        }, {
+            value: "thisMonth",
+            label: "This Month",
+            start: Number(dayjs().tz(timeZoneTrade.value).startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+        }, {
+            value: "lastMonth",
+            label: "Last Month",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+        }, {
+            value: "lastMonthTilNow",
+            label: "Last Month Until Now",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+        }, {
+            value: "lastTwoMonths",
+            label: "Last Two Months",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+        }, {
+            value: "lastTwoMonthsTilNow",
+            label: "Last Two Months Until Now",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(2, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+        }, {
+            value: "lastThreeMonths",
+            label: "Last Three Months",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'month').endOf('month').unix())
+        }, {
+            value: "lastThreeMonthsTilNow",
+            label: "Last Three Months Until Now",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(3, 'month').startOf('month').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('month').unix())
+        }, {
+            value: "thisYear",
+            label: "This Year",
+            start: Number(dayjs().tz(timeZoneTrade.value).startOf('year').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).endOf('year').unix())
+        }, {
+            value: "lastYear",
 
-        label: "Last Year",
-        start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').startOf('year').unix()),
-        end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').endOf('year').unix())
-    }, {
-        value: "custom",
-        label: "Custom",
-        start: -1,
-        end: -1
-    }]
-    periodRange.length = 0
-    temp.forEach(element => {
-        periodRange.push(element)
+            label: "Last Year",
+            start: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').startOf('year').unix()),
+            end: Number(dayjs().tz(timeZoneTrade.value).subtract(1, 'year').endOf('year').unix())
+        }, {
+            value: "custom",
+            label: "Custom",
+            start: -1,
+            end: -1
+        }]
+        periodRange.length = 0
+        temp.forEach(element => {
+            periodRange.push(element)
+        });
+        resolve()
     });
 }
 
