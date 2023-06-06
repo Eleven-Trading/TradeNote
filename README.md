@@ -12,7 +12,7 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
 ## Dicsussions and Feeback
-You can follow the project, get support and suggest new features on [Discord](https://discord.gg/ZbHekKYb85 "Discord").
+For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHekKYb85 "Discord"), or create an issue on this repository.
 
 ## Built with
 The objective is to have a lightweight and fast website. As such, the website runs on static pages, using VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
@@ -37,12 +37,15 @@ Alternatively, you can use the [template](https://github.com/Eleven-Trading/Trad
 ### Type of trades
 TradeNote works best for intraday US stocks. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
-### Upcoming features
-You can see upcoming features on [Trello](https://trello.com/b/GOqJSF2v/tradenote "Trello").
+### Project
+You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").
 
-## Buy me coffee
-If you like this project, don't hesitate to show me <s>the money</s> love ;)
+
+If you like this project, <font size="5">please 🌟 this repository</font> and don't hesitate to show me <s>the money</s> love ;)
 <p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
+
+
+
 
 # TradeNote
 TradeNote is divided in 2 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
