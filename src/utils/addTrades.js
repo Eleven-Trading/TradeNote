@@ -1469,6 +1469,6 @@ export async function useUploadTrades() {
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
     if (Object.keys(mfePrices).length > 0) await updateMfePrices()
-    //window.location.href = "/dashboard"
+    window.location.href = "/dashboard"
 
 }
