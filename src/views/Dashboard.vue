@@ -77,14 +77,14 @@ useMountDashboard()
                     <div v-bind:class="'tab-pane fade ' + (selectedDashTab == 'overviewTab' ? 'active show' : '')"
                         id="overviewNav" role="tabpanel" aria-labelledby="nav-overview-tab">
                         <!-- ============ LINE 2: ID CARDS ============ -->
-                        <div class="col-12">
+                        <div class="col-12 text-center">
                             <div class="row">
 
                                 <div v-if="dashboardIdMounted">
                                     <!-- FIRST LINE -->
                                     <div class="col-12 mb-3">
                                         <div class="row">
-                                            <div class="col-3">
+                                            <div class="col-6 mb-2 mb-lg-0 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         {{
@@ -96,14 +96,14 @@ useMountDashboard()
 
                                                 </div>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col-6 mb-2 mb-lg-0 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         {{ apptCompute }}</h4>
                                                     <span class="dashInfoTitle">APPT</span>
                                                 </div>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col-6 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         <span v-if="!isNaN(profitAnalysis[amountCase + 'R'])">{{
@@ -115,7 +115,7 @@ useMountDashboard()
                                                     <span class="dashInfoTitle">P/L Ratio</span>
                                                 </div>
                                             </div>
-                                            <div class="col-3">
+                                            <div class="col-6 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         <span v-if="profitAnalysis[amountCase + 'MfeR'] != null">{{
@@ -166,7 +166,7 @@ useMountDashboard()
                                                 </div>
 
                                                 <!-- second line -->
-                                                <div class="row">
+                                                <div class="row mb-2 mb-lg-0">
                                                     <div class="col-6">
                                                         <div class="dailyCard">
                                                             <h5 class="titleWithDesc">
