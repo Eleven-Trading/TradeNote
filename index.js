@@ -76,6 +76,7 @@ const startIndex = async () => {
                 appId: process.env.APP_ID,
                 masterKey: process.env.MASTER_KEY,
                 port: port,
+                masterKeyIps: ['0.0.0.0/0', '::/0'],
                 allowClientClassCreation: false,
                 allowExpiredAuthDataToken: false
             });

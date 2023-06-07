@@ -39,7 +39,7 @@ amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase(
 
 const apptCompute = computed(() => {
     let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'Wins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'Loss']))
-    console.log("temp "+temp)
+    console.log("temp " + temp)
     return temp
 })
 
@@ -82,75 +82,119 @@ useMountDashboard()
 
                                 <div v-if="dashboardIdMounted">
                                     <!-- FIRST LINE -->
+                                    <div class="col-12 mb-3">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <div class="dailyCard">
+                                                    <h4 class="titleWithDesc">
+                                                        {{
+                                                            useThousandCurrencyFormat(totals[amountCase
+                                                                +
+                                                                'Proceeds']) }}
+                                                    </h4>
+                                                    <span class="dashInfoTitle">Cumulated P&L</span>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="dailyCard">
+                                                    <h4 class="titleWithDesc">
+                                                        {{ apptCompute }}</h4>
+                                                    <span class="dashInfoTitle">APPT</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="dailyCard">
+                                                    <h4 class="titleWithDesc">
+                                                        <span v-if="!isNaN(profitAnalysis[amountCase + 'R'])">{{
+                                                            (profitAnalysis[amountCase +
+                                                                'R']).toFixed(2)
+                                                        }}</span>
+                                                        <span v-else>-</span>
+                                                    </h4>
+                                                    <span class="dashInfoTitle">P/L Ratio</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="dailyCard">
+                                                    <h4 class="titleWithDesc">
+                                                        <span v-if="profitAnalysis[amountCase + 'MfeR'] != null">{{
+                                                            (profitAnalysis[amountCase +
+                                                                'MfeR']).toFixed(2)
+                                                        }}</span>
+                                                        <span v-else>-</span>
+                                                    </h4>
+                                                    <span class="dashInfoTitle">MFE P/L Ratio</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- SECOND LINE -->
                                     <div class="col-12">
                                         <div class="row">
-                                            <!-- first line -->
                                             <!-- Left square -->
                                             <div class="col-12 col-lg-6">
-                                                <div class="row text-center mb-3">
-                                                    <!-- first line -->
-                                                    <div class="col-12 mb-3">
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <div class="dailyCard">
-                                                                    <h4 class="titleWithDesc">
-                                                                        {{
-                                                                            useThousandCurrencyFormat(totals[amountCase
-                                                                                +
-                                                                                'Proceeds']) }}
-                                                                    </h4>
-                                                                    <span class="dashInfoTitle">Cumulated P&L</span>
-
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <div class="dailyCard">
-                                                                    <h4 class="titleWithDesc">
-                                                                        {{ apptCompute }}</h4>
-                                                                    <span class="dashInfoTitle">APPT</span>
-                                                                </div>
-                                                            </div>
+                                                <!-- first line -->
+                                                <div class="row mb-2">
+                                                    <div class="col-6">
+                                                        <div class="dailyCard">
+                                                            <h5 class="titleWithDesc">
+                                                                <span
+                                                                    v-if="!isNaN(profitAnalysis[amountCase + 'AvWinPerShare'])">{{
+                                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
+                                                                            'AvWinPerShare'])
+                                                                    }}</span>
+                                                                <span v-else>-</span>
+                                                            </h5>
+                                                            <span class="dashInfoTitle">Win Per Share (avg.)</span>
                                                         </div>
-
                                                     </div>
+                                                    <div class="col-6">
+                                                        <div class="dailyCard">
+                                                            <h5 class="titleWithDesc">
+                                                                <span
+                                                                    v-if="!isNaN(profitAnalysis[amountCase + 'AvLossPerShare'])">{{
+                                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
+                                                                            'AvLossPerShare'])
+                                                                    }}</span>
+                                                                <span v-else>-</span>
+                                                            </h5>
+                                                            <span class="dashInfoTitle">Loss Per Share (avg.)</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                                    <!-- second line -->
-                                                    <div class="col-12">
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <div class="dailyCard">
-                                                                    <h4 class="titleWithDesc">
-                                                                        <span
-                                                                            v-if="!isNaN(profitAnalysis[amountCase + 'R'])">{{
-                                                                                (profitAnalysis[amountCase +
-                                                                                    'R']).toFixed(2)
-                                                                            }}</span>
-                                                                        <span v-else>-</span>
-                                                                    </h4>
-                                                                    <span class="dashInfoTitle">P/L Ratio</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="dailyCard">
-                                                                    <h4 class="titleWithDesc">
-                                                                        <span
-                                                                            v-if="profitAnalysis[amountCase + 'MfeR'] != null">{{
-                                                                                (profitAnalysis[amountCase +
-                                                                                    'MfeR']).toFixed(2)
-                                                                            }}</span>
-                                                                        <span v-else>-</span>
-                                                                    </h4>
-                                                                    <span class="dashInfoTitle">MFE P/L Ratio</span>
-                                                                </div>
-                                                            </div>
-                                                            <!--<div class="col">
-                                                                <div class="dailyCard">
-                                                                </div>
-                                                            </div>-->
+                                                <!-- second line -->
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <div class="dailyCard">
+                                                            <h5 class="titleWithDesc">
+                                                                <span
+                                                                    v-if="profitAnalysis[amountCase + 'HighWinPerShare'] > 0">{{
+                                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
+                                                                            'HighWinPerShare'])
+                                                                    }}</span>
+                                                                <span v-else>-</span>
+                                                            </h5>
+                                                            <span class="dashInfoTitle">Win Per Share (high)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="dailyCard">
+                                                            <h5 class="titleWithDesc">
+                                                                <span
+                                                                    v-if="profitAnalysis[amountCase + 'HighLossPerShare'] > 0">{{
+                                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
+                                                                            'HighLossPerShare']) }}</span>
+                                                                <span v-else>-</span>
+                                                            </h5>
+                                                            <span class="dashInfoTitle">Loss Per Share (high)</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
 
                                             <!-- Right square -->
                                             <div class="col-12 col-lg-6">
@@ -185,72 +229,6 @@ useMountDashboard()
                                                     </div>
 
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- SECOND LINE -->
-                                    <div class="row text-center mb-3">
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">{{ useThousandCurrencyFormat(totals.fees) }}
-                                                </h6>
-                                                <span class="dashInfoTitle">Trade Fees</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">
-                                                    {{ Math.round(totals.trades / Object.keys(totalsByDate).length) }}
-                                                </h6>
-                                                <span class="dashInfoTitle">Trades (avg.)</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">
-                                                    <span v-if="!isNaN(profitAnalysis[amountCase + 'AvWinPerShare'])">{{
-                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                                                            'AvWinPerShare'])
-                                                    }}</span>
-                                                    <span v-else>-</span>
-                                                </h6>
-                                                <span class="dashInfoTitle">Win Per Share (avg.)</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">
-                                                    <span v-if="!isNaN(profitAnalysis[amountCase + 'AvLossPerShare'])">{{
-                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                                                            'AvLossPerShare'])
-                                                    }}</span>
-                                                    <span v-else>-</span>
-                                                </h6>
-                                                <span class="dashInfoTitle">Loss Per Share (avg.)</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">
-                                                    <span v-if="profitAnalysis[amountCase + 'HighWinPerShare'] > 0">{{
-                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                                                            'HighWinPerShare'])
-                                                    }}</span>
-                                                    <span v-else>-</span>
-                                                </h6>
-                                                <span class="dashInfoTitle">Win Per Share (high)</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 col-lg-2 mb-1">
-                                            <div class="dailyCard">
-                                                <h6 class="titleWithDesc">
-                                                    <span v-if="profitAnalysis[amountCase + 'HighLossPerShare'] > 0">{{
-                                                        useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                                                            'HighLossPerShare']) }}</span>
-                                                    <span v-else>-</span>
-                                                </h6>
-                                                <span class="dashInfoTitle">Loss Per Share (low)</span>
                                             </div>
                                         </div>
                                     </div>
