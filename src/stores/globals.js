@@ -62,23 +62,6 @@ export const mistakeNew = reactive({
     description: null, 
     active: null
 })
-export const updateMistake = reactive[{}]
-export const patternToEdit = ref(null)
-export const updatePatternName = ref(null)
-export const updatePatternDescription = ref(null)
-export const updatePatternActive = ref(null)
-
-export const newPatternName = ref(null)
-export const newPatternDescription = ref(null)
-
-export const mistakeToEdit = ref(null)
-export const updateMistakeName = ref(null)
-export const updateMistakeDescription = ref(null)
-export const updateMistakeActive = ref(null)
-
-export const newMistakeName = ref(null)
-export const newMistakeDescription = ref(null)
-
 export const activePatterns = reactive([])
 export const activeMistakes = reactive([])
 

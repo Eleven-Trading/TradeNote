@@ -250,7 +250,6 @@ export function useEditPatternMistake(param, param2) {
     itemUpdate.name = param.name
     itemUpdate.description = param.description
     itemUpdate.active = param.active
-    //console.log("itemUpdate.edit " + itemUpdate.edit + ", name " + updatePatternName.value + ", desc " + updatePatternDescription.value+" and active "+updatePatternActive.value)
 }
 
 function updateSelectedPatternsMistakes(param, param2, param3) {

@@ -374,7 +374,7 @@ async function createTrades() {
 
             for (const tempExec of tempExecs) {
                 console.log("   ---> Opening Position")
-                        openPosition = true
+                openPosition = true
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
@@ -563,7 +563,7 @@ async function createTrades() {
                         .find(x => x.id == tempExec.id)
                         .trade = temp7.id
                     console.log(" -> buy quantity " + temp7.buyQuantity + " and sell quantity " + temp7.sellQuantity)
-                    
+
                     if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
                         temp7.exitPrice = tempExec.price;
                         temp7.exitTime = tempExec.execTime;
@@ -842,14 +842,14 @@ async function updateMfePrices(param) {
                     console.log(' -> Added new excursion with id ' + object.id)
                     //spinnerSetupsText.value = "Added new setup"
                     tradeId.value = tradeExcursionId.value // we need to do this if.value I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
-                    if(index == (mfePrices.length-1)){
+                    if (index == (mfePrices.length - 1)) {
                         resolve()
                     }
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                     reject()
                 })
-            
+
         }
     })
 }
@@ -885,12 +885,12 @@ async function filterExisting(param) {
                     existingImports.push(element)
                 }
             });
-            
+
             let tempExecutions = _.omit(executions, existingTradesArray)
             for (let key in executions) delete executions[key]
             Object.assign(executions, tempExecutions)
             //console.log(" -> executions "+JSON.stringify(executions))
-            
+
             let tempTrades = _.omit(trades, existingTradesArray)
             for (let key in trades) delete trades[key]
             Object.assign(trades, tempTrades)
@@ -1401,20 +1401,38 @@ export async function useUploadTrades() {
         })
     }
 
-    const checkTradeAccounts = async (param) => {
+    const checkTradeAccounts = async () => {
         return new Promise(async (resolve, reject) => {
             //console.log("trade Accounts " + tradeAccounts)
             //console.log("current accounts " + JSON.stringify(currentUser.value.accounts))
 
-            let updateTradeAccounts = async (param) => {
+            const updateTradeAccounts = async (param, param2) => {
                 const parseObject = Parse.Object.extend("_User");
                 const query = new Parse.Query(parseObject);
                 query.equalTo("objectId", currentUser.value.objectId);
                 const results = await query.first();
                 if (results) {
                     results.set("accounts", param)
+                    //console.log("param 2" + JSON.stringify(param2))
                     await results.save() //very important to have await or else too quick to update
                     //console.log("current accounts " + JSON.stringify(currentUser.value.accounts))
+                    let selectedItems = "selectedAccounts"
+
+                    let selectedItemsArray = []
+                    if (localStorage.getItem(selectedItems)) {
+                        if (localStorage.getItem(selectedItems).includes(",")) {
+                            selectedItemsArray = localStorage.getItem(selectedItems).split(",")
+                        } else {
+                            selectedItemsArray = []
+                            selectedItemsArray.push(localStorage.getItem(selectedItems))
+                        }
+                    } else {
+                        selectedItemsArray = []
+                    }
+                    //console.log(" selected items value " + JSON.stringify(selectedItemsArray))
+                    selectedItemsArray.push(param2)
+                    localStorage.setItem(selectedItems, selectedItemsArray)
+                    //console.log(" -> Updated selectedItems / localstorage " + selectedItemsArray)
 
                 } else {
                     alert("Update query did not return any results")
@@ -1431,22 +1449,24 @@ export async function useUploadTrades() {
                         temp.value = tradeAccounts[0]
                         temp.label = tradeAccounts[0]
                         tempArray.push(temp)
-                        updateTradeAccounts(tempArray)
+                        updateTradeAccounts(tempArray, temp.value)
                     }
                 });
             } else {
                 let tempArray = []
-                let temp = {}
-                temp.value = tradeAccounts[0]
-                temp.label = tradeAccounts[0]
-                tempArray.push(temp)
-                updateTradeAccounts(tempArray)
+                tradeAccounts.forEach(element => {
+                    let temp = {}
+                    temp.value = element
+                    temp.label = element
+                    tempArray.push(temp)
+                    updateTradeAccounts(tempArray, temp.value)
+                })
             }
         })
     }
-    
+
     checkTradeAccounts()
-    
+
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
     if (Object.keys(mfePrices).length > 0) await updateMfePrices()
     window.location.href = "/dashboard"
