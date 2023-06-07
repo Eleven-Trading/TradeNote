@@ -921,7 +921,7 @@ export async function useSetValues() {
             await Promise.all([useGetPatterns(), useGetMistakes()])
             if (selectedPatternsNull) {
                 console.log("selected patterns is null ")
-                selectedPatterns.value.push("void")
+                selectedPatterns.value.push("p000p")
                 let activePatterns = patterns.filter(obj => obj.active == true)
                 console.log("active Patterns " + JSON.stringify(activePatterns))
                 if (activePatterns) {
@@ -936,7 +936,7 @@ export async function useSetValues() {
 
             if (selectedMistakesNull) {
                 console.log("selected Mistakes is null ")
-                selectedMistakes.value.push("void")
+                selectedMistakes.value.push("m000m")
                 await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
                 let activeMistakes = mistakes.filter(obj => obj.active == true)
                 console.log("active Mistakes " + JSON.stringify(activeMistakes))

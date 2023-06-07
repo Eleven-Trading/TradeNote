@@ -90,10 +90,10 @@ export async function useGetFilteredTrades(param) {
                             }
                             //else null and not void. However, if not present in setups table then we consider as void
                             /*else {
-                                pattern = "void"
+                                pattern = "p000p"
                             }*/
                         } else {
-                            pattern = "void"
+                            pattern = "p000p"
                         }
 
                         if (setup.mistake) {
@@ -104,15 +104,15 @@ export async function useGetFilteredTrades(param) {
                             }
                             //else null and not void
                             /*else {
-                                mistake = "void"
+                                mistake = "m000m"
                             }*/
                         } else {
-                            mistake = "void"
+                            mistake = "m000m"
                         }
 
                     } else {
-                        pattern = "void"
-                        mistake = "void"
+                        pattern = "p000p"
+                        mistake = "m000m"
                     }
 
                     let tradeSatisfaction = null

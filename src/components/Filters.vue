@@ -403,7 +403,7 @@ async function saveFilter() {
                         aria-expanded="false">Patterns <span class="dashInfoTitle">({{ selectedPatterns.length
                         }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="void"
+                        <input class="form-check-input" type="checkbox" value="p000p"
                             v-model="selectedPatterns">&nbsp;&nbsp;No Tag
                         <hr>
                         <div v-for="item in patterns.filter(obj => obj.active == true)" :key="item.objectId"
@@ -422,7 +422,7 @@ async function saveFilter() {
                         aria-expanded="false">Mistakes <span class="dashInfoTitle">({{ selectedMistakes.length
                         }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="void"
+                        <input class="form-check-input" type="checkbox" value="m000m"
                             v-model="selectedMistakes">&nbsp;&nbsp;No Tag
                         <hr>
                         <div v-for="item in mistakes.filter(obj => obj.active == true)" :key="item.objectId"

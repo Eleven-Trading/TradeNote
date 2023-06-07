@@ -48,7 +48,7 @@ export async function useGetScreenshots(param) {
         }
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
-        if (!selectedPatterns.value.includes("void") && !selectedMistakes.value.includes("void")) { // if void has been excluded, then only query screenshots that are in setups table
+        if (!selectedPatterns.value.includes("p000p") && !selectedMistakes.value.includes("m000m")) { // if void has been excluded, then only query screenshots that are in setups table
             query.containedIn("name", allSetupsIds)
         }
 

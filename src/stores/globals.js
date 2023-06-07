@@ -37,6 +37,32 @@ export const tradeSetupDateUnix = ref(null)
 export const tradeSetupId = ref(null)
 
 //Used in settings
+export const patternUpdate = reactive({
+    edit: null,
+    name: null,
+    description: null, 
+    active: null
+})
+export const mistakeUpdate = reactive({
+    edit: null,
+    name: null,
+    description: null, 
+    active: null
+})
+
+export const patternNew = reactive({
+    edit: null,
+    name: null,
+    description: null, 
+    active: null
+})
+export const mistakeNew = reactive({
+    edit: null,
+    name: null,
+    description: null, 
+    active: null
+})
+export const updateMistake = reactive[{}]
 export const patternToEdit = ref(null)
 export const updatePatternName = ref(null)
 export const updatePatternDescription = ref(null)

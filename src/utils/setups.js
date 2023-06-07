@@ -1,4 +1,4 @@
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes, itemToEditId, filteredTrades, itemTradeIndex, tradeIndex, tradeIndexPrevious, screenshot } from '../stores/globals';
+import { patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes,filteredTrades, itemTradeIndex, tradeIndex, tradeIndexPrevious, screenshot, patternUpdate, mistakeUpdate, mistakeNew, patternNew } from '../stores/globals';
 import { useGetSelectedRange } from './utils';
 
 
@@ -237,144 +237,146 @@ export async function useDeleteSetup(param1, param2) {
     spinnerSetups.value = false
 }
 
-export function useEditPattern(param) {
-    patternToEdit.value = param.objectId
-    updatePatternName.value = param.name
-    updatePatternDescription.value = param.description
-    updatePatternActive.value = param.active
+/******** USED IN SETTINGS ***********/
 
-    //console.log("patternToEdit " + patternToEdit.value + ", name " + updatePatternName.value + ", desc " + updatePatternDescription.value+" and active "+updatePatternActive.value)
+export function useEditPatternMistake(param, param2) {
+    let itemUpdate
+    if (param2 == "pattern") {
+        itemUpdate = patternUpdate
+    } else {
+        itemUpdate = mistakeUpdate
+    }
+    itemUpdate.edit = param.objectId
+    itemUpdate.name = param.name
+    itemUpdate.description = param.description
+    itemUpdate.active = param.active
+    //console.log("itemUpdate.edit " + itemUpdate.edit + ", name " + updatePatternName.value + ", desc " + updatePatternDescription.value+" and active "+updatePatternActive.value)
 }
 
-export function useEditMistake(param) {
-    mistakeToEdit.value = param.objectId
-    updateMistakeName.value = param.name
-    updateMistakeDescription.value = param.description
-    updateMistakeActive.value = param.active
+function updateSelectedPatternsMistakes(param, param2, param3) {
+    let selectedItems = param
 
-    //console.log("mistakeToEdit " + mistakeToEdit.value + ", name " + updateMistakeName.value + ", desc " + updateMistakeDescription.value+" and active "+updateMistakeActive.value)
+    let selectedItemsArray = []
+    if (localStorage.getItem(selectedItems)) {
+        if (localStorage.getItem(selectedItems).includes(",")) {
+            selectedItemsArray = localStorage.getItem(selectedItems).split(",")
+        } else {
+            selectedItemsArray = []
+            selectedItemsArray.push(localStorage.getItem(selectedItems))
+        }
+    } else {
+        selectedItemsArray = []
+    }
+    console.log(" selected items value " + JSON.stringify(selectedItemsArray))
+    if (param3 == false) {
+        for (var i = 0; i < selectedItemsArray.length; i++) {
+            if (selectedItemsArray[i] === param2) {
+                selectedItemsArray.splice(i, 1);
+            }
+        }
+    } else {
+        //only push in case active has changed. Indeed, if active and does not change any thing, we should not push again
+        if (!selectedItemsArray.includes(param2)) selectedItemsArray.push(param2)
+    }
+
+    localStorage.setItem(selectedItems, selectedItemsArray)
+    console.log(" -> Updated selectedItems / localstorage " + selectedItemsArray)
 }
 
-export async function useUpdateEditPattern() {
-    console.log("\nUPDATING EDITED PATTERN")
-    if (updatePatternName.value == '') {
+export async function useUpdateEditPatternMistake(param, param2) {
+    console.log("\nUPDATING EDITED " + param2)
+    let itemUpdate
+    let selectedItems
+    if (param2 == "pattern") {
+        itemUpdate = patternUpdate
+        selectedItems = "selectedPatterns"
+    } else {
+        itemUpdate = mistakeUpdate
+        selectedItems = "selectedMistakes"
+    }
+
+    if (itemUpdate.name == '') {
         alert("Name cannot be empty")
     } else {
-        const parseObject = Parse.Object.extend("patterns");
+
+        updateSelectedPatternsMistakes(selectedItems, param.objectId, itemUpdate.active)
+
+        const parseObject = Parse.Object.extend(param2 + "s");
         const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", patternToEdit.value)
+        query.equalTo("objectId", param.objectId)
         const results = await query.first();
         if (results) {
-            console.log(" -> Updating pattern")
-            results.set("name", updatePatternName.value)
-            results.set("description", updatePatternDescription.value)
-            results.set("active", updatePatternActive.value)
+            console.log(" -> Updating " + param2)
+            results.set("name", itemUpdate.name)
+            results.set("description", itemUpdate.description)
+            results.set("active", itemUpdate.active)
 
             results.save()
                 .then(async () => {
-                    console.log(' -> Updated edited pattern with id ' + results.id)
+                    console.log(' -> Updated edited ' + param2 + ' with id ' + results.id)
                     //spinnerSetupsText.value = "Updated setup"
                 }, (error) => {
                     alert('Failed to create new object, with error code: ' + error.message);
                 })
         } else {
-            alert("There is no corresponding pattern id")
+            alert("There is no corresponding id " + param2)
         }
-        await useGetPatterns().then(() => {
-            updatePatternName.value = null
-            updatePatternDescription.value = null
-            updatePatternActive.value = null
-            patternToEdit.value = null
-        })
+        if (param2 == "pattern") {
+            await useGetPatterns()
+        } else {
+            await useGetMistakes()
+        }
+
+        itemUpdate.name = null
+        itemUpdate.description = null
+        itemUpdate.active = null
+        itemUpdate.edit = null
+
+
         //console.log("Patterns "+JSON.stringify(patterns.value))
-        localStorage.removeItem("selectedPatterns")
-        localStorage.removeItem("selectedMistakes")
 
     }
 }
 
-export async function useUpdateEditMistake() {
-    console.log("\nUPDATING EDITED MISTAKE")
-    if (updateMistakeName.value == '') {
-        alert("Name cannot be empty")
-    } else {
-        const parseObject = Parse.Object.extend("mistakes");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", mistakeToEdit.value)
-        const results = await query.first();
-        if (results) {
-            console.log(" -> Updating mistake")
-            results.set("name", updateMistakeName.value)
-            results.set("description", updateMistakeDescription.value)
-            results.set("active", updateMistakeActive.value)
-
-            results.save()
-                .then(async () => {
-                    console.log(' -> Updated edited mistake with id ' + results.id)
-                    //spinnerSetupsText.value = "Updated setup"
-                }, (error) => {
-                    alert('Failed to create new object, with error code: ' + error.message);
-                })
-        } else {
-            alert("There is no corresponding mistake id")
-        }
-        await useGetMistakes().then(() => {
-            updateMistakeName.value = null
-            updateMistakeDescription.value = null
-            updateMistakeActive.value = null
-            mistakeToEdit.value = null
-        })
-        //console.log("Mistakes "+JSON.stringify(mistakes.value))
-
-
-    }
-}
-
-export async function useSaveNewPattern() {
+export async function useSaveNewPatternMistake(param) {
     console.log(" -> \n SAVING NEW PATTERN")
-    console.log(" newPatternName " + newPatternName.value)
-    if (newPatternName.value == '' || newPatternName.value == null) {
-        alert("Name cannot be empty")
+    let itemNew
+    if (param == "pattern") {
+        itemNew = patternNew
     } else {
-        const parseObject = Parse.Object.extend("patterns");
-        const object = new parseObject();
-        object.set("user", Parse.User.current())
-        object.set("name", newPatternName.value)
-        object.set("description", newPatternDescription.value)
-        object.set("active", true)
-        object.setACL(new Parse.ACL(Parse.User.current()));
-        object.save()
-            .then(async (object) => {
-                console.log(' -> Added new pattern with id ' + object.id)
-                await useGetPatterns()
-            }, (error) => {
-                console.log('Failed to create new object, with error code: ' + error.message);
-            });
-        newPatternName.value = null
-        newPatternDescription.value = null
+        itemNew = mistakeNew
     }
-}
-
-export async function useSaveNewMistake() {
-    console.log(" -> \n SAVING NEW MISTAKE")
-    if (newMistakeName.value == '' || newMistakeName.value == null) {
+    console.log(" newItem " + itemNew.name)
+    if (itemNew.name == '' || itemNew.name == null) {
         alert("Name cannot be empty")
     } else {
-        const parseObject = Parse.Object.extend("mistakes");
+        const parseObject = Parse.Object.extend(param + "s");
         const object = new parseObject();
         object.set("user", Parse.User.current())
-        object.set("name", newMistakeName.value)
-        object.set("description", newMistakeDescription.value)
+        object.set("name", itemNew.name)
+        object.set("description", itemNew.description)
         object.set("active", true)
         object.setACL(new Parse.ACL(Parse.User.current()));
         object.save()
             .then(async (object) => {
-                console.log(' -> Added new mistake with id ' + object.id)
-                await useGetMistakes()
+                console.log(' -> Added new +' + param + ' with id ' + object.id)
+                let selectedItems
+                if (param == "pattern") {
+                    selectedItems = "selectedPatterns"
+                } else {
+                    selectedItems = "selectedMistakes"
+                }
+                
+                updateSelectedPatternsMistakes(selectedItems,object.id)
+                if (param == "pattern") {
+                    await useGetPatterns()
+                } else {
+                    await useGetMistakes()
+                }
             }, (error) => {
                 console.log('Failed to create new object, with error code: ' + error.message);
             });
-        newMistakeName.value = null
-        newMistakeDescription.value = null
+        itemNew.name = null
+        itemNew.description = null
     }
 }

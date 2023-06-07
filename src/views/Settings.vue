@@ -1,9 +1,9 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import { useCheckCurrentUser } from '../utils/utils';
-import { useGetMistakes, useGetPatterns } from '../utils/setups'
-import { currentUser, patternToEdit, updatePatternName, updatePatternDescription, updatePatternActive, newPatternName, newPatternDescription, mistakeToEdit, updateMistakeName, updateMistakeDescription, updateMistakeActive, newMistakeName, newMistakeDescription, patterns, mistakes, renderProfile } from '../stores/globals';
-import { useEditPattern, useUpdateEditPattern, useSaveNewPattern, useEditMistake, useSaveNewMistake, useUpdateEditMistake } from '../utils/setups'
+import { useGetMistakes, useGetPatterns, useUpdateEditPatternMistake } from '../utils/setups'
+import { currentUser, patterns, mistakes, renderProfile, patternUpdate, mistakeUpdate, patternNew, mistakeNew } from '../stores/globals';
+import { useEditPatternMistake, useSaveNewPatternMistake } from '../utils/setups'
 
 let profileAvatar = null
 let marketDataApiKey = null
@@ -99,39 +99,39 @@ async function updateProfile() {
                         </thead>
                         <tbody class="txt-small" v-for="pattern in patterns">
                             <tr>
-                                <td><input v-if="patternToEdit == pattern.objectId" type="text" class="form-control"
-                                        v-bind:value="pattern.name" v-on:input="updatePatternName = $event.target.value">
+                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
+                                        v-bind:value="pattern.name" v-on:input="patternUpdate.name = $event.target.value">
                                     <span v-else>{{ pattern.name }}</span>
                                 </td>
-                                <td><input v-if="patternToEdit == pattern.objectId" type="text" class="form-control"
+                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
                                         v-bind:value="pattern.description"
-                                        v-on:input="updatePatternDescription = $event.target.value">
+                                        v-on:input="patternUpdate.description = $event.target.value">
                                     <span v-else>{{ pattern.description }}</span>
                                 </td>
                                 <td>
                                     <span class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch"
-                                            v-bind:disabled="patternToEdit != pattern.objectId"
+                                            v-bind:disabled="patternUpdate.edit != pattern.objectId"
                                             v-bind:checked="pattern.active"
-                                            v-on:change="updatePatternActive = !updatePatternActive">
+                                            v-on:change="patternUpdate.active = !patternUpdate.active">
                                     </span>
                                 </td>
                                 <td>
-                                    <i v-if="patternToEdit == pattern.objectId" class="uil uil-save pointerClass"
-                                        v-on:click="useUpdateEditPattern"></i>
+                                    <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass"
+                                        v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
                                     <i v-else class="uil uil-edit-alt editItem pointerClass"
-                                        v-on:click="useEditPattern(pattern)"></i>
+                                        v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-2 input-group">
-                    <input type="text" class="form-control" v-on:input="newPatternName = $event.target.value"
+                    <input type="text" class="form-control" v-on:input="patternNew.name = $event.target.value"
                         placeholder="Pattern">
-                    <input type="text" class="form-control" v-on:input="newPatternDescription = $event.target.value"
+                    <input type="text" class="form-control" v-on:input="patternNew.description = $event.target.value"
                         placeholder="Description">
-                    <button type="button" v-on:click="useSaveNewPattern" class="btn btn-success">Add</button>
+                    <button type="button" v-on:click="useSaveNewPatternMistake('pattern')" class="btn btn-success">Add</button>
                 </div>
             </div>
             <!--=============== MISTAKE ===============-->
@@ -148,39 +148,39 @@ async function updateProfile() {
                         </thead>
                         <tbody class="txt-small" v-for="mistake in mistakes">
                             <tr>
-                                <td><input v-if="mistakeToEdit == mistake.objectId" type="text" class="form-control"
-                                        v-bind:value="mistake.name" v-on:input="updateMistakeName = $event.target.value">
+                                <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control"
+                                        v-bind:value="mistake.name" v-on:input="mistakeUpdate.name = $event.target.value">
                                     <span v-else>{{ mistake.name }}</span>
                                 </td>
-                                <td><input v-if="mistakeToEdit == mistake.objectId" type="text" class="form-control"
+                                <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control"
                                         v-bind:value="mistake.description"
-                                        v-on:input="updateMistakeDescription = $event.target.value">
+                                        v-on:input="mistakeUpdate.description = $event.target.value">
                                     <span v-else>{{ mistake.description }}</span>
                                 </td>
                                 <td>
                                     <span class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" role="switch"
-                                            v-bind:disabled="mistakeToEdit != mistake.objectId"
+                                            v-bind:disabled="mistakeUpdate.edit != mistake.objectId"
                                             v-bind:checked="mistake.active"
-                                            v-on:change="updateMistakeActive = !updateMistakeActive">
+                                            v-on:change="mistakeUpdate.active = !mistakeUpdate.active">
                                     </span>
                                 </td>
                                 <td>
-                                    <i v-if="mistakeToEdit == mistake.objectId" class="uil uil-save pointerClass"
-                                        v-on:click="useUpdateEditMistake"></i>
+                                    <i v-if="mistakeUpdate.edit == mistake.objectId" class="uil uil-save pointerClass"
+                                        v-on:click="useUpdateEditPatternMistake(mistake, 'mistake')"></i>
                                     <i v-else class="uil uil-edit-alt editItem pointerClass"
-                                        v-on:click="useEditMistake(mistake)"></i>
+                                        v-on:click="useEditPatternMistake(mistake, 'mistake')"></i>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="mt-2 input-group">
-                    <input type="text" class="form-control" v-on:input="newMistakeName = $event.target.value"
+                    <input type="text" class="form-control" v-on:input="mistakeNew.name = $event.target.value"
                         placeholder="Mistake">
-                    <input type="text" class="form-control" v-on:input="newMistakeDescription = $event.target.value"
+                    <input type="text" class="form-control" v-on:input="mistakeNew.description = $event.target.value"
                         placeholder="Description">
-                    <button type="button" v-on:click="useSaveNewMistake" class="btn btn-success">Add</button>
+                    <button type="button" v-on:click="useSaveNewPatternMistake('mistake')" class="btn btn-success">Add</button>
 
                 </div>
             </div>
