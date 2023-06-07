@@ -1,10 +1,12 @@
 <script setup>
 import { onBeforeMount, onMounted } from 'vue';
-import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, spinnerLoadingPageText, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray } from '../stores/globals';
 import { useInitStepper } from '../utils/utils';
 import { useImportTrades, useUploadTrades } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
+import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
+
+spinnerLoadingPage.value = false
 
 onMounted(async () => {
     await useInitStepper()
@@ -46,6 +48,7 @@ async function getExistingTradesArray() {
 }
 </script>
 <template>
+     <SpinnerLoadingPage />
     <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
         <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value == selectedBroker">
             {{ item.label }}</option>
