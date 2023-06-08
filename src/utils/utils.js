@@ -923,7 +923,7 @@ export async function useSetValues() {
                 console.log("selected patterns is null ")
                 selectedPatterns.value.push("p000p")
                 let activePatterns = patterns.filter(obj => obj.active == true)
-                console.log("active Patterns " + JSON.stringify(activePatterns))
+                //console.log("active Patterns " + JSON.stringify(activePatterns))
                 if (activePatterns) {
                     activePatterns.forEach(element => {
                         selectedPatterns.value.push(element.objectId)
@@ -939,7 +939,7 @@ export async function useSetValues() {
                 selectedMistakes.value.push("m000m")
                 await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
                 let activeMistakes = mistakes.filter(obj => obj.active == true)
-                console.log("active Mistakes " + JSON.stringify(activeMistakes))
+                //console.log("active Mistakes " + JSON.stringify(activeMistakes))
                 if (activeMistakes) {
                     activeMistakes.forEach(element => {
                         selectedMistakes.value.push(element.objectId)

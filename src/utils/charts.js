@@ -670,7 +670,10 @@ export function usePieChart(param1, param2, param3) { //chart ID, green, red, pa
                             return useOneDecPercentFormat(green)
                         }
                     }
-                }
+                },
+                emphasis: {
+                    disabled: true
+                },
             },
 
             ]
