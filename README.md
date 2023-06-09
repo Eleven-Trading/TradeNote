@@ -124,18 +124,18 @@ Alternatively, you can [build the image](#build-image-locally) yourself
 docker run -e MONGO_URL=<mongo_url> -e MONGO_PORT=<mongo_port> -e MONGO_USER=<mongo_user> -e MONGO_PASSWORD=<mongo_password> -e TRADENOTE_DATABASE=<tradenote_database> -e APP_ID=<app_id> -e MASTER_KEY=<master_key> -e TRADENOTE_PORT=<tradenote_port> -p <tradenote_port>:<tradenote_port> --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<tag>
 ```
 Run the image with the following environment variables
-- <mongo_url>: Enter one of the following information : 
+- mongo_url: Enter one of the following information : 
    - If you have followed the above MongoDB installation process and created a network ("tradenote-net"), simply use the container name ("tradenote-mongo").
    - If you have an existing MongoDB running on a local network, you can either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
    - If you have an existing MongoDB on a remote network, simply use the remote IP address
-- <mongo_port>: The MongoDB port number.
-- <mongo-user>: The MongoDB user.
-- <mongo_password>: The MongoDB password.
-- <tradenote_database>: The TradeNote database name in the MongoDB. You can use whatever name you like. 
-- <app_id>: Set a random string as application ID, which will be used to connect to the backend (no spaces)
-- <master_key>: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
-- <tradenote_port>: TradeNote port number
-- <tag>: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
+- mongo_port: The port number of your MongoDB.
+- mongo-user: The MongoDB user.
+- mongo_password: The MongoDB password.
+- tradenote_database: The TradeNote database name in the MongoDB. You can use whatever name you like. 
+- app_id: Set a random string as application ID, which will be used to connect to the backend (no spaces)
+- master_key: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
+- tradenote_port: TradeNote port number, from which you wish to serve the website.
+- tag: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
 
 
 #### 3_ First Steps
