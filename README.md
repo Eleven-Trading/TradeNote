@@ -196,7 +196,6 @@ For convenience, here is an example using [s3cmd](https://s3tools.org/s3cmd "s3c
 I'm a trader and recreational developer. My days are very packed but I will do my best to answer your questions and update the code when needed. As such, do not hesitate to contact me if you would like to contribute and help improve this project. Things to work on and improve:
 - Add support to other trading platforms
 - Currently, the code has only been tested for day trading and it would be interesting to add support for swing and multi-day trading
-- Clean and optimize code
 - Improve front end layout and develop new ideas
 - And more...
 
