@@ -1,5 +1,6 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton } from '../stores/globals.js'
+import { patterns, mistakes, selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerLoadMore, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality } from '../stores/globals.js'
+import { useFormatBytes } from './utils';
 
 let screenshotsQueryLimit = 4
 
@@ -86,11 +87,11 @@ export async function useGetScreenshots(param) {
                     //let setup = setups.filter(obj => obj.tradeId == element.name )
                     if (setup) {
                         if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
-                            element.patternName = " | "+setup.pattern.name
+                            element.patternName = " | " + setup.pattern.name
                         }
                         if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
                             //console.log("setup mistake "+JSON.stringify(setup[0]))
-                            element.mistakeName = " | "+setup.mistake.name
+                            element.mistakeName = " | " + setup.mistake.name
                         }
                         //console.log(" patternname " + element.patternName)
                     }
@@ -126,6 +127,23 @@ export function useScrollToScreenshot() {
     sessionStorage.removeItem('screenshotIdToEdit');
 }
 
+async function imgFileReader(param) {
+    return new Promise(async (resolve, reject) => {
+        let reader = new FileReader();
+        reader.readAsDataURL(param);
+        reader.onloadend = () => {
+            let base64data = reader.result
+            console.log("  --> Img size " + parseFloat(((base64data.length * 6) / 8) / 1000).toFixed(2) + " KB")
+            screenshot.originalBase64 = base64data
+            screenshot.annotatedBase64 = base64data
+            screenshot.extension = base64data.substring(base64data.indexOf('/') + 1, base64data.indexOf(';base64'))
+            renderData.value += 1
+            resolve()
+            //console.log("original " + screenshot.annotatedBase64)
+        }
+    })
+}
+
 export async function useSetupImageUpload(event, param1, param2, param3) {
     if (pageId.value == "daily") {
         tradeScreenshotChanged.value = true
@@ -138,19 +156,73 @@ export async function useSetupImageUpload(event, param1, param2, param3) {
 
     }
     const file = event.target.files[0];
-
     /* We convert to base64 so we can read src in markerArea */
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-        var base64data = reader.result
-        screenshot.originalBase64 = base64data
-        screenshot.annotatedBase64 = base64data
-        screenshot.extension = base64data.substring(base64data.indexOf('/') + 1, base64data.indexOf(';base64'))
-        renderData.value += 1
-        //console.log("original " + screenshot.annotatedBase64)
-    }
 
+    await imgFileReader(file).then(() => {
+        if (resizeCompressImg.value) {
+            const originalImage = document.querySelector("#setupDiv");
+            compressImage(originalImage);
+        }
+    })
+
+}
+
+let originalWidth
+let originalHeight
+let newWidth
+let newHeight
+
+export async function compressImage(imgToCompress) {
+    console.log("\nRESIZING AND COMPRESSING IMAGE")
+    //https://img.ly/blog/how-to-compress-an-image-before-uploading-it-in-javascript/
+    // resizing the image
+    originalWidth = imgToCompress.naturalWidth
+    originalHeight = imgToCompress.naturalHeight
+    console.log("  --> Original width " + originalWidth)
+    console.log("  --> Original height " + originalHeight)
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (originalWidth > originalHeight) {
+        if (originalWidth > resizeCompressMaxWidth.value) {
+            newHeight = originalHeight * (resizeCompressMaxWidth.value / originalWidth);
+            newWidth = resizeCompressMaxWidth.value;
+        }
+    } else {
+        if (originalHeight > resizeCompressMaxHeight.value) {
+            newWidth = originalWidth * (resizeCompressMaxHeight.value / originalHeight);
+            newHeight = resizeCompressMaxHeight.value;
+        }
+    }
+    canvas.width = Math.floor(newWidth * window.devicePixelRatio);
+    canvas.height = Math.floor(newHeight * window.devicePixelRatio);
+    console.log("canvas.width "+canvas.width)
+    console.log("canvas.height "+canvas.height)
+    context.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    console.log(" -> Resizing")
+    context.drawImage(
+        imgToCompress,
+        0,
+        0,
+        newWidth,
+        newHeight
+    );
+
+    // reducing the quality of the image
+    console.log(" -> Compressing")
+    canvas.toBlob(
+        (blob) => {
+            if (blob) {
+                
+                // showing the compressed image
+                //resizedImage.src = URL.createObjectURL(resizedImageBlob);
+                imgFileReader(blob)
+            }
+        },
+        "image/jpeg",
+        resizeCompressQuality.value
+    );
 }
 
 export function useSetupMarkerArea() {
@@ -161,11 +233,14 @@ export function useSetupMarkerArea() {
     }
     //https://github.com/ailon/markerjs2#readme
     let markerAreaId = document.getElementById("setupDiv");
+    //console.log("  --> Width "+markerAreaId.naturalWidth)
+    //console.log("  --> Height "+markerAreaId.naturalHeight)
 
     const markerArea = new markerjs2.MarkerArea(markerAreaId);
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
+    //markerArea.renderMarkersOnly = true
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
     markerArea.settings.defaultStrokeColor = "black" //font color
     markerArea.settings.defaultColorsFollowCurrentColors = true
@@ -175,7 +250,9 @@ export function useSetupMarkerArea() {
     markerArea.targetRoot = markerAreaId.parentElement
     markerArea.addRenderEventListener((imgURL, state) => {
         screenshot.annotatedBase64 = imgURL
+        console.log("  --> Img size " + parseFloat(((imgURL.length * 6) / 8) / 1000).toFixed(2) + " KB")
         screenshot.maState = state
+        //console.log("  --> Width "+markerAreaId.naturalWidth)
         //console.log("state " + JSON.stringify(screenshot.maState))
         markerAreaOpen.value = false
         renderData.value += 1

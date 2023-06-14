@@ -168,6 +168,10 @@ export const markerAreaOpen = ref(false)
 export const screenshotsNames = reactive([])
 export const dateScreenshotEdited = ref(false)
 export const screenshotsPagination = ref(0)
+export const resizeCompressImg = ref(false)
+export const resizeCompressMaxWidth = ref(750)
+export const resizeCompressMaxHeight = ref(750)
+export const resizeCompressQuality = ref(1)
 
 /**************************************
 * DIARY
