@@ -54,7 +54,7 @@ function screenshotUpdateDate(event) {
 }
 
 async function getScreenshotToEdit(param) {
-    console.log(" -> Getting screenshot to edit "+param)
+    console.log(" -> Getting screenshot to edit " + param)
     if (!param) {
         return
     }
@@ -76,19 +76,19 @@ async function getScreenshotToEdit(param) {
         }
         for (let index = 0; index < setups.length; index++) {
             const element = setups[index];
-            if (element.tradeId == screenshot.name){
+            if (element.tradeId == screenshot.name) {
                 //console.log("element "+JSON.stringify(element))
                 //console.log("pattern "+element.pattern.objectId)
                 //console.log("mistake "+element.mistake.objectId)
-                if (element.pattern != null){
-                    screenshot.pattern = element.pattern.objectId  
-                } 
-                if (element.mistake != null){
+                if (element.pattern != null) {
+                    screenshot.pattern = element.pattern.objectId
+                }
+                if (element.mistake != null) {
                     screenshot.mistake = element.mistake.objectId
-                } 
+                }
             }
 
-            
+
         }
 
     } else {
@@ -110,7 +110,8 @@ async function getScreenshotToEdit(param) {
                         </select>
                     </div>
                     <div class="col">
-                        <input type="datetime-local" v-bind:step="screenshot.type == 'setup' ? '' : '1'" class="form-control"
+                        <input type="datetime-local" v-bind:step="screenshot.type == 'setup' ? '' : '1'"
+                            class="form-control"
                             v-bind:value="screenshot.hasOwnProperty('dateUnix') ? useDatetimeLocalFormat(screenshot.dateUnix) : currentDate"
                             v-on:input="screenshotUpdateDate($event.target.value)" />
                     </div>
@@ -153,11 +154,10 @@ async function getScreenshotToEdit(param) {
         <div class="mt-3">
             <input type="file" @change="useSetupImageUpload" />
         </div>
-        <div class="mt-3" id="imagePreview"
-            style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 50px;">
-            <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;" v-bind:key="renderData"
-                crossorigin="anonymous" />
-            <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;" v-on:click="useSetupMarkerArea()" />
+        <div class="imgContainer">
+            <img id="setupDiv" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+            <img class="overlayImg setupEntryImg mt-3 img-fluid"
+                v-bind:src="screenshot.annotatedBase64" v-on:click="useSetupMarkerArea()" />
         </div>
         <p class="fst-italic fw-lighter text-center" v-show="screenshot.originalBase64">
             <small>Click image to mark & annotate</small>
@@ -170,5 +170,4 @@ async function getScreenshotToEdit(param) {
             <button type="cancel" onclick="location.href = '/screenshots';"
                 class="btn btn-outline-secondary btn-sm">Cancel</button>
         </div>
-    </div>
-</template>
+</div></template>

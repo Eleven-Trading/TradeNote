@@ -44,9 +44,9 @@ export async function useGetScreenshots(param) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
-        if (pageId.value == "screenshots") {
+        /*if (pageId.value == "screenshots") {
             query.exclude("originalBase64");
-        }
+        }*/
         query.notContainedIn("name", excludedIds) // Query not including excluded ids
 
         if (!selectedPatterns.value.includes("p000p") && !selectedMistakes.value.includes("m000m")) { // if void has been excluded, then only query screenshots that are in setups table
@@ -229,6 +229,7 @@ export function useSetupMarkerArea() {
     if (pageId.value == "daily") {
         tradeScreenshotChanged.value = true
         dateScreenshotEdited.value = true
+        saveButton.value = true
 
     }
     //https://github.com/ailon/markerjs2#readme
@@ -240,7 +241,7 @@ export function useSetupMarkerArea() {
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
-    //markerArea.renderMarkersOnly = true
+    markerArea.renderMarkersOnly = true
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
     markerArea.settings.defaultStrokeColor = "black" //font color
     markerArea.settings.defaultColorsFollowCurrentColors = true
@@ -289,17 +290,11 @@ export async function useSaveScreenshot() {
         if (pageId.value == "addScreenshot") {
             spinnerLoadingPage.value = true
             //spinnerLoadingPageText.value = "Uploading screenshot ..."
-        }
-
-        if (pageId.value == "daily") {
-            spinnerSetups.value = true
-        }
-
-        if (pageId.value == "addScreenshot") { //if daily, we do not edit dateUnix. It's already formated
             if (!editingScreenshot.value || (editingScreenshot.value && dateScreenshotEdited.value)) {
                 screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
             }
         }
+
         if (editingScreenshot.value && !dateScreenshotEdited.value) {
             //we do nothing
         }
@@ -343,27 +338,6 @@ export async function useUploadScreenshotToParse() {
         //spinnerLoadingPageText.value = "Uploading Screenshot ..."
 
         /* creating names, recreating files and new parse files */
-        const originalName = screenshot.name + "-original." + screenshot.extension
-        const annotatedName = screenshot.name + "-annotated." + screenshot.extension
-
-        /* we convert image back from base64 to file cause base64 was making browser freez whenever image was larger (at least at 300ko) */
-        /*const dataURLtoFile = (dataurl, filename) => {
-            var arr = dataurl.split(','),
-                mime = arr[0].match(/:(.*?);/)[1],
-                bstr = window.atob(arr[1]),
-                n = bstr.length,
-                u8arr = new Uint8Array(n);
-
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new File([u8arr], filename, { type: mime });
-        }
-        let originalFile = dataURLtoFile(screenshot.originalBase64, originalName);
-        const parseOriginalFile = new Parse.File(originalName, originalFile);
-
-        let annotatedFile = dataURLtoFile(screenshot.annotatedBase64, originalName);
-        const parseAnnotatedFile = new Parse.File(annotatedName, annotatedFile);*/
 
         const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
@@ -378,10 +352,9 @@ export async function useUploadScreenshotToParse() {
             results.set("name", screenshot.name)
             results.set("symbol", screenshot.symbol)
             results.set("side", screenshot.side)
-            //results.set("original", parseOriginalFile)
-            //results.set("annotated", parseAnnotatedFile)
             results.set("originalBase64", screenshot.originalBase64)
             results.set("annotatedBase64", screenshot.annotatedBase64)
+            results.set("markersOnly", true)
             results.set("maState", screenshot.maState)
             if (dateScreenshotEdited.value) {
                 results.set("date", new Date(dayjs.tz(screenshot.dateUnix, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
@@ -419,10 +392,9 @@ export async function useUploadScreenshotToParse() {
             object.set("name", screenshot.name)
             object.set("symbol", screenshot.symbol)
             object.set("side", screenshot.side)
-            //object.set("original", parseOriginalFile)
-            //object.set("annotated", parseAnnotatedFile)
             object.set("originalBase64", screenshot.originalBase64)
             object.set("annotatedBase64", screenshot.annotatedBase64)
+            object.set("markersOnly", true)
             object.set("maState", screenshot.maState)
             object.set("date", new Date(dayjs.tz(screenshot.date, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
             object.set("dateUnix", Number(screenshot.dateUnix))

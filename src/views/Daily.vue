@@ -181,7 +181,7 @@ async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : 
  * EXCURSIONS
  ***************/
 
- function noteClicked() {
+function noteClicked() {
     //console.log("click")
     tradeSetupChanged.value = true
     saveButton.value = true
@@ -357,6 +357,9 @@ async function hideTradesModal() {
         if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
             await updateExcursions()
         }
+        tradeSetupChanged.value = false
+        tradeExcursionChanged.value = false
+        tradeScreenshotChanged.value = false
         await (spinnerSetups.value = false)
         tradesModal.hide()
     }
@@ -619,10 +622,15 @@ function resetExcursion() {
                                                     <span>{{ screenshot.patternName }}</span>
 
                                                     <span>{{ screenshot.mistakeName }}</span>
+                                                    <div class="imgContainer">
+                                                        <img v-if="screenshot.markersOnly"
+                                                            class="setupEntryImg mt-3 img-fluid"
+                                                            v-bind:src="screenshot.originalBase64" />
+                                                        <img v-bind:id="screenshot.objectId"
+                                                            v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                                                            v-bind:src="screenshot.annotatedBase64" />
+                                                    </div>
 
-                                                    <img v-bind:id="screenshot.objectId"
-                                                        class="setupEntryImg mt-1 img-fluid"
-                                                        v-bind:src="screenshot.annotatedBase64" />
                                                 </div>
                                             </div>
 
@@ -681,11 +689,9 @@ function resetExcursion() {
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
 
-                    <div v-if="screenshot.annotatedBase64" class="mt-3" id="imagePreview"
-                        style="position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 40px;">
-                        <img id="setupDiv" v-bind:src="screenshot.originalBase64" style="position: relative;"
-                            v-bind:key="renderData" crossorigin="anonymous" />
-                        <img v-bind:src="screenshot.annotatedBase64" style="position: absolute;"
+                    <div class="imgContainer">
+                        <img id="setupDiv" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+                        <img class="overlayImg setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64"
                             v-on:click="useSetupMarkerArea()" />
                     </div>
 
@@ -754,8 +760,7 @@ function resetExcursion() {
 
                                         <!-- Patterns -->
                                         <div class="col-4" v-if="patterns.length > 0">
-                                            <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
+                                            <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
                                                 class="form-select">
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="itemActivePattern in activePatterns"
@@ -771,8 +776,7 @@ function resetExcursion() {
 
                                         <!-- Mistakes -->
                                         <div class="col-4" v-if="mistakes.length > 0">
-                                            <select
-                                                v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
+                                            <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
                                                 class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in activeMistakes" v-bind:value="item.objectId"
@@ -785,8 +789,8 @@ function resetExcursion() {
                                                     href="/settings">settings</a></span>
                                         </div>
                                         <div class="col-3">
-                                            <input type="number" class="form-control" placeholder="MFE Price" style="font-size: small;"
-                                                v-bind:value="excursion.mfePrice"
+                                            <input type="number" class="form-control" placeholder="MFE Price"
+                                                style="font-size: small;" v-bind:value="excursion.mfePrice"
                                                 v-on:click="tradeExcursionClicked"
                                                 v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
                                         </div>
@@ -802,7 +806,8 @@ function resetExcursion() {
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
                                         v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
-                                        v-on:change="useTradeSetupChange($event.target.value, 'note')" v-on:click="noteClicked"></textarea>
+                                        v-on:change="useTradeSetupChange($event.target.value, 'note')"
+                                        v-on:click="noteClicked"></textarea>
                                 </div>
 
                                 <!-- Forth line -->

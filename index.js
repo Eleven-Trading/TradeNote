@@ -7,7 +7,14 @@ const fs = require('fs');
 const Vite = require('vite');
 const MongoClient = require("mongodb").MongoClient;
 
-let databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+let databaseURI
+
+if (process.env.MONGO_ATLAS){
+    databaseURI = "mongodb+srv://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+}else{
+    databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+}
+
 
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 

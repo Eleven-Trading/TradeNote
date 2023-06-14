@@ -15,8 +15,6 @@ onBeforeMount(async () => {
 })
 
 onMounted(async () => {
-    
-
     window.addEventListener('scroll', () => {
         let scrollFromTop = window.scrollY
         let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
@@ -81,9 +79,9 @@ onMounted(async () => {
                                         data-bs-toggle="popover" data-bs-placement="left"></i>
                                 </span>
                             </div>
-                            <div class="">
-                                <!--<img v-bind:id="screenshot.objectId" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotated.url"/>-->
-                                <img class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64" />
+                            <div class="imgContainer">
+                                <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+                                <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']" v-bind:src="screenshot.annotatedBase64" />
                             </div>
                         </div>
                     </div>

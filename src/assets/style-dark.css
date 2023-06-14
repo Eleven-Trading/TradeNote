@@ -74,7 +74,8 @@ main {
     background-color: var(--black);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
     color: var(--white-65) !important;
 }
 
@@ -104,7 +105,8 @@ input::placeholder, textarea::placeholder {
 }
 
 input[type="datetime-local"],
-input[type="date"], input[type="month"]{
+input[type="date"],
+input[type="month"] {
     color: var(--white-87);
     border: 1px solid var(--white-38);
 }
@@ -462,6 +464,24 @@ img.logo {
     max-height: 650px;
 }
 
+.imagePreviewDiv {
+    position: relative; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding-top: 40px;
+}
+
+.imgContainer {
+    position: relative;
+}
+
+.overlayImg {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 #comment {
     height: 100px;
 }
@@ -594,10 +614,11 @@ img.logo {
     border-color: #2ea2d9;
     background-color: #2ea2d9;
 }
+
 .btn-outline-primary:active {
     color: white;
     border-color: #2ea2d9;
-    background-color:var(--blue-color) !important;
+    background-color: var(--blue-color) !important;
 }
 
 .btn-red {

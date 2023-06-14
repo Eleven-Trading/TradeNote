@@ -714,20 +714,16 @@
                 "type": "String",
                 "required": false
             },
-            "original": {
-                "type": "File",
-                "required": false
-            },
-            "annotated": {
-                "type": "File",
-                "required": false
-            },
             "originalBase64": {
                 "type": "String",
                 "required": false
             },
             "annotatedBase64": {
                 "type": "String",
+                "required": false
+            },
+            "markersOnly": {
+                "type": "Boolean",
                 "required": false
             },
             "maState": {
