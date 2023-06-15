@@ -220,7 +220,7 @@ export async function compressImage(imgToCompress) {
                 imgFileReader(blob)
             }
         },
-        "image/jpeg",
+        "image/png",
         resizeCompressQuality.value
     );
 }
@@ -238,20 +238,21 @@ export function useSetupMarkerArea() {
     //console.log("  --> Height "+markerAreaId.naturalHeight)
 
     const markerArea = new markerjs2.MarkerArea(markerAreaId);
-    markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
     markerArea.renderMarkersOnly = true
+    markerArea.targetRoot = markerAreaId.parentElement
+    
+    markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
     markerArea.settings.defaultStrokeColor = "black" //font color
     markerArea.settings.defaultColorsFollowCurrentColors = true
     markerArea.settings.defaultStrokeWidth = 2
     markerArea.settings.defaultColor = "white"
 
-    markerArea.targetRoot = markerAreaId.parentElement
     markerArea.addRenderEventListener((imgURL, state) => {
         screenshot.annotatedBase64 = imgURL
-        console.log("  --> Img size " + parseFloat(((imgURL.length * 6) / 8) / 1000).toFixed(2) + " KB")
+        console.log("  --> Marker img size " + parseFloat(((imgURL.length * 6) / 8) / 1000).toFixed(2) + " KB")
         screenshot.maState = state
         //console.log("  --> Width "+markerAreaId.naturalWidth)
         //console.log("state " + JSON.stringify(screenshot.maState))

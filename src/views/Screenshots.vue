@@ -5,7 +5,7 @@ import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { pageId, setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
 import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots } from '../utils/utils';
-import { useGetScreenshots} from '../utils/screenshots';
+import { useGetScreenshots } from '../utils/screenshots';
 import { endOfList } from '../stores/globals';
 
 let expandedScreenshot = ref(null)
@@ -64,7 +64,7 @@ onMounted(async () => {
                                     }}</span>
                                     <span>{{ screenshot.patternName }}</span>
                                     <span>{{ screenshot.mistakeName }}</span>
-                                    
+
                                 </span>
                                 <span class="col mb-2 ms-auto text-end">
                                     <i class="uil uil-expand-arrows-alt pointerClass me-4"
@@ -80,8 +80,10 @@ onMounted(async () => {
                                 </span>
                             </div>
                             <div class="imgContainer">
-                                <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
-                                <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']" v-bind:src="screenshot.annotatedBase64" />
+                                <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid"
+                                    v-bind:src="screenshot.originalBase64" />
+                                <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                                    v-bind:src="screenshot.annotatedBase64" />
                             </div>
                         </div>
                     </div>
@@ -101,7 +103,12 @@ onMounted(async () => {
                 <div class="carousel-inner">
                     <div v-for="(screenshot, index) in screenshots"
                         v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
-                        <img class="d-block w-100" v-bind:src="screenshot.annotatedBase64">
+                        <div class="imgContainer">
+                            <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid"
+                                v-bind:src="screenshot.originalBase64" />
+                            <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                                v-bind:src="screenshot.annotatedBase64" />
+                        </div>
                         <div class="carousel-caption d-none d-md-block">
                             <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
                             <p>{{ screenshot.symbol }}
@@ -124,5 +131,4 @@ onMounted(async () => {
             </div>
         </div>
 
-    </div>
-</template>
+</div></template>

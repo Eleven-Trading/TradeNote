@@ -788,7 +788,6 @@ export async function useMountDaily() {
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
     //await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
-    useInitTab("daily")
     useRenderDoubleLineChart()
     useRenderPieChart()
     useLoadCalendar()

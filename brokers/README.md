@@ -7,6 +7,8 @@ You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wis
 
 # Template
 If you wish to adapt your export file to the template, below is the explanation for each of the columns. 
+Note : make sure to input one execution per line, not aggregated trade. So one line = one execution
+
 - Account: your accound id or name
 - T/D: trade date in MM/DD/YYYY format
 - S/D: same as T/D, trade date in MM/DD/YYYY format
