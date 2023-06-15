@@ -347,6 +347,7 @@ export async function useUploadScreenshotToParse() {
         //console.log("url orig " + screenshot.originalUrl + " annot " + screenshot.annotatedUrl)
         if (results) {
             console.log(" -> Updating")
+            //console.log("screenshot: "+JSON.stringify(screenshot))
             //await parseOriginalFile.save() // before I was using then. In that case it's possible to catch error. I had to change it to await because in daily trades it was triggering the rest of the functinos in clickTradesModal too fast
             //await parseAnnotatedFile.save()
             results.set("name", screenshot.name)
@@ -357,7 +358,7 @@ export async function useUploadScreenshotToParse() {
             results.set("markersOnly", true)
             results.set("maState", screenshot.maState)
             if (dateScreenshotEdited.value) {
-                results.set("date", new Date(dayjs.tz(screenshot.dateUnix, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
+                results.set("date", new Date(dayjs.unix(screenshot.dateUnix).tz(timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
                 results.set("dateUnix", Number(screenshot.dateUnix))
                 results.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix())
             }
@@ -396,7 +397,7 @@ export async function useUploadScreenshotToParse() {
             object.set("annotatedBase64", screenshot.annotatedBase64)
             object.set("markersOnly", true)
             object.set("maState", screenshot.maState)
-            object.set("date", new Date(dayjs.tz(screenshot.date, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
+            object.set("date", new Date(dayjs.unix(screenshot.dateUnix).tz(timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss")))
             object.set("dateUnix", Number(screenshot.dateUnix))
             object.set("dateUnixDay", dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix())
 

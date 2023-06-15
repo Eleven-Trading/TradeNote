@@ -35,7 +35,9 @@ export async function useGetDiaries(param1, param2) {
                 });
             }
         } else {
-            endOfList.value = true
+            if (pageId.value == "diary"){
+                endOfList.value = true
+            }
         }
 
         //console.log(" -> Diaries " + JSON.stringify(diaries))

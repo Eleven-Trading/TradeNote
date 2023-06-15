@@ -1085,3 +1085,8 @@ export function useFormatBytes(param, decimals = 2) {
     const i = Math.floor(Math.log(param) / Math.log(k));
     return parseFloat((param / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
+
+export function useDecimalsArithmetic(param1, param2) {
+    //https://flaviocopes.com/javascript-decimal-arithmetics/
+    return ( (param1.toFixed(2) * 100) + (param2.toFixed(2) * 100) ) / 100
+}
