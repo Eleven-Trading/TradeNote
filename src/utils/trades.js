@@ -320,6 +320,15 @@ export async function usePrepareTrades() {
             }
 
             element.trades.forEach(el => {
+                /*============= NOTE - Creating list of trades =============
+    
+                * at the same time, we will push each trade inside trades
+                * way.value we have a list of trades that we can group 
+                * according to grouping need (per date but also entry, strategy, etc.)
+                */
+                temp1.push(el)
+
+                /******************** */
 
                 totalQuantity += el.buyQuantity + el.sellQuantity
                 totalCommission += el.commission
@@ -379,13 +388,6 @@ export async function usePrepareTrades() {
                 totalNetLossCount += el.netLossCount //Total number/count of net losing trades
                 financials += el.financials //Total number/count of net losing trades
 
-                /*============= NOTE - Creating list of trades =============
-    
-                * at the same time, we will push each trade inside trades
-                * way.value we have a list of trades that we can group 
-                * according to grouping need (per date but also entry, strategy, etc.)
-                */
-                temp1.push(el)
             })
 
 
@@ -840,9 +842,9 @@ export async function usePrepareTrades() {
         groups.patterns = _(temp1)
             .groupBy(x => {
                 //in my first version pattern was a string id. Now pattern is an object. So we need to check this
-                if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('pattern')) {
-                    if (typeof (x.setup.pattern) == 'string') {
-                        return x.setup.pattern
+                if (x.hasOwnProperty('pattern')) {
+                    if (typeof (x.pattern) == 'string') {
+                        return x.pattern
                     }
                     /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null && x.setup.pattern != undefined) {
                         return x.setup.pattern
@@ -890,10 +892,10 @@ export async function usePrepareTrades() {
          *******************/
         groups.mistakes = _(temp1)
             .groupBy(x => {
-                if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('mistake')) {
-                    if (typeof (x.setup.mistake) == 'string') {
+                if (x.hasOwnProperty('mistake')) {
+                    if (typeof (x.mistake) == 'string') {
                         //console.log(" mistake id "+x.setup.mistake)
-                        return x.setup.mistake
+                        return x.mistake
                     }
 
                     /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {

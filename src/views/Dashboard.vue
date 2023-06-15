@@ -372,7 +372,7 @@ useMountDashboard()
                             <div class="row">
 
                                 <!-- GROUP BY TRADES -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Trades</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
@@ -383,7 +383,7 @@ useMountDashboard()
                                 </div>
 
                                 <!-- GROUP BY EXECUTIONS -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Executions</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
@@ -403,7 +403,7 @@ useMountDashboard()
                             <div class="row">
 
                                 <!-- GROUP BY PATTERN -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Pattern</h6>
                                         <div class="text-center" v-if="!dashboardChartsMounted">
@@ -424,7 +424,7 @@ useMountDashboard()
                         </div> -->
 
                                 <!-- GROUP BY MISTAKES -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Mistake</h6>
                                         <div class="text-center" v-if="!dashboardChartsMounted">
@@ -445,7 +445,7 @@ useMountDashboard()
                             <div class="row">
 
                                 <!-- GROUP BY SYMBOL -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Symbol</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
@@ -478,7 +478,7 @@ useMountDashboard()
                         </div>-->
 
                                 <!-- GROUP BY ENTRYPRICE -->
-                                <div class="col-12 col-xl-4 mb-3">
+                                <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Entry Price</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
