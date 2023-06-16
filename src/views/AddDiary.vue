@@ -6,7 +6,7 @@ import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
 
 let diary = {}
-currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
+currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD")
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
@@ -22,8 +22,8 @@ function diaryDateInput(param) {
     diaryUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
     diaryUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
     diaryUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
-    //console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
-    //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+    console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
+    console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
 }
 
 async function getDiaryToEdit(param) {
