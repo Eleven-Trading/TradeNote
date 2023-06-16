@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, amountCapital, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, timeZones, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -824,6 +824,40 @@ export async function useMountScreenshots() {
     await console.timeEnd("  --> Duration mount screenshots")
     useInitPopover()
 }
+
+export function useCheckVisibleScreen() {
+    let visibleScreen = (window.innerHeight) // adding 200 so that loads before getting to bottom
+    let documentHeight = document.documentElement.scrollHeight
+    console.log("visible screen " + visibleScreen)
+    console.log("documentHeight " + documentHeight)
+    if (visibleScreen >= documentHeight) {
+        useLoadMore()
+    }
+}
+
+export async function useLoadMore() {
+    console.log("  --> Loading more")
+    spinnerLoadMore.value = true
+
+    if (pageId.value == "daily") {
+        await useGetFilteredTradesForDaily()
+        await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
+        useInitTab("daily")
+        //await (renderingCharts.value = false)
+    }
+
+    if (pageId.value == "screenshots") {
+        await useGetScreenshots()
+    }
+
+    if (pageId.value == "diary") {
+        await useGetDiaries(true)
+    }
+
+    spinnerLoadMore.value = false
+
+}
+
 /**************************************
 * MISC
 **************************************/
@@ -1087,5 +1121,5 @@ export function useFormatBytes(param, decimals = 2) {
 
 export function useDecimalsArithmetic(param1, param2) {
     //https://flaviocopes.com/javascript-decimal-arithmetics/
-    return ( (param1.toFixed(2) * 100) + (param2.toFixed(2) * 100) ) / 100
+    return ((param1.toFixed(2) * 100) + (param2.toFixed(2) * 100)) / 100
 }

@@ -4,15 +4,16 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import NoData from '../components/NoData.vue';
 
 import { spinnerLoadingPage, diaries, selectedItem, spinnerLoadMore, endOfList } from '../stores/globals';
-import { useCreatedDateFormat, useEditItem, useInitPopover } from '../utils/utils';
+import { useCheckVisibleScreen, useCreatedDateFormat, useEditItem, useInitPopover, useLoadMore } from '../utils/utils';
 import { useGetDiaries } from '../utils/diary';
 
 onBeforeMount(async () => {
-    await useGetDiaries(true)
-    useInitPopover()
+    
 })
 
-onMounted(() => {
+onMounted(async () => {
+    await useGetDiaries(true)
+    useInitPopover()
     window.addEventListener('scroll', () => {
         let scrollTop = window.scrollY
         let visibleScreen = window.innerHeight
@@ -21,12 +22,11 @@ onMounted(() => {
 
         if (difference <= 0) {
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
-                console.log("  --> Loading more")
-                useGetDiaries(true)
-                spinnerLoadMore.value = true
+                useLoadMore()
             }
         }
     })
+    useCheckVisibleScreen()
 })
 </script>
 

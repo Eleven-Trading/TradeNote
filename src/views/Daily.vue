@@ -5,7 +5,7 @@ import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, renderData, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, renderingCharts, satisfactionTradeArray, satisfactionArray, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList } from '../stores/globals';
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange, useTwoDecFormat } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useInitTab, useTimeDuration, useMountDaily, useGetSelectedRange, useTwoDecFormat, useLoadMore, useCheckVisibleScreen } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups, useDeleteSetup } from '../utils/setups'
 import { useGetExcursions, useGetSatisfactions } from '../utils/daily';
@@ -39,13 +39,12 @@ let tradesModal = null
 let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
-useMountDaily()
-
 
 onBeforeMount(async () => {
 
 })
 onMounted(async () => {
+    await useMountDaily()
     tradesModal = new bootstrap.Modal("#tradesModal")
     window.addEventListener('scroll', async () => {
         let scrollFromTop = window.scrollY
@@ -55,22 +54,17 @@ onMounted(async () => {
         /*console.log("scroll top "+scrollFromTop)
         console.log("visible screen "+visibleScreen)
         console.log("documentHeight "+documentHeight)
-        console.log("difference "+difference)*/
+        //console.log("difference "+difference)*/
         if (difference <= 0) {
             /*console.log("spinnerLoadMore "+spinnerLoadMore.value)
             console.log("spinnerLoadingPage "+spinnerLoadingPage.value)
             console.log("endOfList "+endOfList.value)*/
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
-                console.log("  --> Loading more")
-                await (spinnerLoadMore.value = true)
-                await useGetFilteredTradesForDaily()
-                await (spinnerLoadMore.value = false)
-                await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-                useInitTab("daily")
-                await (renderingCharts.value = false)
+                useLoadMore()
             }
         }
     })
+    useCheckVisibleScreen()
 
 })
 
@@ -78,6 +72,8 @@ onMounted(async () => {
 /**************
  * SATISFACTION
  ***************/
+
+
 async function dailySatisfactionChange(param1, param2, param3) {
     console.log("\nDAILY SATISFACTION CHANGE")
     console.time("  --> Duration daily satisfaction change")
@@ -311,7 +307,7 @@ async function clickTradesModal(param1, param2, param3) {
         tradeIndexPrevious.value = param2
         tradeIndex.value = param3
 
-        
+
         let awaitClick = async () => {
             tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
             tradeExcursionChanged.value = false
@@ -672,7 +668,6 @@ function resetExcursion() {
                     </div>
                 </div>
                 <!-- end card-->
-
                 <!-- ============ CALENDAR ============ -->
                 <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
                     <div class="dailyCard calCard">

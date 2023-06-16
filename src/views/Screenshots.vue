@@ -4,17 +4,18 @@ import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { pageId, setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
-import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots } from '../utils/utils';
+import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
 import { useGetScreenshots } from '../utils/screenshots';
 import { endOfList } from '../stores/globals';
 
 let expandedScreenshot = ref(null)
 
 onBeforeMount(async () => {
-    useMountScreenshots()
+
 })
 
 onMounted(async () => {
+    await useMountScreenshots()
     window.addEventListener('scroll', () => {
         let scrollFromTop = window.scrollY
         let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
@@ -27,12 +28,12 @@ onMounted(async () => {
         if (difference <= 0) {
 
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value && expandedScreenshot.value == null) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
-                console.log("  --> Loading more")
-                useGetScreenshots()
-                spinnerLoadMore.value = true
+                useLoadMore()
             }
         }
     })
+    useCheckVisibleScreen()
+
 })
 
 </script>
@@ -131,4 +132,5 @@ onMounted(async () => {
             </div>
         </div>
 
-</div></template>
+    </div>
+</template>

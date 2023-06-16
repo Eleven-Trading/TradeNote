@@ -171,7 +171,6 @@ export async function useUpdateSetups() {
 
         if (pageId.value == "daily") {
             temp = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value]
-            console.log("temp "+JSON.stringify(temp))
                 upsertSetups()
         }
         if (pageId.value == "addScreenshot") {

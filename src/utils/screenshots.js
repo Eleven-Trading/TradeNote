@@ -106,7 +106,7 @@ export async function useGetScreenshots(param) {
             //console.log(" -> Screenshots " + JSON.stringify(screenshots))
             screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit
             spinnerSetups.value = false //spinner for trades in daily
-            spinnerLoadMore.value = false
+            //spinnerLoadMore.value = false
             if (pageId.value != "daily") {
                 await (spinnerLoadingPage.value = false) // need await or else scroll to screenshot doesn't work
             }
