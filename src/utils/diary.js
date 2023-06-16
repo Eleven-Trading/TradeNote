@@ -60,6 +60,8 @@ export async function useUploadDiary() {
         query.equalTo("objectId", diaryIdToEdit.value);
         const results = await query.first();
         if (results) {
+            results.set("date", diaryUpdate.dateDateFormat)
+            results.set("dateUnix", diaryUpdate.dateUnix)
             results.set("journal", diaryUpdate.journal)
             await results.save() //very important to have await or else too quick to update
             usePageRedirect()

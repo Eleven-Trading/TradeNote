@@ -18,12 +18,12 @@ onBeforeMount(async () => {
 })
 
 function diaryDateInput(param) {
-    console.log(" -> diaryDateInput param: " + param)
+    //console.log(" -> diaryDateInput param: " + param)
     diaryUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
     diaryUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
     diaryUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
-    console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
-    console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+    //console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
+    //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
 }
 
 async function getDiaryToEdit(param) {
@@ -68,7 +68,7 @@ async function initDiaryJson(param) {
         <div>
             <div v-show="!spinnerLoadingPage">
                 <div class="mt-3 input-group mb-3">
-                    <input type="date" class="form-control" v-bind:readonly="diary.hasOwnProperty('date')"
+                    <input type="date" class="form-control" 
                         v-bind:value="diary.hasOwnProperty('dateUnix') ? diaryUpdate.date = useDateCalFormat(diary.dateUnix) : diaryUpdate.hasOwnProperty('date') ? diaryUpdate.date : diaryUpdate.date = currentDate"
                         v-on:input="diaryDateInput($event.target.value)" />
                 </div>
