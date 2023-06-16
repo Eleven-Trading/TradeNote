@@ -18,23 +18,24 @@ export async function useGetScreenshots(param) {
     //console.log("patternsmistakes "+JSON.stringify(setups))
 
     //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
-    let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x));
-    //console.log(" -> Excluded patterns "+exclPatterns);
-    let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x));
-    //console.log(" -> Excluded mistakes "+exclMistakes);
+    //console.log("selectePatters "+selectedPatterns.value)
+    //console.log("active patterns "+JSON.stringify(activePatterns))
+    let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x.objectId));
+    //console.log(" -> Excluded patterns "+JSON.stringify(exclPatterns))
+    let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x.objectId));
+    //console.log(" -> Excluded mistakes "+JSON.stringify(exclMistakes))
 
     let allSetupsIds = []
     let excludedIds = []
     setups.forEach(element => {
         allSetupsIds.push(element.tradeId)
         //console.log(" - element mistake "+element.mistake)
-
-        if ((element.pattern != null && exclPatterns.includes(element.pattern.objectId)) || (element.mistake != null && exclMistakes.includes(element.mistake.objectId))) {
+        if ((element.pattern != null && exclPatterns.some(obj => obj.objectId == element.pattern.objectId)) || (element.mistake != null && exclMistakes.some(obj => obj.objectId == element.mistake.objectId))) {
             //console.log("  --> Trade id to exclude " + element.tradeId)
             excludedIds.push(element.tradeId)
         }
     });
-    //console.log("excluded Ids "+excludedIds)
+
     return new Promise(async (resolve, reject) => {
         //console.log(" -> selectedPatterns " + selectedPatterns.value)
         //console.log(" -> screenshotsPagination (start)" + screenshotsPagination);

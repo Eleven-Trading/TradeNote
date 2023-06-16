@@ -41,11 +41,9 @@ onMounted(async () => {
 <template>
     <SpinnerLoadingPage />
     <div v-show="!spinnerLoadingPage" class="mt-2 mb-2">
+        <Filters />
         <div v-if="screenshots.length == 0">
             <NoData />
-        </div>
-        <div v-else>
-            <Filters />
         </div>
         <div class="row">
             <div v-if="!expandedScreenshot" v-for="(screenshot, index) in screenshots" class="col-12 col-xl-6 mt-2">

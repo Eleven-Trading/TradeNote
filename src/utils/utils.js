@@ -828,8 +828,8 @@ export async function useMountScreenshots() {
 export function useCheckVisibleScreen() {
     let visibleScreen = (window.innerHeight) // adding 200 so that loads before getting to bottom
     let documentHeight = document.documentElement.scrollHeight
-    console.log("visible screen " + visibleScreen)
-    console.log("documentHeight " + documentHeight)
+    //console.log("visible screen " + visibleScreen)
+    //console.log("documentHeight " + documentHeight)
     if (visibleScreen >= documentHeight) {
         useLoadMore()
     }
