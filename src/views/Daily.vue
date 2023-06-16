@@ -293,10 +293,7 @@ async function clickTradesModal(param1, param2, param3) {
         return
     } else {
         await (spinnerSetups.value = true)
-        itemTradeIndex.value = param1
-        tradeIndexPrevious.value = param2
-        tradeIndex.value = param3
-
+        //We first update because setups rely on tradeIndex, so before tradeIndex changes to new modal page or simply use tradeIndex if we close
         if (tradeSetupChanged.value) {
             await useUpdateSetups()
         }
@@ -309,6 +306,12 @@ async function clickTradesModal(param1, param2, param3) {
             await useSaveScreenshot()
         }
 
+        //Then we change indexes
+        itemTradeIndex.value = param1
+        tradeIndexPrevious.value = param2
+        tradeIndex.value = param3
+
+        
         let awaitClick = async () => {
             tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
             tradeExcursionChanged.value = false
@@ -317,6 +320,7 @@ async function clickTradesModal(param1, param2, param3) {
 
             await resetExcursion()
 
+            //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
             let findScreenshot = screenshots.find(obj => obj.name == filteredTrades[itemTradeIndex.value].trades[param3].id)
             if (findScreenshot) {
                 for (let key in screenshot) delete screenshot[key]

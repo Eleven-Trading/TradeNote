@@ -137,7 +137,7 @@ export async function useGetFilteredTrades(param) {
                             element.mistakeName = " | " + mistakeName
                             element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
                         }
-                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined) {
+                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined && setup.note != '' && setup.note != null) {
                             element.note = setup.note
                             element.noteShort = setup.note.substr(0, 15) + "..."
                         }

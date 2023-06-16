@@ -73,7 +73,7 @@ export async function useGetSetups(param) {
 }
 
 export function useTradeSetupChange(param1, param2) {
-    //console.log("param 1: " + param1 + " - param2: " + param2)
+    console.log("param 1: " + param1 + " - param2: " + param2)
     if (pageId.value == "daily") {
         if (param2 == "pattern") {
             param1 == "null" ? filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = null : filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].pattern = param1
@@ -115,7 +115,7 @@ export async function useUpdateSetups() {
         let temp
 
         const upsertSetups = async () => {
-            console.log("pattern " + temp.pattern)
+            //console.log("pattern " + temp.pattern)
             spinnerSetups.value = true
             //tradeSetupChanged.value = true
             const parseObject = Parse.Object.extend("setups");
@@ -129,7 +129,7 @@ export async function useUpdateSetups() {
                 spinnerSetupsText.value = "Updating"
                 results.set("pattern", temp.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: temp.pattern })
                 results.set("mistake", temp.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: temp.mistake })
-                results.set("note", temp.note)
+                results.set("note", temp.note == null ? null : temp.note)
 
                 results.save()
                     .then(async () => {
@@ -149,17 +149,9 @@ export async function useUpdateSetups() {
 
                 const object = new parseObject();
                 object.set("user", Parse.User.current())
-                object.set("pattern", { __type: "Pointer", className: "patterns", objectId: temp.pattern })
-                if (temp.mistake != null) {
-                    object.set("mistake", { __type: "Pointer", className: "mistakes", objectId: temp.mistake })
-                } else {
-                    object.set("mistake", null)
-                }
-                if (temp.note != null) {
-                    object.set("note", temp.note)
-                } else {
-                    object.set("note", null)
-                }
+                object.set("pattern", temp.pattern == null ? null : { __type: "Pointer", className: "patterns", objectId: temp.pattern })
+                object.set("mistake", temp.mistake == null ? null : { __type: "Pointer", className: "mistakes", objectId: temp.mistake })
+                object.set("note", temp.note == null ? null : temp.note)
 
                 object.set("dateUnixDay", tradeSetupDateUnixDay.value)
                 object.set("dateUnix", tradeSetupDateUnix.value)
@@ -178,10 +170,9 @@ export async function useUpdateSetups() {
         }
 
         if (pageId.value == "daily") {
-            temp = filteredTrades[itemTradeIndex.value].trades[tradeIndexPrevious.value]
-            if (temp.pattern != null || temp.mistake != null || temp.note != null) {
+            temp = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value]
+            console.log("temp "+JSON.stringify(temp))
                 upsertSetups()
-            }
         }
         if (pageId.value == "addScreenshot") {
             temp = screenshot
