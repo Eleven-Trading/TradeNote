@@ -1,0 +1,43 @@
+services:
+  tradenote:
+    container_name: tradenote.test
+    hostname: tradenote.test
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - "./:/app"
+    ports:
+      - 8080:8080
+    links:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://tradenote:tradenote@mongo:27017/tradenote?authSource=admin
+      TRADENOTE_DATABASE: tradenote
+      APP_ID: 123456
+      MASTER_KEY: 123456
+      TRADENOTE_PORT: 8080
+      NODE_ENV: dev
+  mongo-express:
+    image: mongo-express:latest
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_ADMINUSERNAME: tradenote
+      ME_CONFIG_MONGODB_ADMINPASSWORD: tradenote
+    links:
+      - mongo
+    ports:
+      - 8081:8081
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - tradenote_db:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: tradenote
+      MONGO_INITDB_ROOT_PASSWORD: tradenote
+      MONGO_INITDB_DATABASE: tradenote
+volumes:
+  tradenote_db:
+    name: tradenote_db

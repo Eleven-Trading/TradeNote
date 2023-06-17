@@ -9,12 +9,15 @@ const MongoClient = require("mongodb").MongoClient;
 
 let databaseURI
 
-if (process.env.MONGO_ATLAS){
+if (process.env.MONGO_URI) {
+    databaseURI = process.env.MONGO_URI
+} else if (process.env.MONGO_ATLAS){
     databaseURI = "mongodb+srv://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
 }else{
     databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
 }
 
+console.log('databaseURI '+databaseURI)
 
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
@@ -177,7 +180,7 @@ const startIndex = async () => {
         }
         for (let i = 0; i < getExistingSchema.length; i++) {
             //console.log("Class name " + getExistingSchema[i].className)
-            
+
             //we check for classes/collections that need to be renamed
             if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals" || getExistingSchema[i].className == "patternsMistakes") {
                 let oldName = getExistingSchema[i].className
