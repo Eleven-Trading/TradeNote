@@ -1,7 +1,12 @@
 services:
   tradenote:
-    image: eleventrading/tradenote
-    container_name: tradenote_app
+    container_name: tradenote.test
+    hostname: tradenote.test
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - "./:/app"
     ports:
       - 8080:8080
     links:
@@ -12,6 +17,7 @@ services:
       APP_ID: 123456
       MASTER_KEY: 123456
       TRADENOTE_PORT: 8080
+      NODE_ENV: dev
   mongo-express:
     image: mongo-express:latest
     environment:
@@ -23,8 +29,7 @@ services:
     ports:
       - 8081:8081
   mongo:
-    image: mongo:latest
-    container_name: tradenote_db
+    image: mongo:6.0
     volumes:
       - tradenote_db:/data/db
     ports:

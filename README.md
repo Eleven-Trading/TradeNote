@@ -83,37 +83,35 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 
 
 
-# Local Installation and Development
+# Setup
+## Installation
 
-### Requirements
+### Docker Compose (recommended)
+#### Requirements
 - Docker
 - Docker Compose
 - Node 18.X
 
-### Installation
+#### Installation
+1. Download the docker-compose.yml file
+2. Run `docker-compose up -d`
 
-Local development is done using Docker Compose. You can run the following command to start the project
-```bash
-docker-compose up -d
-```
-
-This will automatically setup the database, nodejs server, and mongodb database viewer (mongodb-express)
+This will automatically setup the database (mongodDB), the TradeNote app, and a mongoDB database viewer (mongodb-express)
 
 You can then access the website on http://localhost:8080
-Any changes you make will be automatically reflected on the website.
 
-### Viewing the database
+### Docker
+Requirements
+- Docker
+- Docker Compose
+- Node 18.X
+- Running MongoDB Database
 
-You can access the database viewer on http://localhost:8081
+If you already have a running MongoDB database, you can simply run the TradeNote image with its environment variables
 
-The default database login is
-```
-username: tradenote
-password: tradenote
-database: tradenote
-```
 
-### First Steps
+
+## First Steps
 1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password
 2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
 2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
@@ -122,13 +120,13 @@ database: tradenote
 ### Environment Variables
 
 - **MONGO_URI**: The MongoDB connection string. You can use any MongoDB instance you like. If you are using Docker, you can use the default MongoDB instance.
-- **TRDENOTE_DATABASE**: The TradeNote database name in the MongoDB. You can use whatever name you like.
+- **TRADENOTE_DATABASE**: The TradeNote database name in the MongoDB. You can use whatever name you like.
 - **APP_ID**: Set a random string as application ID, which will be used to connect to the backend (no spaces)
 - **MASTER_KEY**: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
 - **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website.
 
 ### Side note
-#### Build image locally
+#### Local installation
 For advanced users, you can also build the TradeNote image locally, directly from GitHub repository.
 
 1. Pull from github
