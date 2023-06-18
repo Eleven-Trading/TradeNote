@@ -81,8 +81,6 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 ![Screenshots Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Screenshots Page")
 
 
-
-
 # Setup
 ## Installation
 
@@ -105,11 +103,26 @@ Requirements
 - Docker
 - Docker Compose
 - Node 18.X
-- Running MongoDB Database
+- MongoDB
 
 If you already have a running MongoDB database, you can simply run the TradeNote image with its environment variables
 
-
+```
+docker run \
+    -e MONGO_URI=<mongo_uri> \
+    -e TRADENOTE_DATABASE=<tradenote_database>
+    -e APP_ID=<app_id> \
+    -e MASTER_KEY=<master_key> \
+    -e TRADENOTE_PORT=<tradenote_port> \
+    -p <tradenote_port>:<tradenote_port> \
+    --name tradenote_app \
+    -d eleventrading/tradenote
+```
+- **MONGO_URI**: The MongoDB connection string, with tradenote database name and enforced access control ([explanation](https://www.mongodb.com/docs/manual/reference/connection-string/ "explanation")). You can use any MongoDB instance you like. If you are using Docker, you can use the default MongoDB instance. (example: mongodb://tradenote:tradenote@mongo:27017/tradenote?authSource=admin)
+- **TRADENOTE_DATABASE**: The TradeNote database name in the MongoDB (example: tradenote)
+- **APP_ID**: Set a random string as application ID, which will be used to connect to the backend (no spaces) (example: 12345).
+- **MASTER_KEY**: Set a random string as master key, which will be used to make root connections to the backend (no spaces) (example: 12345)
+- **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website. (example: 8080)
 
 ## First Steps
 1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password
@@ -117,33 +130,33 @@ If you already have a running MongoDB database, you can simply run the TradeNote
 2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
 
 
-### Environment Variables
-
-- **MONGO_URI**: The MongoDB connection string. You can use any MongoDB instance you like. If you are using Docker, you can use the default MongoDB instance.
-- **TRADENOTE_DATABASE**: The TradeNote database name in the MongoDB. You can use whatever name you like.
-- **APP_ID**: Set a random string as application ID, which will be used to connect to the backend (no spaces)
-- **MASTER_KEY**: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
-- **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website.
-
-### Side note
-#### Local installation
+## Side note
+### Local installation
 For advanced users, you can also build the TradeNote image locally, directly from GitHub repository.
 
 1. Pull from github
 2. cd into Tradenote directory 
-3. docker build -f docker/Dockerfile . -t tradenote:<tag>
-(replace <tag> with the number you wish / with latest tag number)
-4. Run the image (see previous section)
+3. Run
+    - Docker compose : Run `docker-compose-local up -d`
+    - Or Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
 
-#### Parse
+### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
 1. Manage the authentication (flow)
 2. Parse is a great framework for all API communications with the mongo database
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
-During the installation process, Parse server is automatically installed via Docker. If you wish to visualize your raw MongoDB data, you can use a tool [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard") or [MongoDB Express](https://hub.docker.com/_/mongo-express) accessible on http://localhost:8081
+### Viewing the database (optional)
+If you installed using the docker-compose.yml file you can access the database viewer on http://localhost:8081
 
-#### PostHog
+The default database login is
+- username: tradenote
+- password: tradenote
+- database: tradenote
+
+Alternatively, you can use [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
+
+### PostHog
 This projects uses [PostHog](https://github.com/PostHog/posthog "PostHog") as its product analytics suite to collect <u>anonymous</u> analytics about TradeNote installations and page views. This helps me better understand if and how people are using TradeNote and evaluate the outreach of my project. If you want to opt-out of this program, you can simply add `-e ANALYTICS_OFF=true` when running the docker image. 
 
 

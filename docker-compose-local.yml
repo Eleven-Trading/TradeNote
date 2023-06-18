@@ -1,7 +1,8 @@
+name: tradenote
 services:
   tradenote:
-    container_name: tradenote.test
-    hostname: tradenote.test
+    container_name: tradenote_app
+    hostname: tradenote_app
     build:
       context: .
       dockerfile: ./docker/Dockerfile
@@ -20,6 +21,7 @@ services:
       NODE_ENV: dev
   mongo-express:
     image: mongo-express:latest
+    container_name: tradenote_db_viewer
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_ADMINUSERNAME: tradenote
@@ -28,8 +30,10 @@ services:
       - mongo
     ports:
       - 8081:8081
+    restart: always
   mongo:
-    image: mongo:6.0
+    image: mongo:latest
+    container_name: tradenote_db
     volumes:
       - tradenote_db:/data/db
     ports:
