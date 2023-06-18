@@ -99,13 +99,16 @@ This will automatically setup the database (mongodDB), the TradeNote app, and a 
 You can then access the website on http://localhost:8080
 
 ### Docker
-Requirements
+#### Requirements
 - Docker
 - Docker Compose
 - Node 18.X
 - MongoDB
 
-If you already have a running MongoDB database, you can simply run the TradeNote image with its environment variables
+#### Installation
+You need to have a running MongoDB database.
+
+Run the TradeNote image with its environment variables.
 
 ```
 docker run \
