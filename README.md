@@ -83,67 +83,49 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 
 
 
+# Local Installation and Development
 
+### Requirements
+- Docker
+- Docker Compose
+- Node 18.X
 
-# Installation, Upgrade and Backup
+### Installation
 
-## Docker
-### MongoDB
-Your data will be stored on your terms, in a [MongoDB](https://hub.docker.com/_/mongo "MongoDB") database. As such, you must have a running mongoDB and you will be asked to proved the URI with the database name.
+Local development is done using Docker Compose. You can run the following command to start the project
+```bash
+docker-compose up -d
+```
 
-If you already have an existing MongoDB running and want to use it, you can skip this step. Otherwise, you can install MongoDB on a user-defined bridge with following steps
-#### 1_ Create network
-```
-docker network create tradenote-net
-```
-#### 2_ Pull image
-```
-docker pull mongo:latest
-```
-#### 3_ Run MongoDB
-```
-docker run -e MONGO_INITDB_ROOT_USERNAME=<mongo_initdb_root_username> -e MONGO_INITDB_ROOT_PASSWORD=<mongo_initdb_root_password> -v mongo_data:/data/db -p 27017:27017 --name tradenote-mongo --net tradenote-net -d mongo:latest
-```
-Run the image with the following environment variables
-- <mongo_initdb_root_username>: Username for authenticating to the MongoDB database.
-- <mongo_initdb_root_password>: Password for authenticating to the MongoDB database.
+This will automatically setup the database, nodejs server, and mongodb database viewer (mongodb-express)
 
-### TradeNote
-#### 1_ Pull image from DockerHub
-Pull image from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
-- Stable, production tags are simply identified by version number. Example 7.7.7. The community and myself do our best to test and limit bugs on stable versions but if you encounter any please let me know via GitHub issues or Discord. 
-- Development, beta or test tags are marked with an underscore and description. Example : 7.7.7_beta
+You can then access the website on http://localhost:8080
+Any changes you make will be automatically reflected on the website.
 
-```
-docker pull eleventrading/tradenote:<tag>
-```
-Alternatively, you can [build the image](#build-image-locally) yourself 
+### Viewing the database
 
-#### 2_ Run image
-```
-docker run -e MONGO_URL=<mongo_url> -e MONGO_PORT=<mongo_port> -e MONGO_USER=<mongo_user> -e MONGO_PASSWORD=<mongo_password> -e TRADENOTE_DATABASE=<tradenote_database> -e APP_ID=<app_id> -e MASTER_KEY=<master_key> -e TRADENOTE_PORT=<tradenote_port> -p <tradenote_port>:<tradenote_port> --name tradenote-app --net tradenote-net -d eleventrading/tradenote:<tag>
-```
-Run the image with the following environment variables
-- mongo_url: Enter one of the following information : 
-   - If you have followed the above MongoDB installation process and created a network ("tradenote-net"), simply use the container name ("tradenote-mongo").
-   - If you have an existing MongoDB running on a local network, you can 
-      - either connect it to the network by creating the network (`docker network create tradenote-net`) running `docker network connect tradenote-net <container_name>` and then use the container name 
-      - or connect it using your MongoDB container IP (you can find it by running `docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_name>`)
-   - If you have an existing MongoDB on a remote network, simply use the remote IP address
-- mongo_port: The port number of your MongoDB.
-- mongo-user: The MongoDB user.
-- mongo_password: The MongoDB password.
-- tradenote_database: The TradeNote database name in the MongoDB. You can use whatever name you like. 
-- app_id: Set a random string as application ID, which will be used to connect to the backend (no spaces)
-- master_key: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
-- tradenote_port: TradeNote port number, from which you wish to serve the website.
-- tag: Depends on the tag number pulled from [DockerHub](https://hub.docker.com/r/eleventrading/tradenote/tags "DockerHub")
+You can access the database viewer on http://localhost:8081
 
+The default database login is
+```
+username: tradenote
+password: tradenote
+database: tradenote
+```
 
-#### 3_ First Steps
-1. Start by registering a user. Visit `http://<your_server>:<tradenote_port>/register` to register a TradeNote user. Use any email and set a password
+### First Steps
+1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password
 2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
 2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
+
+
+### Environment Variables
+
+- **MONGO_URI**: The MongoDB connection string. You can use any MongoDB instance you like. If you are using Docker, you can use the default MongoDB instance.
+- **TRDENOTE_DATABASE**: The TradeNote database name in the MongoDB. You can use whatever name you like.
+- **APP_ID**: Set a random string as application ID, which will be used to connect to the backend (no spaces)
+- **MASTER_KEY**: Set a random string as master key, which will be used to make root connections to the backend (no spaces)
+- **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website.
 
 ### Side note
 #### Build image locally
@@ -157,33 +139,19 @@ For advanced users, you can also build the TradeNote image locally, directly fro
 
 #### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
-1. Manage the authentification (flow)
+1. Manage the authentication (flow)
 2. Parse is a great framework for all API communications with the mongo database
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
-During the installation process, Parse server is automatically installed via Docker. If you wish to visualize your raw MongoDB data, you can use a tool [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
+During the installation process, Parse server is automatically installed via Docker. If you wish to visualize your raw MongoDB data, you can use a tool [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard") or [MongoDB Express](https://hub.docker.com/_/mongo-express) accessible on http://localhost:8081
 
 #### PostHog
 This projects uses [PostHog](https://github.com/PostHog/posthog "PostHog") as its product analytics suite to collect <u>anonymous</u> analytics about TradeNote installations and page views. This helps me better understand if and how people are using TradeNote and evaluate the outreach of my project. If you want to opt-out of this program, you can simply add `-e ANALYTICS_OFF=true` when running the docker image. 
 
-## Upgrade to new version
-### Docker
-#### 1_ Stop and remove container
-1. List all containers `docker ps -a` and get the TradeNote container id
-2. Stop the TradeNote container: `docker stop <container_id>`
-3. Remove the TradeNote container: `docker rm <container_id>`
-
-#### 2_ Stop and remove image
-1. List all images `docker image ls` and get the TradeNote image id
-2. Remove the TradeNote image: `docker rmi <image_id>`
-
-#### 3_ Pull and Run (see Installation)
-
-
 
 ## Backup data
-### Persistant data
-During installation, mongoDB is runs with persistant data. This way, if you restart or update your mongoDB container, your data will not be lost.
+### Persistent data
+During installation, mongoDB is runs with persistent data. This way, if you restart or update your mongoDB container, your data will not be lost.
 
 ### Backup mongoDB
 Additionally, you can, and should, backup your database. 

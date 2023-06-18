@@ -1,5 +1,5 @@
-FROM alpine
-RUN apk update && apk add nano npm nodejs wget bash --no-cache coreutils git
+FROM node:18-alpine3.17
+RUN apk add --no-cache bash
 WORKDIR /app
 ADD ./ .
 RUN npm install
