@@ -23,7 +23,8 @@ export async function useLoadCalendar() {
              * calendarize / calendarizeData is where you get the date number for a given month (so 31 days for May for example and if May starts on monday that given year then 1 or if starts on tuesday then 0, 1). the month must be in date format.It does not work with just convert in to timezonetrade. I need a date. And if the local computer is in another timezone it did not work. So i convert with format
              */
             //console.log("  --> Getting days and position of day for given month")
-            let dateForCalendarize = new Date(dayjs.unix(param1).tz(timeZoneTrade.value).format("YYYY-MM-DD"))
+            //console.log("date "+dayJsDate)
+            let dateForCalendarize = new Date(dayjs.unix(param1)).toLocaleString("en-US", {timeZone: timeZoneTrade.value})
             //console.log(" date for calendarize "+dateForCalendarize)
             let calendarizeData = calendarize(dateForCalendarize, 1) // this creates.value calendar date numbers needed for a table calendar
             //console.log("calendarizeData "+calendarizeData)
@@ -33,6 +34,7 @@ export async function useLoadCalendar() {
             //let month = dayjs.unix(param1).get('month') + 1 //starts at 0
             let month = dayjs(param1 * 1000).tz(timeZoneTrade.value).get('month') + 1 //starts at 0 so here we add 1 to get the 'real' month number
             let year = dayjs.unix(param1).get('year')
+            //console.log("month "+month)
             for (let index1 = 0; index1 < calendarizeData.length; index1++) {
                 let element = calendarizeData[index1]
                 //console.log("element "+element)
