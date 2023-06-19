@@ -140,8 +140,8 @@ For advanced users, you can also build the TradeNote image locally, directly fro
 1. Pull from github
 2. cd into Tradenote directory 
 3. Run
-    - Docker compose : Run `docker-compose-local up -d`
-    - Or Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
+    - For Docker compose : Run `docker-compose-local up -d`
+    - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
 
 ### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 

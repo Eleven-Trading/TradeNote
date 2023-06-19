@@ -97,9 +97,9 @@ async function updateSchema() {
       <img class="mb-4" src="">
       <h1 class="h3 mb-3 fw-normal">{{ pageId == 'login' ? "Please Log in" : "Please Register" }}</h1>
       <input type="email" id="inputEmail" class="form-control" placeholder="Email" required="" autofocus=""
-        v-model="loginForm.username">
+        v-model="loginForm.username" autocomplete="username">
       <input type="password" id="inputPassword" class="mt-1 form-control" placeholder="Password" required=""
-        v-model="loginForm.password">
+        v-model="loginForm.password" v-bind:autocomplete="pageId == 'login' ? 'current-password' : 'new-password'">
       <div v-if="pageId == 'register'">
         <p class="mt-3">Choose the timezone (of the market) your trades will be located and imported from.</p>
         <select v-model="loginForm.timeZone" class="form-select">
