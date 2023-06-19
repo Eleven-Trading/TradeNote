@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTrade, diaryIdToEdit, diaryButton } from '../stores/globals';
 import { useInitQuill, useDateCalFormat } from '../utils/utils';

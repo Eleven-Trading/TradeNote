@@ -33,8 +33,9 @@ export async function useLoadCalendar() {
             let calendarJson = {}
             //let month = dayjs.unix(param1).get('month') + 1 //starts at 0
             let month = dayjs(param1 * 1000).tz(timeZoneTrade.value).get('month') + 1 //starts at 0 so here we add 1 to get the 'real' month number
-            let year = dayjs.unix(param1).get('year')
+            let year = dayjs(param1 * 1000).tz(timeZoneTrade.value).get('year')
             //console.log("month "+month)
+            //console.log("Yerar  "+year)
             for (let index1 = 0; index1 < calendarizeData.length; index1++) {
                 let element = calendarizeData[index1]
                 //console.log("element "+element)

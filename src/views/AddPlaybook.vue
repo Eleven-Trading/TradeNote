@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, reactive, ref } from 'vue';
+import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { currentDate, itemToEditId, spinnerLoadingPage, timeZoneTrade, playbookUpdate, playbookButton, playbookIdToEdit } from '../stores/globals';
 import { useDateCalFormat, useInitQuill } from '../utils/utils';
