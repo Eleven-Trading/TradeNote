@@ -2,6 +2,7 @@
 import { useToggleMobileMenu } from '../utils/utils.js'
 import { useInitShepherd } from "../utils/utils.js";
 import { pageId, currentUser, renderProfile, screenType } from "../stores/globals"
+import {version} from '../../package.json';
 
 const pages = [{
     id: "registerSignup",
@@ -155,6 +156,10 @@ function logout() {
                         <li>
                             <a class="dropdown-item" v-on:click="logout()">
                                 <i class="uil uil-signout me-2"></i>Logout</a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="text-center">
+                            <span class="txt-small">v{{ version }}</span>
                         </li>
                     </ul>
                 </div>
