@@ -51,14 +51,14 @@ onMounted(async () => {
         let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
         let documentHeight = document.documentElement.scrollHeight
         let difference = documentHeight - (scrollFromTop + visibleScreen)
-        /*console.log("scroll top "+scrollFromTop)
+        console.log("scroll top "+scrollFromTop)
         console.log("visible screen "+visibleScreen)
         console.log("documentHeight "+documentHeight)
-        //console.log("difference "+difference)*/
+        console.log("difference "+difference)
         if (difference <= 0) {
-            /*console.log("spinnerLoadMore "+spinnerLoadMore.value)
+            console.log("spinnerLoadMore "+spinnerLoadMore.value)
             console.log("spinnerLoadingPage "+spinnerLoadingPage.value)
-            console.log("endOfList "+endOfList.value)*/
+            console.log("endOfList "+endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }

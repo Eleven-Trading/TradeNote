@@ -100,7 +100,9 @@ export async function useGetScreenshots(param) {
                 });
 
             } else {
-                endOfList.value = true
+                if (pageId.value == "screenshots") {
+                    endOfList.value = true
+                }
             }
 
 
@@ -197,8 +199,8 @@ export async function compressImage(imgToCompress) {
     }
     canvas.width = Math.floor(newWidth * window.devicePixelRatio);
     canvas.height = Math.floor(newHeight * window.devicePixelRatio);
-    console.log("canvas.width "+canvas.width)
-    console.log("canvas.height "+canvas.height)
+    console.log("canvas.width " + canvas.width)
+    console.log("canvas.height " + canvas.height)
     context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     console.log(" -> Resizing")
@@ -215,7 +217,7 @@ export async function compressImage(imgToCompress) {
     canvas.toBlob(
         (blob) => {
             if (blob) {
-                
+
                 // showing the compressed image
                 //resizedImage.src = URL.createObjectURL(resizedImageBlob);
                 imgFileReader(blob)
@@ -243,7 +245,7 @@ export function useSetupMarkerArea() {
     markerArea.renderImageQuality = 1;
     markerArea.renderMarkersOnly = true
     markerArea.targetRoot = markerAreaId.parentElement
-    
+
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
     markerArea.settings.defaultStrokeColor = "black" //font color
