@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount, onMounted, ref } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
@@ -364,8 +364,10 @@ async function hideTradesModal() {
         tradeSetupChanged.value = false
         tradeExcursionChanged.value = false
         tradeScreenshotChanged.value = false
+
         await (spinnerSetups.value = false)
         tradesModal.hide()
+        modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
     }
 }
 
