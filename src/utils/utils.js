@@ -4,7 +4,7 @@ import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './chart
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
-import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, usePrepareTrades } from "./trades";
+import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
 import { useGetExcursions, useGetSatisfactions } from "./daily";
 import { useGetMistakes, useGetPatterns, useGetSetups } from "./setups";
@@ -751,7 +751,8 @@ export async function useMountDashboard() {
     useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions()
     await useGetSetups()
     await Promise.all([useGetFilteredTrades()])
-    await usePrepareTrades()
+    await useTotalTrades()
+    await useGroupTrades()
     await useCalculateProfitAnalysis()
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)

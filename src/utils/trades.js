@@ -250,8 +250,15 @@ export function useGetFilteredTradesForDaily() {
 * Create totals per date needed for grouping monthly, weekly and daily
 ***************************************/
 
-export async function usePrepareTrades() {
-    console.log("\nPREPARING TRADES")
+/* List of all trades inside trades column (needed for grouping) */
+let temp1 = []
+/* 1b - Create a json that we push to totals */
+let temp2 = {}
+/* Totals per date */
+let temp3 = {}
+
+export async function useTotalTrades() {
+    console.log("\nCREATING TOTAL TRADES")
     return new Promise(async (resolve, reject) => {
         /* Variables */
         var totalQuantity = 0
@@ -297,8 +304,7 @@ export async function usePrepareTrades() {
 
         //console.log("filtered trades "+JSON.stringify(filteredTrades[0].trades))
 
-        /* List of all trades inside trades column (needed for grouping) */
-        var temp1 = []
+        
 
         /*============= 1- CREATING GENERAL TOTALS =============
     
@@ -392,8 +398,8 @@ export async function usePrepareTrades() {
 
 
         })
+
         /* 1b - Create a json that we push to totals */
-        let temp2 = {}
 
         /*******************
          * Info
@@ -464,11 +470,7 @@ export async function usePrepareTrades() {
         //temp2.netSharePLWins = totalNetSharePLWins
         //temp2.netSharePLLoss = totalNetSharePLLoss
 
-
-
-
         //Needed for Dashboard
-        var numPL = filteredTrades.length
         temp2.probGrossWins = (totalGrossWinsCount / totalTrades)
         temp2.probGrossLoss = (totalGrossLossCount / totalTrades)
         temp2.probNetWins = (totalNetWinsCount / totalTrades)
@@ -494,7 +496,7 @@ export async function usePrepareTrades() {
          *
          * Create totals per date needed for grouping monthly, weekly and daily
          */
-        let temp3 = {}
+        
         //console.log("temp2 "+JSON.stringify(temp2))
         var z = _
             .chain(temp1)
@@ -712,9 +714,13 @@ export async function usePrepareTrades() {
         Object.assign(totalsByDate, temp3)
         //console.log(" -> TOTALS BY DATE " + JSON.stringify(totalsByDate))
         //console.log(" -> TOTALS BY DATE (length) " + Object.keys(totalsByDate).length)
+        resolve()
+    })
+}
 
-
-
+export async function useGroupTrades() {
+    console.log("\GROUPING TRADES")
+    return new Promise(async (resolve, reject) => {
         /*============= 3- MISC GROUPING =============
         
         * Miscelanious grouping of trades by entry, price, etc.
@@ -842,7 +848,7 @@ export async function usePrepareTrades() {
         groups.patterns = _(temp1)
             .groupBy(x => {
                 //in my first version pattern was a string id. Now pattern is an object. So we need to check this
-                if (x.hasOwnProperty('pattern')) {
+                if (x.hasOwnProperty('pattern') && selectedPatterns.value.includes(x.pattern)) {
                     if (typeof (x.pattern) == 'string') {
                         return x.pattern
                     }
@@ -854,45 +860,13 @@ export async function usePrepareTrades() {
             .value()
         //console.log("group by patterns " + JSON.stringify(groups.patterns))
 
-        /*******************
-         * GROUP BY PATTERN TYPE
-         *******************/
-        groups.patternTypes = _(temp1)
-            .groupBy(x => {
-                //in my first version pattern was a string id. Now pattern is an object. So we need to check this
-                if (x.hasOwnProperty('setup') && x.setup.hasOwnProperty('pattern')) {
-                    if (typeof (x.setup.pattern) == 'string') {
-                        //console.log(" patterns "+JSON.stringify(patterns[0].objectId)+" setupid "+x.setup.pattern)
-                        //console.log("patterns "+JSON.stringify(patterns))
-                        let pattern = patterns.find(item => item.objectId === x.setup.pattern)
-                        if (pattern != undefined && pattern.hasOwnProperty("type")) {
-                            let patternType = pattern.type
-                            //console.log("pattern type "+patternType)
-                            return patternType
-                        } else {
-                            return null
-                        }
-
-                    }
-
-                    /*if (typeof(x.setup.pattern) == 'object' && x.setup.pattern != null) {
-                        console.log(" patterns "+JSON.stringify(patterns[0].objectId)+" setupid "+x.setup.pattern.id)
-                        let pattern = patterns.find(item => item.objectId === x.setup.pattern)
-                        let patternType = pattern
-                        console.log("pattern type "+patternType)
-                        //return patternType
-                    }*/
-                }
-            })
-            .value()
-        //console.log("group by pattern types " + JSON.stringify(groups.patternTypes))
 
         /*******************
          * GROUP BY MISTAKE
          *******************/
         groups.mistakes = _(temp1)
             .groupBy(x => {
-                if (x.hasOwnProperty('mistake')) {
+                if (x.hasOwnProperty('mistake') && selectedMistakes.value.includes(x.mistake)) {
                     if (typeof (x.mistake) == 'string') {
                         //console.log(" mistake id "+x.setup.mistake)
                         return x.mistake

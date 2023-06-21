@@ -4,7 +4,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData, spinnerLoadingPageText, satisfactionArray } from '../stores/globals';
 import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTwoDecPercentFormat, useMountDashboard } from '../utils/utils';
-import { useGetFilteredTrades, usePrepareTrades, useCalculateProfitAnalysis } from '../utils/trades';
+import { useGetFilteredTrades, useTotalTrades, useCalculateProfitAnalysis } from '../utils/trades';
 import NoData from '../components/NoData.vue';
 import { useECharts } from '../utils/charts';
 import { useTest } from "../stores/counter";
