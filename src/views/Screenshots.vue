@@ -1,11 +1,10 @@
 <script setup>
-import { ref, reactive, onBeforeMount, onMounted } from 'vue'
+import { ref, onBeforeMount, onMounted } from 'vue'
 import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { pageId, setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, spinnerLoadingPageText } from '../stores/globals';
-import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useInitPopover, useTimeFormat, useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
-import { useGetScreenshots } from '../utils/screenshots';
+import { setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage } from '../stores/globals';
+import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useTimeFormat, useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
 import { endOfList } from '../stores/globals';
 
 let expandedScreenshot = ref(null)

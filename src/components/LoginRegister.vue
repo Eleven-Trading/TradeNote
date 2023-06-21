@@ -1,7 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { pageId, timeZones } from '../stores/globals';
-import { getCurrentUser, useGetPeriods, useGetTimeZone, useInitParse, usePageId, useSetValues } from '../utils/utils';
+import { getCurrentUser, useGetPeriods, useGetTimeZone, useSetValues } from '../utils/utils';
 
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)

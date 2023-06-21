@@ -1,9 +1,6 @@
 <script setup>
-import { onBeforeMount } from 'vue';
-import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage, periodRange, renderingCharts, selectedRange, filteredTradesTrades } from '../stores/globals';
+import { pageId, selectedMonth, selectedPlSatisfaction, amountCase, calendarData, miniCalendarsData, timeZoneTrade, spinnerLoadingPage } from '../stores/globals';
 import { useThousandCurrencyFormat, useMountCalendar, useMountDaily } from '../utils/utils';
-import { useGetFilteredTrades } from '../utils/trades';
-import { useLoadCalendar } from '../utils/calendar'
 
 const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 

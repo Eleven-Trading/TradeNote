@@ -1,10 +1,9 @@
 <script setup>
 import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
-import { ref, reactive, onMounted, onBeforeMount } from 'vue'
-import { useInitParse, usePageId, useScreenType, useSetValues, useGetTimeZone, useGetPeriods, useInitPostHog } from '../utils/utils.js'
-import { mistakes, patterns, screenType, selectedMistakes, selectedPatterns, sideMenuMobileOut } from '../stores/globals'
-import { useGetMistakes, useGetPatterns } from '../utils/setups'
+import { onBeforeMount } from 'vue'
+import { useInitParse, usePageId, useScreenType, useGetTimeZone, useGetPeriods, useInitPostHog } from '../utils/utils.js'
+import { screenType, sideMenuMobileOut } from '../stores/globals'
 
 /*========================================
   Functions used on all Dashboard components

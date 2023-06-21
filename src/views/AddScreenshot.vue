@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade, renderData } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
 import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'

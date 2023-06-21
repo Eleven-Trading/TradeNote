@@ -1,13 +1,10 @@
 <script setup>
-import { computed, ref, reactive, onMounted, onBeforeMount, defineAsyncComponent, onUpdated } from 'vue'
+import { computed } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
-import { selectedDashTab, currentUser, patterns, spinnerLoadingPage, dashboardIdMounted, totals, totalsByDate, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, filteredTrades, hasData, spinnerLoadingPageText, satisfactionArray } from '../stores/globals';
-import { useInitShepherd, useInitTab, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTwoDecPercentFormat, useMountDashboard } from '../utils/utils';
-import { useGetFilteredTrades, useTotalTrades, useCalculateProfitAnalysis } from '../utils/trades';
+import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray } from '../stores/globals';
+import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useMountDashboard } from '../utils/utils';
 import NoData from '../components/NoData.vue';
-import { useECharts } from '../utils/charts';
-import { useTest } from "../stores/counter";
 
 const dashTabs = [{
     id: "overviewTab",

@@ -1,8 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted, onBeforeMount } from 'vue'
+import { onMounted, onBeforeMount } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import NoData from '../components/NoData.vue';
-
 import { spinnerLoadingPage, diaries, selectedItem, spinnerLoadMore, endOfList } from '../stores/globals';
 import { useCheckVisibleScreen, useCreatedDateFormat, useEditItem, useInitPopover, useLoadMore } from '../utils/utils';
 import { useGetDiaries } from '../utils/diary';
