@@ -1,6 +1,5 @@
-import { spinnerLoadingPageText, filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
-import { useRefreshTrades } from './trades'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -187,7 +186,6 @@ async function createTempExecutions() {
                 temp2.side = tradesData[key].Side;
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
-                console.log("quantity "+temp2.quantity)
                 temp2.price = parseFloat(tradesData[key].Price);
                 temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
                 let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
@@ -505,8 +503,6 @@ async function createTrades() {
                 } else if (newTrade == false) { //= concatenating trade
                     console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + temp7.strategy)
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
-                    console.log("buyQuantity "+temp7.buyQuantity)
-                    console.log("quantity "+tempExec.quantity)
                     if (temp7.strategy == "long") {
                         //console.log(" -> Strategy is long and "+invertedLong+" for symbol "+tempExec.symbol)
                         if (!invertedLong) {

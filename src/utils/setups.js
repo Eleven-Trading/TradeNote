@@ -1,4 +1,4 @@
-import { patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes,filteredTrades, itemTradeIndex, tradeIndex, tradeIndexPrevious, screenshot, patternUpdate, mistakeUpdate, mistakeNew, patternNew } from '../stores/globals';
+import { patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes,filteredTrades, itemTradeIndex, tradeIndex, screenshot, patternUpdate, mistakeUpdate, mistakeNew, patternNew } from '../stores/globals';
 import { useGetSelectedRange } from './utils';
 
 

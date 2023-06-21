@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, spinnerLoadMore, excursions } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
