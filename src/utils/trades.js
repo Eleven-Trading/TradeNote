@@ -1,5 +1,5 @@
 import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
-import { useMountDashboard, useMountDaily, useMountCalendar } from "./utils";
+import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
 let trades = []
@@ -22,8 +22,7 @@ export async function useGetFilteredTrades(param) {
         * New variable will be called filteredTrades
         ***************************************************/
 
-        //console.log(" -> Getting trades from " + dayjs.unix(selectedRange.value.start).format("DD/MM/YY") + " to " + dayjs.unix(selectedRange.value.end).format("DD/MM/YY"))
-        console.log(" -> Filtering trades")
+        console.log(" -> Filtering trades (" + useDateTimeFormat(selectedRange.value.start) + " - " + useDateTimeFormat(selectedRange.value.end) + ")")
         //spinnerLoadingPageText.value = "Getting trades - Filtering trades"
         //console.log("Range (Date or Call) start " + selectedRange.value.start + " Range (Date or Call) end " + selectedRange.value.end)
 
@@ -66,7 +65,7 @@ export async function useGetFilteredTrades(param) {
                     let mistakeName
                     // We need to include patterns and mistakes that are void or null
                     //console.log("setups "+JSON.stringify(setups))
-                    
+
                     //Getting setup needed for filter and creating setup key needed for daily
                     let setup
                     for (let index = 0; index < setups.length; index++) {
@@ -261,6 +260,10 @@ export async function useTotalTrades() {
     console.log("\nCREATING TOTAL TRADES")
     return new Promise(async (resolve, reject) => {
         /* Variables */
+        temp1 = []
+        temp2 = {}
+        temp3 = {}
+
         var totalQuantity = 0
 
         var totalCommission = 0
@@ -304,7 +307,7 @@ export async function useTotalTrades() {
 
         //console.log("filtered trades "+JSON.stringify(filteredTrades[0].trades))
 
-        
+
 
         /*============= 1- CREATING GENERAL TOTALS =============
     
@@ -496,7 +499,7 @@ export async function useTotalTrades() {
          *
          * Create totals per date needed for grouping monthly, weekly and daily
          */
-        
+
         //console.log("temp2 "+JSON.stringify(temp2))
         var z = _
             .chain(temp1)
@@ -709,7 +712,7 @@ export async function useTotalTrades() {
 
 
         }
-        //console.log(" temp 3 "+JSON.stringify(temp3))
+        //console.log(" temp 3 " + JSON.stringify(temp3))
         for (let key in totalsByDate) delete totalsByDate[key]
         Object.assign(totalsByDate, temp3)
         //console.log(" -> TOTALS BY DATE " + JSON.stringify(totalsByDate))
@@ -719,7 +722,7 @@ export async function useTotalTrades() {
 }
 
 export async function useGroupTrades() {
-    console.log("\GROUPING TRADES")
+    console.log("\nGROUPING TRADES")
     return new Promise(async (resolve, reject) => {
         /*============= 3- MISC GROUPING =============
         
@@ -997,7 +1000,7 @@ export async function useGroupTrades() {
 export async function useCalculateProfitAnalysis(param) {
     console.log("\nCALCULATING PROFIT ANALYSIS")
     return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting MFE Prices")
+        //console.log(" -> Getting MFE Prices")
         let mfePricesArray = []
         for (let key in profitAnalysis) delete profitAnalysis[key]
         mfePricesArray = excursions
@@ -1007,7 +1010,7 @@ export async function useCalculateProfitAnalysis(param) {
         console.log("  --> Average quantity "+averageQuantity)*/
         //console.log(" totals "+JSON.stringify(totals))
         if (JSON.stringify(totals) != '{}') {
-            console.log(" -> Calculating profit loss ratio risk&reward and MFE")
+            //console.log(" -> Calculating profit loss ratio risk&reward and MFE")
             //console.log(" -> Calculating gross and net Average Win Per Share")
             profitAnalysis.grossAvWinPerShare = (totals.grossSharePLWins / totals.grossWinsCount)
             profitAnalysis.netAvWinPerShare = (totals.netSharePLWins / totals.netWinsCount)
@@ -1031,7 +1034,7 @@ export async function useCalculateProfitAnalysis(param) {
             //console.log(" -> Calculating gross and net R")
             profitAnalysis.grossR = profitAnalysis.grossAvWinPerShare / profitAnalysis.grossAvLossPerShare
             profitAnalysis.netR = profitAnalysis.netAvWinPerShare / profitAnalysis.netAvLossPerShare
-            console.log("  --> Gross R " + profitAnalysis.grossR + " and net R " + profitAnalysis.netR)
+            //console.log("  --> Gross R " + profitAnalysis.grossR + " and net R " + profitAnalysis.netR)
 
             //console.log(" -> Calculating gross and net mfe R")
             //console.log(" -> Filtered trades "+JSON.stringify(filteredTrades.trades))
@@ -1120,7 +1123,7 @@ export async function useCalculateProfitAnalysis(param) {
             if (tempGrossExpectedReturn > grossCurrExpectReturn) profitAnalysis.grossMfeR = tempGrossMfeR
             if (tempNetExpectedReturn > netCurrExpectReturn) profitAnalysis.netMfeR = tempNetMfeR
 
-            console.log("  --> Gross MFE " + profitAnalysis.grossMfeR + " and net " + profitAnalysis.netMfeR)
+            //console.log("  --> Gross MFE " + profitAnalysis.grossMfeR + " and net " + profitAnalysis.netMfeR)
             //console.log("  --> Profit analysis " + JSON.stringify(profitAnalysis))
         }
 

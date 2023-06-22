@@ -880,6 +880,7 @@ export function useGetSelectedRange() {
         else {
             selectedRange.value = selectedMonth.value
         }
+        //console.log("SelectedRange "+JSON.stringify(selectedRange.value))
         resolve()
     })
 }

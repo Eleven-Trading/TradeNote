@@ -36,7 +36,6 @@ amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase(
 
 const apptCompute = computed(() => {
     let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'Wins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'Loss']))
-    console.log("temp " + temp)
     return temp
 })
 
