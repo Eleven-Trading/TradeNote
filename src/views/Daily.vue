@@ -628,10 +628,10 @@ function resetExcursion() {
                                                     <span>{{ screenshot.mistakeName }}</span>
                                                     <div class="imgContainer">
                                                         <img v-if="screenshot.markersOnly"
-                                                            class="setupEntryImg mt-3 img-fluid"
+                                                            class="screenshotImg mt-3 img-fluid"
                                                             v-bind:src="screenshot.originalBase64" />
                                                         <img v-bind:id="screenshot.objectId"
-                                                            v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                                                            v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
                                                             v-bind:src="screenshot.annotatedBase64" />
                                                     </div>
 
@@ -693,8 +693,8 @@ function resetExcursion() {
                 <div v-if="modalDailyTradeOpen">
 
                     <div class="imgContainer">
-                        <img id="setupDiv" class="setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
-                        <img class="overlayImg setupEntryImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64"
+                        <img id="setupDiv" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+                        <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64"
                             v-on:click="useSetupMarkerArea()" />
                     </div>
 

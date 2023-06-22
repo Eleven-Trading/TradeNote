@@ -465,21 +465,23 @@ img.logo {
 }
 
 .imagePreviewDiv {
-    position: relative; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding-top: 40px;
 }
 
 .imgContainer {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 
 .overlayImg {
     position: absolute;
-    top: 0;
-    left: 0;
 }
 
 #comment {
@@ -879,7 +881,7 @@ table {
 }
 
 /* ENTRY */
-.setupEntryImg {
+.screenshotImg {
     max-width: 100%;
 }
 

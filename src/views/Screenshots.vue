@@ -78,9 +78,9 @@ onMounted(async () => {
                                 </span>
                             </div>
                             <div class="imgContainer">
-                                <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid"
+                                <img v-if="screenshot.markersOnly" class="screenshotImg mt-3 img-fluid"
                                     v-bind:src="screenshot.originalBase64" />
-                                <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                                <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
                                     v-bind:src="screenshot.annotatedBase64" />
                             </div>
                         </div>
@@ -102,9 +102,9 @@ onMounted(async () => {
                     <div v-for="(screenshot, index) in screenshots"
                         v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
                         <div class="imgContainer">
-                            <img v-if="screenshot.markersOnly" class="setupEntryImg mt-3 img-fluid"
+                            <img v-if="screenshot.markersOnly" class="screenshotImg mt-3 img-fluid"
                                 v-bind:src="screenshot.originalBase64" />
-                            <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'setupEntryImg mt-3 img-fluid']"
+                            <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
                                 v-bind:src="screenshot.annotatedBase64" />
                         </div>
                         <div class="carousel-caption d-none d-md-block">
