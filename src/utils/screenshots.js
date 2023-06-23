@@ -228,12 +228,6 @@ export async function compressImage(imgToCompress) {
 }
 
 export function useSetupMarkerArea() {
-    if (pageId.value == "daily") {
-        tradeScreenshotChanged.value = true
-        dateScreenshotEdited.value = true
-        saveButton.value = true
-
-    }
     //https://github.com/ailon/markerjs2#readme
     let markerAreaId = document.getElementById("setupDiv");
     //console.log("  --> Width "+markerAreaId.naturalWidth)
@@ -251,8 +245,29 @@ export function useSetupMarkerArea() {
     markerArea.settings.defaultColorsFollowCurrentColors = true
     markerArea.settings.defaultStrokeWidth = 2
     markerArea.settings.defaultColor = "white"
+    markerArea.focus = true
 
-    markerArea.addRenderEventListener((imgURL, state) => {
+    markerArea.addEventListener('render', event => {
+        if (pageId.value == "daily") {
+            tradeScreenshotChanged.value = true
+            dateScreenshotEdited.value = true
+            saveButton.value = true
+    
+        }
+        screenshot.annotatedBase64 =  event.dataUrl
+        console.log("  --> Marker img size " + parseFloat(((event.dataUrl.length * 6) / 8) / 1000).toFixed(2) + " KB")
+        screenshot.maState = event.state
+        //console.log("  --> Width "+markerAreaId.naturalWidth)
+        //console.log("state " + JSON.stringify(screenshot.maState))
+        markerAreaOpen.value = false
+        renderData.value += 1
+    })
+
+    markerArea.addEventListener('close', event => {
+        markerAreaOpen.value = false
+    })
+
+    /*markerArea.addRenderEventListener((imgURL, state) => {
         screenshot.annotatedBase64 = imgURL
         console.log("  --> Marker img size " + parseFloat(((imgURL.length * 6) / 8) / 1000).toFixed(2) + " KB")
         screenshot.maState = state
@@ -260,7 +275,7 @@ export function useSetupMarkerArea() {
         //console.log("state " + JSON.stringify(screenshot.maState))
         markerAreaOpen.value = false
         renderData.value += 1
-    })
+    })*/
 
     markerArea.show();
     if (markerArea.isOpen) {
