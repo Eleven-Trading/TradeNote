@@ -237,8 +237,8 @@ export function useSetupMarkerArea() {
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
     markerArea.renderMarkersOnly = true
-    //markerArea.targetRoot = markerAreaId.parentElement
-    markerArea.settings.displayMode = 'popup'
+    markerArea.targetRoot = markerAreaId.parentElement
+    //markerArea.settings.displayMode = 'popup';
 
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
