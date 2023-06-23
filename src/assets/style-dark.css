@@ -472,6 +472,10 @@ img.logo {
     padding-top: 40px;
 }
 
+.__markerjs2_{
+    z-index: 10000 !important;
+}
+
 .imgContainer {
     position: relative;
     display: flex;

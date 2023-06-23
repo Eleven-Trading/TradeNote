@@ -237,7 +237,8 @@ export function useSetupMarkerArea() {
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
     markerArea.renderMarkersOnly = true
-    markerArea.targetRoot = markerAreaId.parentElement
+    //markerArea.targetRoot = markerAreaId.parentElement
+    markerArea.settings.displayMode = 'popup'
 
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
@@ -245,7 +246,6 @@ export function useSetupMarkerArea() {
     markerArea.settings.defaultColorsFollowCurrentColors = true
     markerArea.settings.defaultStrokeWidth = 2
     markerArea.settings.defaultColor = "white"
-    markerArea.focus = true
 
     markerArea.addEventListener('render', event => {
         if (pageId.value == "daily") {
