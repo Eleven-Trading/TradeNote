@@ -237,8 +237,8 @@ export function useSetupMarkerArea() {
     markerArea.renderAtNaturalSize = true;
     markerArea.renderImageQuality = 1;
     markerArea.renderMarkersOnly = true
-    markerArea.targetRoot = markerAreaId.parentElement
-    //markerArea.settings.displayMode = 'popup';
+    //markerArea.targetRoot = markerAreaId.parentElement
+    markerArea.settings.displayMode = 'popup';
 
     markerArea.availableMarkerTypes = markerArea.ALL_MARKER_TYPES;
     markerArea.settings.defaultFillColor = "#ffffffde" //note background
@@ -247,14 +247,26 @@ export function useSetupMarkerArea() {
     markerArea.settings.defaultStrokeWidth = 2
     markerArea.settings.defaultColor = "white"
 
+    if (pageId.value == "daily") {
+        markerArea.addEventListener('markercreating', event => {
+            document.getElementById("tradesModal").style.display = "none";
+        })
+
+        markerArea.addEventListener('markerselect', event => {
+            document.getElementById("tradesModal").style.display = "none";
+        })
+    }
+
     markerArea.addEventListener('render', event => {
+        console.log("render")
         if (pageId.value == "daily") {
+            document.getElementById("tradesModal").style.display = "block";
             tradeScreenshotChanged.value = true
             dateScreenshotEdited.value = true
             saveButton.value = true
-    
+
         }
-        screenshot.annotatedBase64 =  event.dataUrl
+        screenshot.annotatedBase64 = event.dataUrl
         console.log("  --> Marker img size " + parseFloat(((event.dataUrl.length * 6) / 8) / 1000).toFixed(2) + " KB")
         screenshot.maState = event.state
         //console.log("  --> Width "+markerAreaId.naturalWidth)
@@ -264,18 +276,11 @@ export function useSetupMarkerArea() {
     })
 
     markerArea.addEventListener('close', event => {
+        if (pageId.value == "daily") {
+            document.getElementById("tradesModal").style.display = "block";
+        }
         markerAreaOpen.value = false
     })
-
-    /*markerArea.addRenderEventListener((imgURL, state) => {
-        screenshot.annotatedBase64 = imgURL
-        console.log("  --> Marker img size " + parseFloat(((imgURL.length * 6) / 8) / 1000).toFixed(2) + " KB")
-        screenshot.maState = state
-        //console.log("  --> Width "+markerAreaId.naturalWidth)
-        //console.log("state " + JSON.stringify(screenshot.maState))
-        markerAreaOpen.value = false
-        renderData.value += 1
-    })*/
 
     markerArea.show();
     if (markerArea.isOpen) {
