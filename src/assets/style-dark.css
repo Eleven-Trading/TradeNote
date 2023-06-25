@@ -476,6 +476,13 @@ img.logo {
     z-index: 2000 !important;
 }
 
+.__markerjs2_ img {
+    margin-top: 0 !important;
+}
+.__markerjs2_>div>div + div{
+    background-color: var(--black-bg-0) !important;
+}
+
 .imgContainer {
     position: relative;
     display: flex;
