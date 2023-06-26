@@ -834,11 +834,6 @@ ul.timeline>li:before {
     margin-top: 1.3em;
 }
 
-.editItem {
-    color: var(--white-60);
-    padding-right: 1rem;
-}
-
 .popoverDelete {
     color: var(--red-color);
     padding-right: 1.5rem;

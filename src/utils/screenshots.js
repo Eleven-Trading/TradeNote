@@ -162,7 +162,7 @@ export async function useSetupImageUpload(event, param1, param2, param3) {
 
     await imgFileReader(file).then(() => {
         if (resizeCompressImg.value) {
-            const originalImage = document.querySelector("#setupDiv");
+            const originalImage = document.querySelector("#screenshotDiv");
             compressImage(originalImage);
         }
     })
@@ -227,9 +227,18 @@ export async function compressImage(imgToCompress) {
     );
 }
 
-export function useSetupMarkerArea() {
+export function useSetupMarkerArea(param1, param2) {
     //https://github.com/ailon/markerjs2#readme
-    let markerAreaId = document.getElementById("setupDiv");
+    let elId
+    if (param1) {
+        for (let key in screenshot) delete screenshot[key]
+        Object.assign(screenshot, JSON.parse(JSON.stringify(param1)))
+        elId = "screenshotDiv"+screenshot.objectId
+    }else{
+        elId = "screenshotDiv"
+    }
+    let markerAreaId = document.getElementById(elId);
+    console.log("elId "+elId)
     //console.log("  --> Width "+markerAreaId.naturalWidth)
     //console.log("  --> Height "+markerAreaId.naturalHeight)
 
@@ -266,12 +275,23 @@ export function useSetupMarkerArea() {
             saveButton.value = true
 
         }
-        screenshot.annotatedBase64 = event.dataUrl
+        
         console.log("  --> Marker img size " + parseFloat(((event.dataUrl.length * 6) / 8) / 1000).toFixed(2) + " KB")
-        screenshot.maState = event.state
+        
         //console.log("  --> Width "+markerAreaId.naturalWidth)
         //console.log("state " + JSON.stringify(screenshot.maState))
         markerAreaOpen.value = false
+        
+        screenshot.annotatedBase64 = event.dataUrl
+        screenshot.maState = event.state
+
+        if(param1){
+            //in case of annotation in screenshot, we update the current page + we use screenshot. in useSaveScreenshot
+            screenshots[param2].annotatedBase64 = event.dataUrl
+            screenshots[param2].maState = event.state
+            useSaveScreenshot()
+        }
+
         renderData.value += 1
     })
 

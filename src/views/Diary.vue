@@ -43,7 +43,7 @@ onMounted(async () => {
                             <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
                                 <div class="col-auto">{{ useCreatedDateFormat(itemDiary.dateUnix) }}</div>
                                 <span class="col mb-2 ms-auto text-end">
-                                    <i class="uil uil-edit-alt editItem pointerClass"
+                                    <i class="uil uil-edit-alt pointerClass"
                                         v-on:click="useEditItem(itemDiary.objectId)"></i>
 
                                     <i v-on:click="selectedItem = itemDiary.objectId"

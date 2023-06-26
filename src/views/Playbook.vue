@@ -27,7 +27,7 @@ onBeforeMount(async () => {
                             <div class="col-12 cardFirstLine d-flex align-items-center fw-bold">
                                 <div class="col-auto">{{ useCreatedDateFormat(playbook.dateUnix) }}</div>
                                 <span class="col mb-2 ms-auto text-end">
-                                    <i class="uil uil-edit-alt editItem pointerClass"
+                                    <i class="uil uil-edit-alt pointerClass"
                                         v-on:click="useEditItem(playbook.objectId)"></i>
 
                                     <i v-on:click="selectedItem = playbook.objectId"

@@ -693,7 +693,7 @@ function resetExcursion() {
                 <div v-if="modalDailyTradeOpen">
 
                     <div class="imgContainer">
-                        <img id="setupDiv" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+                        <img id="screenshotDiv" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
                         <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64"
                             v-on:click="useSetupMarkerArea()" />
                     </div>

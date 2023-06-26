@@ -119,7 +119,7 @@ async function updateProfile() {
                                 <td>
                                     <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass"
                                         v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
-                                    <i v-else class="uil uil-edit-alt editItem pointerClass"
+                                    <i v-else class="uil uil-edit-alt pointerClass"
                                         v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
                                 </td>
                             </tr>
@@ -168,7 +168,7 @@ async function updateProfile() {
                                 <td>
                                     <i v-if="mistakeUpdate.edit == mistake.objectId" class="uil uil-save pointerClass"
                                         v-on:click="useUpdateEditPatternMistake(mistake, 'mistake')"></i>
-                                    <i v-else class="uil uil-edit-alt editItem pointerClass"
+                                    <i v-else class="uil uil-edit-alt pointerClass"
                                         v-on:click="useEditPatternMistake(mistake, 'mistake')"></i>
                                 </td>
                             </tr>
