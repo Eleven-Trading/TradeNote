@@ -3,11 +3,9 @@ import { ref, onBeforeMount, onMounted } from 'vue'
 import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage } from '../stores/globals';
+import { setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, expandedScreenshot } from '../stores/globals';
 import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useTimeFormat, useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
 import { endOfList } from '../stores/globals';
-
-let expandedScreenshot = ref(null)
 
 onBeforeMount(async () => {
 
@@ -93,41 +91,5 @@ onMounted(async () => {
         <div v-if="spinnerLoadMore" class="d-flex justify-content-center mt-3">
             <div class="spinner-border text-blue" role="status"></div>
         </div>
-        <div v-if="expandedScreenshot">
-            <div class="row">
-                <i class="col ms-auto text-end uil uil-times pointerClass" v-on:click="expandedScreenshot = null"></i>
-            </div>
-            <div id="setupsCarousel" class="carousel slide">
-                <div class="carousel-inner">
-                    <div v-for="(screenshot, index) in screenshots"
-                        v-bind:class="[expandedScreenshot === screenshot.objectId ? 'active' : '', 'carousel-item']">
-                        <div class="imgContainer">
-                            <img v-if="screenshot.markersOnly" class="screenshotImg mt-3 img-fluid"
-                                v-bind:src="screenshot.originalBase64" />
-                            <img v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
-                                v-bind:src="screenshot.annotatedBase64" />
-                        </div>
-                        <div class="carousel-caption d-none d-md-block">
-                            <h5>{{ useCreatedDateFormat(screenshot.dateUnix) }}</h5>
-                            <p>{{ screenshot.symbol }}
-                                <span v-if="screenshot.side"> | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ?
-                                    'Short' :
-                                    'Long' }} | {{ useTimeFormat(screenshot.dateUnix) }}</span>
-                                <span v-else class="col mb-2"> | {{ useHourMinuteFormat(screenshot.dateUnix) }}</span>
-                                <span
-                                    v-if="setups.findIndex(obj => obj.tradeId == screenshot.name) != -1 && setups[setups.findIndex(obj => obj.tradeId == screenshot.name)].pattern.name != null">
-                                    | {{ setups[setups.findIndex(obj =>
-                                        obj.tradeId == screenshot.name)].pattern.name }}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#setupsCarousel"
-                    data-bs-slide="prev"></button>
-                <button class="carousel-control-next" type="button" data-bs-target="#setupsCarousel"
-                    data-bs-slide="next"></button>
-            </div>
-        </div>
-
     </div>
 </template>

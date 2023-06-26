@@ -472,14 +472,15 @@ img.logo {
     padding-top: 40px;
 }
 
-.__markerjs2_{
+.__markerjs2_ {
     z-index: 2000 !important;
 }
 
 .__markerjs2_ img {
     margin-top: 0 !important;
 }
-.__markerjs2_>div>div + div{
+
+.__markerjs2_>div>div+div {
     background-color: var(--black-bg-0) !important;
 }
 
@@ -1076,4 +1077,32 @@ h4 {
 
 .exitButton:hover {
     background-color: var(--dark-grey) !important;
+}
+
+
+.fullScreen {
+    visibility: visible;
+    font-size: 16px;
+    user-select: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fullScreen .imgContainer {
+    height: 88vh;
+}
+.fullScreen .screenshotImg {
+    max-height: 88vh;
+}
+
+.carousel-control-next, .carousel-control-prev{
+    width: 10%;
 }
