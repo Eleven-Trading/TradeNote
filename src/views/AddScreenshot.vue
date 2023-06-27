@@ -155,9 +155,9 @@ async function getScreenshotToEdit(param) {
             <input type="file" @change="useSetupImageUpload" />
         </div>
         <div class="imgContainer">
-            <img id="screenshotDiv" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
+            <img :id="'screenshotDiv-addScreenshot-'+screenshot.objectId" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
             <img class="overlayImg screenshotImg mt-3 img-fluid"
-                v-bind:src="screenshot.annotatedBase64" v-on:click="useSetupMarkerArea()" />
+                v-bind:src="screenshot.annotatedBase64" v-on:click="useSetupMarkerArea('addScreenshot')" />
         </div>
         <p class="fst-italic fw-lighter text-center" v-show="screenshot.originalBase64">
             <small>Click image to mark & annotate</small>

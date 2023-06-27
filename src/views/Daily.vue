@@ -4,11 +4,13 @@ import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList } from '../stores/globals';
+import Screenshot from '../components/Screenshot.vue'
+
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, expandedScreenshot } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen } from '../utils/utils';
 import { useSetupImageUpload, useSetupMarkerArea, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions} from '../utils/daily';
+import { useGetExcursions } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -612,29 +614,9 @@ function resetExcursion() {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="screenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
+                                                <div v-for="itemScreenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
                                                     class="mb-2">
-                                                    <span>{{ screenshot.symbol }}</span><span v-if="screenshot.side"
-                                                        class="col mt-1">
-                                                        | {{ screenshot.side == 'SS' || screenshot.side == 'BC' ? 'Short' :
-                                                            'Long' }}
-                                                        | {{ useTimeFormat(screenshot.dateUnix) }}</span>
-                                                    <span v-else class="col mb-2"> | {{
-                                                        useHourMinuteFormat(screenshot.dateUnix)
-                                                    }}</span>
-
-                                                    <span>{{ screenshot.patternName }}</span>
-
-                                                    <span>{{ screenshot.mistakeName }}</span>
-                                                    <div class="imgContainer">
-                                                        <img v-if="screenshot.markersOnly"
-                                                            class="screenshotImg mt-3 img-fluid"
-                                                            v-bind:src="screenshot.originalBase64" />
-                                                        <img v-bind:id="screenshot.objectId"
-                                                            v-bind:class="[screenshot.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
-                                                            v-bind:src="screenshot.annotatedBase64" />
-                                                    </div>
-
+                                                    <Screenshot :screenshot-data="itemScreenshot" show-title source="dailyTab"/>
                                                 </div>
                                             </div>
 
@@ -691,13 +673,7 @@ function resetExcursion() {
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
-
-                    <div class="imgContainer">
-                        <img id="screenshotDiv" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
-                        <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="screenshot.annotatedBase64"
-                            v-on:click="useSetupMarkerArea()" />
-                    </div>
-
+                    <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="dailyModal"/>
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
                         <table class="table">

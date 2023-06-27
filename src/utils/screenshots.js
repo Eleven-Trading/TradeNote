@@ -1,5 +1,6 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality } from '../stores/globals.js'
+import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot } from '../stores/globals.js'
+import { useInitTab } from './utils';
 
 let screenshotsQueryLimit = 4
 
@@ -230,17 +231,19 @@ export async function compressImage(imgToCompress) {
 export function useSetupMarkerArea(param1, param2) {
     //https://github.com/ailon/markerjs2#readme
     let elId
-    if (param1) {
+
+    if (param1 == "dailyTab" || param1 == "screenshots") { // case where multiple screenshots
         for (let key in screenshot) delete screenshot[key]
-        Object.assign(screenshot, JSON.parse(JSON.stringify(param1)))
-        elId = "screenshotDiv"+screenshot.objectId
-    }else{
-        elId = "screenshotDiv"
+        Object.assign(screenshot, JSON.parse(JSON.stringify(param2)))
     }
+
+    //console.log("screenshot " + JSON.stringify(screenshot))
+    screenshot.objectId ? elId = "screenshotDiv-" + param1 + '-' + screenshot.objectId : elId = "screenshotDiv-" + param1 + '-' + screenshot.dateUnix
+
     let markerAreaId = document.getElementById(elId);
-    console.log("elId "+elId)
-    //console.log("  --> Width "+markerAreaId.naturalWidth)
-    //console.log("  --> Height "+markerAreaId.naturalHeight)
+    console.log("elId " + elId)
+    console.log("  --> Width " + markerAreaId.naturalWidth)
+    console.log("  --> Height " + markerAreaId.naturalHeight)
 
     const markerArea = new markerjs2.MarkerArea(markerAreaId);
     markerArea.renderAtNaturalSize = true;
@@ -258,37 +261,44 @@ export function useSetupMarkerArea(param1, param2) {
 
     if (pageId.value == "daily") {
         markerArea.addEventListener('markercreating', event => {
-            document.getElementById("tradesModal").style.display = "none";
+            if (param1 == "dailyModal") {
+                document.getElementById("tradesModal").style.display = "none";
+            }
         })
 
         markerArea.addEventListener('markerselect', event => {
-            document.getElementById("tradesModal").style.display = "none";
+            if (param1 == "dailyModal") {
+                document.getElementById("tradesModal").style.display = "none";
+            }
         })
     }
 
     markerArea.addEventListener('render', event => {
         console.log("render")
-        if (pageId.value == "daily") {
+        if (param1 == "dailyModal") {
             document.getElementById("tradesModal").style.display = "block";
             tradeScreenshotChanged.value = true
             dateScreenshotEdited.value = true
             saveButton.value = true
 
         }
-        
+
         console.log("  --> Marker img size " + parseFloat(((event.dataUrl.length * 6) / 8) / 1000).toFixed(2) + " KB")
-        
+
         //console.log("  --> Width "+markerAreaId.naturalWidth)
         //console.log("state " + JSON.stringify(screenshot.maState))
         markerAreaOpen.value = false
-        
+
+
         screenshot.annotatedBase64 = event.dataUrl
         screenshot.maState = event.state
 
-        if(param1){
+        if (param1 == "dailyTab" || param1 == "screenshots") {
             //in case of annotation in screenshot, we update the current page + we use screenshot. in useSaveScreenshot
-            screenshots[param2].annotatedBase64 = event.dataUrl
-            screenshots[param2].maState = event.state
+            let index = screenshots.findIndex(obj => obj.dateUnix == screenshot.dateUnix)
+            console.log("index " + index)
+            screenshots[index].annotatedBase64 = event.dataUrl
+            screenshots[index].maState = event.state
             useSaveScreenshot()
         }
 
@@ -296,7 +306,7 @@ export function useSetupMarkerArea(param1, param2) {
     })
 
     markerArea.addEventListener('close', event => {
-        if (pageId.value == "daily") {
+        if (param1 == "dailyModal") {
             document.getElementById("tradesModal").style.display = "block";
         }
         markerAreaOpen.value = false
@@ -308,10 +318,14 @@ export function useSetupMarkerArea(param1, param2) {
     }
 
     if (screenshot.maState) {
-        markerArea.restoreState(screenshot.maState);
+        markerArea.restoreState(screenshot.maState)
     }
 }
 
+export function useExpandScreenshot(param1){
+    console.log("param 1 "+param1)
+    expandedScreenshot.value = param1
+}
 export function useScreenshotUpdateDate(event) {
     if (editingScreenshot.value) {
         dateScreenshotEdited.value = true
@@ -413,9 +427,8 @@ export async function useUploadScreenshotToParse() {
 
                 if (pageId.value == "daily") {
                     await useGetScreenshots(true)
-                    const file =
-                        document.querySelector('.screenshotFile');
-                    file.value = '';
+                    const file = document.querySelector('.screenshotFile');
+                    if (file) file.value = '';
                 }
                 resolve()
 
