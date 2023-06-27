@@ -8,12 +8,14 @@ const props = defineProps({
     showTitle: Boolean,
     source: String
 })
+
 console.log("source " + props.source)
+
 </script>
 
 <template>
     <div class="row">
-        <div v-if="props.source == 'screenshots'" class="col-12 cardFirstLine d-flex align-items-center fw-bold mb-2">
+        <div v-if="props.showTitle" class="col-12 cardFirstLine d-flex align-items-center fw-bold mb-2">
             <h5>{{ useCreatedDateFormat(props.screenshotData.dateUnix) }}</h5>
         </div>
         <div v-if="props.showTitle" class="col">
@@ -30,7 +32,7 @@ console.log("source " + props.source)
             <span>{{ props.screenshotData.mistakeName }}</span>
         </div>
 
-        <div class="col mb-2 ms-auto text-end mt-2">
+        <div v-if="props.source != 'screenshotsFull' && props.source != 'dailyFull'" class="col mb-2 ms-auto text-end mt-2">
             <i class="uil uil-expand-arrows-alt pointerClass me-3"
                 v-on:click="useExpandScreenshot(props.source, props.screenshotData)"></i>
 
@@ -53,5 +55,11 @@ console.log("source " + props.source)
         <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix"
             class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
         <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />
+        <span v-if="props.source == 'screenshotsFull'">
+            <button class="carousel-control-prev" type="button" data-bs-target="#setupsCarousel" data-bs-slide="prev"><i
+                    class="fa fa-chevron-left"></i></button>
+            <button class="carousel-control-next" type="button" data-bs-target="#setupsCarousel" data-bs-slide="next"><i
+                    class="fa fa-chevron-right"></i></button>
+        </span>
     </div>
 </template>

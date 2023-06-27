@@ -323,23 +323,24 @@ export function useSetupMarkerArea(param1, param2) {
 }
 
 export function useExpandScreenshot(param1, param2) {
-    console.log("param1 "+param1+", param2 "+param2)
+    //console.log("param1 "+param1+", param2 "+param2)
+
     if (param2) {
         expandedScreenshot.value = param2.objectId
         if (param1 == "dailyTab") {
             for (let key in screenshot) delete screenshot[key]
             Object.assign(screenshot, JSON.parse(JSON.stringify(param2)))
         }
-        if (param1 == 'dailyTab' || param1 == 'screenshots') {
+        if (param1 == 'dailyTab' || param1 == 'screenshots') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.body.style.overflow = 'hidden'
         }
         expandedSource.value = param1
         expandedId.value = 'screenshotDiv-' + param1 + '-' + param2.objectId
-        console.log("expandedId.value "+expandedId.value)
-    } else {
-        if (expandedSource.value == 'dailyTab' || expandedSource.value == 'screenshots') {
-                document.body.style.overflow = 'visible'
+        //console.log("expandedId.value " + expandedId.value)
+    } else {//case when we close the fullscreen mode
+        if (expandedSource.value == 'dailyTab' || expandedSource.value == 'screenshots') {
+            document.body.style.overflow = 'visible'
             let id = document.getElementById(expandedId.value);
             id.scrollIntoView({ behavior: 'smooth' }, true);
         }

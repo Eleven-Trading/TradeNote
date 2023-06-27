@@ -2,6 +2,7 @@
 import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import FullScreenImg from '../components/FullScreenImg.vue'
+import Screenshot from '../components/Screenshot.vue'
 import { onBeforeMount } from 'vue'
 import { useInitParse, usePageId, useScreenType, useGetTimeZone, useGetPeriods, useInitPostHog, useCreatedDateFormat, useTimeFormat, useHourMinuteFormat } from '../utils/utils.js'
 import { screenType, sideMenuMobileOut, expandedScreenshot, screenshots, setups, pageId, screenshot } from '../stores/globals'
@@ -48,13 +49,13 @@ useInitPostHog()
             <div class="carousel-inner">
               <div v-for="(itemScreenshot, index) in screenshots"
                 v-bind:class="[expandedScreenshot === itemScreenshot.objectId ? 'active' : '', 'carousel-item', 'row']">
-                <FullScreenImg :screenshot-data="itemScreenshot" />
+                <Screenshot :screenshot-data="itemScreenshot" show-title source="screenshotsFull"/>
               </div>
             </div>
           </div>
         </div>
         <div v-if="pageId == 'daily'">
-            <FullScreenImg :screenshot-data="screenshot" />
+          <Screenshot :screenshot-data="screenshot" show-title source="dailyFull"/>
         </div>
       </div>
     </div>
