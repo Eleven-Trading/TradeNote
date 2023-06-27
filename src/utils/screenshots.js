@@ -1,5 +1,5 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId } from '../stores/globals.js'
+import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource } from '../stores/globals.js'
 import { useInitTab } from './utils';
 
 let screenshotsQueryLimit = 4
@@ -323,24 +323,29 @@ export function useSetupMarkerArea(param1, param2) {
 }
 
 export function useExpandScreenshot(param1, param2) {
+    console.log("param1 "+param1+", param2 "+param2)
     if (param2) {
         expandedScreenshot.value = param2.objectId
         if (param1 == "dailyTab") {
             for (let key in screenshot) delete screenshot[key]
             Object.assign(screenshot, JSON.parse(JSON.stringify(param2)))
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        document.body.style.overflow = 'hidden'
-        expandedId.value = 'screenshotDiv-' + param1 + '-' + param2.objectId
-    }else{
-        expandedScreenshot.value = null
-        document.body.style.overflow = 'visible'
-        if(pageId.value == 'daily'){
-            let id = document.getElementById(expandedId.value);
-            id.scrollIntoView({behavior: 'smooth'}, true);
-            expandedId.value = null
+        if (param1 == 'dailyTab' || param1 == 'screenshots') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.body.style.overflow = 'hidden'
         }
-        
+        expandedSource.value = param1
+        expandedId.value = 'screenshotDiv-' + param1 + '-' + param2.objectId
+        console.log("expandedId.value "+expandedId.value)
+    } else {
+        if (expandedSource.value == 'dailyTab' || expandedSource.value == 'screenshots') {
+                document.body.style.overflow = 'visible'
+            let id = document.getElementById(expandedId.value);
+            id.scrollIntoView({ behavior: 'smooth' }, true);
+        }
+        expandedScreenshot.value = null
+        expandedSource.value = null
+        expandedId.value = null
     }
 }
 export function useScreenshotUpdateDate(event) {
