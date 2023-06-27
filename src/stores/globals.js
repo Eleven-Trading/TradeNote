@@ -173,6 +173,7 @@ export const resizeCompressMaxWidth = ref(1000)
 export const resizeCompressMaxHeight = ref(1000)
 export const resizeCompressQuality = ref(0.8)
 export const expandedScreenshot = ref(null)
+export const expandedId = ref(null)
 
 /**************************************
 * DIARY

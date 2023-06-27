@@ -17,7 +17,7 @@ const props = defineProps({
                     'Long' }} | {{ useTimeFormat(props.screenshotData.dateUnix) }}</span>
                 <span v-else class="col mb-2"> | {{ useHourMinuteFormat(props.screenshotData.dateUnix) }}</span>
                 <span
-                    v-if="setups.findIndex(obj => obj.tradeId == props.screenshotData.name) != -1 && setups[setups.findIndex(obj => obj.tradeId == props.screenshotData.name)].pattern.name != null">
+                    v-if="setups.findIndex(obj => obj.tradeId == props.screenshotData.name) != -1 && setups[setups.findIndex(obj => obj.tradeId == props.screenshotData.name)].pattern != null">
                     | {{ setups[setups.findIndex(obj =>
                         obj.tradeId == props.screenshotData.name)].pattern.name }}</span>
             </span>

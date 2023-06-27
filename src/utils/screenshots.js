@@ -1,5 +1,5 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot } from '../stores/globals.js'
+import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId } from '../stores/globals.js'
 import { useInitTab } from './utils';
 
 let screenshotsQueryLimit = 4
@@ -232,7 +232,7 @@ export function useSetupMarkerArea(param1, param2) {
     //https://github.com/ailon/markerjs2#readme
     let elId
 
-    if (param1 == "dailyTab" || param1 == "screenshots") { // case where multiple screenshots
+    if (param1 == "dailyTab" || param1 == "screenshots") { // case where multiple screenshots
         for (let key in screenshot) delete screenshot[key]
         Object.assign(screenshot, JSON.parse(JSON.stringify(param2)))
     }
@@ -293,7 +293,7 @@ export function useSetupMarkerArea(param1, param2) {
         screenshot.annotatedBase64 = event.dataUrl
         screenshot.maState = event.state
 
-        if (param1 == "dailyTab" || param1 == "screenshots") {
+        if (param1 == "dailyTab" || param1 == "screenshots") {
             //in case of annotation in screenshot, we update the current page + we use screenshot. in useSaveScreenshot
             let index = screenshots.findIndex(obj => obj.dateUnix == screenshot.dateUnix)
             console.log("index " + index)
@@ -322,9 +322,26 @@ export function useSetupMarkerArea(param1, param2) {
     }
 }
 
-export function useExpandScreenshot(param1){
-    console.log("param 1 "+param1)
-    expandedScreenshot.value = param1
+export function useExpandScreenshot(param1, param2) {
+    if (param2) {
+        expandedScreenshot.value = param2.objectId
+        if (param1 == "dailyTab") {
+            for (let key in screenshot) delete screenshot[key]
+            Object.assign(screenshot, JSON.parse(JSON.stringify(param2)))
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.body.style.overflow = 'hidden'
+        expandedId.value = 'screenshotDiv-' + param1 + '-' + param2.objectId
+    }else{
+        expandedScreenshot.value = null
+        document.body.style.overflow = 'visible'
+        if(pageId.value == 'daily'){
+            let id = document.getElementById(expandedId.value);
+            id.scrollIntoView({behavior: 'smooth'}, true);
+            expandedId.value = null
+        }
+        
+    }
 }
 export function useScreenshotUpdateDate(event) {
     if (editingScreenshot.value) {

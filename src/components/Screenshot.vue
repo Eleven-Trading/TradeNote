@@ -31,8 +31,8 @@ console.log("source " + props.source)
         </div>
 
         <div class="col mb-2 ms-auto text-end mt-2">
-            <i v-if="props.source != 'dailyTab'" class="uil uil-expand-arrows-alt pointerClass me-3"
-                v-on:click="useExpandScreenshot(props.screenshotData.objectId)"></i>
+            <i class="uil uil-expand-arrows-alt pointerClass me-3"
+                v-on:click="useExpandScreenshot(props.source, props.screenshotData)"></i>
 
             <i class="uil uil-image-edit pointerClass me-3"
                 v-on:click="useSetupMarkerArea(props.source, props.screenshotData)"></i>
