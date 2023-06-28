@@ -33,7 +33,8 @@ const props = defineProps({
         <div v-if="props.source != 'screenshotsFull' && props.source != 'dailyFull'" class="col mb-2 ms-auto text-end mt-2">
 
             <!-- Expand / Full screen -->
-            <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'" class="uil uil-expand-arrows-alt pointerClass me-3"
+            <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'"
+                class="uil uil-expand-arrows-alt pointerClass me-3"
                 v-on:click="useExpandScreenshot(props.source, props.screenshotData)"></i>
 
             <!-- Annotate -->
@@ -45,7 +46,8 @@ const props = defineProps({
                 v-on:click="useEditItem(props.screenshotData.objectId)"></i>
 
             <!-- Delete -->
-            <i v-if="props.screenshotData.objectId  && props.source != 'addScreenshot'" v-on:click="selectedItem = props.screenshotData.objectId"
+            <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'"
+                v-on:click="selectedItem = props.screenshotData.objectId"
                 class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true"
                 data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>"
                 data-bs-toggle="popover" data-bs-placement="left"></i>
@@ -54,9 +56,17 @@ const props = defineProps({
 
 
     <div class="imgContainer">
-        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix"
+        <!--<img
             class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
-        <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />
+        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />-->
+
+        <img v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
+        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" v-bind:class="[props.screenshotData.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']" v-bind:src="props.screenshotData.annotatedBase64" />
+
+        <!--<img v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid"
+            v-bind:src="props.screenshotData.originalBase64" />
+        <img v-bind:class="[props.screenshotData.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
+            v-bind:src="props.screenshotData.annotatedBase64" />-->
         <span v-if="props.source == 'screenshotsFull'">
             <button class="carousel-control-prev" type="button" data-bs-target="#setupsCarousel" data-bs-slide="prev"><i
                     class="fa fa-chevron-left"></i></button>
