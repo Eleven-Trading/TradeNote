@@ -33,7 +33,7 @@ const props = defineProps({
         <div v-if="props.source != 'screenshotsFull' && props.source != 'dailyFull'" class="col mb-2 ms-auto text-end mt-2">
 
             <!-- Expand / Full screen -->
-            <i v-if="props.screenshotData.objectId" class="uil uil-expand-arrows-alt pointerClass me-3"
+            <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'" class="uil uil-expand-arrows-alt pointerClass me-3"
                 v-on:click="useExpandScreenshot(props.source, props.screenshotData)"></i>
 
             <!-- Annotate -->
@@ -45,7 +45,7 @@ const props = defineProps({
                 v-on:click="useEditItem(props.screenshotData.objectId)"></i>
 
             <!-- Delete -->
-            <i v-if="props.screenshotData.objectId" v-on:click="selectedItem = props.screenshotData.objectId"
+            <i v-if="props.screenshotData.objectId  && props.source != 'addScreenshot'" v-on:click="selectedItem = props.screenshotData.objectId"
                 class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true"
                 data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>"
                 data-bs-toggle="popover" data-bs-placement="left"></i>

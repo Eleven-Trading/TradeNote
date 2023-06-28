@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
+import Screenshot from '../components/Screenshot.vue'
 import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
@@ -154,13 +155,10 @@ async function getScreenshotToEdit(param) {
         <div class="mt-3">
             <input type="file" @change="useSetupImageUpload" />
         </div>
-        <div class="imgContainer">
-            <img :id="'screenshotDiv-addScreenshot-'+screenshot.objectId" class="screenshotImg mt-3 img-fluid" v-bind:src="screenshot.originalBase64" />
-            <img class="overlayImg screenshotImg mt-3 img-fluid"
-                v-bind:src="screenshot.annotatedBase64" v-on:click="useSetupMarkerArea('addScreenshot')" />
-        </div>
+        <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="addScreenshot"/>
+    
         <p class="fst-italic fw-lighter text-center" v-show="screenshot.originalBase64">
-            <small>Click image to mark & annotate</small>
+            <small>Click on <i class="uil uil-image-edit ms-2 me-2"></i> to mark & annotate</small>
         </p>
 
         <div class="mt-3 mb-3">
