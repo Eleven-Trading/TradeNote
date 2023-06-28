@@ -15,7 +15,7 @@ export async function useBrokerTradeZero(param) {
             papaParse.data.forEach(element => {
                 tradesData.push(JSON.parse(JSON.stringify(element)))
             });
-            
+
             //console.log("tradesData " + JSON.stringify(tradesData))
         } catch (error) {
             //console.log("  --> ERROR " + error)
@@ -205,8 +205,24 @@ export async function useBrokerTdAmeritrade(param) {
                 //console.log("element "+JSON.stringify(element))
                 let temp = {}
                 temp.Account = account
-                temp["T/D"] = element.DATE
-                temp["S/D"] = element.DATE
+
+                let tempDate = element.DATE.split(" ")[0]
+                let month = tempDate.split("/")[0]
+                let day = tempDate.split("/")[1]
+                let year = tempDate.split("/")[2]
+                console.log(" -> Year " + year)
+                console.log(" -> Year length " + year.length)
+                if (year.length == 4) {
+                    temp["T/D"] = element.DATE
+                    temp["S/D"] = element.DATE
+                } else if (year.length == 2) {
+                    let newDate = month + "/" + day + "/20" + year
+                    temp["T/D"] = newDate
+                    temp["S/D"] = newDate
+                } else {
+                    alert("Year length issue")
+                }
+
                 temp.Currency = "USD"
                 temp.Type = "0"
                 if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
