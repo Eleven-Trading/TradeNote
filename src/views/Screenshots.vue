@@ -4,10 +4,9 @@ import NoData from '../components/NoData.vue';
 import Filters from '../components/Filters.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Screenshot from '../components/Screenshot.vue';
-import { setups, selectedItem, screenshots, spinnerLoadMore, spinnerLoadingPage, expandedScreenshot } from '../stores/globals';
-import { useCreatedDateFormat, useEditItem, useHourMinuteFormat, useTimeFormat, useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
+import { screenshots, spinnerLoadMore, spinnerLoadingPage, expandedScreenshot } from '../stores/globals';
+import { useMountScreenshots, useCheckVisibleScreen, useLoadMore } from '../utils/utils';
 import { endOfList } from '../stores/globals';
-import { useSetupMarkerArea } from '../utils/screenshots'
 
 onBeforeMount(async () => {
 

@@ -663,6 +663,11 @@ export function useInitPopover() {
         if (pageId.value == "screenshots") {
             useDeleteScreenshot()
         }
+        
+        if (pageId.value == "daily") {
+            useDeleteScreenshot()
+        }
+
         if (pageId.value == "diary") {
             useDeleteDiary(true)
         }
@@ -793,6 +798,7 @@ export async function useMountDaily() {
     useGetExcursions()
     useGetDiaries(false)
     useGetScreenshots(true)
+    useInitPopover()
     await (renderingCharts.value = false)
 
     //useInitPopover()

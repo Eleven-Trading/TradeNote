@@ -9,8 +9,6 @@ const props = defineProps({
     source: String
 })
 
-console.log("source " + props.source)
-
 </script>
 
 <template>
@@ -33,20 +31,24 @@ console.log("source " + props.source)
         </div>
 
         <div v-if="props.source != 'screenshotsFull' && props.source != 'dailyFull'" class="col mb-2 ms-auto text-end mt-2">
-            <i class="uil uil-expand-arrows-alt pointerClass me-3"
+
+            <!-- Expand / Full screen -->
+            <i v-if="props.screenshotData.objectId" class="uil uil-expand-arrows-alt pointerClass me-3"
                 v-on:click="useExpandScreenshot(props.source, props.screenshotData)"></i>
 
+            <!-- Annotate -->
             <i class="uil uil-image-edit pointerClass me-3"
                 v-on:click="useSetupMarkerArea(props.source, props.screenshotData)"></i>
 
-            <span v-if="props.source == 'screenshots'">
-                <i class="uil uil-edit-alt pointerClass me-4" v-on:click="useEditItem(props.screenshotData.objectId)"></i>
+            <!-- Edit -->
+            <i v-if="props.source == 'screenshots'" class="uil uil-edit-alt pointerClass me-4"
+                v-on:click="useEditItem(props.screenshotData.objectId)"></i>
 
-                <i v-on:click="selectedItem = props.screenshotData.objectId"
-                    class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true"
-                    data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>"
-                    data-bs-toggle="popover" data-bs-placement="left"></i>
-            </span>
+            <!-- Delete -->
+            <i v-if="props.screenshotData.objectId" v-on:click="selectedItem = props.screenshotData.objectId"
+                class="ps-2 uil uil-trash-alt popoverDelete pointerClass" data-bs-html="true"
+                data-bs-content="<div>Are you sure?</div><div class='text-center'><a type='button' class='btn btn-red btn-sm popoverYes'>Yes</a><a type='button' class='btn btn-outline-secondary btn-sm ms-2 popoverNo'>No</a></div>"
+                data-bs-toggle="popover" data-bs-placement="left"></i>
         </div>
     </div>
 

@@ -296,7 +296,7 @@ export function useSetupMarkerArea(param1, param2) {
         if (param1 == "dailyTab" || param1 == "screenshots") {
             //in case of annotation in screenshot, we update the current page + we use screenshot. in useSaveScreenshot
             let index = screenshots.findIndex(obj => obj.dateUnix == screenshot.dateUnix)
-            console.log("index " + index)
+            //console.log("index " + index)
             screenshots[index].annotatedBase64 = event.dataUrl
             screenshots[index].maState = event.state
             useSaveScreenshot()
@@ -508,7 +508,7 @@ export async function useUploadScreenshotToParse() {
 }
 
 export async function useDeleteScreenshot(param1, param2) {
-    console.log("selected item " + selectedItem.value)
+    console.log(" -> Selected item " + selectedItem.value)
     //console.log("screenshot "+JSON.stringify(screenshots))
 
     /* First, let's delete setups */
@@ -527,7 +527,15 @@ export async function useDeleteScreenshot(param1, param2) {
         await results.destroy()
         console.log('  --> Deleted screenshot with id ' + results.id)
         //document.location.reload()
-        await useRefreshScreenshot()
+        if(pageId.value == 'screenshots'){
+            await useRefreshScreenshot()
+        }
+        if(pageId.value == 'daily'){
+            let index = screenshots.findIndex(obj => obj.objectId == selectedItem.value)
+            for (let key in screenshots[index]) delete screenshots[index][key]
+            for (let key in screenshot) delete screenshot[key]
+            selectedItem.value = null
+        }
     } else {
         alert("There was a problem with the query")
     }
@@ -540,6 +548,7 @@ export async function useRefreshScreenshot() {
         screenshotsPagination.value = 0
         screenshots.length = 0
         await useGetScreenshots()
+        selectedItem.value = null
         //await useInitPopover()
         resolve()
     })
