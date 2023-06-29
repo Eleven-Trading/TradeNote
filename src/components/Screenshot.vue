@@ -60,8 +60,9 @@ const props = defineProps({
             class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
         <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />-->
 
-        <img v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
-        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" v-bind:class="[props.screenshotData.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']" v-bind:src="props.screenshotData.annotatedBase64" />
+        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
+        
+        <img :id="!props.screenshotData.markersOnly ? props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix : ''" v-bind:class="[props.screenshotData.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']" v-bind:src="props.screenshotData.annotatedBase64" />
 
         <!--<img v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid"
             v-bind:src="props.screenshotData.originalBase64" />
