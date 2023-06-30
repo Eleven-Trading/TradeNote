@@ -5,8 +5,8 @@ import FullScreenImg from '../components/FullScreenImg.vue'
 import Screenshot from '../components/Screenshot.vue'
 import { onBeforeMount } from 'vue'
 import { useInitParse, usePageId, useScreenType, useGetTimeZone, useGetPeriods, useInitPostHog, useCreatedDateFormat, useTimeFormat, useHourMinuteFormat } from '../utils/utils.js'
-import { screenType, sideMenuMobileOut, expandedScreenshot, screenshots, setups, pageId, screenshot } from '../stores/globals'
-import { useExpandScreenshot } from '../utils/screenshots'
+import { screenType, sideMenuMobileOut, expandedScreenshot, screenshots, setups, pageId, screenshot, selectedScreenshot, selectedScreenshotIndex, getMore } from '../stores/globals'
+import { useSelectedScreenshotFunction } from '../utils/screenshots'
 
 /*========================================
   Functions used on all Dashboard components
@@ -38,7 +38,39 @@ useInitPostHog()
       <!--footer-->
     </div>
   </div>
-  <div class="row">
+  <!-- Modal -->
+  <div class="modal fade" id="fullScreenModal" tabindex="-1" aria-labelledby="fullScreenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+      <div class="modal-content">
+        <div class="modal-body">
+          <Screenshot :index="selectedScreenshotIndex" source="fullScreen" :screenshot-data="selectedScreenshot" />
+        </div>
+        <div class="modal-footer">
+          <!-- NEXT / PREVIOUS -->
+          
+            <div class="text-start">
+              <button v-if="selectedScreenshotIndex - 1 >= 0" class="btn btn-outline-primary btn-sm ms-3 mb-2"
+                v-on:click="useSelectedScreenshotFunction((selectedScreenshotIndex - 1), 'fullScreen')">
+                <i class="fa fa-chevron-left me-2"></i></button>
+            </div>
+            <div v-if="selectedScreenshotIndex + 1 > 0 && screenshots[selectedScreenshotIndex + 1]"
+              class="ms-auto text-end">
+              <button class="btn btn-outline-primary btn-sm me-3 mb-2"
+                v-on:click="useSelectedScreenshotFunction((selectedScreenshotIndex + 1), 'fullScreen')"
+                :disabled="getMore"><span v-if="!getMore"><i class="fa fa-chevron-right ms-2"></i></span>
+                <span v-else>
+                  <div class="spinner-border spinner-border-sm" role="status">
+                  </div>
+                </span>
+              </button>
+            </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--<div class="row">
     <div v-if="expandedScreenshot" class="fullScreen col-12">
       <div class="row">
         <div class="col-12 ms-auto text-end">
@@ -49,15 +81,15 @@ useInitPostHog()
             <div class="carousel-inner">
               <div v-for="(itemScreenshot, index) in screenshots"
                 v-bind:class="[expandedScreenshot === itemScreenshot.objectId ? 'active' : '', 'carousel-item', 'row']">
-                <Screenshot :screenshot-data="itemScreenshot" show-title source="screenshotsFull"/>
+                <Screenshot :screenshot-data="itemScreenshot" show-title source="screenshotsFull" />
               </div>
             </div>
           </div>
         </div>
         <div v-if="pageId == 'daily'">
-          <Screenshot :screenshot-data="screenshot" show-title source="dailyFull"/>
+          <Screenshot :screenshot-data="screenshot" show-title source="dailyFull" />
         </div>
       </div>
     </div>
-  </div>
+  </div>-->
 </template>

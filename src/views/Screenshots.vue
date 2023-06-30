@@ -47,7 +47,7 @@ onMounted(async () => {
             <div v-for="(itemScreenshot, index) in screenshots" class="col-12 col-xl-6 mt-2">
                 <div class="dailyCard" v-bind:id="itemScreenshot.objectId">
                     <div class="row">
-                        <Screenshot :screenshot-data="itemScreenshot" show-title source="screenshots"/>
+                        <Screenshot :screenshot-data="itemScreenshot" show-title source="screenshots" :index="index"/>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource } from '../stores/globals.js'
-import { useInitTab } from './utils';
+import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, getMore } from '../stores/globals.js'
+import { useInitTab, useLoadMore } from './utils';
 
 let screenshotsQueryLimit = 4
 
@@ -552,4 +552,32 @@ export async function useRefreshScreenshot() {
         //await useInitPopover()
         resolve()
     })
+}
+
+export async function useSelectedScreenshotFunction (param1, param2, param3) {
+    //console.log("Index "+param1)
+    selectedScreenshotIndex.value = param1
+    selectedScreenshotSource.value = param2
+    //console.log("selectedScreenshotIndex " + selectedScreenshotIndex.value)
+    //console.log("screenshots length "+screenshots.length)
+    //console.log("selectedScreenshotSource " + selectedScreenshotSource.value)
+    //Case where there is index (so screenshots) and we get to end array on screenshots page
+    if (param1 && ((param1 + 2) == screenshots.length) && !endOfList.value) {
+        useLoadMore()
+    }
+
+
+    //Case where param3 exists, index exists / and click on next (pages: screenshots, daily in tab)
+    if (param1 >= 0) {
+        for (let key in selectedScreenshot) delete selectedScreenshot[key]
+        Object.assign(selectedScreenshot, screenshots[param1])
+        //console.log("screenshots length "+screenshots.length)
+    }
+    //case where no index, so simple full screen without "carousel"
+    else {
+        //console.log("Object id " + param3.objectId)
+        Object.assign(selectedScreenshot, param3)
+    }
+
+    //console.log("selectedScreenshot id  " + selectedScreenshot.objectId)
 }

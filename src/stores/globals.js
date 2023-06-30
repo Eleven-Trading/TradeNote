@@ -175,6 +175,10 @@ export const resizeCompressQuality = ref(0.8)
 export const expandedScreenshot = ref(null)
 export const expandedId = ref(null)
 export const expandedSource = ref(null)
+export const selectedScreenshot = reactive({})
+export const selectedScreenshotIndex = ref(null)
+export const selectedScreenshotSource = ref(null)
+export const getMore = ref(false)
 
 /**************************************
 * DIARY

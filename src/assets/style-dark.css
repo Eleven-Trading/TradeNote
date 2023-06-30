@@ -488,6 +488,7 @@ img.logo {
     background-color: var(--black-bg-0) !important;
 }
 
+/* Screenshot */
 .imgContainer {
     position: relative;
     display: flex;
@@ -500,6 +501,15 @@ img.logo {
     position: absolute;
 }
 
+
+.screenshotImg {
+    max-width: 100%;
+}
+
+
+/* End Screenshot */
+
+
 #comment {
     height: 100px;
 }
@@ -509,37 +519,36 @@ img.logo {
     padding: 7px;
 }
 
-.screenshotImg {
-    max-height: 500px;
-}
-
 
 /*=================== VIDEO ===================*/
 
-#tradesModal .modal-xl {
+#tradesModal>.modal-xl {
     min-width: 70%;
 }
 
-#tradesModal .modal-dialog {
+#tradesModal>.modal-dialog {
     margin-top: 5px;
 }
 
 .modal-content {
-    margin-top: 30px;
     background-color: var(--black-bg-7);
     color: var(--white-87);
 }
 
-.modal-body {
+.row>.modal{
     padding: 0;
 }
 
-.modal-header {
+/*.modal-body {
+    padding: 0;
+}*/
+
+/*.modal-header {
     padding: 0 0.25rem;
     margin-bottom: -30px;
     z-index: 100;
-    ;
-}
+    border-bottom: 0;
+}*/
 
 .videoCard {
     border: 1px solid lightgrey;
@@ -595,10 +604,6 @@ img.logo {
     height: 150px;
 }
 
-.modal-header {
-    border-bottom: 0;
-}
-
 
 /* TAGS */
 
@@ -649,10 +654,6 @@ img.logo {
     color: white;
     background-color: var(--red-hover-color);
     border-color: var(--red-hover-color);
-}
-
-.imgContainer {
-    position: relative;
 }
 
 .bottom-right {
@@ -891,10 +892,6 @@ table {
     white-space: nowrap;
 }
 
-/* ENTRY */
-.screenshotImg {
-    max-width: 100%;
-}
 
 /* FORECAST TABLE */
 
@@ -1076,33 +1073,5 @@ h4 {
 
 .exitButton:hover {
     background-color: var(--dark-grey) !important;
-}
-
-
-.fullScreen {
-    visibility: visible;
-    font-size: 16px;
-    user-select: none;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.97);
-    z-index: 3000 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.fullScreen .imgContainer {
-    height: 88vh;
-}
-.fullScreen .screenshotImg {
-    max-height: 88vh;
-}
-
-.carousel-control-next, .carousel-control-prev{
-    width: 10%;
 }
 
