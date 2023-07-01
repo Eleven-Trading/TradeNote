@@ -25,8 +25,10 @@ const props = defineProps({
                     <h5>{{ useCreatedDateFormat(props.screenshotData.dateUnix) }}</h5>
                 </div>
                 <div v-if="props.source == 'fullScreen'" class="col me-auto text-end" data-bs-theme="dark">
-                    <button v-if="!modalDailyTradeOpen" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    <button v-if="modalDailyTradeOpen" type="button" class="btn-close" data-bs-target="#tradesModal" data-bs-toggle="modal"></button>
+                    <button v-if="!modalDailyTradeOpen" type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                    <button v-if="modalDailyTradeOpen" type="button" class="btn-close" data-bs-target="#tradesModal"
+                        data-bs-toggle="modal"></button>
                 </div>
             </div>
         </div>
@@ -34,7 +36,9 @@ const props = defineProps({
         <!-- SUB HEADER -->
         <div class="col-12 mt-2">
             <div class="row">
-                <div class="col-6">
+
+                <!-- Left: info -->
+                <div v-if="props.source != 'addScreenshot'" class="col-6">
                     <span>{{ props.screenshotData.symbol }}</span><span v-if="props.screenshotData.side" class="col mt-1">
                         | {{ props.screenshotData.side == 'SS' || props.screenshotData.side == 'BC' ? 'Short' :
                             'Long' }}
@@ -48,8 +52,9 @@ const props = defineProps({
                     <span>{{ props.screenshotData.mistakeName }}</span>
                 </div>
 
-                <!-- TOOLS -->
-                <div v-if="props.source != 'fullScreen'" class="col-6 text-end">
+                <!-- Right: tools -->
+                <div v-if="props.source != 'fullScreen'"
+                    :class="[props.source == 'addScreenshot' ? 'offset-6' : '', 'col-6 text-end']">
 
                     <!-- Expand / fullScreen screen -->
                     <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'"
@@ -79,17 +84,15 @@ const props = defineProps({
 
     <!-- SCREENSHOTS -->
     <div class="imgContainer">
-        <!--<img
-            class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
-        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />-->
+        <img
+        :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
+        <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />
 
-        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix"
-            v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid"
-            v-bind:src="props.screenshotData.originalBase64" />
+        <!--<img v-if="props.screenshotData.markersOnly" :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
 
         <img :id="!props.screenshotData.markersOnly ? props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix : ''"
             v-bind:class="[props.screenshotData.markersOnly ? 'overlayImg' : '', 'screenshotImg mt-3 img-fluid']"
-            v-bind:src="props.screenshotData.annotatedBase64" />
+            v-bind:src="props.screenshotData.annotatedBase64" />-->
 
         <!--<img v-if="props.screenshotData.markersOnly" class="screenshotImg mt-3 img-fluid"
             v-bind:src="props.screenshotData.originalBase64" />

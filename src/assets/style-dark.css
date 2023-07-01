@@ -494,6 +494,7 @@ img.logo {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 90%;
 }
 
 
@@ -503,7 +504,7 @@ img.logo {
 
 
 .screenshotImg {
-    max-width: 100%;
+    max-height: 100%;
 }
 
 
