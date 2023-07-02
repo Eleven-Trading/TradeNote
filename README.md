@@ -83,6 +83,12 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 
 # Setup
 ## Installation
+### ❗Important Notice❗
+TradeNote uses MongodDB as its database. Please make sure to follow MongoDB's recommendations and requirements before installing and running TradeNote with MongoDB. 
+
+As an example, some users have experienced issues running MongoDB on a Raspberry Pi. At the time of writting, they managed to make it work using v4.4.8 of MongoDB rather than the latest version.
+
+For detailed information, please read MongdoDB's [production notes ](https://www.mongodb.com/docs/manual/administration/production-notes/#platform-support  "production notes").
 
 ### Docker Compose (recommended)
 #### Requirements
@@ -101,14 +107,13 @@ You can then access the website on http://localhost:8080
 ### Docker
 #### Requirements
 - Docker
-- Docker Compose
 - Node 18.X
 - MongoDB
 
 #### Installation
-You need to have a running MongoDB database.
+You need to have a running MongoDB database. Please see their [Docker Hub](https://hub.docker.com/_/mongo "Docker Hub") for instructions.
 
-Run the TradeNote image with its environment variables.
+Then, run the TradeNote image with its environment variables.
 
 ```
 docker run \
