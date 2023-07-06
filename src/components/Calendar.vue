@@ -41,7 +41,7 @@ async function monthLastNext(param) {
             </div>
         </div>
     </div>
-    <div v-bind:class="[pageId === 'calendar' ? 'col-md-9 col-xl-6 mb-5' : '', 'col-12']">
+    <div v-bind:class="[pageId === 'calendar' ? 'col-md-10 col-xl-9 col-xxl-6 mb-5' : '', 'col-12']">
         <div class="row">
             <div class="col" v-for="(day, index) in days">
                 <div>{{ day }}</div>

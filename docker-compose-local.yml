@@ -19,18 +19,6 @@ services:
       MASTER_KEY: 123456
       TRADENOTE_PORT: 8080
       NODE_ENV: dev
-  mongo-express:
-    image: mongo-express:latest
-    container_name: tradenote_db_viewer
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_ADMINUSERNAME: tradenote
-      ME_CONFIG_MONGODB_ADMINPASSWORD: tradenote
-    links:
-      - mongo
-    ports:
-      - 8081:8081
-    restart: always
   mongo:
     image: mongo:latest
     container_name: tradenote_db

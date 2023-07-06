@@ -86,7 +86,7 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 ### ❗Important Notice❗
 TradeNote uses MongodDB as its database. Please make sure to follow MongoDB's recommendations and requirements before installing and running TradeNote with MongoDB. 
 
-As an example, some users have experienced issues running MongoDB on a Raspberry Pi. At the time of writting, they managed to make it work using v4.4.8 of MongoDB rather than the latest version.
+As an example, some users have experienced issues running MongoDB on a Raspberry Pi. At the time of writing, they managed to make it work using v4.4.8 of MongoDB rather than the latest version.
 
 For detailed information, please read MongdoDB's [production notes ](https://www.mongodb.com/docs/manual/administration/production-notes/#platform-support  "production notes").
 
@@ -100,9 +100,11 @@ For detailed information, please read MongdoDB's [production notes ](https://www
 1. Download the docker-compose.yml file
 2. Run `docker-compose up -d`
 
-This will automatically setup the database (mongodDB), the TradeNote app, and a mongoDB database viewer (mongodb-express)
+This will automatically setup the database (mongodDB) and the TradeNote app.
 
-You can then access the website on http://localhost:8080
+You can then access the website on http://localhost:8080.
+
+If you cannot access the website, please refer to the importante notice above (and try changing the mongo version) or get support via [Discord](https://discord.gg/ZbHekKYb85 "Discord")
 
 ### Docker
 #### Requirements
@@ -155,14 +157,7 @@ This project uses [Parse](https://github.com/parse-community "Parse") as its bac
 3. Parse acts as the server so that TradeNote does not need to run any server on its own, making it faster and lighter. 
 
 ### Viewing the database (optional)
-If you installed using the docker-compose.yml file you can access the database viewer on http://localhost:8081
-
-The default database login is
-- username: tradenote
-- password: tradenote
-- database: tradenote
-
-Alternatively, you can use [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or you can install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
+Additionally, if you want to view and manage the database, you can use [MongoDB Compass](https://github.com/parse-community "MongoDB Compass") or install and run the [Parse Dashboard](https://github.com/parse-community/parse-dashboard "Parse Dashboard").
 
 ### PostHog
 This projects uses [PostHog](https://github.com/PostHog/posthog "PostHog") as its product analytics suite to collect <u>anonymous</u> analytics about TradeNote installations and page views. This helps me better understand if and how people are using TradeNote and evaluate the outreach of my project. If you want to opt-out of this program, you can simply add `-e ANALYTICS_OFF=true` when running the docker image. 
