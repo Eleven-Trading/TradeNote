@@ -35,3 +35,5 @@ services:
 volumes:
   tradenote_db:
     name: tradenote_db
+  tradenote_app:
+    name: tradenote_app
