@@ -7,7 +7,7 @@ import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList } from '../stores/globals';
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
 import { useGetExcursions } from '../utils/daily';
@@ -507,12 +507,12 @@ function resetExcursion() {
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
-                                                            <th scope="col">Qty</th>
+                                                            <th scope="col">Vol</th>
                                                             <th scope="col">Entry</th>
                                                             <th scope="col">Time</th>
                                                             <th scope="col">Price</th>
                                                             <!--<th scope="col">Duration</th>-->
-                                                            <th scope="col">P&L/Sh(g)</th>
+                                                            <th scope="col">Price(var)</th>
                                                             <th scope="col">P&L(n)</th>
                                                             <th scope="col">Pattern</th>
                                                             <th scope="col">Mistake</th>
@@ -580,7 +580,7 @@ function resetExcursion() {
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
-                                                            <th scope="col">Quantity</th>
+                                                            <th scope="col">Vol</th>
                                                             <th scope="col">P&L(g)</th>
                                                             <th scope="col">Fees</th>
                                                             <th scope="col">P&L(n)</th>
@@ -594,7 +594,7 @@ function resetExcursion() {
                                                         <tr v-for="blot in itemTrade.blotter">
 
                                                             <td>{{ blot.symbol }}</td>
-                                                            <td>{{ blot.buyQuantity + blot.sellQuantity }}</td>
+                                                            <td>{{ useDecimalsArithmetic(blot.buyQuantity, blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (blot.grossProceeds).toFixed(2) }}</td>
@@ -680,14 +680,14 @@ function resetExcursion() {
                             <thead>
                                 <tr>
                                     <th scope="col">Symbol</th>
-                                    <th scope="col">Qty</th>
+                                    <th scope="col">Vol</th>
                                     <th scope="col">Side</th>
                                     <th scope="col">Time(i)</th>
                                     <th scope="col">Time(o)</th>
                                     <th scope="col">Duration</th>
                                     <th scope="col">Price(i)</th>
                                     <th scope="col">Price(o)</th>
-                                    <th scope="col">P&L/Sh(g)</th>
+                                    <th scope="col">Price(var)</th>
                                     <th scope="col">P/L(n)</th>
                                 </tr>
                             </thead>

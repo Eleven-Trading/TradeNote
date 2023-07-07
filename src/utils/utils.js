@@ -1127,5 +1127,5 @@ export function useFormatBytes(param, decimals = 2) {
 
 export function useDecimalsArithmetic(param1, param2) {
     //https://flaviocopes.com/javascript-decimal-arithmetics/
-    return ((param1.toFixed(2) * 100) + (param2.toFixed(2) * 100)) / 100
+    return ((param1.toFixed(6) * 100) + (param2.toFixed(6) * 100)) / 100
 }

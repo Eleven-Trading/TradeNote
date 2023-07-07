@@ -80,7 +80,7 @@ export async function useBrokerMetaTrader5(param) {
                             temp.Side = "S"
                         }
                         temp.Symbol = Object.values(row)[2]
-                        temp.Qty = (Object.values(row)[5] * 100000).toFixed(2).toString()
+                        temp.Qty = (Object.values(row)[5]).toString()
                         //console.log(" -> Qty import "+temp.Qty)
                         temp.Price = Object.values(row)[6].toString()
                         temp["Exec Time"] = Object.values(row)[0].split(" ")[1]

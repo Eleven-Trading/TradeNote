@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, onMounted } from 'vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, spinnerLoadingPageText, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray } from '../stores/globals';
-import { useInitStepper } from '../utils/utils';
+import { useDecimalsArithmetic, useInitStepper } from '../utils/utils';
 import { useImportTrades, useUploadTrades } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
@@ -109,21 +109,21 @@ async function getExistingTradesArray() {
                         <thead>
                             <tr>
                                 <th scope="col">Symbol</th>
-                                <th scope="col">Tot Qty</th>
+                                <th scope="col">Vol</th>
                                 <th scope="col">P/L gross</th>
                                 <th scope="col">Comm</th>
-                                <th scope="col">Tot Fees</th>
+                                <th scope="col">Fees</th>
                                 <th scope="col">P/L net</th>
-                                <th scope="col">wins(g)</th>
-                                <th scope="col">loss(g)</th>
-                                <th scope="col">trades</th>
-                                <th scope="col">executions</th>
+                                <th scope="col">Wins(g)</th>
+                                <th scope="col">Loss(g)</th>
+                                <th scope="col">Trades</th>
+                                <th scope="col">Executions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="blot in blotter[index]">
                                 <td>{{ blot.symbol }}</td>
-                                <td>{{ blot.buyQuantity + blot.sellQuantity }}</td>
+                                <td>{{ useDecimalsArithmetic(blot.buyQuantity, blot.sellQuantity) }}</td>
                                 <td v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                     {{ (blot.grossProceeds).toFixed(2) }}</td>
                                 <td>{{ (blot.commission).toFixed(2) }}</td>
