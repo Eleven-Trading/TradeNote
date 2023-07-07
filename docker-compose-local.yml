@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
+    image: tradenote:latest
     volumes:
       - "./:/app"
     ports:
@@ -18,7 +19,6 @@ services:
       APP_ID: 123456
       MASTER_KEY: 123456
       TRADENOTE_PORT: 8080
-      NODE_ENV: dev
   mongo:
     image: mongo:latest
     container_name: tradenote_db
