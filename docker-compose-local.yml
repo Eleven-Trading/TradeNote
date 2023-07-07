@@ -9,6 +9,8 @@ services:
     image: tradenote:latest
     volumes:
       - "./:/app"
+      - /app/node_modules
+      - /app/dist
     ports:
       - 8080:8080
     links:
