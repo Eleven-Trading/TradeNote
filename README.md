@@ -134,6 +134,15 @@ docker run \
 - **MASTER_KEY**: Set a random string as master key, which will be used to make root connections to the backend (no spaces) (example: 12345)
 - **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website. (example: 8080)
 
+### Local installation (advanced)
+If you want to run the latest version of TradeNote you can also build the image locally, directly from GitHub repository.
+
+1. Pull from github
+2. cd into TradeNote directory 
+3. Run
+    - For Docker Compose : Run `docker-compose-local up -d`
+    - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
+
 ## First Steps
 1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password
 2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
@@ -141,15 +150,6 @@ docker run \
 
 
 ## Side note
-### Local installation
-For advanced users, you can also build the TradeNote image locally, directly from GitHub repository.
-
-1. Pull from github
-2. cd into Tradenote directory 
-3. Run
-    - For Docker compose : Run `docker-compose-local up -d`
-    - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
-
 ### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
 1. Manage the authentication (flow)
