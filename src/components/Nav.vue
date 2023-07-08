@@ -159,7 +159,7 @@ function logout() {
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="text-center">
-                            <span class="txt-small">v.{{ version }}</span>
+                            <span class="txt-small">v{{ version }}</span>
                         </li>
                     </ul>
                 </div>
