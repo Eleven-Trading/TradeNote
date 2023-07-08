@@ -98,7 +98,7 @@ For detailed information, please read MongdoDB's [production notes ](https://www
 
 #### Installation
 1. Download the docker-compose.yml file
-2. Run `docker-compose up -d`
+2. Run `docker compose up -d`
 
 This will automatically setup the database (mongodDB) and the TradeNote app.
 
@@ -140,7 +140,7 @@ If you want to run the latest version of TradeNote you can also build the image 
 1. Pull from github
 2. cd into TradeNote directory 
 3. Run
-    - For Docker Compose : Run `docker-compose -f docker-compose-local.yml up -d`
+    - For Docker Compose : Run `docker compose -f docker-compose-local.yml up -d`
     - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
 
 ## First Steps
