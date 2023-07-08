@@ -165,7 +165,7 @@ This projects uses [PostHog](https://github.com/PostHog/posthog "PostHog") as it
 
 ## Backup data
 ### Persistent data
-During installation, mongoDB is runs with persistent data. This way, if you restart or update your mongoDB container, your data will not be lost.
+During installation, mongoDB runs with persistent data. This way, if you restart or update your mongoDB container, your data will not be lost.
 
 ### Backup mongoDB
 Additionally, you can, and should, backup your database. 
@@ -173,7 +173,7 @@ Additionally, you can, and should, backup your database.
 For convenience, here is an example using [s3cmd](https://s3tools.org/s3cmd "s3cmd") for backing up your database. As this is not part of the TradeNote projet, I will unfortunately not be able to provide support on this part. But you will find more information about this on google and stackoverflow. 
 1. Install [s3cmd](https://s3tools.org/s3cmd "s3cmd")
 2. Configure the s3cfg config file
-3. Run the [bash file](https://github.com/Eleven-Trading/TradeNote/blob/main/example_tradezero_file.csv "bash file") with the following 5 arguments: DATABASE_USER, DATABASE_PASSWORD, S3_BUCKET_NAME, S3_BUCKET_PATH, MONGO_DATABASE_NAME 
+3. Run the [bash file](https://github.com/Eleven-Trading/TradeNote/blob/main/backup-mongodb.sh "bash file") with the correct variables
 
 
 # Contribute
