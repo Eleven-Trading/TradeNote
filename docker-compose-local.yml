@@ -7,10 +7,6 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
     image: tradenote:latest
-    volumes:
-      - "./:/app"
-      - /app/node_modules
-      - /app/dist
     ports:
       - 8080:8080
     links:
@@ -35,5 +31,3 @@ services:
 volumes:
   tradenote_db:
     name: tradenote_db
-  tradenote_app:
-    name: tradenote_app
