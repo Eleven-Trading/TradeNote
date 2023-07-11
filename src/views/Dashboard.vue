@@ -130,7 +130,7 @@ useMountDashboard()
                                     <div class="col-12">
                                         <div class="row">
                                             <!-- Left square -->
-                                            <div class="col-12 col-lg-6">
+                                            <div class="col-12 order-lg-2 col-lg-6">
                                                 <!-- first line -->
                                                 <div class="row mb-2">
                                                     <div class="col-6">
@@ -193,7 +193,7 @@ useMountDashboard()
 
 
                                             <!-- Right square -->
-                                            <div class="col-12 col-lg-6">
+                                            <div class="col-12 order-lg-1 col-lg-6">
                                                 <div class="row text-center mb-3">
                                                     <div class="col-6">
                                                         <div class="dailyCard">

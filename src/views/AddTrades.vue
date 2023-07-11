@@ -137,7 +137,7 @@ async function getExistingTradesArray() {
                             </tr>
                             <tr v-if="index != null" class="sumRow">
                                 <td>Total</td>
-                                <td>{{ pAndL[index].buyQuantity + pAndL[index].sellQuantity }}</td>
+                                <td>{{ useDecimalsArithmetic(pAndL[index].buyQuantity, pAndL[index].sellQuantity) }}</td>
                                 <td v-bind:class="[pAndL[index].grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                     {{ (pAndL[index].grossProceeds).toFixed(2) }}</td>
                                 <td>{{ (pAndL[index].commission).toFixed(2) }}</td>
