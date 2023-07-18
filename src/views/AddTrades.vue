@@ -86,13 +86,17 @@ async function getExistingTradesArray() {
 
             <!-- STEP 2 - Trades -->
             <div id="step2" class="content">
-                <div class="mt-4" v-show="currentUser.marketDataApiKey">
+                <div class="mt-4" v-if="currentUser.marketDataApiKey">
                     <div class="form-check form-switch">
-                        <label>Upload automatically MFE prices</label>
+                        <label>Add MFE prices automatically (<a
+            href="https://polygon.io/system" target="_blank">system status</a>)</label>
                         <input class="form-check-input" type="checkbox" role="switch" v-model="uploadMfePrices"
                             v-on:click="uploadMfePrices = !uploadMfePrices">
                     </div>
 
+                </div>
+                <div v-else>
+                    <p>Add your API in <a href="/settings">settings</a> to add MFE prices automatically</p>
                 </div>
                 <h4 class="mt-3">Trades</h4>
                 <div class="mt-3 input-group mb-3">

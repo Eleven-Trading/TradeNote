@@ -69,10 +69,10 @@ async function updateProfile() {
                     <input type="file" @change="uploadProfileAvatar" />
                 </div>
 
-                <!-- Finnhub API Key -->
+                <!-- API Key -->
                 <div class="mt-3">
                     <h5>Insert your Polygon API Key</h5>
-                    <p>Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades.</p>
+                    <p>Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades. Currently, only for US stocks.</p>
                     <input type="text" :value="currentUser.marketDataApiKey"
                         @input="marketDataApiKey = $event.target.value" />
                 </div>

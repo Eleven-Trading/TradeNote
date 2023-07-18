@@ -5,7 +5,7 @@
 
 # The project
 ## About
-There are numerous great and very powerful trading journals out there. However, most of these tools are very limited in terms of control and customisations (data control, privacy, UI&UX customization, etc.). Moreover, I was missing some essential features for improving my day trading, like having a diary or taking and annotating screenshots.
+There are numerous great and very powerful trading journals out there. However, I wanted to build a journal for traders who care about data security and privacy but also for individuals that need simplicity and flexibility.
 
 By creating and sharing TradeNote as an open source project, I hope to help other days traders like myself store, discover and recollect trade patterns so they can become and remain consistent and profitable traders.
 
@@ -15,10 +15,10 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHekKYb85 "Discord"), or create an issue on this repository.
 
 ## Built with
-The objective is to have a lightweight and fast website. As such, the website runs on static pages, using VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
+The TradeNote website runs on VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
 
 ## Note
-This project arose from a personal need and as such is most widely used (and tested) for intraday trades and using TradeZero Broker. However, I'm adding little by little other brokers. 
+This project arose from a personal need and as such is most widely used (and tested) for intraday trades and using TradeZero Broker. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
 ### Supported Brokers
 Currently, you can add trades from the following brokers
@@ -30,12 +30,9 @@ Currently, you can add trades from the following brokers
 
 Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the export format for you broker.
 
-You contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
+You can contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
 Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
-
-### Type of trades
-TradeNote works best for intraday US stocks. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
 ### Project
 You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").
@@ -137,7 +134,7 @@ docker run \
 ### Local installation (advanced)
 If you want to run the latest version of TradeNote you can also build the image locally, directly from GitHub repository.
 
-1. Pull from github
+1. Clone from github
 2. cd into TradeNote directory 
 3. Run
     - For Docker Compose : Run `docker compose -f docker-compose-local.yml up -d`

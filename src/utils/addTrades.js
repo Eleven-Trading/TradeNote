@@ -53,7 +53,7 @@ export async function useImportTrades(e) {
         })
 
         await createExecutions()
-        if (currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') {
+        if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && uploadMfePrices.value) {
             await getOHLCV()
         }
         await createTrades().then(async () => {
