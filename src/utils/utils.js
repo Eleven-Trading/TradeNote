@@ -610,12 +610,6 @@ export async function useInitQuill(param) {
     })
 }
 
-export function useInitStepper() {
-    stepper.value = new Stepper(document.querySelector('#addStepper'), {
-        animation: true
-    })
-}
-
 export function useInitWheelEvent() {
     var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
     var mouseDirection
