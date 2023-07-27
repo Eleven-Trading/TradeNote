@@ -372,12 +372,12 @@ async function createTrades() {
             let initEntryPrice
 
             for (const tempExec of tempExecs) {
-                console.log("   ---> Opening Position")
+                //console.log("   ---> Opening Position")
                 openPosition = true
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
-                    console.log("\n -> New trade for symbol " + tempExec.symbol)
+                    console.log("\n -> New trade for symbol " + tempExec.symbol + " on "+ useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
