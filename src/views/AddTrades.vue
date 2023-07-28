@@ -50,10 +50,13 @@ async function getExistingTradesArray() {
     <SpinnerLoadingPage />
 
     <!--DROPDOWN LIST-->
-    <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
-        <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value == selectedBroker">
-            {{ item.label }}</option>
-    </select>
+    <div class="form-floating">
+        <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
+            <option v-for="item in brokers" v-bind:value="item.value" v-bind:selected="item.value == selectedBroker">
+                {{ item.label }}</option>
+        </select>
+        <label for="floatingSelect">Select your broker or trading platform</label>
+    </div>
     <p class="txt-small fst-italic">You will find export instructions for your broker on the <a
             href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub page</a>
     </p>
@@ -83,60 +86,62 @@ async function getExistingTradesArray() {
 
         <div v-if="Object.keys(blotter).length > 0 && Object.keys(pAndL).length > 0"
             v-for="(execution, index) in executions">
-            <h3 class="ml-2 mt-2 text-blue">{{ useCreatedDateFormat(index) }}</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Symbol</th>
-                        <th scope="col">Vol</th>
-                        <th scope="col">P/L gross</th>
-                        <th scope="col">Comm</th>
-                        <th scope="col">Fees</th>
-                        <th scope="col">P/L net</th>
-                        <th scope="col">Wins(g)</th>
-                        <th scope="col">Loss(g)</th>
-                        <th scope="col">Trades</th>
-                        <th scope="col">Executions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="blot in blotter[index]">
-                        <td>{{ blot.symbol }}</td>
-                        <td>{{ useDecimalsArithmetic(blot.buyQuantity, blot.sellQuantity) }}</td>
-                        <td v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                            {{ (blot.grossProceeds).toFixed(2) }}</td>
-                        <td>{{ (blot.commission).toFixed(2) }}</td>
-                        <td>{{ (blot.fees).toFixed(2) }}</td>
-                        <td v-bind:class="[blot.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                            {{ (blot.netProceeds).toFixed(2) }}</td>
-                        <td>{{ blot.grossWinsCount }}</td>
-                        <td>{{ blot.grossLossCount }}</td>
-                        <td>{{ blot.trades }}</td>
-                        <td>{{ blot.executions }}</td>
-                    </tr>
-                    <tr v-if="index != null" class="sumRow">
-                        <td>Total</td>
-                        <td>{{ useDecimalsArithmetic(pAndL[index].buyQuantity, pAndL[index].sellQuantity) }}</td>
-                        <td v-bind:class="[pAndL[index].grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                            {{ (pAndL[index].grossProceeds).toFixed(2) }}</td>
-                        <td>{{ (pAndL[index].commission).toFixed(2) }}</td>
-                        <td>{{ (pAndL[index].fees).toFixed(2) }}</td>
-                        <td v-bind:class="[pAndL[index].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                            {{ (pAndL[index].netProceeds).toFixed(2) }}</td>
-                        <td>{{ pAndL[index].grossWinsCount }}</td>
-                        <td>{{ pAndL[index].grossLossCount }}</td>
-                        <td>{{ pAndL[index].trades }}</td>
-                        <td>{{ pAndL[index].executions }}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div v-if="blotter[index]">
+                <h3 class="ml-2 mt-2 text-blue">{{ useCreatedDateFormat(index) }}</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Symbol</th>
+                            <th scope="col">Vol</th>
+                            <th scope="col">P/L gross</th>
+                            <th scope="col">Comm</th>
+                            <th scope="col">Fees</th>
+                            <th scope="col">P/L net</th>
+                            <th scope="col">Wins(g)</th>
+                            <th scope="col">Loss(g)</th>
+                            <th scope="col">Trades</th>
+                            <th scope="col">Executions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="blot in blotter[index]">
+                            <td>{{ blot.symbol }}</td>
+                            <td>{{ useDecimalsArithmetic(blot.buyQuantity, blot.sellQuantity) }}</td>
+                            <td v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                {{ (blot.grossProceeds).toFixed(2) }}</td>
+                            <td>{{ (blot.commission).toFixed(2) }}</td>
+                            <td>{{ (blot.fees).toFixed(2) }}</td>
+                            <td v-bind:class="[blot.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                {{ (blot.netProceeds).toFixed(2) }}</td>
+                            <td>{{ blot.grossWinsCount }}</td>
+                            <td>{{ blot.grossLossCount }}</td>
+                            <td>{{ blot.trades }}</td>
+                            <td>{{ blot.executions }}</td>
+                        </tr>
+                        <tr v-if="index != null" class="sumRow">
+                            <td>Total</td>
+                            <td>{{ useDecimalsArithmetic(pAndL[index].buyQuantity, pAndL[index].sellQuantity) }}</td>
+                            <td v-bind:class="[pAndL[index].grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                {{ (pAndL[index].grossProceeds).toFixed(2) }}</td>
+                            <td>{{ (pAndL[index].commission).toFixed(2) }}</td>
+                            <td>{{ (pAndL[index].fees).toFixed(2) }}</td>
+                            <td v-bind:class="[pAndL[index].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                {{ (pAndL[index].netProceeds).toFixed(2) }}</td>
+                            <td>{{ pAndL[index].grossWinsCount }}</td>
+                            <td>{{ pAndL[index].grossLossCount }}</td>
+                            <td>{{ pAndL[index].trades }}</td>
+                            <td>{{ pAndL[index].executions }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <!--BUTTONS-->
     <div>
-        <button v-show="Object.keys(executions).length > 0 && !spinnerLoadingPage" type="button" v-on:click="useUploadTrades"
-            class="btn btn-success btn-lg me-3">Submit</button>
+        <button v-show="Object.keys(executions).length > 0 && !spinnerLoadingPage" type="button"
+            v-on:click="useUploadTrades" class="btn btn-success btn-lg me-3">Submit</button>
 
         <button type="cancel" onclick="location.href = 'dashboard';"
             class="btn btn-outline-secondary btn-sm me-2">Cancel</button>
