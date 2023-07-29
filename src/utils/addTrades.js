@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useNinjaTrader } from './brokers'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -118,6 +118,15 @@ export async function useImportTrades(e) {
     }
 
     /****************************
+     * NINJATRADER
+     ****************************/
+    if (selectedBroker.value == "ninjaTrader") {
+        console.log(" -> NinjaTrader")
+        let fileInput = await readAsText(files)
+        await useNinjaTrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+    }
+
+    /****************************
      * HELDENTRADER
      ****************************/
     if (selectedBroker.value == "heldentrader") {
@@ -184,6 +193,18 @@ async function createTempExecutions() {
                 temp2.currency = tradesData[key].Currency;
                 temp2.type = tradesData[key].Type;
                 temp2.side = tradesData[key].Side;
+                if (temp2.side == "B") {
+                    temp2.strategy = "long"
+                }
+                if (temp2.side == "S") {
+                    temp2.strategy = "long"
+                }
+                if (temp2.side == "BC") {
+                    temp2.strategy = "short"
+                }
+                if (temp2.side == "SS") {
+                    temp2.strategy = "short"
+                }
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
@@ -344,7 +365,7 @@ async function createTrades() {
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
-            .groupBy("symbol");
+            .groupBy(item => `"${item.symbol}+${item.strategy}"`);
 
         let objectB = JSON.parse(JSON.stringify(b))
         //console.log("object b "+JSON.stringify(objectB))

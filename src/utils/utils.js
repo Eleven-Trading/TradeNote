@@ -1051,6 +1051,10 @@ export function useTimeFormat(param) {
     return dayjs.unix(param).tz(timeZoneTrade.value).format("HH:mm:ss")
 }
 
+export function useTimeFormatFromDate(param) {
+    return dayjs(param).tz(timeZoneTrade.value).format("HH:mm:ss")
+}
+
 export function useTimeDuration(param) {
     return dayjs.duration(param * 1000).format("HH:mm:ss")
 }

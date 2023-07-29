@@ -2,6 +2,7 @@
 //"T/D": "month/day/2022",
 
 import { tradesData, timeZoneTrade } from "../stores/globals"
+import { useTimeFormatFromDate } from "./utils";
 
 /****************************
  * TRADEZERO
@@ -269,7 +270,7 @@ export async function useBrokerTdAmeritrade(param) {
             console.log("  --> ERROR " + error)
             reject(error)
         }
-        console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         resolve()
 
     })
@@ -530,6 +531,83 @@ export async function useBrokerHeldentrader(param) {
             })
 
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        } catch (error) {
+            console.log("  --> ERROR " + error)
+            reject(error)
+        }
+        resolve()
+    })
+}
+
+/****************************
+ * NINJATRADER
+ ****************************/
+export async function useNinjaTrader(param) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            tradesData.length = 0
+            let papaParse = Papa.parse(param, { header: true })
+            //we need to recreate the JSON with proper date format + we simplify
+            //console.log("papaparse " + JSON.stringify(papaParse.data))
+            let side
+            papaParse.data.forEach(element => {
+                if (element.Instrument) {
+                    //console.log("element " + JSON.stringify(element))
+                    let temp = {}
+                    temp.Account = element.Account
+                    //console.log("element.TradeDate. " + element.TradeDate)
+                    let date = element.Time.split(" ")[0]
+                    if (element.Position.split(" ")[1] != undefined){
+                        side = element.Position.split(" ")[1]
+                    }
+                    
+                    //console.log("side "+side)
+                    temp["T/D"] = date
+                    temp["S/D"] = date
+                    temp.Currency = "USD"
+                    temp.Type = "0"
+                    if (element.Action == "Buy" && side == "L") {
+                        temp.Side = "B"
+                    }
+                    if (element.Action == "Buy" && side == "S") {
+                        temp.Side = "BC"
+                    }
+                    if (element.Action == "Sell" && side == "L") {
+                        temp.Side = "S"
+                    }
+                    if (element.Action == "Sell" && side == "S") {
+                        temp.Side = "SS"
+                    }
+                    temp.Symbol = element.Instrument
+                    temp.Qty = element.Quantity
+                    temp.Price = element.Price
+
+                    
+                    temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
+
+                    temp.Comm = element.Commission.split("$")[1]
+                    temp.SEC = "0"
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        temp["Gross Proceeds"] = (-element.Quantity * element.Price).toString()
+                        temp["Net Proceeds"] = ((-element.Quantity * element.Price) - temp.Comm).toString()
+
+                    } else {
+                        temp["Gross Proceeds"] = (element.Quantity * element.Price).toString()
+                        temp["Net Proceeds"] = ((element.Quantity * element.Price) - temp.Comm).toString()
+                    }
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+                    //console.log("temp "+JSON.stringify(temp))
+                    tradesData.push(temp)
+                }
+            });
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
