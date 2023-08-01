@@ -372,6 +372,7 @@ async function createTrades() {
 
         // We iterate through each symbol (key2)
         const keys2 = Object.keys(objectB);
+
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
@@ -391,14 +392,15 @@ async function createTrades() {
 
             let initEntryTime
             let initEntryPrice
-
-            for (const tempExec of tempExecs) {
-                //console.log("   ---> Opening Position")
+            let i
+            for (i = 0; i < tempExecs.length; i++) {
+                let tempExec = tempExecs[i];
                 openPosition = true
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
-                    console.log("\n -> New trade for symbol " + tempExec.symbol + " on "+ useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log("\nOpening Position")
+                    console.log(" -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
@@ -808,7 +810,11 @@ async function createTrades() {
                         openPosition = false
 
                     } else {
-                        console.log("   ---> Position OPEN")
+                        if ((i + 1) == tempExecs.length) {
+                            console.log("   ---> Position OPEN")
+                            console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
+                        }
+
                     }
                 } else {
                     console.log("nothing for key " + key2)
