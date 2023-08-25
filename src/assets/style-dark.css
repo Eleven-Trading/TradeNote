@@ -696,6 +696,9 @@ img.logo {
     width: 100%;
 }
 
+.dailyCard img {
+    width: 100%;
+}
 
 .cardFirstLine {
     border-bottom: 1px solid lightgray;
