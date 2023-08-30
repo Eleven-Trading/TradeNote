@@ -60,6 +60,9 @@ async function getExistingTradesArray() {
     <p class="txt-small fst-italic">You will find export instructions for your broker on the <a
             href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub page</a>
     </p>
+    <p v-show="selectedBroker">
+        Supported asset types: <span v-for="(item, index) in brokers.filter(f => f.value == selectedBroker)[0].assetTypes">{{ item }}<span v-show="brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length>1&&(index+1)<brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length">, </span></span>
+    </p>
 
     <!--MFE-->
     <div class="mt-4" v-if="currentUser.marketDataApiKey">

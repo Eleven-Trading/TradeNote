@@ -201,31 +201,38 @@ export const playbookButton = ref(false)
 **************************************/
 export const brokers = reactive([{
     value: "template",
-    label: "Template"
+    label: "Template",
+    assetTypes: ["stocks"]
 },
 {
     value: "tradeZero",
-    label: "TradeZero"
+    label: "TradeZero",
+    assetTypes: ["stocks"]
 },
 {
     value: "metaTrader5",
-    label: "MetaTrader 5"
+    label: "MetaTrader 5",
+    assetTypes: ["forex"]
 },
 {
     value: "tdAmeritrade",
-    label: "TD Ameritrade"
+    label: "TD Ameritrade",
+    assetTypes: ["stocks"]
 },
 {
     value: "tradeStation",
-    label: "TradeStation"
+    label: "TradeStation",
+    assetTypes: ["stocks", "futures"]
 },
 {
     value: "interactiveBrokers",
-    label: "Interactive Brokers"
+    label: "Interactive Brokers",
+    assetTypes: ["stocks", "options"]
 },
 {
     value: "heldentrader",
-    label: "Heldentrader"
+    label: "Heldentrader",
+    assetTypes: ["stocks"]
 }
 ])
 
