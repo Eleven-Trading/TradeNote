@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade } from "../stores/globals"
+import { tradesData, timeZoneTrade, futureContractsUsd } from "../stores/globals"
 
 /****************************
  * TRADEZERO
@@ -281,7 +281,22 @@ export async function useBrokerTdAmeritrade(param) {
 export async function useBrokerTradeStation(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            var workbook = XLSX.read(param);
+            //console.log(" param " + param)
+            let newCsv = [];
+            let lines = param.split("\n");
+            lines.forEach((item, i) => {
+                if (i !== 0) newCsv.push(item);
+            })
+
+            newCsv = newCsv.join("\n");
+            //console.log(newCsv);
+
+            tradesData.length = 0
+            let papaParse = Papa.parse(newCsv, { header: true })
+            //we need to recreate the JSON with proper date format + we simplify
+            console.log("papaparse " + JSON.stringify(papaParse.data))
+
+            /*var workbook = XLSX.read(param);
             var result = {};
             //As this is text but looks like an excel we need to take back and fourth steps
             //1 - Create array of arrays (https://docs.sheetjs.com/docs/api/utilities)
@@ -300,10 +315,11 @@ export async function useBrokerTradeStation(param) {
             let toJson = XLSX.utils.sheet_to_json(toSheet)
             //console.log("to sheet " + JSON.stringify(toJson))
             tradesData.length = 0
-
-            toJson.forEach(element => {
+            */
+            papaParse.data.forEach(element => {
+                //console.log("element " + JSON.stringify(element))
                 if (element["Order Status"] == "Filled") {
-                    console.log("element " + JSON.stringify(element))
+                    //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = element.Account.toString()
 
@@ -313,22 +329,59 @@ export async function useBrokerTradeStation(param) {
                     temp["T/D"] = newDate
                     temp["S/D"] = newDate
                     temp.Currency = "USD"
-                    temp.Type = "0"
+                    
+                    //Type
+                    temp.Type = "stock"
+                    if (element["Contract Exp Date"] != "") {
+                        temp.Type = "future"
+                    }
+                    if (element.Type.includes("to Open") || element.Type.includes("to Close")) {
+                        temp.Type = "option"
+                    }
+                    console.log("  --> Type "+temp.Type)
+
                     if (element.Type == "Buy") {
                         temp.Side = "B"
                     }
+                    if (element.Type == "Buy to Open") {
+                        temp.Side = "B"
+                    }
+
                     if (element.Type == "Buy to Cover") {
                         temp.Side = "BC"
                     }
+                    if (element.Type == "Buy to Close") {
+                        temp.Side = "BC"
+                    }
+
                     if (element.Type == "Sell") {
                         temp.Side = "S"
                     }
+                    if (element.Type == "Sell to Close") {
+                        temp.Side = "S"
+                    }
+
                     if (element.Type == "Sell Short") {
                         temp.Side = "SS"
                     }
+                    if (element.Type == "Sell to Open") {
+                        temp.Side = "SS"
+                    }
+
                     temp.Symbol = element.Symbol.trim()
+                    if (temp.Type == "future") {
+                        temp.Symbol = temp.Symbol.slice(0, -3)
+                    }
+                    if (temp.Type == "option") {
+                        temp.Symbol = temp.Symbol.split(" ")[0]
+                    }
+
                     temp.Qty = element["Qty Filled"].toString()
-                    temp.Price = element["Filled Price"].toString()
+                    
+                    //Futures have big prices, comma separated
+                    let tempFilledPrice = element["Filled Price"].replace(/,/g, '')
+                    //console.log("tempFilledPrice "+tempFilledPrice+" and type "+typeof tempFilledPrice)
+                    temp.Price = tempFilledPrice
 
                     let tempTime = element.Entered.split(" ")[1]
                     let tempTimeAMPM = element.Entered.split(" ")[2]
@@ -343,7 +396,7 @@ export async function useBrokerTradeStation(param) {
 
                     temp["Exec Time"] = newTime
 
-                    temp.Comm = element.Commission.toString()
+                    temp.Comm = element.Commission.replace("$", "").toString()
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
@@ -351,12 +404,42 @@ export async function useBrokerTradeStation(param) {
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
                     if (temp.Side == "B" || temp.Side == "BC") {
-                        temp["Gross Proceeds"] = (-element["Qty Filled"] * element["Filled Price"]).toString()
-                        temp["Net Proceeds"] = ((-element["Qty Filled"] * element["Filled Price"]) - element.Commission).toString()
+                        if (temp.Type == "future") {
+                            let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                            let tick = contractSpecs[0].tick
+                            let value = contractSpecs[0].value
+                            let tempProceeds = (Number(-element["Qty Filled"]) * Number(tempFilledPrice)) / tick * value
+                            console.log("tempProceeds "+tempProceeds)
+                            temp["Gross Proceeds"] = tempProceeds.toString()
+                            temp["Net Proceeds"] = (tempProceeds - Number(temp.Comm)).toString()
+                            //we need to find the tick 
+
+                            // the value
+                        } else {
+                            temp["Gross Proceeds"] = (-element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')).toString()
+                            temp["Net Proceeds"] = ((-element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')) - element.Commission.replace("$", "")).toString()
+                        }
+
 
                     } else {
-                        temp["Gross Proceeds"] = (element["Qty Filled"] * element["Filled Price"]).toString()
-                        temp["Net Proceeds"] = ((element["Qty Filled"] * element["Filled Price"]) - element.Commission).toString()
+                        if (element["Contract Exp Date"] != "") {
+                            let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                            let tick = contractSpecs[0].tick
+                            let value = contractSpecs[0].value
+                            //console.log("qty filled "+Number(element["Qty Filled"])+" and type "+typeof Number(element["Qty Filled"]))
+                            //console.log("tempFilledPrice "+Number(tempFilledPrice)+" and type "+typeof Number(tempFilledPrice))
+                            //console.log("tick type "+typeof tick+" value type "+typeof value)
+                            let tempProceeds = (Number(element["Qty Filled"]) * Number(tempFilledPrice)) / tick * value
+                            console.log("tempProceeds "+tempProceeds)
+                            temp["Gross Proceeds"] = tempProceeds.toString()
+                            temp["Net Proceeds"] = (tempProceeds - Number(temp.Comm)).toString()
+                            //we need to find the tick 
+
+                            // the value
+                        } else {
+                            temp["Gross Proceeds"] = (element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')).toString()
+                            temp["Net Proceeds"] = ((element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')) - element.Commission.replace("$", "")).toString()
+                        }
                     }
 
                     temp["Clr Broker"] = ""
@@ -367,6 +450,7 @@ export async function useBrokerTradeStation(param) {
                 }
             });
             console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)

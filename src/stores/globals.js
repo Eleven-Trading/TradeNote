@@ -6,7 +6,7 @@ import { ref, reactive } from "vue";
 export const parseId = ref()
 export const pageId = ref()
 export const currentUser = ref()
-export const timeZones = ref(["America/New_York","Asia/Shanghai","Europe/Brussels","Asia/Tokyo", "Asia/Hong_Kong", "Asia/Kolkata", "Europe/London", "Asia/Riyadh"])
+export const timeZones = ref(["America/New_York", "Asia/Shanghai", "Europe/Brussels", "Asia/Tokyo", "Asia/Hong_Kong", "Asia/Kolkata", "Europe/London", "Asia/Riyadh"])
 export const timeZoneTrade = ref()
 export const queryLimit = ref(10000000)
 export const endOfList = ref(false) //infinite scroll
@@ -40,26 +40,26 @@ export const tradeSetupId = ref(null)
 export const patternUpdate = reactive({
     edit: null,
     name: null,
-    description: null, 
+    description: null,
     active: null
 })
 export const mistakeUpdate = reactive({
     edit: null,
     name: null,
-    description: null, 
+    description: null,
     active: null
 })
 
 export const patternNew = reactive({
     edit: null,
     name: null,
-    description: null, 
+    description: null,
     active: null
 })
 export const mistakeNew = reactive({
     edit: null,
     name: null,
-    description: null, 
+    description: null,
     active: null
 })
 export const activePatterns = reactive([])
@@ -120,6 +120,369 @@ export const existingImports = reactive([])
 export const existingTradesArray = reactive([])
 export const gotExistingTradesArray = ref(false)
 
+export const futureContractsUsd = ref([
+    {
+        "name": "Micro E-mini S&P 500",
+        "symbol": "MES",
+        "type": "Micro E-mini Futures",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 5,
+        "contractSizeExpl": "$5 x S&P Index",
+        "months": "H,M,U,Z",
+        "tick": 0.25,
+        "value": 1.25
+    },
+    {
+        "name": "Micro E-mini Nasdaq-100",
+        "symbol": "MNQ",
+        "type": "Micro E-mini Futures",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 2,
+        "contractSizeExpl": "$2 x Nasdaq-100 Index",
+        "months": "H,M,U,Z",
+        "tick": 0.25,
+        "value": 0.5
+    },
+    {
+        "name": "Micro E-mini Dow",
+        "symbol": "MYM",
+        "type": "Micro E-mini Futures",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 0.5,
+        "contractSizeExpl": "$0.50 x DJIA Index",
+        "months": "H,M,U,Z",
+        "tick": 1,
+        "value": 0.5
+    },
+    {
+        "name": "Micro E-mini Russell 2000",
+        "symbol": "M2K",
+        "type": "Micro E-mini Futures",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 5,
+        "contractSizeExpl": "$5 x Russell 2000 Index",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 0.5
+    },
+    {
+        "name": "E-mini S&P 500",
+        "symbol": "ES",
+        "type": "Stock Index",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 50,
+        "contractSizeExpl": "$50 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.25,
+        "value": 12.5
+    },
+    {
+        "name": "E-mini Nasdaq-100",
+        "symbol": "NQ",
+        "type": "Stock Index",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 20,
+        "contractSizeExpl": "$20 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.25,
+        "value": 5
+    },
+    {
+        "name": "E-mini Dow ($5)",
+        "symbol": "YM",
+        "type": "Stock Index",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 5,
+        "contractSizeExpl": "$5 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 1,
+        "value": 5
+    },
+    {
+        "name": "E-mini Russell 2000",
+        "symbol": "RTY",
+        "type": "Stock Index",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 50,
+        "contractSizeExpl": "$50 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 5
+    },
+    {
+        "name": "E-mini S&P MidCap 400",
+        "symbol": "EMD",
+        "type": "Stock Index",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 100,
+        "contractSizeExpl": "$100 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 10
+    },
+    {
+        "name": "NIKKEI 225\/USD",
+        "symbol": "NKD",
+        "type": "Stock Index",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 5,
+        "contractSizeExpl": "$5 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 5,
+        "value": 25
+    },
+    {
+        "name": "CBOE Volatility Index (VIX)",
+        "symbol": "VX",
+        "type": "Stock Index",
+        "exchange": "CFE\/CBOE",
+        "unit": "USD",
+        "contractSize": 1000,
+        "contractSizeExpl": "$1000 x Index Value",
+        "months": "see exch.",
+        "tick": 0.05,
+        "value": 50
+    },
+    {
+        "name": "Mini CBOE Volatility Index (Mini VIX)",
+        "symbol": "VXM",
+        "type": "Stock Index",
+        "exchange": "CFE\/CBOE",
+        "unit": "USD",
+        "contractSize": 100,
+        "contractSizeExpl": "$100 x Index Value",
+        "months": "see exch.",
+        "tick": 0.05,
+        "value": 5
+    },
+    {
+        "name": "SGX Nifty 50 Index",
+        "symbol": "IN",
+        "type": "Stock Index",
+        "exchange": "Singapore Exchange (SGX)",
+        "unit": "USD",
+        "contractSize": 2,
+        "contractSizeExpl": "$2 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.5,
+        "value": 1
+    },
+    {
+        "name": "SGX USD Nikkei 225 Index",
+        "symbol": "NU",
+        "type": "Stock Index",
+        "exchange": "Singapore Exchange (SGX)",
+        "unit": "USD",
+        "contractSize": 5,
+        "contractSizeExpl": "$5 x Index Value",
+        "months": "H,M,U,Z",
+        "tick": 5,
+        "value": 25
+    },
+    {
+        "name": "FTSE Taiwan Stock Index",
+        "symbol": "TW",
+        "type": "Stock Index",
+        "exchange": "Singapore Exchange (SGX)",
+        "unit": "USD",
+        "contractSize": 100,
+        "contractSizeExpl": "US$100 x SGX MSCI Taiwan Index",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 10
+    },
+    {
+        "name": "ASX SPI200 Index",
+        "symbol": "AP",
+        "type": "Stock Index",
+        "exchange": "Australian Securities Exchange (ASX)",
+        "unit": "USD",
+        "contractSize": 25,
+        "contractSizeExpl": "$25 X Index Value",
+        "months": "H,M,U,Z",
+        "tick": 1,
+        "value": 25
+    },
+    {
+        "name": "Dollar Index",
+        "symbol": "DX",
+        "type": "Currencies",
+        "exchange": "ICE Futures U.S.",
+        "unit": "USD",
+        "contractSize": 1000,
+        "contractSizeExpl": "$1000 X Index Value",
+        "months": "H,M,U,Z",
+        "tick": 0.005,
+        "value": 5
+    },
+    {
+        "name": "Ultra U.S. Treasury Bond",
+        "symbol": "UB",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 100000,
+        "contractSizeExpl": "$100K bond",
+        "months": "H,M,U,Z",
+        "tick": 0.03125,
+        "value": 3125
+    },
+    {
+        "name": "Ultra 10-Year U.S. Treasury Note",
+        "symbol": "TN",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 100000,
+        "contractSizeExpl": "$100K Note",
+        "months": "H,M,U,Z",
+        "tick": 0.03125,
+        "value": 3125
+    },
+    {
+        "name": "3-Year U.S. Treasury Note",
+        "symbol": "Z3N",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 300000,
+        "contractSizeExpl": "$300K note",
+        "months": "H,M,U,Z",
+        "tick": 0.0078125,
+        "value": 2343.75
+    },
+    {
+        "name": "U.S. Treasury Bond",
+        "symbol": "ZB",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 100000,
+        "contractSizeExpl": "$100K bond",
+        "months": "H,M,U,Z",
+        "tick": 0.03125,
+        "value": 3125
+    },
+    {
+        "name": "Micro 30-Year Yield",
+        "symbol": "30YY",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 10,
+        "contractSizeExpl": "$10.00 DV01",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 1
+    },
+    {
+        "name": "5-Year U.S. Treasury Note",
+        "symbol": "ZF",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 100000,
+        "contractSizeExpl": "$100K note",
+        "months": "H,M,U,Z",
+        "tick": 0.0078125,
+        "value": 781.25
+    },
+    {
+        "name": "Micro 5-Year Yield",
+        "symbol": "5YY",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 10,
+        "contractSizeExpl": "$10.00 DV01",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 1
+    },
+    {
+        "name": "10-Year U.S. Treasury Note",
+        "symbol": "ZN",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 100000,
+        "contractSizeExpl": "$100K note",
+        "months": "H,M,U,Z",
+        "tick": 0.015625,
+        "value": 1562.5
+    },
+    {
+        "name": "Micro 10-Year Yield",
+        "symbol": "10YY",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 10,
+        "contractSizeExpl": "$10.00 DV01",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 1
+    },
+    {
+        "name": "30-Day Federal Funds",
+        "symbol": "ZQ",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 5000000,
+        "contractSizeExpl": "$5 mil",
+        "months": "All",
+        "tick": 0.005,
+        "value": 25000
+    },
+    {
+        "name": "2-Year U.S. Treasury Note",
+        "symbol": "ZT",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 200000,
+        "contractSizeExpl": "$200K note",
+        "months": "H,M,U,Z",
+        "tick": 0.0078125,
+        "value": 1562.5
+    },
+    {
+        "name": "Micro 2-Year Yield",
+        "symbol": "2YY",
+        "type": "Financials",
+        "exchange": "CBOT\/CME",
+        "unit": "USD",
+        "contractSize": 10,
+        "contractSizeExpl": "$10.00 DV01",
+        "months": "H,M,U,Z",
+        "tick": 0.1,
+        "value": 1
+    },
+    {
+        "name": "Eurodollar",
+        "symbol": "GE",
+        "type": "Financials",
+        "exchange": "CME",
+        "unit": "USD",
+        "contractSize": 1000000,
+        "contractSizeExpl": "$1 mil",
+        "months": "H,M,U,Z",
+        "tick": 0.01,
+        "value": 10000
+    }
+])
+
 /**************************************
 * CHARTS
 **************************************/
@@ -136,7 +499,7 @@ export const uploadMfePrices = ref(true)
 **************************************/
 export const daily = reactive({})
 export const dailyPagination = ref(0)
-export const dailyQueryLimit = ref(3) 
+export const dailyQueryLimit = ref(3)
 
 export const itemTradeIndex = ref()
 export const tradeIndex = ref()
@@ -235,6 +598,8 @@ export const brokers = reactive([{
     assetTypes: ["stocks"]
 }
 ])
+
+export const brokerData = ref()
 
 /**************************************
 * SETTINGS

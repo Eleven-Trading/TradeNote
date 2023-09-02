@@ -1,6 +1,6 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
-import { selectedBroker, spinnerLoadingPage, brokers, stepper, spinnerLoadingPageText, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray } from '../stores/globals';
+import { onMounted } from 'vue';
+import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals';
 import { useDecimalsArithmetic } from '../utils/utils';
 import { useImportTrades, useUploadTrades } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
@@ -61,7 +61,10 @@ async function getExistingTradesArray() {
             href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub page</a>
     </p>
     <p v-show="selectedBroker">
-        Supported asset types: <span v-for="(item, index) in brokers.filter(f => f.value == selectedBroker)[0].assetTypes">{{ item }}<span v-show="brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length>1&&(index+1)<brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length">, </span></span>
+        Supported asset types: <span
+            v-for="(item, index) in brokers.filter(f => f.value == selectedBroker)[0].assetTypes">{{ item }}<span
+                v-show="brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length > 1 && (index + 1) < brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length">,
+            </span></span>
     </p>
 
     <!--MFE-->
@@ -79,8 +82,19 @@ async function getExistingTradesArray() {
 
     <!--IMPORT-->
     <div class="mt-3">
-        <div class="input-group mb-3">
-            <input id="tradesInput" type="file" v-on:change="useImportTrades($event)" />
+
+        <div v-if="selectedBroker != 'tradeStation'" class="input-group mb-3">
+            <input id="tradesInput" type="file" v-on:change="useImportTrades($event, 'file')" />
+        </div>
+
+        <div v-else>
+
+            <div class="form-floating">
+                <textarea class="form-control" style="height: 100px" v-on:change="brokerData = $event.target.value"></textarea>
+                <label for="tradesInputText">Paste your data</label>
+            </div>
+
+            <button type="button" v-on:click="useImportTrades('', 'text')" class="btn btn-success mt-3 mb-3">Load</button>
         </div>
         <div v-if="existingImports.length != 0">
             Following dates are already imported: <span v-for="(item, index) in existingImports">

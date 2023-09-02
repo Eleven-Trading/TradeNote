@@ -1,4 +1,4 @@
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
@@ -14,17 +14,21 @@ let mfePrices = []
 /****************************
  * TRADES
  ****************************/
-export async function useImportTrades(e) {
+export async function useImportTrades(e, param2) {
     console.log("IMPORTING FILE")
     // Using Papa Parse : https://www.papaparse.com/docs
     spinnerLoadingPage.value = true
     //spinnerLoadingPageText.value = "Importing file ..."
-    let files = e.target.files || e.dataTransfer.files;
     console.log(" got existing " + gotExistingTradesArray.value)
-    if (!files.length) {
-        spinnerLoadingPage.value = false
-        return;
+    let files
+    if (param2 == "file") {
+        files = e.target.files || e.dataTransfer.files;
+        if (!files.length) {
+            spinnerLoadingPage.value = false
+            return;
+        }
     }
+
 
     const readAsText = async (param) => {
         return new Promise(async (resolve, reject) => {
@@ -104,7 +108,8 @@ export async function useImportTrades(e) {
      ****************************/
     if (selectedBroker.value == "tradeStation") {
         console.log(" -> Trade Station")
-        let fileInput = await readAsArrayBuffer(files)
+        let fileInput = brokerData.value
+        //console.log("file input "+fileInput)
         await useBrokerTradeStation(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
     }
 
@@ -262,7 +267,7 @@ async function createExecutions() {
 
 
 
-        //console.log('executions ' + JSON.stringify(executions))
+        console.log('executions ' + JSON.stringify(executions))
         console.log(" -> Created");
         resolve()
     })
@@ -377,7 +382,7 @@ async function createTrades() {
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
-                    console.log("\n -> New trade for symbol " + tempExec.symbol + " on "+ useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log("\n -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
