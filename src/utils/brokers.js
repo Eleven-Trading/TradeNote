@@ -492,7 +492,16 @@ export async function useBrokerInteractiveBrokers(param) {
                     temp["T/D"] = newDate
                     temp["S/D"] = newDate
                     temp.Currency = element.CurrencyPrimary
-                    temp.Type = "0"
+                    //Type
+                    temp.Type = "stock"
+                    if (element.AssetClass == "FUT") {
+                        temp.Type = "future"
+                    }
+                    if (element.AssetClass == "OPT") {
+                        element["Put/Call"] == "C" ? temp.Type = "call" : temp.Type = "put"
+                    }
+                    console.log("  --> Type " + temp.Type)
+
                     if (element["Buy/Sell"] == "BUY") {
                         temp.Side = "B"
                     }
@@ -509,9 +518,6 @@ export async function useBrokerInteractiveBrokers(param) {
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
                     temp.Price = element.Price
 
-                    let tempEntryYear = element.OrderTime.split(";")[0].slice(0, 4)
-                    let tempEntryMonth = element.OrderTime.split(";")[0].slice(4, 6)
-                    let tempEntryDay = element.OrderTime.split(";")[0].slice(6, 8)
                     let tempEntryHour = element.OrderTime.split(";")[1].slice(0, 2)
                     let tempEntryMinutes = element.OrderTime.split(";")[1].slice(2, 4)
                     let tempEntrySeconds = element.OrderTime.split(";")[1].slice(4, 6)
