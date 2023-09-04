@@ -1,12 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-<<<<<<< HEAD
 import { tradesData, timeZoneTrade, futureContractsUsd } from "../stores/globals"
-=======
-import { tradesData, timeZoneTrade } from "../stores/globals"
-import { useTimeFormatFromDate } from "./utils";
->>>>>>> beta
 
 /****************************
  * TRADEZERO

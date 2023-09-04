@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
-=======
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useNinjaTrader } from './brokers'
->>>>>>> beta
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -409,12 +404,7 @@ async function createTrades() {
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
-<<<<<<< HEAD
                     console.log("\n -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
-=======
-                    console.log("\nOpening Position")
-                    console.log(" -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
->>>>>>> beta
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
