@@ -580,17 +580,17 @@ export const brokers = reactive([{
 {
     value: "tdAmeritrade",
     label: "TD Ameritrade",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks", "options", "futures"]
 },
 {
     value: "tradeStation",
     label: "TradeStation",
-    assetTypes: ["stocks", "futures"]
+    assetTypes: ["stocks", "options", "futures"]
 },
 {
     value: "interactiveBrokers",
     label: "Interactive Brokers",
-    assetTypes: ["stocks", "options"]
+    assetTypes: ["stocks", "options", "futures"]
 },
 {
     value: "heldentrader",
