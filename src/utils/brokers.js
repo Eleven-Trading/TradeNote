@@ -121,7 +121,7 @@ export async function useBrokerTdAmeritrade(param) {
             let cashBalanceStart
             let cashBalanceEnd
             let accountTradeHistoryStart
-            let accountTradeHistoryEnd
+            let accountTradeHistoryEnd = 0
             let cashBalanceCsv
             let accountTradeHistoryCsv
 
@@ -133,17 +133,20 @@ export async function useBrokerTdAmeritrade(param) {
                 }
                 if (element.includes("Cash Balance")) {
                     cashBalanceStart = (index + 1)
+                    console.log("  --> Cash Balance start row " + cashBalanceStart)
                 }
                 if (element.includes("Futures Statements")) {
                     cashBalanceEnd = (index - 3)
+                    console.log("  --> Cash Balance end row " + cashBalanceEnd)
                 }
                 if (element.includes("Account Trade History")) {
                     accountTradeHistoryStart = (index + 1)
-                    console.log(" accountTradeHistoryStart " + accountTradeHistoryStart)
+                    console.log("  --> Account Trade History start row " + accountTradeHistoryStart)
                 }
-                if (element.includes("Equities") || element.includes("Profits and Losses")) {
+
+                if ((element.includes("Options") || element.includes("Futures") || element.includes("Equities") || element.includes("Profits and Losses")) && accountTradeHistoryEnd == 0 && (index - 2) > accountTradeHistoryStart) {
                     accountTradeHistoryEnd = (index - 2)
-                    console.log(" accountTradeHistoryEnd " + accountTradeHistoryEnd)
+                    console.log("  --> Account Trade History end row " + accountTradeHistoryEnd)
                 }
             });
 
@@ -187,10 +190,10 @@ export async function useBrokerTdAmeritrade(param) {
                     accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
                 }
             }
-            /*console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
-            console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
+            //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
+            //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
             console.log("cashBalanceJsonArray "+JSON.stringify(cashBalanceJsonArray))
-            console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))*/
+            console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))
             console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
             console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
             if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
@@ -210,8 +213,8 @@ export async function useBrokerTdAmeritrade(param) {
                 let month = tempDate.split("/")[0]
                 let day = tempDate.split("/")[1]
                 let year = tempDate.split("/")[2]
-                console.log(" -> Year " + year)
-                console.log(" -> Year length " + year.length)
+                //console.log(" -> Year " + year)
+                //console.log(" -> Year length " + year.length)
                 if (year.length == 4) {
                     temp["T/D"] = element.DATE
                     temp["S/D"] = element.DATE
@@ -224,7 +227,17 @@ export async function useBrokerTdAmeritrade(param) {
                 }
 
                 temp.Currency = "USD"
-                temp.Type = "0"
+
+                //Type
+                temp.Type = "stock"
+                if (element.type == "FUTURE") {
+                    temp.Type = "future"
+                }
+                if (element.type == "CALL" || element.type == "PUT") {
+                    temp.Type = "option"
+                }
+                console.log("  --> Type " + temp.Type)
+
                 if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
                     temp.Side = "B"
                 }
@@ -238,13 +251,14 @@ export async function useBrokerTdAmeritrade(param) {
                     temp.Side = "S"
                 }
                 temp.Symbol = element.Symbol
+
                 let qtyNumber = Number(element.Qty)
-                if (qtyNumber >= 0) {
-                    temp.Qty = element.Qty
-                } else {
-                    temp.Qty = (-Number(element.Qty)).toString()
-                }
-                temp.Price = element.Price
+                qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
+                temp.Qty = qtyNumber.toString()
+
+                let priceNumber = Number(element.Price)
+                temp.Price = priceNumber.toString
+                
                 temp["Exec Time"] = element.TIME
 
                 let numberAmount = parseFloat(element.AMOUNT.replace(/,/g, ''))
@@ -294,7 +308,7 @@ export async function useBrokerTradeStation(param) {
             tradesData.length = 0
             let papaParse = Papa.parse(newCsv, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
-            console.log("papaparse " + JSON.stringify(papaParse.data))
+            //console.log("papaparse " + JSON.stringify(papaParse.data))
 
             /*var workbook = XLSX.read(param);
             var result = {};
@@ -444,7 +458,7 @@ export async function useBrokerTradeStation(param) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
 
         } catch (error) {
             console.log("  --> ERROR " + error)
