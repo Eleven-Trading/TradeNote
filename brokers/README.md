@@ -107,6 +107,16 @@ Please use the standalone thinkorswim application and follow the steps below.
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD1.png" width="200">
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD2.png" width="200"></div>
 
+# TradeStation
+1. Select the "Orders" tab at the bottom of the TradeManager window in TradeStation.
+2. Choose "Filled Orders" from the "Status" drop-down menu at the top of the screen.
+3. Press the "Retrieve Orders" button after entering the date range that you want to import.
+4. Sort by Filled/Canceled orders in ascending order (e.g., oldest first) by changing the sort order.
+5. Select "Copy" by right-clicking after clicking (ticking) the upper-left "square" right beneath "Symbol Filter" label. 
+6. Paste the transactions into the text box in TradeNote.
+
+Note: currently, TradeNote does not take into account ECN fees (available soon).
+
 # MetaTrader 5 (MT 5)
 Please use the standalone MT5 windows application and follow the steps below. 
 
