@@ -51,30 +51,7 @@ Note : make sure to input one execution per line, not aggregated trade. So one l
     2. Sections
         1. Click Trade Confirmation and only select Executions
         2. From there, you can either
-            1. Check the following boxes manually
-                1. Account ID
-                2. Trade Date
-                3. Settle Date
-                4. Currency
-                5. Underlying Symbol
-                6. Symbol
-                7. Buy/Sell
-                8. Quantity
-                9. Price
-                10. Order Time
-                11. Commission
-                12. Broker Execution Commission
-                13. Broker Clearing Commission
-                14. Third-Party Execution Commission
-                15. Thirs-Party Clearing Commission
-                16. Other Commissions
-                17. Proceeds
-                18. Net Cash
-                19. Trade ID
-                20. Order ID
-                21. AssetClass
-                22. Multiplier
-                23. Put/Call
+            1. Check the following boxes manually: Account ID, Trade Date, Settle Date, Currency, Underlying Symbol, Symbol, Buy/Sell, Quantity, Price, Order Time, Commission, Broker Execution Commission, Broker Clearing Commission, Third-Party Execution Commission, Thirs-Party Clearing Commission, Other Commissions, Proceeds, Net Cash, Trade ID, Order ID, AssetClass, Multiplier, Put/Call
            2. Or execute the following script using your browser's DevTools console:
             ```js
             const fields=["Account ID","Trade Date","Settle Date","Currency","Underlying Symbol","Symbol","Buy/Sell","Quantity","Price","Order Time","Commission","Broker Execution Commission","Broker Clearing Commission","Third-Party Execution Commission","Thirs-Party Clearing Commission","Other Commissions","Proceeds","Net Cash","Trade ID","Order ID","AssetClass","Multiplier","Put/Call"],container=document.querySelector('tbody[class="ui-sortable"]'),trs=container.querySelectorAll("tr");trs.forEach(e=>{let r=e.querySelectorAll("td"),t=r[1].childNodes[0].textContent;if(fields.includes(t)){let i=e.querySelector('input[type="checkbox"]');i.click()}});
