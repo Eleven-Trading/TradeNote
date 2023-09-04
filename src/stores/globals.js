@@ -593,6 +593,10 @@ export const brokers = reactive([{
     assetTypes: ["stocks", "options", "futures"]
 },
 {
+    value: "ninjaTrader",
+    label: "NinjaTrader"
+},
+{
     value: "heldentrader",
     label: "Heldentrader",
     assetTypes: ["stocks"]

@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
+=======
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray } from '../stores/globals'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useNinjaTrader } from './brokers'
+>>>>>>> beta
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -123,6 +128,15 @@ export async function useImportTrades(e, param2) {
     }
 
     /****************************
+     * NINJATRADER
+     ****************************/
+    if (selectedBroker.value == "ninjaTrader") {
+        console.log(" -> NinjaTrader")
+        let fileInput = await readAsText(files)
+        await useNinjaTrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+    }
+
+    /****************************
      * HELDENTRADER
      ****************************/
     if (selectedBroker.value == "heldentrader") {
@@ -189,6 +203,18 @@ async function createTempExecutions() {
                 temp2.currency = tradesData[key].Currency;
                 temp2.type = tradesData[key].Type;
                 temp2.side = tradesData[key].Side;
+                if (temp2.side == "B") {
+                    temp2.strategy = "long"
+                }
+                if (temp2.side == "S") {
+                    temp2.strategy = "long"
+                }
+                if (temp2.side == "BC") {
+                    temp2.strategy = "short"
+                }
+                if (temp2.side == "SS") {
+                    temp2.strategy = "short"
+                }
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
@@ -349,13 +375,14 @@ async function createTrades() {
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
-            .groupBy("symbol");
+            .groupBy(item => `"${item.symbol}+${item.strategy}"`);
 
         let objectB = JSON.parse(JSON.stringify(b))
         //console.log("object b "+JSON.stringify(objectB))
 
         // We iterate through each symbol (key2)
         const keys2 = Object.keys(objectB);
+
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
@@ -375,14 +402,19 @@ async function createTrades() {
 
             let initEntryTime
             let initEntryPrice
-
-            for (const tempExec of tempExecs) {
-                //console.log("   ---> Opening Position")
+            let i
+            for (i = 0; i < tempExecs.length; i++) {
+                let tempExec = tempExecs[i];
                 openPosition = true
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
+<<<<<<< HEAD
                     console.log("\n -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+=======
+                    console.log("\nOpening Position")
+                    console.log(" -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+>>>>>>> beta
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
@@ -792,7 +824,11 @@ async function createTrades() {
                         openPosition = false
 
                     } else {
-                        console.log("   ---> Position OPEN")
+                        if ((i + 1) == tempExecs.length) {
+                            console.log("   ---> Position OPEN")
+                            console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
+                        }
+
                     }
                 } else {
                     console.log("nothing for key " + key2)

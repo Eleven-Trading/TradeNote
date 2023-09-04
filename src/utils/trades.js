@@ -35,125 +35,128 @@ export async function useGetFilteredTrades(param) {
             if (param1.length > 0) hasData.value = true //I do reverse, that is start with true so that on page load No Data does not appear
             param1.forEach(element => {
                 //console.log(" -> Looping "+element.dateUnix)
+                //console.log("trades "+JSON.stringify(element.trades))
                 //console.log(" element "+JSON.stringify(element))
-                let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
-                temp.trades = []
+                if (element.trades) {
+                    let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
+                    temp.trades = []
 
-                //we need to get date, month and year in order to compare for calendar creation
-                temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
-                temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
-                temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
+                    //we need to get date, month and year in order to compare for calendar creation
+                    temp.date = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).date()
+                    temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
+                    temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
 
-                //Adding satisfaction for daily page
-                if (pageId.value == "daily") {
+                    //Adding satisfaction for daily page
+                    if (pageId.value == "daily") {
 
-                    temp.satisfaction = null
-                    for (let index = 0; index < satisfactionArray.length; index++) {
-                        const el = satisfactionArray[index];
-                        if (el.dateUnix == element.dateUnix) {
-                            //console.log("satisfaction "+el.satisfaction)
-                            temp.satisfaction = el.satisfaction
-                        }
-                    }
-                }
-                //console.log("temp "+JSON.stringify(temp))
-
-                element.trades.forEach(element => {
-                    let pattern
-                    let patternName
-                    let mistake
-                    let mistakeName
-                    // We need to include patterns and mistakes that are void or null
-                    //console.log("setups "+JSON.stringify(setups))
-
-                    //Getting setup needed for filter and creating setup key needed for daily
-                    let setup
-                    for (let index = 0; index < setups.length; index++) {
-                        const element2 = setups[index];
-                        if (element2.tradeId == element.id) {
-                            setup = element2
-                        }
-
-                    }
-                    //let setup = setups.filter(obj => obj.tradeId == element.id)
-                    //console.log("setup "+JSON.stringify(setup))
-                    //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
-                    if (setup) {
-                        //console.log("setup has length")
-                        if (setup.pattern) {
-                            let tempPattern = setup.pattern.objectId
-                            if (selectedPatterns.value.includes(tempPattern)) {
-                                pattern = tempPattern
-                                //console.log("setup pattern "+JSON.stringify(setup.pattern.name))
-                                patternName = setup.pattern.name
+                        temp.satisfaction = null
+                        for (let index = 0; index < satisfactionArray.length; index++) {
+                            const el = satisfactionArray[index];
+                            if (el.dateUnix == element.dateUnix) {
+                                //console.log("satisfaction "+el.satisfaction)
+                                temp.satisfaction = el.satisfaction
                             }
-                            //else null and not void. However, if not present in setups table then we consider as void
-                            /*else {
+                        }
+                    }
+                    //console.log("temp "+JSON.stringify(temp))
+                    //console.log("element "+JSON.stringify(element))
+                    element.trades.forEach(element => {
+                        let pattern
+                        let patternName
+                        let mistake
+                        let mistakeName
+                        // We need to include patterns and mistakes that are void or null
+                        //console.log("setups "+JSON.stringify(setups))
+
+                        //Getting setup needed for filter and creating setup key needed for daily
+                        let setup
+                        for (let index = 0; index < setups.length; index++) {
+                            const element2 = setups[index];
+                            if (element2.tradeId == element.id) {
+                                setup = element2
+                            }
+
+                        }
+                        //let setup = setups.filter(obj => obj.tradeId == element.id)
+                        //console.log("setup "+JSON.stringify(setup))
+                        //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
+                        if (setup) {
+                            //console.log("setup has length")
+                            if (setup.pattern) {
+                                let tempPattern = setup.pattern.objectId
+                                if (selectedPatterns.value.includes(tempPattern)) {
+                                    pattern = tempPattern
+                                    //console.log("setup pattern "+JSON.stringify(setup.pattern.name))
+                                    patternName = setup.pattern.name
+                                }
+                                //else null and not void. However, if not present in setups table then we consider as void
+                                /*else {
+                                    pattern = "p000p"
+                                }*/
+                            } else {
                                 pattern = "p000p"
-                            }*/
+                            }
+
+                            if (setup.mistake) {
+                                let tempMistake = setup.mistake.objectId
+                                if (selectedMistakes.value.includes(tempMistake)) {
+                                    mistake = tempMistake
+                                    mistakeName = setup.mistake.name
+                                }
+                                //else null and not void
+                                /*else {
+                                    mistake = "m000m"
+                                }*/
+                            } else {
+                                mistake = "m000m"
+                            }
+
                         } else {
                             pattern = "p000p"
-                        }
-
-                        if (setup.mistake) {
-                            let tempMistake = setup.mistake.objectId
-                            if (selectedMistakes.value.includes(tempMistake)) {
-                                mistake = tempMistake
-                                mistakeName = setup.mistake.name
-                            }
-                            //else null and not void
-                            /*else {
-                                mistake = "m000m"
-                            }*/
-                        } else {
                             mistake = "m000m"
                         }
 
-                    } else {
-                        pattern = "p000p"
-                        mistake = "m000m"
-                    }
-
-                    let tradeSatisfaction = null
-                    for (let index = 0; index < satisfactionTradeArray.length; index++) {
-                        const el = satisfactionTradeArray[index];
-                        if (el.tradeId == element.id) {
-                            tradeSatisfaction = el.satisfaction
-                        }
-                    }
-
-                    //console.log(" selected patterns "+selectedPatterns.value)
-                    //console.log(" pattern "+pattern)
-                    //console.log(" Account "+element.account)
-                    if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
-                        if (patternName != undefined) {
-                            element.pattern = pattern
-                            element.patternName = " | " + patternName
-                            element.patternNameShort = patternName.substr(0, 15) + "..."
-                        }
-                        if (mistakeName != undefined) {
-                            element.mistake = mistake
-                            element.mistakeName = " | " + mistakeName
-                            element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
-                        }
-                        if (setup && setup.hasOwnProperty("note") && setup.note != undefined && setup.note != '' && setup.note != null) {
-                            element.note = setup.note
-                            element.noteShort = setup.note.substr(0, 15) + "..."
+                        let tradeSatisfaction = null
+                        for (let index = 0; index < satisfactionTradeArray.length; index++) {
+                            const el = satisfactionTradeArray[index];
+                            if (el.tradeId == element.id) {
+                                tradeSatisfaction = el.satisfaction
+                            }
                         }
 
-                        element.satisfaction = tradeSatisfaction
+                        //console.log(" selected patterns "+selectedPatterns.value)
+                        //console.log(" pattern "+pattern)
+                        //console.log(" Account "+element.account)
+                        if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
+                            if (patternName != undefined) {
+                                element.pattern = pattern
+                                element.patternName = " | " + patternName
+                                element.patternNameShort = patternName.substr(0, 15) + "..."
+                            }
+                            if (mistakeName != undefined) {
+                                element.mistake = mistake
+                                element.mistakeName = " | " + mistakeName
+                                element.mistakeNameShort = mistakeName.substr(0, 15) + "..."
+                            }
+                            if (setup && setup.hasOwnProperty("note") && setup.note != undefined && setup.note != '' && setup.note != null) {
+                                element.note = setup.note
+                                element.noteShort = setup.note.substr(0, 15) + "..."
+                            }
 
-                        temp.trades.push(element)
-                        filteredTradesTrades.push(element)
-                        //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
-                    }
-                });
-                /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
-                if (temp.trades.length > 0) {
-                    if (pageId.value == "daily") {
-                        filteredTradesDaily.push(temp)
-                    } else {
-                        filteredTrades.push(temp)
+                            element.satisfaction = tradeSatisfaction
+
+                            temp.trades.push(element)
+                            filteredTradesTrades.push(element)
+                            //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
+                        }
+                    });
+                    /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
+                    if (temp.trades.length > 0) {
+                        if (pageId.value == "daily") {
+                            filteredTradesDaily.push(temp)
+                        } else {
+                            filteredTrades.push(temp)
+                        }
                     }
                 }
             });
