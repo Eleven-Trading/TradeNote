@@ -234,7 +234,7 @@ export async function useBrokerTdAmeritrade(param) {
                     temp.Type = "future"
                 }
                 if (element.type == "CALL" || element.type == "PUT") {
-                    temp.Type = "option"
+                    element.type == "CALL" ? temp.Type = "call" : element.type == "put"
                 }
                 console.log("  --> Type " + temp.Type)
 
@@ -349,8 +349,9 @@ export async function useBrokerTradeStation(param) {
                     if (element["Contract Exp Date"] != "") {
                         temp.Type = "future"
                     }
+
                     if (element.Type.includes("to Open") || element.Type.includes("to Close")) {
-                        temp.Type = "option"
+                        element.Symbol.trim().split(" ")[1].charAt(6) == "C" ? temp.Type = "call" : temp.Type = "put"
                     }
                     console.log("  --> Type " + temp.Type)
 
@@ -386,7 +387,7 @@ export async function useBrokerTradeStation(param) {
                     if (temp.Type == "future") {
                         temp.Symbol = temp.Symbol.slice(0, -3)
                     }
-                    if (temp.Type == "option") {
+                    if (temp.Type == "call" || temp.Type == "put") {
                         temp.Symbol = temp.Symbol.split(" ")[0]
                     }
 
@@ -395,7 +396,7 @@ export async function useBrokerTradeStation(param) {
 
                     //Futures have big prices, comma separated
                     let priceNumber = Number(element["Filled Price"].replace(/,/g, ''))
-                    //console.log("tempFilledPrice "+tempFilledPrice+" and type "+typeof tempFilledPrice)
+                    //console.log("priceNumber "+priceNumber)
                     temp.Price = priceNumber.toString()
 
                     let tempTime = element.Entered.split(" ")[1]
@@ -413,6 +414,7 @@ export async function useBrokerTradeStation(param) {
 
                     let commNumber = Number(element.Commission.replace("$", ""))
                     temp.Comm = commNumber.toString()
+                    
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
@@ -444,10 +446,10 @@ export async function useBrokerTradeStation(param) {
                     if (temp.Type == "future") {
                         proceedsNumber = (qtyNumberSide * priceNumber) / tick * value
                     }
-                    if (temp.Type == "option") {
+                    if (temp.Type == "call" || temp.Type == "put") {
                         proceedsNumber = (qtyNumberSide * 100 * priceNumber)
                     }
-
+                    
                     temp["Gross Proceeds"] = proceedsNumber.toString()
                     temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
 
