@@ -329,16 +329,16 @@ export async function useBrokerTradeStation(param) {
                     temp["T/D"] = newDate
                     temp["S/D"] = newDate
                     temp.Currency = "USD"
-                    
+
                     //Type
                     temp.Type = "stock"
                     if (element["Contract Exp Date"] != "") {
                         temp.Type = "future"
                     }
-                    if (element.Type.includes("to Open") || element.Type.includes("to Close")) {
+                    if (element.Type.includes("to Open") || element.Type.includes("to Close")) {
                         temp.Type = "option"
                     }
-                    console.log("  --> Type "+temp.Type)
+                    console.log("  --> Type " + temp.Type)
 
                     if (element.Type == "Buy") {
                         temp.Side = "B"
@@ -376,12 +376,13 @@ export async function useBrokerTradeStation(param) {
                         temp.Symbol = temp.Symbol.split(" ")[0]
                     }
 
-                    temp.Qty = element["Qty Filled"].toString()
-                    
+                    let qtyNumber = Number(element["Qty Filled"])
+                    temp.Qty = qtyNumber.toString()
+
                     //Futures have big prices, comma separated
-                    let tempFilledPrice = element["Filled Price"].replace(/,/g, '')
+                    let priceNumber = Number(element["Filled Price"].replace(/,/g, ''))
                     //console.log("tempFilledPrice "+tempFilledPrice+" and type "+typeof tempFilledPrice)
-                    temp.Price = tempFilledPrice
+                    temp.Price = priceNumber.toString()
 
                     let tempTime = element.Entered.split(" ")[1]
                     let tempTimeAMPM = element.Entered.split(" ")[2]
@@ -396,51 +397,45 @@ export async function useBrokerTradeStation(param) {
 
                     temp["Exec Time"] = newTime
 
-                    temp.Comm = element.Commission.replace("$", "").toString()
+                    let commNumber = Number(element.Commission.replace("$", ""))
+                    temp.Comm = commNumber.toString()
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
-                    if (temp.Side == "B" || temp.Side == "BC") {
-                        if (temp.Type == "future") {
-                            let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
-                            let tick = contractSpecs[0].tick
-                            let value = contractSpecs[0].value
-                            let tempProceeds = (Number(-element["Qty Filled"]) * Number(tempFilledPrice)) / tick * value
-                            console.log("tempProceeds "+tempProceeds)
-                            temp["Gross Proceeds"] = tempProceeds.toString()
-                            temp["Net Proceeds"] = (tempProceeds - Number(temp.Comm)).toString()
-                            //we need to find the tick 
 
-                            // the value
-                        } else {
-                            temp["Gross Proceeds"] = (-element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')).toString()
-                            temp["Net Proceeds"] = ((-element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')) - element.Commission.replace("$", "")).toString()
-                        }
-
-
-                    } else {
-                        if (element["Contract Exp Date"] != "") {
-                            let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
-                            let tick = contractSpecs[0].tick
-                            let value = contractSpecs[0].value
-                            //console.log("qty filled "+Number(element["Qty Filled"])+" and type "+typeof Number(element["Qty Filled"]))
-                            //console.log("tempFilledPrice "+Number(tempFilledPrice)+" and type "+typeof Number(tempFilledPrice))
-                            //console.log("tick type "+typeof tick+" value type "+typeof value)
-                            let tempProceeds = (Number(element["Qty Filled"]) * Number(tempFilledPrice)) / tick * value
-                            console.log("tempProceeds "+tempProceeds)
-                            temp["Gross Proceeds"] = tempProceeds.toString()
-                            temp["Net Proceeds"] = (tempProceeds - Number(temp.Comm)).toString()
-                            //we need to find the tick 
-
-                            // the value
-                        } else {
-                            temp["Gross Proceeds"] = (element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')).toString()
-                            temp["Net Proceeds"] = ((element["Qty Filled"] * element["Filled Price"].replace(/,/g, '')) - element.Commission.replace("$", "")).toString()
-                        }
+                    let tick
+                    let value
+                    if (temp.Type == "future") {
+                        let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                        tick = contractSpecs[0].tick
+                        value = contractSpecs[0].value
                     }
+
+                    //let's prepare and calculate qty and proceeds, depending on side and type
+                    let qtyNumberSide
+                    let proceedsNumber
+
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        qtyNumberSide = -qtyNumber
+                    } else {
+                        qtyNumberSide = qtyNumber
+                    }
+
+                    if (temp.Type == "stock") {
+                        proceedsNumber = (qtyNumberSide * priceNumber)
+                    }
+                    if (temp.Type == "future") {
+                        proceedsNumber = (qtyNumberSide * priceNumber) / tick * value
+                    }
+                    if (temp.Type == "option") {
+                        proceedsNumber = (qtyNumberSide * 100 * priceNumber)
+                    }
+
+                    temp["Gross Proceeds"] = proceedsNumber.toString()
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
 
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
