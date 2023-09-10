@@ -67,11 +67,22 @@ export async function useImportTrades(e, param2) {
                 alert("You have one or more open positions. Please close all your positions before import.")
                 return
             } else {
+
                 await filterExisting("trades")
                 await useCreateBlotter()
                 await useCreatePnL()
             }
+
         })
+
+        /*await createTrades().then(async () => {
+            //console.log(" -> Open posisitions: " + openPosition)
+
+            await filterExisting("trades")
+            await useCreateBlotter()
+            await useCreatePnL()
+
+        })*/
 
         await (spinnerLoadingPage.value = false)
     }
@@ -288,7 +299,7 @@ async function createExecutions() {
 
 
 
-        console.log('executions ' + JSON.stringify(executions))
+        //console.log('executions ' + JSON.stringify(executions))
         console.log(" -> Created");
         resolve()
     })
@@ -438,7 +449,7 @@ async function createTrades() {
                     }
                     if (tempExec.side == "SS") {
                         temp7.strategy = "short"
-                        console.log("  --> Symbol " + key2 + " is sold and short")
+                        //console.log("  --> Symbol " + key2 + " is sold and short")
                         temp7.buyQuantity = 0
                         temp7.sellQuantity = tempExec.quantity;
                     }
@@ -521,124 +532,127 @@ async function createTrades() {
                     temp7
                         .executions
                         .push(tempExec.id)
+                    temp7.position = "open"
+                    let exec = executions[tempExec.td].find(x => x.id == tempExec.id)
+                    exec.trade = temp7.id;
 
-                    executions[tempExec.td]
-                        .find(x => x.id == tempExec.id)
-                        .trade = temp7
-                            .id;
+                    temp2.push(temp7)
 
                 } else if (newTrade == false) { //= concatenating trade
-                    console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + temp7.strategy)
+                    let trde = temp2.find(x => x.id == temp7.id)
+                    //console.log("trde "+JSON.stringify(trde))
+                    console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy)
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
-                    if (temp7.strategy == "long") {
+                    if (trde.strategy == "long") {
                         //console.log(" -> Strategy is long and "+invertedLong+" for symbol "+tempExec.symbol)
                         if (!invertedLong) {
-                            if (tempExec.side == temp7.side) { // adding to position
-                                temp7.buyQuantity = useDecimalsArithmetic(temp7.buyQuantity, tempExec.quantity)
-                                //console.log(" -> quantity is "+temp7.buyQuantity)
+                            if (tempExec.side == trde.side) { // adding to position
+                                trde.buyQuantity = useDecimalsArithmetic(trde.buyQuantity, tempExec.quantity)
+                                //console.log(" -> quantity is "+trde.buyQuantity)
                             } else { // clearing/closing position
-                                temp7.sellQuantity = useDecimalsArithmetic(temp7.sellQuantity, tempExec.quantity)
-                                //console.log(" -> quantity is "+temp7.buyQuantity)
+                                trde.sellQuantity = useDecimalsArithmetic(trde.sellQuantity, tempExec.quantity)
+                                //console.log(" -> quantity is "+trde.buyQuantity)
                             }
                         } else {
-                            if (tempExec.side == temp7.side) { // adding to position
-                                temp7.sellQuantity = useDecimalsArithmetic(temp7.sellQuantity, tempExec.quantity)
+                            if (tempExec.side == trde.side) { // adding to position
+                                trde.sellQuantity = useDecimalsArithmetic(trde.sellQuantity, tempExec.quantity)
                             } else { // clearing/closing position
-                                temp7.buyQuantity = useDecimalsArithmetic(temp7.buyQuantity, tempExec.quantity)
+                                trde.buyQuantity = useDecimalsArithmetic(trde.buyQuantity, tempExec.quantity)
                             }
                         }
                     }
 
-                    if (temp7.strategy == "short") {
+                    if (trde.strategy == "short") {
                         //console.log(" -> Strategy is short and "+invertedShort+" for symbol "+tempExec.symbol)
                         if (!invertedShort) {
-                            if (tempExec.side == temp7.side) { // adding to position
-                                temp7.sellQuantity = useDecimalsArithmetic(temp7.sellQuantity, tempExec.quantity)
+                            if (tempExec.side == trde.side) { // adding to position
+                                trde.sellQuantity = useDecimalsArithmetic(trde.sellQuantity, tempExec.quantity)
                             } else { // clearing/closing position
-                                temp7.buyQuantity = useDecimalsArithmetic(temp7.buyQuantity, tempExec.quantity)
+                                trde.buyQuantity = useDecimalsArithmetic(trde.buyQuantity, tempExec.quantity)
                             }
                         } else {
-                            if (tempExec.side == temp7.side) { // adding to position
-                                temp7.buyQuantity = useDecimalsArithmetic(temp7.buyQuantity, tempExec.quantity)
+                            if (tempExec.side == trde.side) { // adding to position
+                                trde.buyQuantity = useDecimalsArithmetic(trde.buyQuantity, tempExec.quantity)
                             } else { // clearing/closing position
-                                temp7.sellQuantity = useDecimalsArithmetic(temp7.sellQuantity, tempExec.quantity)
+                                trde.sellQuantity = useDecimalsArithmetic(trde.sellQuantity, tempExec.quantity)
                             }
                         }
                     }
 
-                    temp7.commission = temp7.commission + tempExec.commission;
-                    temp7.sec = temp7.sec + tempExec.sec;
-                    temp7.taf = temp7.taf + tempExec.taf;
-                    temp7.nscc = temp7.nscc + tempExec.nscc;
-                    temp7.nasdaq = temp7.nasdaq + tempExec.nasdaq;
+                    trde.commission = trde.commission + tempExec.commission;
+                    trde.sec = trde.sec + tempExec.sec;
+                    trde.taf = trde.taf + tempExec.taf;
+                    trde.nscc = trde.nscc + tempExec.nscc;
+                    trde.nasdaq = trde.nasdaq + tempExec.nasdaq;
 
-                    temp7.grossExitProceeds = temp7.grossExitProceeds + tempExec.grossProceeds;
-                    temp7.grossProceeds = temp7.grossProceeds + tempExec.grossProceeds;
+                    trde.grossExitProceeds = trde.grossExitProceeds + tempExec.grossProceeds;
+                    trde.grossProceeds = trde.grossProceeds + tempExec.grossProceeds;
 
-                    temp7.netExitProceeds = temp7.netExitProceeds + tempExec.netProceeds;
-                    temp7.netProceeds = temp7.netProceeds + tempExec.netProceeds;
-                    temp7
+                    trde.netExitProceeds = trde.netExitProceeds + tempExec.netProceeds;
+                    trde.netProceeds = trde.netProceeds + tempExec.netProceeds;
+                    trde
                         .executions
                         .push(tempExec.id)
 
                     //here we do += because this is.value trades so here when we are concatenating, we need to add +1 to the execution count. ANother option would be to calculate the number of executions but we would need to rely on the executions list. Too complicated.
-                    temp7.executionsCount += 1
+                    trde.executionsCount += 1
 
-                    executions[tempExec.td]
-                        .find(x => x.id == tempExec.id)
-                        .trade = temp7.id
-                    console.log(" -> buy quantity " + temp7.buyQuantity + " and sell quantity " + temp7.sellQuantity)
+                    let exec = executions[tempExec.td].find(x => x.id == tempExec.id)
+                    exec.trade = trde.id;
 
-                    if (temp7.buyQuantity == temp7.sellQuantity) { //When buy and sell quantities are equal means position is closed
-                        temp7.exitPrice = tempExec.price;
-                        temp7.exitTime = tempExec.execTime;
-                        /*if (temp7.exitTime >= startTimeUnix.value) {
-                            temp7.videoEnd = temp7.exitTime - startTimeUnix.value
+                    console.log(" -> buy quantity " + trde.buyQuantity + " and sell quantity " + trde.sellQuantity)
+                    trde = temp2.find(x => x.id == trde.id)
+
+                    if (trde.buyQuantity == trde.sellQuantity) { //When buy and sell quantities are equal means position is closed
+                        trde.exitPrice = tempExec.price;
+                        trde.exitTime = tempExec.execTime;
+                        /*if (trde.exitTime >= startTimeUnix.value) {
+                            trde.videoEnd = trde.exitTime - startTimeUnix.value
                         }*/
 
-                        temp7.grossSharePL = temp7.grossProceeds / (temp7.buyQuantity) //P&L per share is in reality "per share bought (if long)". So, when trade is closed, we take the total quantity and divide by 2
+                        trde.grossSharePL = trde.grossProceeds / (trde.buyQuantity) //P&L per share is in reality "per share bought (if long)". So, when trade is closed, we take the total quantity and divide by 2
 
-                        temp7.grossSharePL >= 0 ? temp7.grossSharePLWins = temp7.grossSharePL : temp7.grossSharePLLoss = temp7.grossSharePL
+                        trde.grossSharePL >= 0 ? trde.grossSharePLWins = trde.grossSharePL : trde.grossSharePLLoss = trde.grossSharePL
 
 
-                        if (temp7.grossProceeds >= 0) {
-                            temp7.grossStatus = "win"
-                            temp7.grossWinsQuantity = temp7.buyQuantity
-                            temp7.grossWins = temp7.grossProceeds
+                        if (trde.grossProceeds >= 0) {
+                            trde.grossStatus = "win"
+                            trde.grossWinsQuantity = trde.buyQuantity
+                            trde.grossWins = trde.grossProceeds
                             grossWinsCount = 1
                             grossLossCount = 0
                         } else {
-                            temp7.grossStatus = "loss"
-                            temp7.grossLossQuantity = temp7.buyQuantity
-                            temp7.grossLoss = temp7.grossProceeds
+                            trde.grossStatus = "loss"
+                            trde.grossLossQuantity = trde.buyQuantity
+                            trde.grossLoss = trde.grossProceeds
                             grossLossCount = 1
                             grossWinsCount = 0
                         }
 
-                        temp7.netSharePL = temp7.netProceeds / (temp7.buyQuantity)
-                        temp7.netSharePL >= 0 ? temp7.netSharePLWins = temp7.netSharePL : temp7.netSharePLLoss = temp7.netSharePL
+                        trde.netSharePL = trde.netProceeds / (trde.buyQuantity)
+                        trde.netSharePL >= 0 ? trde.netSharePLWins = trde.netSharePL : trde.netSharePLLoss = trde.netSharePL
 
-                        if (temp7.netProceeds >= 0) {
-                            temp7.netStatus = "win"
-                            temp7.netWinsQuantity = temp7.buyQuantity
-                            temp7.netWins = temp7.netProceeds
+                        if (trde.netProceeds >= 0) {
+                            trde.netStatus = "win"
+                            trde.netWinsQuantity = trde.buyQuantity
+                            trde.netWins = trde.netProceeds
                             netWinsCount = 1
                             netLossCount = 0
                         } else {
-                            temp7.netStatus = "loss"
-                            temp7.netLossQuantity = temp7.buyQuantity
-                            temp7.netLoss = temp7.netProceeds
+                            trde.netStatus = "loss"
+                            trde.netLossQuantity = trde.buyQuantity
+                            trde.netLoss = trde.netProceeds
                             netLossCount = 1
                             netWinsCount = 0
                         }
 
                         tradesCount = 1
-                        temp7.grossWinsCount = grossWinsCount
-                        temp7.netWinsCount = netWinsCount
-                        temp7.grossLossCount = grossLossCount
-                        temp7.netLossCount = netLossCount
-                        temp7.tradesCount = tradesCount
-                        //console.log("temp 7 " + JSON.stringify(temp7))
+                        trde.grossWinsCount = grossWinsCount
+                        trde.netWinsCount = netWinsCount
+                        trde.grossLossCount = grossLossCount
+                        trde.netLossCount = netLossCount
+                        trde.tradesCount = tradesCount
+                        //console.log("temp 7 " + JSON.stringify(trde))
                         //console.log("temp not null for "+key2)
 
 
@@ -659,7 +673,7 @@ async function createTrades() {
                                 //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
                                 let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
                                 //console.log(" temp start index "+tempStartIndex)
-                                let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= temp7.exitTime * 1000) //findIndex returns the first element
+                                let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= trde.exitTime * 1000) //findIndex returns the first element
                                 let tempStartTime = ohlcvSymbol[tempStartIndex]
                                 let tempEndTime = ohlcvSymbol[tempEndIndex]
 
@@ -676,7 +690,7 @@ async function createTrades() {
                                     startTime = ohlcvSymbol[tempStartIndex].t
                                 }
 
-                                if (tempEndTime == temp7.exitTime) {
+                                if (tempEndTime == trde.exitTime) {
                                     endIndex = tempEndIndex
                                     endTime = tempEndTime
                                 } else {
@@ -686,7 +700,7 @@ async function createTrades() {
 
                                 //console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
                                 //console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
-                                //console.log("   ----> ExitTime " + temp7.exitTime + " and end time " + endTime)
+                                //console.log("   ----> ExitTime " + trde.exitTime + " and end time " + endTime)
 
                                 //Get market close index
                                 //iterate from exit time and check if same day and <= 4 hour
@@ -729,7 +743,7 @@ async function createTrades() {
                                 if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
                                     console.log("   ---> Trade is in same 1mn timeframe")
 
-                                    tempMfe.tradeId = temp7.id
+                                    tempMfe.tradeId = trde.id
                                     tempMfe.dateUnix = tempExec.td
                                     tempMfe.mfePrice = initEntryPrice
                                     mfePrices.push(tempMfe)
@@ -739,42 +753,42 @@ async function createTrades() {
                                     let priceDifference
                                     let mfePrice = initEntryPrice
 
-                                    if (temp7.strategy == "long") {
-                                        priceDifference = temp7.exitPrice - initEntryPrice
+                                    if (trde.strategy == "long") {
+                                        priceDifference = trde.exitPrice - initEntryPrice
                                     }
-                                    if (temp7.strategy == "short") {
-                                        priceDifference = initEntryPrice - temp7.exitPrice
+                                    if (trde.strategy == "short") {
+                                        priceDifference = initEntryPrice - trde.exitPrice
                                     }
 
                                     console.log("   ---> Iterating between entry price and exit price")
                                     //console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
                                     for (let i = startIndex; i <= endIndex; i++) {
                                         //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
-                                        if (temp7.strategy == "long" && ohlcvSymbol[i].h > temp7.exitPrice && ohlcvSymbol[i].h > mfePrice) mfePrice = ohlcvSymbol[i].h
-                                        if (temp7.strategy == "short" && ohlcvSymbol[i].l < temp7.exitPrice && ohlcvSymbol[i].l < mfePrice) mfePrice = ohlcvSymbol[i].l
+                                        if (trde.strategy == "long" && ohlcvSymbol[i].h > trde.exitPrice && ohlcvSymbol[i].h > mfePrice) mfePrice = ohlcvSymbol[i].h
+                                        if (trde.strategy == "short" && ohlcvSymbol[i].l < trde.exitPrice && ohlcvSymbol[i].l < mfePrice) mfePrice = ohlcvSymbol[i].l
 
                                     }
                                     //console.log(" -> Price difference "+priceDifference)
-                                    if (initEntryPrice != temp7.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
+                                    if (initEntryPrice != trde.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
                                         console.log("   ---> Iterating between exit price and up until price hits / equals entry price, and at the latest until market close")
                                         let i = endIndex
                                         let ohlcvSymbolPrice
-                                        temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
+                                        trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
 
                                         //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
-                                        while (i <= endOfDayTimeIndex && (temp7.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
-                                            temp7.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
+                                        while (i <= endOfDayTimeIndex && (trde.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
+                                            trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
                                             //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+useDateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
-                                            if (temp7.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
-                                            if (temp7.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
+                                            if (trde.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
+                                            if (trde.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
                                             i++
 
                                         }
                                     }
-                                    if (temp7.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
-                                    if (temp7.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
+                                    if (trde.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
+                                    if (trde.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
 
-                                    console.log("    ----> " + temp7.strategy + " stratgy with entry at " + useDateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + useDateTimeFormat(temp7.exitTime) + " @ " + temp7.exitPrice + " and MFE price " + mfePrice)
+                                    console.log("    ----> " + trde.strategy + " stratgy with entry at " + useDateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + useDateTimeFormat(trde.exitTime) + " @ " + trde.exitPrice + " and MFE price " + mfePrice)
                                     //if short, MFE price = if price is lower than MFE
                                     //if long, MFE = if price is higher than MFE
 
@@ -782,12 +796,12 @@ async function createTrades() {
 
 
                                     //add excursion to temp2
-                                    temp7.excursions = {}
-                                    temp7.excursions.stopLoss = null
-                                    temp7.excursions.maePrice = null
-                                    temp7.excursions.mfePrice = mfePrice
+                                    trde.excursions = {}
+                                    trde.excursions.stopLoss = null
+                                    trde.excursions.maePrice = null
+                                    trde.excursions.mfePrice = mfePrice
 
-                                    tempMfe.tradeId = temp7.id
+                                    tempMfe.tradeId = trde.id
                                     tempMfe.dateUnix = tempExec.td
                                     tempMfe.mfePrice = mfePrice
                                     mfePrices.push(tempMfe)
@@ -797,7 +811,8 @@ async function createTrades() {
                             }
                         } // End MFE prices
 
-                        temp2.push(temp7)
+                        //temp2.push(trde)
+                        trde.position = "closed"
 
 
                         /*****
@@ -847,7 +862,8 @@ async function createTrades() {
         //console.log(" -> Trades " + JSON.stringify(c))
         for (let key in trades) delete trades[key]
         Object.assign(trades, JSON.parse(JSON.stringify(c)))
-        //console.log("Trades C " + JSON.stringify(trades))
+        console.log("Trades C " + JSON.stringify(trades))
+        //console.log('executions ' + JSON.stringify(executions))
         resolve()
     })
 }
