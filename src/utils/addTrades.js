@@ -62,12 +62,27 @@ export async function useImportTrades(e, param2) {
         }
         await createTrades().then(async () => {
             //console.log(" -> Open posisitions: " + openPosition)
-            
+            if (openPosition) {
+                //console.log("You have one or more open positions. Please close all your positions before import.")
+                alert("You have one or more open positions. Please close all your positions before import.")
+                return
+            } else {
+
                 await filterExisting("trades")
                 await useCreateBlotter()
                 await useCreatePnL()
-            
+            }
+
         })
+
+        /*await createTrades().then(async () => {
+            //console.log(" -> Open posisitions: " + openPosition)
+
+            await filterExisting("trades")
+            await useCreateBlotter()
+            await useCreatePnL()
+
+        })*/
 
         await (spinnerLoadingPage.value = false)
     }
