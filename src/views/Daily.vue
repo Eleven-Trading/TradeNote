@@ -535,7 +535,7 @@ function resetExcursion() {
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
                                                                 trade.strategy.slice(1) }}</td>
                                                             <td>{{ useTimeFormat(trade.entryTime) }}</td>
-                                                            <td>{{ (trade.entryPrice).toFixed(2) }}</td>
+                                                            <td><span v-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}</span></td>
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                                                             <td
                                                                 v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">
@@ -705,8 +705,8 @@ function resetExcursion() {
                                     <td>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime) }}</td>
                                     <td>{{ useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
                                         filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</td>
-                                    <td>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2) }}</td>
-                                    <td>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</td>
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2) }}</span></td>
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</span></td>
                                     <td
                                         v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
                                         {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}

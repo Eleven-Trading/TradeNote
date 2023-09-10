@@ -39,6 +39,7 @@ export async function useBrokerMetaTrader5(param) {
                     result[sheetName] = roa;
                 }
             });
+            //console.log("result "+JSON.stringify(result))
             let accountKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Account:")
             //console.log("account key " + accountKey)
             let dealsKey = result[Object.keys(result)[0]].findIndex(item => item["Trade History Report"] == "Deals")
@@ -53,6 +54,7 @@ export async function useBrokerMetaTrader5(param) {
             for (let i = dealsKey + 2; dealIterate; i++) {
                 let temp = {}
                 let row = result[Object.keys(result)[0]][i]
+                //console.log("row "+JSON.stringify(row))
                 if (!row.hasOwnProperty("Trade History Report")) {
                     dealIterate = false
                 } else {
@@ -66,7 +68,11 @@ export async function useBrokerMetaTrader5(param) {
                         temp["T/D"] = newDate
                         temp["S/D"] = newDate
                         temp.Currency = "USD"
-                        temp.type = "0"
+                        temp.Type = "stock"
+                        if (Object.values(row)[2].length == 6 && /^[a-zA-Z]/.test(Object.values(row)[2])){
+                            temp.Type = "forex"
+                        }
+                        console.log("  --> Type: "+temp.Type)
                         if (Object.values(row)[3] == "buy" && Object.values(row)[4] == "in") {
                             temp.Side = "B"
                         }
@@ -79,7 +85,7 @@ export async function useBrokerMetaTrader5(param) {
                         if (Object.values(row)[3] == "sell" && Object.values(row)[4] == "out") {
                             temp.Side = "S"
                         }
-                        temp.Symbol = Object.values(row)[2]
+                        temp.Symbol = Object.values(row)[2].replace(/#*/, '')
                         temp.Qty = (Object.values(row)[5]).toString()
                         //console.log(" -> Qty import "+temp.Qty)
                         temp.Price = Object.values(row)[6].toString()
@@ -108,6 +114,7 @@ export async function useBrokerMetaTrader5(param) {
         resolve()
     })
 }
+
 
 /****************************
  * TD AMERITRADE

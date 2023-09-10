@@ -862,7 +862,7 @@ async function createTrades() {
         //console.log(" -> Trades " + JSON.stringify(c))
         for (let key in trades) delete trades[key]
         Object.assign(trades, JSON.parse(JSON.stringify(c)))
-        console.log("Trades C " + JSON.stringify(trades))
+        //console.log("Trades C " + JSON.stringify(trades))
         //console.log('executions ' + JSON.stringify(executions))
         resolve()
     })
@@ -1108,6 +1108,7 @@ export async function useCreateBlotter(param) {
                  * Info
                  *******************/
                 temp10[key9][key10].symbol = key10;
+                temp10[key9][key10].type = tempExecs[0].type;
                 temp10[key9][key10].buyQuantity = sumBuyQuantity
                 temp10[key9][key10].sellQuantity = sumSellQuantity
 
