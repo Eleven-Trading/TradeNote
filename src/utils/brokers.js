@@ -515,13 +515,13 @@ export async function useBrokerInteractiveBrokers(param) {
                     if (element["Buy/Sell"] == "BUY" && element["Code"] == "O" || element["Code"] == "O;P") {
                         temp.Side = "B"
                     }
-                    if (element["Buy/Sell"] == "BUY" && element["Code"] == "C" || element["Code"] == "C;P")) {
+                    if (element["Buy/Sell"] == "BUY" && element["Code"] == "C" || element["Code"] == "C;P") {
                         temp.Side = "BC"
                     }
-                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "C" || element["Code"] == "C;P")) {
+                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "C" || element["Code"] == "C;P") {
                         temp.Side = "S"
                     }
-                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "O" || element["Code"] == "O;P")) {
+                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "O" || element["Code"] == "O;P") {
                         temp.Side = "SS"
                     }
                     temp.Symbol = element.Symbol.split(" ")[0]
