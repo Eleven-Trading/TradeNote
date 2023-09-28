@@ -58,7 +58,7 @@ export async function useBrokerMetaTrader5(param) {
                 if (!row.hasOwnProperty("Trade History Report")) {
                     dealIterate = false
                 } else {
-                    //console.log("row "+JSON.stringify(row))
+                    console.log("row "+JSON.stringify(row))
                     //check for balance
                     let checkBalance = Object.values(row)[2]
                     if (checkBalance != "balance") {
@@ -90,6 +90,7 @@ export async function useBrokerMetaTrader5(param) {
                         //console.log(" -> Qty import "+temp.Qty)
                         temp.Price = Object.values(row)[6].toString()
                         temp["Exec Time"] = Object.values(row)[0].split(" ")[1]
+                        
                         temp.Comm = (-Object.values(row)[8]).toString()
                         temp.SEC = (-Object.values(row)[9]).toString()
                         temp.TAF = (-Object.values(row)[10]).toString()
@@ -110,7 +111,7 @@ export async function useBrokerMetaTrader5(param) {
             console.log("  --> ERROR " + error)
             reject(error)
         }
-        //console.log("trade data " + JSON.stringify(tradesData))
+        console.log("trade data " + JSON.stringify(tradesData))
         resolve()
     })
 }

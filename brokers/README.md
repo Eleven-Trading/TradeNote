@@ -89,9 +89,9 @@ Before attempting to import data, there are a few things that may help.
 - Remove any empty lines that may be present in your CSV file
 - If multiple accounts are present, isolate them to 1 account at a time
 - If trading options, futures, etc., ensure the Underlying Symbol exists
-    - May need to set the Underlying Symbol as the ticker from the Symbol column
-- Convert the Order Time to include semi-colons between yyyy;MM;dd;hh;mm;ss
+- May need to set the Underlying Symbol as the ticker from the Symbol column
 - Sort the trades by Order Time
+
 - Remove any Open Trades
 - Add an Order Time to Expired Contracts rather than leaving the fields empty
 - Format prices to 2 decimal places to prevent dealing with floating point precision errors

@@ -483,6 +483,158 @@ export const futureContractsUsd = ref([
     }
 ])
 
+export const futuresTradeStationFees = ref([
+    {
+        "name": "Micro E-mini S&P 500",
+        "symbol": "MES",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro E-mini Nasdaq-100",
+        "symbol": "MNQ",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro E-mini Dow",
+        "symbol": "MYM",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro E-mini Russell 2000",
+        "symbol": "M2K",
+        "fee": 0.35
+    },
+    {
+        "name": "E-mini S&P 500",
+        "symbol": "ES",
+        "fee": 0.35
+    },
+    {
+        "name": "E-mini Nasdaq-100",
+        "symbol": "NQ",
+        "fee": 0.35
+    },
+    {
+        "name": "E-mini Dow ($5)",
+        "symbol": "YM",
+        "fee": 0.35
+    },
+    {
+        "name": "E-mini Russell 2000",
+        "symbol": "RTY",
+        "fee": 0.35
+    },
+    {
+        "name": "E-mini S&P MidCap 400",
+        "symbol": "EMD",
+        "fee": 0.35
+    },
+    {
+        "name": "NIKKEI 225\/USD",
+        "symbol": "NKD",
+        "fee": 0.35
+    },
+    {
+        "name": "CBOE Volatility Index (VIX)",
+        "fee": 0.35
+    },
+    {
+        "name": "Mini CBOE Volatility Index (Mini VIX)",
+        "symbol": "VXM",
+        "fee": 0.35
+    },
+    {
+        "name": "SGX Nifty 50 Index",
+        "symbol": "IN",
+        "fee": 0.35
+    },
+    {
+        "name": "SGX USD Nikkei 225 Index",
+        "symbol": "NU",
+        "fee": 0.35
+    },
+    {
+        "name": "FTSE Taiwan Stock Index",
+        "symbol": "TW",
+        "fee": 0.35
+    },
+    {
+        "name": "ASX SPI200 Index",
+        "symbol": "AP",
+        "fee": 0.35
+    },
+    {
+        "name": "Dollar Index",
+        "symbol": "DX",
+        "fee": 0.35
+    },
+    {
+        "name": "Ultra U.S. Treasury Bond",
+        "symbol": "UB",
+        "fee": 0.35
+    },
+    {
+        "name": "Ultra 10-Year U.S. Treasury Note",
+        "symbol": "TN",
+        "fee": 0.35
+    },
+    {
+        "name": "3-Year U.S. Treasury Note",
+        "symbol": "Z3N",
+        "fee": 0.35
+    },
+    {
+        "name": "U.S. Treasury Bond",
+        "symbol": "ZB",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro 30-Year Yield",
+        "symbol": "30YY",
+        "fee": 0.35
+    },
+    {
+        "name": "5-Year U.S. Treasury Note",
+        "symbol": "ZF",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro 5-Year Yield",
+        "symbol": "5YY",
+        "fee": 0.35
+    },
+    {
+        "name": "10-Year U.S. Treasury Note",
+        "symbol": "ZN",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro 10-Year Yield",
+        "symbol": "10YY",
+        "fee": 0.35
+    },
+    {
+        "name": "30-Day Federal Funds",
+        "symbol": "ZQ",
+        "fee": 0.35
+    },
+    {
+        "name": "2-Year U.S. Treasury Note",
+        "symbol": "ZT",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro 2-Year Yield",
+        "symbol": "2YY",
+        "fee": 0.35
+    },
+    {
+        "name": "Eurodollar",
+        "symbol": "GE",
+        "fee": 0.35
+    }
+])
+
 /**************************************
 * CHARTS
 **************************************/

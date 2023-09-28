@@ -512,7 +512,7 @@ function resetExcursion() {
                                                             <th scope="col">Time</th>
                                                             <th scope="col">Price</th>
                                                             <!--<th scope="col">Duration</th>-->
-                                                            <th scope="col">Price(var)</th>
+                                                            <th scope="col">P&L/Vol</th>
                                                             <th scope="col">P&L(n)</th>
                                                             <th scope="col">Pattern</th>
                                                             <th scope="col">Mistake</th>
@@ -537,9 +537,8 @@ function resetExcursion() {
                                                             <td>{{ useTimeFormat(trade.entryTime) }}</td>
                                                             <td><span v-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}</span></td>
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
-                                                            <td
-                                                                v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">
-                                                                {{ (trade.grossSharePL).toFixed(2) }}</td>
+                                                            <td>
+                                                                <span v-if="trade.type!='forex'&&trade.type!='future'" v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{ (trade.grossSharePL).toFixed(2) }}</span><span v-else>na</span></td>
                                                             <td
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
@@ -687,7 +686,7 @@ function resetExcursion() {
                                     <th scope="col">Duration</th>
                                     <th scope="col">Price(i)</th>
                                     <th scope="col">Price(o)</th>
-                                    <th scope="col">Price(var)</th>
+                                    <th scope="col">P&L/Vol</th>
                                     <th scope="col">P/L(n)</th>
                                 </tr>
                             </thead>
@@ -705,12 +704,15 @@ function resetExcursion() {
                                     <td>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime) }}</td>
                                     <td>{{ useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
                                         filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</td>
+                                    
                                     <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2) }}</span></td>
                                     <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</span></td>
-                                    <td
-                                        v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">
-                                        {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}
+                                    
+                                    <td>
+                                        <span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type!='forex'&&filteredTrades[itemTradeIndex].trades[tradeIndex].type!='future'"
+                                        v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}</span><span v-else>na</span>
                                     </td>
+                                    
                                     <td
                                         v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                         {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds).toFixed(2) }}

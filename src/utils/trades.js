@@ -36,7 +36,7 @@ export async function useGetFilteredTrades(param) {
             param1.forEach(element => {
                 //console.log(" -> Looping "+element.dateUnix)
                 //console.log("trades "+JSON.stringify(element.trades))
-                //console.log(" element "+JSON.stringify(element))
+                //console.log(" element " + JSON.stringify(element))
                 if (element.trades) {
                     let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                     temp.trades = []
@@ -61,6 +61,12 @@ export async function useGetFilteredTrades(param) {
                     //console.log("temp "+JSON.stringify(temp))
                     //console.log("element "+JSON.stringify(element))
                     element.trades.forEach(element => {
+                        if (element.side == "long") {
+                            element.priceVar = element.entryPrice - element.exitPrice
+                        } else {
+                            element.priceVar = element.exitPrice - element.entryPrice
+                        }
+
                         let pattern
                         let patternName
                         let mistake
