@@ -512,16 +512,16 @@ export async function useBrokerInteractiveBrokers(param) {
                     }
                     console.log("  --> Type " + temp.Type)
 
-                    if (element["Buy/Sell"] == "BUY" && element["Code"] == "O" || element["Code"] == "O;P") {
+                    if (element["Buy/Sell"] == "BUY" && (element["Code"] == "O" || element["Code"] == "O;P")) {
                         temp.Side = "B"
                     }
-                    if (element["Buy/Sell"] == "BUY" && element["Code"] == "C" || element["Code"] == "C;P") {
+                    if (element["Buy/Sell"] == "BUY" && (element["Code"] == "C" || element["Code"] == "C;P")) {
                         temp.Side = "BC"
                     }
-                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "C" || element["Code"] == "C;P") {
+                    if (element["Buy/Sell"] == "SELL" && (element["Code"] == "C" || element["Code"] == "C;P")) {
                         temp.Side = "S"
                     }
-                    if (element["Buy/Sell"] == "SELL" && element["Code"] == "O" || element["Code"] == "O;P") {
+                    if (element["Buy/Sell"] == "SELL" && (element["Code"] == "O" || element["Code"] == "O;P")) {
                         temp.Side = "SS"
                     }
                     temp.Symbol = element.Symbol.split(" ")[0]
@@ -550,7 +550,7 @@ export async function useBrokerInteractiveBrokers(param) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
@@ -715,7 +715,7 @@ export async function useNinjaTrader(param) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)

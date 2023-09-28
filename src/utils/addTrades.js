@@ -415,7 +415,7 @@ async function createTrades() {
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
                 if (newTrade == true) { //= new trade
-                    console.log("\n -> New trade for symbol " + tempExec.symbol + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log("\n -> New trade for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
@@ -541,7 +541,7 @@ async function createTrades() {
                 } else if (newTrade == false) { //= concatenating trade
                     let trde = temp2.find(x => x.id == temp7.id)
                     //console.log("trde "+JSON.stringify(trde))
-                    console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy)
+                    console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy + " at " + useTimeFormat(tempExec.execTime))
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
                     if (trde.strategy == "long") {
                         //console.log(" -> Strategy is long and "+invertedLong+" for symbol "+tempExec.symbol)
@@ -831,7 +831,7 @@ async function createTrades() {
                     } else {
                         if ((i + 1) == tempExecs.length) {
                             console.log("   ---> Position OPEN")
-                            console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
+                            //console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
                         }
 
                     }
