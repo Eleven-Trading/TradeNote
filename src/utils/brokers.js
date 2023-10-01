@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade, futureContractsUsd } from "../stores/globals"
+import { tradesData, timeZoneTrade, futureContractsUsd, futuresTradeStationFees } from "../stores/globals"
 
 /****************************
  * TRADEZERO
@@ -429,6 +429,20 @@ export async function useBrokerTradeStation(param) {
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
+                    
+                    let serviceFeeNumber = 0
+                    let nfaRegFee = 0.02
+                    if (temp.Type == "future") {
+                        let echangeFees = futuresTradeStationFees.value.filter(item => item.symbol == temp.Symbol)
+                        if (echangeFees){
+                            serviceFeeNumber = (echangeFees[0].fee + nfaRegFee) * temp.Qty
+                            console.log("serviceFeeNumber "+serviceFeeNumber)
+                            temp.SEC = (serviceFeeNumber).toString()
+                        }else{
+                            alert("No ECN Fees found")
+                        }
+
+                    }
 
                     let tick
                     let value
@@ -459,7 +473,7 @@ export async function useBrokerTradeStation(param) {
                     }
                     
                     temp["Gross Proceeds"] = proceedsNumber.toString()
-                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber - serviceFeeNumber).toString()
 
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
@@ -468,7 +482,7 @@ export async function useBrokerTradeStation(param) {
                     tradesData.push(temp)
                 }
             });
-            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
 
         } catch (error) {
             console.log("  --> ERROR " + error)

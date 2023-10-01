@@ -485,153 +485,644 @@ export const futureContractsUsd = ref([
 
 export const futuresTradeStationFees = ref([
     {
-        "name": "Micro E-mini S&P 500",
-        "symbol": "MES",
-        "fee": 0.35
-    },
-    {
-        "name": "Micro E-mini Nasdaq-100",
-        "symbol": "MNQ",
-        "fee": 0.35
-    },
-    {
-        "name": "Micro E-mini Dow",
+        "name": "Micro E-Mini Futures",
         "symbol": "MYM",
         "fee": 0.35
     },
     {
-        "name": "Micro E-mini Russell 2000",
+        "name": "Mini Index",
+        "symbol": "YM",
+        "fee": 1.33
+    },
+    {
+        "name": "Financial",
+        "symbol": "FF",
+        "fee": 0.96
+    },
+    {
+        "name": "Financial",
+        "symbol": "NI",
+        "fee": 0.96
+    },
+    {
+        "name": "Financial",
+        "symbol": "RS5",
+        "fee": 0.96
+    },
+    {
+        "name": "Treasury",
+        "symbol": "FV",
+        "fee": 0.65
+    },
+    {
+        "name": "Treasury",
+        "symbol": "TU",
+        "fee": 0.65
+    },
+    {
+        "name": "US Treasury Note",
+        "symbol": "TY",
+        "fee": 0.80
+    },
+    {
+        "name": "US Treasury Bond",
+        "symbol": "TWE",
+        "fee": 0.87
+    },
+    {
+        "name": "US Treasury Bond",
+        "symbol": "US",
+        "fee": 0.87
+    },
+    {
+        "name": "Ultra US Treasury Bond",
+        "symbol": "UB",
+        "fee": 0.95
+    },
+    {
+        "name": "Mini Agricultural",
+        "symbol": "YC",
+        "fee": 1.03
+    },
+    {
+        "name": "Mini Agricultural",
+        "symbol": "YK",
+        "fee": 1.03
+    },
+    {
+        "name": "Mini Agricultural",
+        "symbol": "YW",
+        "fee": 1.03
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "C",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "O",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "RR",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "W",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "KW",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "S",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "BO",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "SMC",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "BS",
+        "fee": 2.10
+    },
+    {
+        "name": "Agricultural",
+        "symbol": "AC",
+        "fee": 2.10
+    },
+    {
+        "name": "Micro E-Mini Futures",
+        "symbol": "MES",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro E-Mini Futures",
+        "symbol": "MNQ",
+        "fee": 0.35
+    },
+    {
+        "name": "Micro E-Mini Futures",
         "symbol": "M2K",
         "fee": 0.35
     },
     {
-        "name": "E-mini S&P 500",
+        "name": "CME Bitcoin Futures",
+        "symbol": "BTC",
+        "fee": 6.00
+    },
+    {
+        "name": "CME Micro Bitcoin Futures",
+        "symbol": "MBT",
+        "fee": 2.50
+    },
+    {
+        "name": "CME Ether Futures",
+        "symbol": "ETH",
+        "fee": 4.00
+    },
+    {
+        "name": "CME Micro Ether Futures",
+        "symbol": "MET",
+        "fee": 0.20
+    },
+    {
+        "name": "E-Mini Index",
         "symbol": "ES",
-        "fee": 0.35
+        "fee": 1.33
     },
     {
-        "name": "E-mini Nasdaq-100",
+        "name": "E-Mini Index",
         "symbol": "NQ",
-        "fee": 0.35
+        "fee": 1.33
     },
     {
-        "name": "E-mini Dow ($5)",
-        "symbol": "YM",
-        "fee": 0.35
-    },
-    {
-        "name": "E-mini Russell 2000",
+        "name": "E-Mini Index",
         "symbol": "RTY",
-        "fee": 0.35
+        "fee": 1.33
     },
     {
-        "name": "E-mini S&P MidCap 400",
+        "name": "E-Mini Index",
+        "symbol": "R2G",
+        "fee": 1.33
+    },
+    {
+        "name": "E-Mini Index",
+        "symbol": "R2V",
+        "fee": 1.33
+    },
+    {
+        "name": "E-Mini Index",
         "symbol": "EMD",
-        "fee": 0.35
+        "fee": 1.33
     },
     {
-        "name": "NIKKEI 225\/USD",
-        "symbol": "NKD",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "SMC",
+        "fee": 1.33
     },
     {
-        "name": "CBOE Volatility Index (VIX)",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAE",
+        "fee": 1.33
     },
     {
-        "name": "Mini CBOE Volatility Index (Mini VIX)",
-        "symbol": "VXM",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAF",
+        "fee": 1.33
     },
     {
-        "name": "SGX Nifty 50 Index",
-        "symbol": "IN",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAV",
+        "fee": 1.33
     },
     {
-        "name": "SGX USD Nikkei 225 Index",
-        "symbol": "NU",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAI",
+        "fee": 1.33
     },
     {
-        "name": "FTSE Taiwan Stock Index",
-        "symbol": "TW",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAB",
+        "fee": 1.33
     },
     {
-        "name": "ASX SPI200 Index",
-        "symbol": "AP",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAK",
+        "fee": 1.33
     },
     {
-        "name": "Dollar Index",
-        "symbol": "DX",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAU",
+        "fee": 1.33
     },
     {
-        "name": "Ultra U.S. Treasury Bond",
-        "symbol": "UB",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAP",
+        "fee": 1.33
     },
     {
-        "name": "Ultra 10-Year U.S. Treasury Note",
-        "symbol": "TN",
-        "fee": 0.35
+        "name": "E-Mini Index",
+        "symbol": "XAY",
+        "fee": 1.33
     },
     {
-        "name": "3-Year U.S. Treasury Note",
-        "symbol": "Z3N",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "LC",
+        "fee": 2.10
     },
     {
-        "name": "U.S. Treasury Bond",
-        "symbol": "ZB",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "FC",
+        "fee": 2.10
     },
     {
-        "name": "Micro 30-Year Yield",
-        "symbol": "30YY",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "LH",
+        "fee": 2.10
     },
     {
-        "name": "5-Year U.S. Treasury Note",
-        "symbol": "ZF",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "CB",
+        "fee": 2.10
     },
     {
-        "name": "Micro 5-Year Yield",
-        "symbol": "5YY",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "DA",
+        "fee": 2.10
     },
     {
-        "name": "10-Year U.S. Treasury Note",
-        "symbol": "ZN",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "LB",
+        "fee": 2.10
     },
     {
-        "name": "Micro 10-Year Yield",
-        "symbol": "10YY",
-        "fee": 0.35
+        "name": "Commodities",
+        "symbol": "DY",
+        "fee": 2.10
     },
     {
-        "name": "30-Day Federal Funds",
-        "symbol": "ZQ",
-        "fee": 0.35
+        "name": "E-Mini Currency",
+        "symbol": "E7",
+        "fee": 0.85
     },
     {
-        "name": "2-Year U.S. Treasury Note",
-        "symbol": "ZT",
-        "fee": 0.35
+        "name": "E-Mini Currency",
+        "symbol": "J7",
+        "fee": 0.85
     },
     {
-        "name": "Micro 2-Year Yield",
+        "name": "Currency",
+        "symbol": "AD",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "BR",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "BP",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "CD",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "EC",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "JY",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "MP1",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "NE1",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "RA",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "RF",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "RP",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "RU",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "RY",
+        "fee": 1.60
+    },
+    {
+        "name": "Currency",
+        "symbol": "SF",
+        "fee": 1.60
+    },
+    {
+        "name": "Interest Rate",
+        "symbol": "ED",
+        "fee": 1.25
+    },
+    {
+        "name": "Interest Rate",
+        "symbol": "EM",
+        "fee": 1.25
+    },
+    {
+        "name": "Nikkei",
+        "symbol": "NIY",
+        "fee": 2.15
+    },
+    {
+        "name": "Nikkei",
+        "symbol": "NK",
+        "fee": 2.15
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6A",
+        "fee": 0.24
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6B",
+        "fee": 0.24
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6C",
+        "fee": 0.24
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6E",
+        "fee": 0.24
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6J",
+        "fee": 0.24
+    },
+    {
+        "name": "E-Micro Currency",
+        "symbol": "M6S",
+        "fee": 0.24
+    },
+    {
+        "name": "Micro Treasury Yield Futures",
         "symbol": "2YY",
-        "fee": 0.35
+        "fee": 0.30
     },
     {
-        "name": "Eurodollar",
-        "symbol": "GE",
-        "fee": 0.35
+        "name": "Micro Treasury Yield Futures",
+        "symbol": "5YY",
+        "fee": 0.30
+    },
+    {
+        "name": "Micro Treasury Yield Futures",
+        "symbol": "10Y",
+        "fee": 0.30
+    },
+    {
+        "name": "Micro Treasury Yield Futures",
+        "symbol": "30Y",
+        "fee": 0.30
+    },
+    {
+        "name": "COMEX Metals",
+        "symbol": "ALI",
+        "fee": 2.50
+    },
+    {
+        "name": "NYMEX Micro Crude Oil Futures",
+        "symbol": "MCL",
+        "fee": 0.50
+    },
+    {
+        "name": "NYMEX e-miNY Energy",
+        "symbol": "QM",
+        "fee": 1.20
+    },
+    {
+        "name": "NYMEX e-miNY Energy",
+        "symbol": "QH",
+        "fee": 1.20
+    },
+    {
+        "name": "NYMEX e-miNY Energy",
+        "symbol": "QU",
+        "fee": 1.20
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "CL",
+        "fee": 1.50
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "NG",
+        "fee": 1.50
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "HO",
+        "fee": 1.50
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "RB",
+        "fee": 1.50
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "MHO",
+        "fee": 0.60
+    },
+    {
+        "name": "NYMEX Energy Physically Delivered",
+        "symbol": "MRB",
+        "fee": 0.60
+    },
+    {
+        "name": "NYMEX Softs",
+        "symbol": "CJ",
+        "fee": 1.45
+    },
+    {
+        "name": "NYMEX Softs",
+        "symbol": "KT",
+        "fee": 1.45
+    },
+    {
+        "name": "NYMEX Softs",
+        "symbol": "TT",
+        "fee": 1.45
+    },
+    {
+        "name": "NYMEX Softs",
+        "symbol": "YO",
+        "fee": 1.45
+    },
+    {
+        "name": "COMEX e-micro Gold",
+        "symbol": "MGC",
+        "fee": 0.50
+    },
+    {
+        "name": "COMEX e-micro Silver",
+        "symbol": "SIL",
+        "fee": 1.00
+    },
+    {
+        "name": "COMEX e-miNY Metals",
+        "symbol": "QO",
+        "fee": 0.75
+    },
+    {
+        "name": "COMEX e-miNY Metals",
+        "symbol": "QC",
+        "fee": 0.75
+    },
+    {
+        "name": "COMEX e-miNY Silver",
+        "symbol": "QI",
+        "fee": 0.75
+    },
+    {
+        "name": "COMEX Metals",
+        "symbol": "GC",
+        "fee": 1.55
+    },
+    {
+        "name": "COMEX Metals",
+        "symbol": "SI",
+        "fee": 1.55
+    },
+    {
+        "name": "COMEX Metals",
+        "symbol": "HG",
+        "fee": 1.55
+    },
+    {
+        "name": "NYMEX e-miNY Natural Gas",
+        "symbol": "QN",
+        "fee": 0.50
+    },
+    {
+        "name": "NYMEX Metals",
+        "symbol": "PL",
+        "fee": 1.55
+    },
+    {
+        "name": "NYMEX Metals",
+        "symbol": "PA",
+        "fee": 1.55
+    },
+    {
+        "name": "NYMEX Uranium",
+        "symbol": "UX",
+        "fee": 1.45
+    },
+    {
+        "name": "VIX Futures",
+        "symbol": "VX",
+        "fee": 1.49
+    },
+    {
+        "name": "Mini VIX Futures",
+        "symbol": "VXM",
+        "fee": 0.20
+    },
+    {
+        "name": "ICE U.S. Mini Metals",
+        "symbol": "YG",
+        "fee": 0.55
+    },
+    {
+        "name": "ICE U.S. Mini Metals",
+        "symbol": "YI",
+        "fee": 0.55
+    },
+    {
+        "name": "ICE U.S. MSCI Indices",
+        "symbol": "MFS",
+        "fee": 1.20
+    },
+    {
+        "name": "ICE U.S. MSCI Indices",
+        "symbol": "MME",
+        "fee": 1.20
+    },
+    {
+        "name": "ICE U.S. Metals",
+        "symbol": "ZG",
+        "fee": 0.55
+    },
+    {
+        "name": "ICE U.S. Metals",
+        "symbol": "ZI",
+        "fee": 0.55
+    },
+    {
+        "name": "ICE U.S. NYBOT Softs",
+        "symbol": "CC",
+        "fee": 2.10
+    },
+    {
+        "name": "ICE U.S. NYBOT Softs",
+        "symbol": "KC",
+        "fee": 2.10
+    },
+    {
+        "name": "ICE U.S. NYBOT Softs",
+        "symbol": "SB",
+        "fee": 2.10
+    },
+    {
+        "name": "ICE U.S. NYBOT Softs",
+        "symbol": "OJ",
+        "fee": 2.10
+    },
+    {
+        "name": "ICE U.S. NYBOT Softs",
+        "symbol": "CT",
+        "fee": 2.10
+    },
+    {
+        "name": "ICE U.S. Indices",
+        "symbol": "DX",
+        "fee": 1.35
+    },
+    {
+        "name": "ICE U.S. Indices",
+        "symbol": "CCI",
+        "fee": 1.35
+    },
+    {
+        "name": "ICE U.S. Russell 1000 Index",
+        "symbol": "RF2",
+        "fee": 0.30
+    },
+    {
+        "name": "ICE U.S. Russell 2000 Index",
+        "symbol": "TF",
+        "fee": 0.65
     }
 ])
 

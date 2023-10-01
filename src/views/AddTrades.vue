@@ -112,7 +112,7 @@ async function getExistingTradesArray() {
                             <th scope="col">Vol</th>
                             <th scope="col">P/L gross</th>
                             <th scope="col">Comm</th>
-                            <th scope="col">Fees</th>
+                            <th scope="col">Tot Fees</th>
                             <th scope="col">P/L net</th>
                             <th scope="col">Wins(g)</th>
                             <th scope="col">Loss(g)</th>

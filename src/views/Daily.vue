@@ -6,7 +6,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
@@ -411,7 +411,7 @@ function resetExcursion() {
                                             <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                 v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
-                                        <div class="col-auto ms-auto">P&L: <span
+                                        <div class="col-auto ms-auto">P&L({{ selectedGrossNet.charAt(0) }}): <span
                                                 v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
                                                     useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds']) }}</span>
                                         </div>
@@ -467,7 +467,7 @@ function resetExcursion() {
                                                     <!--  -> Tot commission and gross p&l -->
                                                     <div class="col row">
                                                         <div>
-                                                            <label>Fees</label>
+                                                            <label>Tot Fees</label>
                                                             <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.fees) }}</p>
                                                         </div>
                                                         <div>
@@ -538,7 +538,7 @@ function resetExcursion() {
                                                             <td><span v-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}</span></td>
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                                                             <td>
-                                                                <span v-if="trade.type!='forex'&&trade.type!='future'" v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{ (trade.grossSharePL).toFixed(2) }}</span><span v-else>na</span></td>
+                                                                <span v-if="trade.type!='forex'" v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{ (trade.grossSharePL).toFixed(2) }}</span><span v-else>-</span></td>
                                                             <td
                                                                 v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ (trade.netProceeds).toFixed(2) }}</td>
@@ -581,7 +581,7 @@ function resetExcursion() {
                                                             <th scope="col">Symbol</th>
                                                             <th scope="col">Vol</th>
                                                             <th scope="col">P&L(g)</th>
-                                                            <th scope="col">Fees</th>
+                                                            <th scope="col">Tot Fees</th>
                                                             <th scope="col">P&L(n)</th>
                                                             <th scope="col">Wins</th>
                                                             <th scope="col">Losses</th>
@@ -709,8 +709,8 @@ function resetExcursion() {
                                     <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</span></td>
                                     
                                     <td>
-                                        <span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type!='forex'&&filteredTrades[itemTradeIndex].trades[tradeIndex].type!='future'"
-                                        v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}</span><span v-else>na</span>
+                                        <span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type!='forex'"
+                                        v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}</span><span v-else>-</span>
                                     </td>
                                     
                                     <td
