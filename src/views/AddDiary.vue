@@ -39,6 +39,11 @@ async function getDiaryToEdit(param) {
     if (results) {
         diary = JSON.parse(JSON.stringify(results)) //we start by using diary to show html. Then, for changing, we use diary
         //console.log(" Diary to edit " + JSON.stringify(diary))
+        //console.log("diary.dateUnix "+diary.dateUnix)
+        diaryUpdate.dateUnix = diary.dateUnix
+        diaryUpdate.date = dayjs.unix(diary.dateUnix).format("YYYY-MM-DD")
+        diaryUpdate.dateDateFormat = new Date(dayjs(diaryUpdate.date, timeZoneTrade.value).format("YYYY-MM-DD"))
+        console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
         document.querySelector("#quillEditor0 .ql-editor").innerHTML = diary.journal.positive
         document.querySelector("#quillEditor1 .ql-editor").innerHTML = diary.journal.negative
         document.querySelector("#quillEditor2 .ql-editor").innerHTML = diary.journal.other
@@ -68,8 +73,8 @@ async function initDiaryJson(param) {
         <div>
             <div v-show="!spinnerLoadingPage">
                 <div class="mt-3 input-group mb-3">
-                    <input type="date" class="form-control" 
-                        v-bind:value="diary.hasOwnProperty('dateUnix') ? diaryUpdate.date = useDateCalFormat(diary.dateUnix) : diaryUpdate.hasOwnProperty('date') ? diaryUpdate.date : diaryUpdate.date = currentDate"
+                    <input type="date" class="form-control"
+                        v-bind:value="diaryUpdate.hasOwnProperty('date') ? diaryUpdate.date : diaryUpdate.date = currentDate"
                         v-on:input="diaryDateInput($event.target.value)" />
                 </div>
                 <h5>Positive Aspects</h5>
