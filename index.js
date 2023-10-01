@@ -17,7 +17,9 @@ if (process.env.MONGO_URI) {
     databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
 }
 
-console.log('databaseURI '+databaseURI)
+console.log("\nCONNECTING TO MONGODB")
+let hiddenDatabaseURI = databaseURI.replace(/:\/\/[^@]*@/, "://***@")
+console.log(' -> Database URI '+hiddenDatabaseURI)
 
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
