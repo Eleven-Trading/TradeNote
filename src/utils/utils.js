@@ -573,6 +573,15 @@ export async function useInitQuill(param) {
         }
         //console.log("quilEditor " + quillEditor)
         let quill = new Quill(quillEditor, {
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'indent': '-1' }, { 'indent': '+1' }],
+                    ['image'],
+                ]
+            },
             theme: 'snow'
         });
         quill.root.setAttribute('spellcheck', true)
@@ -657,7 +666,7 @@ export function useInitPopover() {
         if (pageId.value == "screenshots") {
             useDeleteScreenshot()
         }
-        
+
         if (pageId.value == "daily") {
             useDeleteScreenshot()
         }
