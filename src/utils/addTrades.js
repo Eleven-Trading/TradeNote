@@ -1,5 +1,5 @@
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero } from './brokers'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier } from '../stores/globals'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate } from './brokers'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -134,6 +134,21 @@ export async function useImportTrades(e, param2) {
     }
 
     /****************************
+     * TRADOVATE
+     ****************************/
+    if (selectedBroker.value == "tradovate") {
+        console.log(" -> Tradovate")
+        console.log(' -> Selected tier '+selectedTradovateTier.value)
+        if (!selectedTradovateTier.value){
+            alert ("Select commision plan")
+            spinnerLoadingPage.value = false
+            return
+        }
+        let fileInput = await readAsText(files)
+        await useTradovate(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+    }
+
+    /****************************
      * NINJATRADER
      ****************************/
     if (selectedBroker.value == "ninjaTrader") {
@@ -199,9 +214,11 @@ async function createTempExecutions() {
                 //frDate = usDate.tz("Europe/Paris")
                 console.log("date "+usDate+" and fr ")*/
                 const dateArrayTD = tradesData[key]['T/D'].split('/');
+                console.log("dateArrayTD "+dateArrayTD)
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
+                console.log("formatedDateTD "+formatedDateTD)
                 temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
-
+                
                 const dateArraySD = tradesData[key]['S/D'].split('/');
                 const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
                 temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()

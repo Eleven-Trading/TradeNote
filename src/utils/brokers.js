@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade, futureContractsUsd, futuresTradeStationFees } from "../stores/globals"
+import { tradesData, timeZoneTrade, futureContractsUsd, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier } from "../stores/globals"
 
 /****************************
  * TRADEZERO
@@ -58,7 +58,7 @@ export async function useBrokerMetaTrader5(param) {
                 if (!row.hasOwnProperty("Trade History Report")) {
                     dealIterate = false
                 } else {
-                    console.log("row "+JSON.stringify(row))
+                    console.log("row " + JSON.stringify(row))
                     //check for balance
                     let checkBalance = Object.values(row)[2]
                     if (checkBalance != "balance") {
@@ -69,10 +69,10 @@ export async function useBrokerMetaTrader5(param) {
                         temp["S/D"] = newDate
                         temp.Currency = "USD"
                         temp.Type = "stock"
-                        if (Object.values(row)[2].length == 6 && /^[a-zA-Z]/.test(Object.values(row)[2])){
+                        if (Object.values(row)[2].length == 6 && /^[a-zA-Z]/.test(Object.values(row)[2])) {
                             temp.Type = "forex"
                         }
-                        console.log("  --> Type: "+temp.Type)
+                        console.log("  --> Type: " + temp.Type)
                         if (Object.values(row)[3] == "buy" && Object.values(row)[4] == "in") {
                             temp.Side = "B"
                         }
@@ -90,7 +90,7 @@ export async function useBrokerMetaTrader5(param) {
                         //console.log(" -> Qty import "+temp.Qty)
                         temp.Price = Object.values(row)[6].toString()
                         temp["Exec Time"] = Object.values(row)[0].split(" ")[1]
-                        
+
                         temp.Comm = (-Object.values(row)[8]).toString()
                         temp.SEC = (-Object.values(row)[9]).toString()
                         temp.TAF = (-Object.values(row)[10]).toString()
@@ -200,8 +200,8 @@ export async function useBrokerTdAmeritrade(param) {
             }
             //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
             //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
-            console.log("cashBalanceJsonArray "+JSON.stringify(cashBalanceJsonArray))
-            console.log("accountTradeHistoryJsonArray "+JSON.stringify(accountTradeHistoryJsonArray))
+            console.log("cashBalanceJsonArray " + JSON.stringify(cashBalanceJsonArray))
+            console.log("accountTradeHistoryJsonArray " + JSON.stringify(accountTradeHistoryJsonArray))
             console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
             console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
             if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
@@ -241,7 +241,7 @@ export async function useBrokerTdAmeritrade(param) {
                 if (element.type == "FUTURE") {
                     temp.Type = "future"
                 }
-                if (element.type == "CALL" || element.type == "PUT") {
+                if (element.type == "CALL" || element.type == "PUT") {
                     element.type == "CALL" ? temp.Type = "call" : element.type == "put"
                 }
                 console.log("  --> Type " + temp.Type)
@@ -266,7 +266,7 @@ export async function useBrokerTdAmeritrade(param) {
 
                 let priceNumber = Number(element.Price)
                 temp.Price = priceNumber.toString
-                
+
                 temp["Exec Time"] = element.TIME
 
                 let numberAmount = parseFloat(element.AMOUNT.replace(/,/g, ''))
@@ -395,7 +395,7 @@ export async function useBrokerTradeStation(param) {
                     if (temp.Type == "future") {
                         temp.Symbol = temp.Symbol.slice(0, -3)
                     }
-                    if (temp.Type == "call" || temp.Type == "put") {
+                    if (temp.Type == "call" || temp.Type == "put") {
                         temp.Symbol = temp.Symbol.split(" ")[0]
                     }
 
@@ -422,23 +422,23 @@ export async function useBrokerTradeStation(param) {
 
                     let commNumber = Number(element.Commission.replace("$", ""))
                     temp.Comm = commNumber.toString()
-                    
+
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
-                    
+
                     let serviceFeeNumber = 0
                     let nfaRegFee = 0.02
                     if (temp.Type == "future") {
                         let echangeFees = futuresTradeStationFees.value.filter(item => item.symbol == temp.Symbol)
-                        if (echangeFees){
+                        if (echangeFees) {
                             serviceFeeNumber = (echangeFees[0].fee + nfaRegFee) * temp.Qty
-                            console.log("serviceFeeNumber "+serviceFeeNumber)
+                            console.log("serviceFeeNumber " + serviceFeeNumber)
                             temp.SEC = (serviceFeeNumber).toString()
-                        }else{
+                        } else {
                             alert("No ECN Fees found")
                         }
 
@@ -468,10 +468,10 @@ export async function useBrokerTradeStation(param) {
                     if (temp.Type == "future") {
                         proceedsNumber = (qtyNumberSide * priceNumber) / tick * value
                     }
-                    if (temp.Type == "call" || temp.Type == "put") {
+                    if (temp.Type == "call" || temp.Type == "put") {
                         proceedsNumber = (qtyNumberSide * 100 * priceNumber)
                     }
-                    
+
                     temp["Gross Proceeds"] = proceedsNumber.toString()
                     temp["Net Proceeds"] = (proceedsNumber - commNumber - serviceFeeNumber).toString()
 
@@ -565,6 +565,158 @@ export async function useBrokerInteractiveBrokers(param) {
                 }
             });
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        } catch (error) {
+            console.log("  --> ERROR " + error)
+            reject(error)
+        }
+        resolve()
+    })
+}
+
+/****************************
+ * TRADOVATE
+ ****************************/
+export async function useTradovate(param) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            tradesData.length = 0
+            let papaParse = Papa.parse(param, { header: true })
+            let papaParseNew = []
+            //we need to recreate the JSON with proper date format + we simplify
+            papaParse.data.forEach(element => {
+                if (element.orderId && element.Status.trim() == "Filled") {
+                    //console.log("element " + JSON.stringify(element))
+                    element.execTime = dayjs.tz(element["Fill Time"], timeZoneTrade.value).unix()
+                    element["B/S"] = element["B/S"].trim()
+                    papaParseNew.push(element)
+                }
+            })
+
+            //console.log(" -> PapaparseNew  " + JSON.stringify(papaParseNew))
+
+            var b = _
+                .chain(papaParseNew)
+                .orderBy(["execTime"], ["asc"])
+                .groupBy("Contract");
+
+            //console.log(" -> b: " + JSON.stringify(b))
+            let objectB = JSON.parse(JSON.stringify(b))
+            //console.log("object b "+JSON.stringify(objectB))
+
+            // We iterate through each symbol (key2)
+            const keys2 = Object.keys(objectB);
+
+
+            for (const key2 of keys2) {
+                var tempExecs = objectB[key2]
+                //Count number of wins and losses for later total number of wins and losses
+                let newTrade = true
+                let strategy
+                let totalQty = 0
+                for (let i = 0; i < tempExecs.length; i++) {
+                    let tempExec = tempExecs[i];
+                    //console.log( "-> tempExec: "+JSON.stringify(tempExec))
+
+                    let temp = {}
+                    temp.Account = tempExec.Account
+
+                    let month = tempExec.Date.split("/")[0]
+                    let day = tempExec.Date.split("/")[1]
+                    let year = tempExec.Date.split("/")[2]
+
+                    if (year.length == 4) {
+                        temp["T/D"] = tempExec.Date
+                        temp["S/D"] = tempExec.Date
+                    } else if (year.length == 2) {
+                        let newDate = month + "/" + day + "/20" + year
+                        temp["T/D"] = newDate
+                        temp["S/D"] = newDate
+                    } else {
+                        alert("Year length issue")
+                    }
+
+                    temp.Currency = "USD"
+                    temp.Type = "future"
+
+                    let qtyNumber = Number(tempExec["Filled Qty"])
+                    temp.Qty = qtyNumber.toString()
+
+                    if (newTrade == true && tempExec["B/S"] == "Buy") { //= new trade
+                        newTrade = false
+                        strategy = "long"
+                        temp.Side = "B"
+                        totalQty += qtyNumber
+
+                    } else if (newTrade == true && tempExec["B/S"] == "Sell") {
+                        newTrade = false
+                        strategy = "short"
+                        temp.Side = "SS"
+                        totalQty += -qtyNumber
+                    }
+                    else if (newTrade == false && tempExec["B/S"] == "Buy") {
+                        strategy == "long" ? temp.Side = "B" : temp.Side = "BC"
+                        totalQty += +qtyNumber
+                    }
+                    else if (newTrade == false && tempExec["B/S"] == "Sell") {
+                        strategy == "long" ? temp.Side = "S" : temp.Side = "SS"
+                        totalQty += -qtyNumber
+                    }
+
+                    totalQty == 0 ? newTrade = true : newTrade = false
+
+                    temp.Symbol = tempExec.Product
+
+
+                    let priceNumber = Number(tempExec["Avg Fill Price"])
+                    temp.Price = priceNumber.toString()
+
+                    temp["Exec Time"] = dayjs(tempExec["Fill Time"], "hh:mm:ss A").format("HH:mm:ss")
+
+                    let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                    let tick = contractSpecs[0].tick
+                    let value = contractSpecs[0].value
+
+                    let qtyNumberSide
+
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        qtyNumberSide = -qtyNumber
+                    } else {
+                        qtyNumberSide = qtyNumber
+                    }
+
+                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value
+
+                    temp["Gross Proceeds"] = proceedsNumber.toString()
+
+                    let echangeFees = futuresTradovateFees.value.filter(item => item.symbol == temp.Symbol)
+                    let commNumber = 0
+                    if (echangeFees) {
+                        //console.log(" -> exchange fee "+JSON.stringify(echangeFees[0].fee))
+                        //console.log(" -> fee "+echangeFees[0].fee[selectedTradovateTier.value])
+                        commNumber = echangeFees[0].fee[selectedTradovateTier.value] * qtyNumber
+                    } else {
+                        alert("No Fees found")
+                    }
+                    temp.Comm = commNumber.toString()
+                    temp.SEC = "0"
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+                    //console.log("temp "+JSON.stringify(temp))
+                    tradesData.push(temp)
+
+
+
+                }
+            }
+
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
@@ -679,10 +831,10 @@ export async function useNinjaTrader(param) {
                     temp.Account = element.Account
                     //console.log("element.TradeDate. " + element.TradeDate)
                     let date = element.Time.split(" ")[0]
-                    if (element.Position.split(" ")[1] != undefined){
+                    if (element.Position.split(" ")[1] != undefined) {
                         side = element.Position.split(" ")[1]
                     }
-                    
+
                     //console.log("side "+side)
                     temp["T/D"] = date
                     temp["S/D"] = date
@@ -704,7 +856,7 @@ export async function useNinjaTrader(param) {
                     temp.Qty = element.Quantity
                     temp.Price = element.Price
 
-                    
+
                     temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
 
                     temp.Comm = element.Commission.split("$")[1]

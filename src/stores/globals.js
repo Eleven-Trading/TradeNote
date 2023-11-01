@@ -1126,6 +1126,997 @@ export const futuresTradeStationFees = ref([
     }
 ])
 
+export const futuresTradovateFees = ref([
+    {
+        "name": "Nano Bloomberg Large Cap",
+        "symbol": "B5",
+        "fee": {
+            "free": 0.24,
+            "monthly": 0.34,
+            "lifetime": 0.24
+        }
+    },
+    {
+        "name": "Micro Bloomberg Large Cap",
+        "symbol": "LB5",
+        "fee": {
+            "free": 0.27,
+            "monthly": 0.37,
+            "lifetime": 0.27
+        }
+    },
+    {
+        "name": "Nano SuperTech",
+        "symbol": "TEC",
+        "fee": {
+            "free": 0.24,
+            "monthly": 0.34,
+            "lifetime": 0.24
+        }
+    },
+    {
+        "name": "Micro SuperTech",
+        "symbol": "LTEC",
+        "fee": {
+            "free": 0.27,
+            "monthly": 0.37,
+            "lifetime": 0.27
+        }
+    },
+    {
+        "name": "Coinbase Futures Crude Oil",
+        "symbol": "OIL",
+        "fee": {
+            "free": 0.27,
+            "monthly": 0.37,
+            "lifetime": 0.27
+        }
+    },
+    {
+        "name": "Nano Bitcoin",
+        "symbol": "BIT",
+        "fee": {
+            "free": 0.32,
+            "monthly": 0.42,
+            "lifetime": 0.32
+        }
+    },
+    {
+        "name": "Nano Ether",
+        "symbol": "ET",
+        "fee": {
+            "free": 0.32,
+            "monthly": 0.42,
+            "lifetime": 0.32
+        }
+    },
+    {
+        "name": "E-Mini Dow ($5)",
+        "symbol": "YM",
+        "fee": {
+            "free": 2.09,
+            "monthly": 2.49,
+            "lifetime": 2.09
+        }
+    },
+    {
+        "name": "E-Mini S&P 500",
+        "symbol": "ES",
+        "fee": {
+            "free": 2.09,
+            "monthly": 2.49,
+            "lifetime": 2.09
+        }
+    },
+    {
+        "name": "E-Mini NASDAQ",
+        "symbol": "NQ",
+        "fee": {
+            "free": 2.09,
+            "monthly": 2.49,
+            "lifetime": 2.09
+        }
+    },
+    {
+        "name": "E-Mini Russell",
+        "symbol": "RTY",
+        "fee": {
+            "free": 2.09,
+            "monthly": 2.49,
+            "lifetime": 2.09
+        }
+    },
+    {
+        "name": "Micro E-Mini Dow",
+        "symbol": "MYM",
+        "fee": {
+            "free": 0.61,
+            "monthly": 0.77,
+            "lifetime": 0.61
+        }
+    },
+    {
+        "name": "Micro E-Mini S&P 500",
+        "symbol": "MES",
+        "fee": {
+            "free": 0.61,
+            "monthly": 0.77,
+            "lifetime": 0.61
+        }
+    },
+    {
+        "name": "Micro E-Mini NASDAQ",
+        "symbol": "MNQ",
+        "fee": {
+            "free": 0.61,
+            "monthly": 0.77,
+            "lifetime": 0.61
+        }
+    },
+    {
+        "name": "Micro E-Mini Russell",
+        "symbol": "M2K",
+        "fee": {
+            "free": 0.61,
+            "monthly": 0.77,
+            "lifetime": 0.61
+        }
+    },
+    {
+        "name": "E-Mini S&P Midcap 400",
+        "symbol": "EMD",
+        "fee": {
+            "free": 2.09,
+            "monthly": 2.49,
+            "lifetime": 2.09
+        }
+    },
+    {
+        "name": "Nikkei 225 (Yen)",
+        "symbol": "NIY",
+        "fee": {
+            "free": 2.61,
+            "monthly": 3.01,
+            "lifetime": 2.61
+        }
+    },
+    {
+        "name": "Nikkei 225 (USD)",
+        "symbol": "NKD",
+        "fee": {
+            "free": 2.91,
+            "monthly": 3.31,
+            "lifetime": 2.91
+        }
+    },
+    {
+        "name": "Bitcoin",
+        "symbol": "BTC",
+        "fee": {
+            "free": 6.76,
+            "monthly": 7.16,
+            "lifetime": 6.76
+        }
+    },
+    {
+        "name": "Ether",
+        "symbol": "ETH",
+        "fee": {
+            "free": 4.76,
+            "monthly": 5.16,
+            "lifetime": 4.76
+        }
+    },
+    {
+        "name": "Micro Bitcoin",
+        "symbol": "MBT",
+        "fee": {
+            "free": 2.76,
+            "monthly": 2.92,
+            "lifetime": 2.76
+        }
+    },
+    {
+        "name": "Micro Ether",
+        "symbol": "MET",
+        "fee": {
+            "free": 0.46,
+            "monthly": 0.62,
+            "lifetime": 0.46
+        }
+    },
+    {
+        "name": "DAX Index",
+        "symbol": "FDAX",
+        "fee": {
+            "free": 2.06,
+            "monthly": 2.46,
+            "lifetime": 2.06
+        }
+    },
+    {
+        "name": "Mini-DAX",
+        "symbol": "FDXM",
+        "fee": {
+            "free": 1.05,
+            "monthly": 1.45,
+            "lifetime": 1.05
+        }
+    },
+    {
+        "name": "Euro Stoxx 50",
+        "symbol": "FESX",
+        "fee": {
+            "free": 1.19,
+            "monthly": 1.59,
+            "lifetime": 1.19
+        }
+    },
+    {
+        "name": "VSTOXX",
+        "symbol": "FVS",
+        "fee": {
+            "free": 1.28,
+            "monthly": 1.68,
+            "lifetime": 1.28
+        }
+    },
+    {
+        "name": "STOXX Europe 600",
+        "symbol": "FXXP",
+        "fee": {
+            "free": 0.98,
+            "monthly": 1.38,
+            "lifetime": 0.98
+        }
+    },
+    {
+        "name": "Micro DAX Index",
+        "symbol": "FDXS",
+        "fee": {
+            "free": 0.43,
+            "monthly": 0.59,
+            "lifetime": 0.43
+        }
+    },
+    {
+        "name": "Micro Euro Stoxx 50",
+        "symbol": "FSXE",
+        "fee": {
+            "free": 0.39,
+            "monthly": 0.55,
+            "lifetime": 0.39
+        }
+    },
+    {
+        "name": "Mini-MSCI Emerging Mkt",
+        "symbol": "MME",
+        "fee": {
+            "free": 1.92,
+            "monthly": 2.32,
+            "lifetime": 1.92
+        }
+    },
+    {
+        "name": "Mini-MSCI EAFE Index",
+        "symbol": "MFS",
+        "fee": {
+            "free": 1.92,
+            "monthly": 2.32,
+            "lifetime": 1.92
+        }
+    },
+    {
+        "name": "SPIKES Volatility Index",
+        "symbol": "SPK",
+        "fee": {
+            "free": 0.37,
+            "monthly": 0.37,
+            "lifetime": 0.37
+        }
+    },
+    {
+        "name": "5-Year Note",
+        "symbol": "ZF",
+        "fee": {
+            "free": 1.41,
+            "monthly": 1.81,
+            "lifetime": 1.41
+        }
+    },
+    {
+        "name": "2-Year Note",
+        "symbol": "ZT",
+        "fee": {
+            "free": 1.41,
+            "monthly": 1.81,
+            "lifetime": 1.41
+        }
+    },
+    {
+        "name": "Ultra US Treasury Bond",
+        "symbol": "UB",
+        "fee": {
+            "free": 1.71,
+            "monthly": 2.11,
+            "lifetime": 1.71
+        }
+    },
+    {
+        "name": "10-Year T-Note",
+        "symbol": "ZN",
+        "fee": {
+            "free": 1.56,
+            "monthly": 1.96,
+            "lifetime": 1.56
+        }
+    },
+    {
+        "name": "US Treasury Bond",
+        "symbol": "ZB",
+        "fee": {
+            "free": 1.63,
+            "monthly": 2.03,
+            "lifetime": 1.63
+        }
+    },
+    {
+        "name": "Ultra 10-Year T-Note",
+        "symbol": "TN",
+        "fee": {
+            "free": 1.56,
+            "monthly": 1.96,
+            "lifetime": 1.56
+        }
+    },
+    {
+        "name": "20yr US Treasury Bond",
+        "symbol": "TWE",
+        "fee": {
+            "free": 1.63,
+            "monthly": 2.03,
+            "lifetime": 1.63
+        }
+    },
+    {
+        "name": "Eurodollar",
+        "symbol": "GE",
+        "fee": {
+            "free": 2.01,
+            "monthly": 2.41,
+            "lifetime": 2.01
+        }
+    },
+    {
+        "name": "Fed Funds 30 Day",
+        "symbol": "ZQ",
+        "fee": {
+            "free": 1.72,
+            "monthly": 2.12,
+            "lifetime": 1.72
+        }
+    },
+    {
+        "name": "Micro 10-Year Yield",
+        "symbol": "10Y",
+        "fee": {
+            "free": 0.56,
+            "monthly": 0.72,
+            "lifetime": 0.56
+        }
+    },
+    {
+        "name": "Micro 2-Year Yield",
+        "symbol": "2YY",
+        "fee": {
+            "free": 0.56,
+            "monthly": 0.72,
+            "lifetime": 0.56
+        }
+    },
+    {
+        "name": "Micro 30-Year Yield",
+        "symbol": "30Y",
+        "fee": {
+            "free": 0.56,
+            "monthly": 0.72,
+            "lifetime": 0.56
+        }
+    },
+    {
+        "name": "Micro 5-Year Yield",
+        "symbol": "5YY",
+        "fee": {
+            "free": 0.56,
+            "monthly": 0.72,
+            "lifetime": 0.56
+        }
+    },
+    {
+        "name": "Euro-Buxl",
+        "symbol": "FGBX",
+        "fee": {
+            "free": 1.04,
+            "monthly": 1.44,
+            "lifetime": 1.04
+        }
+    },
+    {
+        "name": "Euro-Schatz",
+        "symbol": "FGBS",
+        "fee": {
+            "free": 1.04,
+            "monthly": 1.44,
+            "lifetime": 1.04
+        }
+    },
+    {
+        "name": "Euro-Bobl",
+        "symbol": "FGBM",
+        "fee": {
+            "free": 1.04,
+            "monthly": 1.44,
+            "lifetime": 1.04
+        }
+    },
+    {
+        "name": "Euro-Bund",
+        "symbol": "FGBL",
+        "fee": {
+            "free": 1.04,
+            "monthly": 1.44,
+            "lifetime": 1.04
+        }
+    },
+    {
+        "name": "Gold",
+        "symbol": "GC",
+        "fee": {
+            "free": 2.31,
+            "monthly": 2.71,
+            "lifetime": 2.31
+        }
+    },
+    {
+        "name": "E-Micro Gold",
+        "symbol": "MGC",
+        "fee": {
+            "free": 0.76,
+            "monthly": 0.92,
+            "lifetime": 0.76
+        }
+    },
+    {
+        "name": "Copper",
+        "symbol": "HG",
+        "fee": {
+            "free": 2.31,
+            "monthly": 2.71,
+            "lifetime": 2.31
+        }
+    },
+    {
+        "name": "Micro Copper",
+        "symbol": "MHG",
+        "fee": {
+            "free": 0.86,
+            "monthly": 1.02,
+            "lifetime": 0.86
+        }
+    },
+    {
+        "name": "Silver",
+        "symbol": "SI",
+        "fee": {
+            "free": 2.31,
+            "monthly": 2.71,
+            "lifetime": 2.31
+        }
+    },
+    {
+        "name": "Micro Silver",
+        "symbol": "SIL",
+        "fee": {
+            "free": 1.26,
+            "monthly": 1.42,
+            "lifetime": 1.26
+        }
+    },
+    {
+        "name": "E-Mini Copper",
+        "symbol": "QC",
+        "fee": {
+            "free": 1.51,
+            "monthly": 1.91,
+            "lifetime": 1.51
+        }
+    },
+    {
+        "name": "miNY Silver",
+        "symbol": "QI",
+        "fee": {
+            "free": 1.51,
+            "monthly": 1.91,
+            "lifetime": 1.51
+        }
+    },
+    {
+        "name": "E-Mini Gold",
+        "symbol": "QO",
+        "fee": {
+            "free": 1.51,
+            "monthly": 1.91,
+            "lifetime": 1.51
+        }
+    },
+    {
+        "name": "Mini-Gold",
+        "symbol": "YG",
+        "fee": {
+            "free": 1.26,
+            "monthly": 1.66,
+            "lifetime": 1.26
+        }
+    },
+    {
+        "name": "Mini-Silver",
+        "symbol": "YI",
+        "fee": {
+            "free": 1.26,
+            "monthly": 1.66,
+            "lifetime": 1.26
+        }
+    },
+    {
+        "name": "Platinum",
+        "symbol": "PL",
+        "fee": {
+            "free": 2.31,
+            "monthly": 2.71,
+            "lifetime": 2.31
+        }
+    },
+    {
+        "name": "Palladium",
+        "symbol": "PA",
+        "fee": {
+            "free": 2.31,
+            "monthly": 2.71,
+            "lifetime": 2.31
+        }
+    },
+    {
+        "name": "E-Mini Heating Oil",
+        "symbol": "QH",
+        "fee": {
+            "free": 1.96,
+            "monthly": 2.36,
+            "lifetime": 1.96
+        }
+    },
+    {
+        "name": "E-Mini Crude Oil",
+        "symbol": "QM",
+        "fee": {
+            "free": 1.96,
+            "monthly": 2.36,
+            "lifetime": 1.96
+        }
+    },
+    {
+        "name": "E-Mini Natural Gas",
+        "symbol": "QG",
+        "fee": {
+            "free": 1.26,
+            "monthly": 1.66,
+            "lifetime": 1.26
+        }
+    },
+    {
+        "name": "Brent Crude Last Day",
+        "symbol": "BZ",
+        "fee": {
+            "free": 2.26,
+            "monthly": 2.66,
+            "lifetime": 2.26
+        }
+    },
+    {
+        "name": "Heating Oil",
+        "symbol": "HO",
+        "fee": {
+            "free": 2.26,
+            "monthly": 2.66,
+            "lifetime": 2.26
+        }
+    },
+    {
+        "name": "RBOB Gasoline",
+        "symbol": "RB",
+        "fee": {
+            "free": 2.26,
+            "monthly": 2.66,
+            "lifetime": 2.26
+        }
+    },
+    {
+        "name": "Crude Oil",
+        "symbol": "CL",
+        "fee": {
+            "free": 2.26,
+            "monthly": 2.66,
+            "lifetime": 2.26
+        }
+    },
+    {
+        "name": "Micro Crude Oil",
+        "symbol": "MCL",
+        "fee": {
+            "free": 0.76,
+            "monthly": 0.92,
+            "lifetime": 0.76
+        }
+    },
+    {
+        "name": "Natural Gas",
+        "symbol": "NG",
+        "fee": {
+            "free": 2.26,
+            "monthly": 2.66,
+            "lifetime": 2.26
+        }
+    },
+    {
+        "name": "Rough Rice",
+        "symbol": "ZR",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Mini Wheat",
+        "symbol": "XW",
+        "fee": {
+            "free": 1.79,
+            "monthly": 2.19,
+            "lifetime": 1.79
+        }
+    },
+    {
+        "name": "Oats",
+        "symbol": "ZO",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Mini Corn",
+        "symbol": "XC",
+        "fee": {
+            "free": 1.79,
+            "monthly": 2.19,
+            "lifetime": 1.79
+        }
+    },
+    {
+        "name": "Soybeans",
+        "symbol": "ZS",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Soybean Oil",
+        "symbol": "ZL",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Corn",
+        "symbol": "ZC",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Wheat",
+        "symbol": "ZW",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Soybean Meal",
+        "symbol": "ZM",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Mini Soybean",
+        "symbol": "XK",
+        "fee": {
+            "free": 1.79,
+            "monthly": 2.19,
+            "lifetime": 1.79
+        }
+    },
+    {
+        "name": "E-Mini Japanese Yen",
+        "symbol": "J7",
+        "fee": {
+            "free": 1.61,
+            "monthly": 2.01,
+            "lifetime": 1.61
+        }
+    },
+    {
+        "name": "E-Micro Australian Dollar",
+        "symbol": "M6A",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Micro Euro",
+        "symbol": "M6E",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Micro Swiss Franc",
+        "symbol": "MSF",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Micro Canadian Dollar",
+        "symbol": "MCD",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Micro British Pound",
+        "symbol": "M6B",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Micro Japanese Yen",
+        "symbol": "MJY",
+        "fee": {
+            "free": 0.5,
+            "monthly": 0.66,
+            "lifetime": 0.5
+        }
+    },
+    {
+        "name": "E-Mini Euro FX",
+        "symbol": "E7",
+        "fee": {
+            "free": 1.61,
+            "monthly": 2.01,
+            "lifetime": 1.61
+        }
+    },
+    {
+        "name": "Mexican Peso",
+        "symbol": "6M",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Australian Dollar",
+        "symbol": "6A",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "British Pound",
+        "symbol": "6B",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Japanese Yen",
+        "symbol": "6J",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Canadian Dollar",
+        "symbol": "6C",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Swiss Franc",
+        "symbol": "6S",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Euro FX",
+        "symbol": "6E",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "New Zealand Dollar",
+        "symbol": "6N",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "Brazilian Real",
+        "symbol": "6L",
+        "fee": {
+            "free": 2.36,
+            "monthly": 2.76,
+            "lifetime": 2.36
+        }
+    },
+    {
+        "name": "US Dollar Index",
+        "symbol": "DX",
+        "fee": {
+            "free": 2.11,
+            "monthly": 2.51,
+            "lifetime": 2.11
+        }
+    },
+    {
+        "name": "Feeder Cattle",
+        "symbol": "GF",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Lean Hogs",
+        "symbol": "HE",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Live Cattle",
+        "symbol": "LE",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Sugar No. 11",
+        "symbol": "SB",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Coffee",
+        "symbol": "KC",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Cocoa",
+        "symbol": "CC",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Cotton",
+        "symbol": "CT",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Orange Juice",
+        "symbol": "OJ",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    },
+    {
+        "name": "Random Length Lumber",
+        "symbol": "LBS",
+        "fee": {
+            "free": 2.86,
+            "monthly": 3.26,
+            "lifetime": 2.86
+        }
+    }
+]
+)
+
+export const tradovateTiers = reactive([{
+    value: "free",
+    label: "Free"
+},
+{
+    value: "monthly",
+    label: "Monthly"
+},
+{
+    value: "lifetime",
+    label: "Lifetime"
+}
+])
+
+export const selectedTradovateTier = ref()
 /**************************************
 * CHARTS
 **************************************/
@@ -1234,6 +2225,11 @@ export const brokers = reactive([{
     value: "interactiveBrokers",
     label: "Interactive Brokers",
     assetTypes: ["stocks", "options", "futures"]
+},
+{
+    value: "tradovate",
+    label: "Tradovate",
+    assetTypes: ["futures"]
 },
 /*{
     value: "ninjaTrader",

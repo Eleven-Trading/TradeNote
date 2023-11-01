@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData } from '../stores/globals';
+import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData, tradovateTiers, selectedTradovateTier } from '../stores/globals';
 import { useDecimalsArithmetic } from '../utils/utils';
 import { useImportTrades, useUploadTrades } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
@@ -66,6 +66,15 @@ async function getExistingTradesArray() {
                 v-show="brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length > 1 && (index + 1) < brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length">,
             </span></span>
     </p>
+    <p v-show="selectedBroker == 'tradovate'">
+        Commisssion Plan: <span>
+            <div class="form-check form-check-inline" v-for="item in tradovateTiers" :key="item.value">
+                <input class="form-check-input" type="radio" :value="item.value" v-model="selectedTradovateTier">
+                {{ item.label }}
+            </div>
+
+        </span>
+    </p>
 
     <!--MFE-->
     <div class="mt-4" v-if="currentUser.marketDataApiKey">
@@ -90,7 +99,8 @@ async function getExistingTradesArray() {
         <div v-else>
 
             <div class="form-floating">
-                <textarea class="form-control" style="height: 100px" v-on:change="brokerData = $event.target.value"></textarea>
+                <textarea class="form-control" style="height: 100px"
+                    v-on:change="brokerData = $event.target.value"></textarea>
                 <label for="tradesInputText">Paste your data</label>
             </div>
 
