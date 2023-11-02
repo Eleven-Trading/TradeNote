@@ -117,6 +117,12 @@ Please use the standalone thinkorswim application and follow the steps below.
 
 Note: currently, TradeNote does not take into account ECN fees (available soon).
 
+# Tradovate
+1. click on the Account tab, then choose the account to export.
+2. select "Orders".
+3. Select time window of history data.
+4. Download as CSV.
+
 # MetaTrader 5 (MT 5)
 Please use the standalone MT5 windows application and follow the steps below. 
 

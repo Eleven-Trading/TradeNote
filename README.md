@@ -21,14 +21,7 @@ The TradeNote website runs on VueJs, JS and HTML and uses [Parse](https://parsep
 This project arose from a personal need and as such is most widely used (and tested) for intraday trades and using TradeZero Broker. However, you can also import swing trades but you must make sure all imported trades are closed / that you do not have any open trades.
 
 ### Supported Brokers
-Currently, you can add trades from the following brokers
- - TradeZero
- - MetaTrader 5
- - TD Ameritrade
- - TradeStation
- - Interactive Brokers
-
-Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the export format for you broker.
+Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the list of supported brokers and instructions for exporting and importing to TradeNote..
 
 You can contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
@@ -132,6 +125,7 @@ docker run \
 - **TRADENOTE_PORT**: TradeNote port number, from which you wish to serve the website. (example: 8080)
 
 ### Local installation (advanced)
+#### Docker
 If you want to run the latest version of TradeNote you can also build the image locally, directly from GitHub repository.
 
 1. Clone from github
@@ -139,6 +133,12 @@ If you want to run the latest version of TradeNote you can also build the image 
 3. Run
     - For Docker Compose : Run `docker compose -f docker-compose-local.yml up -d`
     - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
+
+#### Dev Mode
+1. Clone the project (Master or Beta branch)
+2. cd into your project
+3. Run `npm install`
+4. Run `APP_ID=xxx MASTER_KEY=xxx ANALYTICS_OFF="true" MONGO_USER=xxx MONGO_PASSWORD=xxx TRADENOTE_DATABASE=xxx MONGO_URL=xxx MONGO_PORT=xxx TRADENOTE_PORT=xxx NODE_ENV='dev' node index.js`
 
 ## First Steps
 1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password

@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade, futureContractsUsd, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier } from "../stores/globals"
+import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier } from "../stores/globals"
 
 /****************************
  * TRADEZERO
@@ -447,7 +447,7 @@ export async function useBrokerTradeStation(param) {
                     let tick
                     let value
                     if (temp.Type == "future") {
-                        let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                        let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
                         tick = contractSpecs[0].tick
                         value = contractSpecs[0].value
                     }
@@ -672,7 +672,8 @@ export async function useTradovate(param) {
 
                     temp["Exec Time"] = dayjs(tempExec["Fill Time"], "hh:mm:ss A").format("HH:mm:ss")
 
-                    let contractSpecs = futureContractsUsd.value.filter(item => item.symbol == temp.Symbol)
+                    let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
+                    console.log(" -> contractSpecs "+JSON.stringify(contractSpecs))
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
 
