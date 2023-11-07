@@ -10,6 +10,12 @@ let tradedStartDate = null
 let tradedEndDate = null
 let ohlcv = []
 let mfePrices = []
+let openTradesFile = []
+let openTradesParse = []
+let openTradesParseNonMutable = []
+let closedTradesParse = []
+let currentTradeId
+
 
 /****************************
  * TRADES
@@ -60,7 +66,7 @@ export async function useImportTrades(e, param2) {
         if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && uploadMfePrices.value) {
             await getOHLCV()
         }
-        await createTrades().then(async () => {
+        /*await createTrades().then(async () => {
             //console.log(" -> Open posisitions: " + openPosition)
             if (openPosition) {
                 //console.log("You have one or more open positions. Please close all your positions before import.")
@@ -73,16 +79,13 @@ export async function useImportTrades(e, param2) {
                 await useCreatePnL()
             }
 
-        })
-
-        /*await createTrades().then(async () => {
-            //console.log(" -> Open posisitions: " + openPosition)
-
-            await filterExisting("trades")
-            await useCreateBlotter()
-            await useCreatePnL()
-
         })*/
+        await getOpenTradesParse()
+        await createTrades()
+        await filterExisting("trades")
+        await useCreateBlotter()
+        await useCreatePnL()
+
 
         await (spinnerLoadingPage.value = false)
     }
@@ -138,9 +141,9 @@ export async function useImportTrades(e, param2) {
      ****************************/
     if (selectedBroker.value == "tradovate") {
         console.log(" -> Tradovate")
-        console.log(' -> Selected tier '+selectedTradovateTier.value)
-        if (!selectedTradovateTier.value){
-            alert ("Select commision plan")
+        console.log(' -> Selected tier ' + selectedTradovateTier.value)
+        if (!selectedTradovateTier.value) {
+            alert("Select commision plan")
             spinnerLoadingPage.value = false
             return
         }
@@ -214,11 +217,11 @@ async function createTempExecutions() {
                 //frDate = usDate.tz("Europe/Paris")
                 console.log("date "+usDate+" and fr ")*/
                 const dateArrayTD = tradesData[key]['T/D'].split('/');
-                console.log("dateArrayTD "+dateArrayTD)
+                //console.log("dateArrayTD " + dateArrayTD)
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
-                console.log("formatedDateTD "+formatedDateTD)
+                //console.log("formatedDateTD " + formatedDateTD)
                 temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
-                
+
                 const dateArraySD = tradesData[key]['S/D'].split('/');
                 const formatedDateSD = dateArraySD[2] + "-" + dateArraySD[0] + "-" + dateArraySD[1]
                 temp2.sd = dayjs.tz(formatedDateSD, timeZoneTrade.value).unix()
@@ -391,6 +394,34 @@ async function getOHLCV() {
     })
 }
 
+
+async function getOpenTradesParse() {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nGETTING OPEN TRADES PARSE")
+        const parseObject = Parse.Object.extend("trades");
+        const query = new Parse.Query(parseObject);
+        query.descending("dateUnix");
+        query.equalTo("openTrades", true);
+        const results = await query.find();
+        for (let i = 0; i < results.length; i++) {
+            const object = results[i];
+            //console.log("unix time "+ object.get('dateUnix'));
+            object.get('trades').forEach(element => {
+                if (element.position == "open"){
+                    openTradesParse.push(element)
+                    let temp = {}
+                    temp.id = element.id
+                    temp.td = element.td
+                    openTradesParseNonMutable.push(temp)
+                }
+            });
+
+        }
+        console.log(" -> Open trades in Parse "+JSON.stringify(openTradesParse))
+        resolve()
+    })
+}
+
 async function createTrades() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING TRADES")
@@ -398,7 +429,7 @@ async function createTrades() {
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
-            .groupBy(item => `"${item.symbol}+${item.strategy}"`);
+            .groupBy(item => `"${item.symbol}+${item.strategy}+${item.td}"`);
 
         let objectB = JSON.parse(JSON.stringify(b))
         //console.log("object b "+JSON.stringify(objectB))
@@ -409,7 +440,6 @@ async function createTrades() {
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
-
         for (const key2 of keys2) {
             var tempExecs = objectB[key2]
             //Count number of wins and losses for later total number of wins and losses
@@ -426,13 +456,55 @@ async function createTrades() {
             let initEntryTime
             let initEntryPrice
             let i
+            let existingOpenTrade
             for (i = 0; i < tempExecs.length; i++) {
                 let tempExec = tempExecs[i];
-                openPosition = true
+
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
+
+                //checking existing open trades array from Parse
+                const existingOpenTradeParse = openTradesParse.find(x => x.symbol == tempExec.symbol) // this will take the first/last open trade (but there may be more) and that's why getOpenTradesParse must be in descending order
+                //console.log(" -> Open trades in Parse "+JSON.stringify(openTradesParse))
+                
+                const existingOpenTradeFile = openTradesFile.find(x => x.symbol == tempExec.symbol)
+
+                if (newTrade == true && existingOpenTradeParse) {
+                    existingOpenTrade = existingOpenTradeParse
+                    console.log(" -> Open Trade already in Parse")
+                    //console.log(" -> existingOpenTrade " + JSON.stringify(existingOpenTrade))
+                    currentTradeId = existingOpenTrade.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
+                    existingOpenTrade.td = tempExec.td;
+                    temp2.push(existingOpenTrade)
+                    newTrade = false
+
+                    //const existingOpenTradeParseIndex = openTradesParse.findIndex(x => x.symbol == tempExec.symbol)
+                    //openTradesParse.splice(existingOpenTradeParseIndex, 1)
+                    //console.log(" Open Trades "+JSON.stringify(openTradesFile))
+                    //console.log(" Open Trades length "+openTradesFile.length)
+                }
+                //checking existing open trades array when importing file
+                else if (newTrade == true && existingOpenTradeFile) {
+                    existingOpenTrade = existingOpenTradeFile
+                    console.log(" -> Open Trade already in current file")
+                    //console.log(" -> existingOpenTrade "+JSON.stringify(existingOpenTrade))
+                    currentTradeId = existingOpenTrade.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
+                    existingOpenTrade.td = tempExec.td;
+                    temp2.push(existingOpenTrade)
+                    newTrade = false
+
+                    const existingOpenTradeFileIndex = openTradesFile.findIndex(x => x.symbol == tempExec.symbol)
+                    openTradesFile.splice(existingOpenTradeFileIndex, 1)
+                    //console.log(" Open Trades "+JSON.stringify(openTradesFile))
+                    //console.log(" Open Trades length "+openTradesFile.length)
+                }
+                //console.log(" -> existingOpenTrade "+JSON.stringify(existingOpenTrade))
+
                 if (newTrade == true) { //= new trade
                     console.log("\n -> New trade for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    //If qty buy != qty sell and new cycnle, we have an open trade, that we push to open trades
+
+                    openPosition = true
                     newTrade = false
                     var invertedLong = false
                     var invertedShort = false
@@ -440,10 +512,12 @@ async function createTrades() {
                     /*******************
                      * Info 
                      *******************/
+                    //console.log(" -> exec id "+tempExec.id)
+                    //tempExecIds.push(tempExec.id)
 
                     temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.symbol + "_B" : "t" + tempExec.execTime + "_" + tempExec.symbol + "_SS"
-                    //console.log("   -> ID " + temp7.id)
-                    newIds.push(temp7.id)
+                    console.log("   -> ID " + temp7.id)
+                    currentTradeId = temp7.id
                     temp7.account = tempExec.account;
                     temp7.broker = tempExec.broker
                     temp7.td = tempExec.td;
@@ -491,22 +565,33 @@ async function createTrades() {
                     /*******************
                      * Commissions and fees
                      *******************/
-                    temp7.commission = tempExec.commission;
-                    temp7.sec = tempExec.sec;
-                    temp7.taf = tempExec.taf;
-                    temp7.nscc = tempExec.nscc;
-                    temp7.nasdaq = tempExec.nasdaq;
-                    temp7.ecnRemove = tempExec.ecnRemove;
-                    temp7.ecnAdd = tempExec.ecnAdd;
+                    temp7.commissionOpen = tempExec.commission;
+                    temp7.commission = 0
+                    temp7.secOpen = tempExec.sec;
+                    temp7.sec = 0
+                    temp7.tafOpen = tempExec.taf;
+                    temp7.taf = 0
+                    temp7.nsccOpen = tempExec.nscc;
+                    temp7.nscc = 0
+                    temp7.nasdaqOpen = tempExec.nasdaq;
+                    temp7.nasdaq = 0
+                    temp7.ecnRemoveOpen = tempExec.ecnRemove;
+                    temp7.ecnRemove = 0
+                    temp7.ecnAddOpen = tempExec.ecnAdd;
+                    temp7.ecnAdd = 0
+
                     temp7.clrBroker = tempExec.clrBroker;
                     temp7.liq = tempExec.liq;
 
                     /*******************
                      * Gross proceeds and P&L
                      *******************/
-                    temp7.grossEntryProceeds = tempExec.grossProceeds;
+                    temp7.grossEntryProceedsOpen = tempExec.grossProceeds;
+                    temp7.grossEntryProceeds = 0
+                    temp7.grossExitProceedsOpen = 0
                     temp7.grossExitProceeds = 0
-                    temp7.grossProceeds = tempExec.grossProceeds;
+                    temp7.grossProceedsOpen = tempExec.grossProceeds;
+                    temp7.grossProceeds = 0
                     temp7.grossWins = 0 //Winning proceeds
                     temp7.grossLoss = 0 //Loosing proceeds
                     temp7.grossSharePL = 0 //Proceeds per share traded
@@ -517,9 +602,12 @@ async function createTrades() {
                     /*******************
                      * Net proceeds and P&L
                      *******************/
-                    temp7.netEntryProceeds = tempExec.netProceeds;
+                    temp7.netEntryProceedsOpen = tempExec.netProceeds;
+                    temp7.netEntryProceeds = 0
+                    temp7.netExitProceedsOpen = 0
                     temp7.netExitProceeds = 0
-                    temp7.netProceeds = tempExec.netProceeds;
+                    temp7.netProceedsOpen = tempExec.netProceeds;
+                    temp7.netProceeds = 0
                     temp7.netWins = 0
                     temp7.netLoss = 0
                     temp7.netSharePL = 0 //Less important metric than gross because fees are notre a percentage this gives.value strange results. Beside, we don't use it afterwards. But I keep it for the sake of homogeneity
@@ -555,10 +643,24 @@ async function createTrades() {
 
                     temp2.push(temp7)
 
+                    //we push to openTradesFile
+                    openTradesFile.push(temp7)
+
                 } else if (newTrade == false) { //= concatenating trade
-                    let trde = temp2.find(x => x.id == temp7.id)
+                    let trde
+
+                    if (existingOpenTrade != undefined) {
+                        trde = temp2.find(x => x.id == existingOpenTrade.id)
+
+                    } else {
+                        trde = temp2.find(x => x.id == temp7.id)
+                    }
+
                     //console.log("trde "+JSON.stringify(trde))
                     console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy + " at " + useTimeFormat(tempExec.execTime))
+
+                    //console.log(" -> exec id "+tempExec.id)
+                    //tempExecIds.push(tempExec.id)
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
                     if (trde.strategy == "long") {
                         //console.log(" -> Strategy is long and "+invertedLong+" for symbol "+tempExec.symbol)
@@ -596,17 +698,17 @@ async function createTrades() {
                         }
                     }
 
-                    trde.commission = trde.commission + tempExec.commission;
-                    trde.sec = trde.sec + tempExec.sec;
-                    trde.taf = trde.taf + tempExec.taf;
-                    trde.nscc = trde.nscc + tempExec.nscc;
-                    trde.nasdaq = trde.nasdaq + tempExec.nasdaq;
+                    trde.commissionOpen = trde.commissionOpen + tempExec.commissionOpen;
+                    trde.secOpen = trde.secOpen + tempExec.secOpen;
+                    trde.tafOpen = trde.tafOpen + tempExec.tafOpen;
+                    trde.nsccOpen = trde.nsccOpen + tempExec.nsccOpen;
+                    trde.nasdaqOpen = trde.nasdaqOpen + tempExec.nasdaqOpen;
 
-                    trde.grossExitProceeds = trde.grossExitProceeds + tempExec.grossProceeds;
-                    trde.grossProceeds = trde.grossProceeds + tempExec.grossProceeds;
+                    trde.grossExitProceedsOpen = trde.grossExitProceedsOpen + tempExec.grossProceeds
+                    trde.grossProceedsOpen = trde.grossProceedsOpen + tempExec.grossProceeds
 
-                    trde.netExitProceeds = trde.netExitProceeds + tempExec.netProceeds;
-                    trde.netProceeds = trde.netProceeds + tempExec.netProceeds;
+                    trde.netExitProceedsOpen = trde.netExitProceedsOpen + tempExec.netProceeds
+                    trde.netProceedsOpen = trde.netProceedsOpen + tempExec.netProceeds
                     trde
                         .executions
                         .push(tempExec.id)
@@ -618,14 +720,55 @@ async function createTrades() {
                     exec.trade = trde.id;
 
                     console.log(" -> buy quantity " + trde.buyQuantity + " and sell quantity " + trde.sellQuantity)
-                    trde = temp2.find(x => x.id == trde.id)
+                    //trde = temp2.find(x => x.id == trde.id)
 
+                    /* 
+                    * Update openTradesFile. First remove existing trade json. Then, if buy qty != sell qty then push updated json 
+                    */
+                    let openTradeIndex = -1
+                    if (openTradesFile.length > 0) openTradeIndex = openTradesFile.findIndex(x => x.id == trde.id)
+                    if (openTradeIndex != -1) openTradesFile.splice(openTradeIndex, 1)
+
+                    /*******************
+                     * If Buy Qty = Sell Qty
+                     *******************/
                     if (trde.buyQuantity == trde.sellQuantity) { //When buy and sell quantities are equal means position is closed
+
                         trde.exitPrice = tempExec.price;
                         trde.exitTime = tempExec.execTime;
                         /*if (trde.exitTime >= startTimeUnix.value) {
                             trde.videoEnd = trde.exitTime - startTimeUnix.value
                         }*/
+
+                        /*********************** 
+                        * MOVING FROM OPEN TO CLOSED
+                       ************************/
+                        trde.commission = trde.commissionOpen
+                        trde.commissionOpen = 0
+                        trde.sec = trde.secOpen
+                        trde.secOpen = 0
+                        trde.taf = trde.tafOpen
+                        trde.tafOpen = 0
+                        trde.nscc = trde.nsccOpen
+                        trde.nsccOpen = 0
+                        trde.nasdaq = trde.nasdaqOpen
+                        trde.nasdaqOpen = 0
+
+                        trde.grossEntryProceeds = trde.grossEntryProceedsOpen
+                        trde.grossEntryProceedsOpen = 0
+                        trde.grossExitProceeds = trde.grossExitProceedsOpen
+                        trde.grossExitProceedsOpen = 0
+                        trde.grossProceeds = trde.grossProceedsOpen
+                        trde.grossProceedsOpen = 0
+
+                        trde.netEntryProceeds = trde.netEntryProceedsOpen
+                        trde.netEntryProceedsOpen = 0
+                        trde.netExitProceeds = trde.netExitProceedsOpen
+                        trde.netExitProceedsOpen = 0
+                        trde.netProceeds = trde.netProceedsOpen
+                        trde.netProceedsOpen = 0
+
+                        /* */
 
                         trde.grossSharePL = trde.grossProceeds / (trde.buyQuantity) //P&L per share is in reality "per share bought (if long)". So, when trade is closed, we take the total quantity and divide by 2
 
@@ -827,14 +970,16 @@ async function createTrades() {
                                 console.log("   ---> Cannot find symbol in market data provider")
                             }
                         } // End MFE prices
-
-                        //temp2.push(trde)
-                        trde.position = "closed"
-
-
                         /*****
                          * END GETTING MFE PRICE
                          *****/
+
+
+                        trde.position = "closed"
+
+
+
+                        //check if other trades open of same id in 
 
                         newTrade = true
                         temp7 = {} // I need to reinitiate temp7 here or else when more than one trade per symbol it was adding up
@@ -846,6 +991,8 @@ async function createTrades() {
                         openPosition = false
 
                     } else {
+                        openTradesFile.push(trde)
+
                         if ((i + 1) == tempExecs.length) {
                             console.log("   ---> Position OPEN")
                             //console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
@@ -858,6 +1005,8 @@ async function createTrades() {
 
                 //console.log("New trade status of symbol "+key2+" is "+newTrade+". the JSON is "+JSON.stringify(temp7))
             }
+
+
             /* For later, when doing swing trades
             newIds.forEach(element => {
                 swingCheck = temp2.filter(x => x.id == element)
@@ -870,8 +1019,9 @@ async function createTrades() {
             });*/
 
         }
-
-        //console.log("temp2 "+JSON.stringify(temp2))
+        console.log(" -> Open tradesFile " + JSON.stringify(openTradesFile))
+        console.log(" -> Open trades in Parse "+JSON.stringify(openTradesParseNonMutable))
+        //console.log("temp2 " + JSON.stringify(temp2))
         var c = _
             .chain(temp2)
             .orderBy(["entryTime"], ["asc"])
@@ -1398,7 +1548,7 @@ export async function useUploadTrades() {
     let numberOfDates = 0
     let i = 0
     //Function uplaod trades to parse
-    const uploadToParse = async (param1, param2) => {
+    const uploadToParse = async (param1, param2, param3) => {
         return new Promise(async (resolve, reject) => {
             //console.log(" -> Parse param2 is " + param2)
             //spinnerLoadingPageText.value = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
@@ -1408,6 +1558,7 @@ export async function useUploadTrades() {
             object.set("user", Parse.User.current())
             object.set("date", new Date(dayjs.unix(param1).format("YYYY-MM-DD")))
             object.set("dateUnix", Number(param1))
+            object.set("openTrades", param3)
             if (param2 == "trades") {
                 object.set("executions", executions[param1])
                 object.set("trades", trades[param1])
@@ -1457,7 +1608,13 @@ export async function useUploadTrades() {
             }
             console.log("num of dates " + numberOfDates)
             for (const key of keys) {
-                const promise = await uploadToParse(key, param)
+                //console.log(" key "+key)
+                //console.log(" trades "+JSON.stringify(trades[key]))
+                let checkIfOpenTrades = trades[key].findIndex(x => x.position == "open")
+                //console.log(" checkIfOpenTrades "+checkIfOpenTrades)
+
+                checkIfOpenTrades != -1 ? checkIfOpenTrades = true : checkIfOpenTrades = false
+                const promise = await uploadToParse(key, param, checkIfOpenTrades)
                 //console.log("promise " + JSON.stringify(promise))
                 if (promise == "resolve") resolve()
             }
@@ -1528,10 +1685,63 @@ export async function useUploadTrades() {
         })
     }
 
+    const updateOpenTrades = async (param1, param2) => {
+        //console.log(" -> Upload function for "+param)
+        return new Promise(async (resolve, reject) => {
+            console.log(" -> Updating open trade " + param1 + " from " + param2)
+            const parseObject = Parse.Object.extend("trades");
+            const query = new Parse.Query(parseObject);
+            query.equalTo("dateUnix", param2);
+            const results = await query.first();
+            //console.log(' results '+JSON.stringify(results))
+            if (results) {
+                let parsedRes = JSON.parse(JSON.stringify(results))
+                
+                    let openTrades = false
+                    
+                    //console.log("unix time "+ object.get('dateUnix'));
+                    let tempTrades = parsedRes.trades
+                    //console.log("tempTrades "+JSON.stringify(tempTrades))
+                    let openTradeIndex = tempTrades.findIndex(x => x.id == param1)
+                    console.log(" openTradeIndex "+openTradeIndex)
+                    if (openTradeIndex != -1) {
+                        tempTrades[openTradeIndex].position = "closed"
+                    }
+                    for (let index = 0; index < tempTrades.length; index++) {
+                        const element = tempTrades[index];
+                        if (element.position == "open"){
+                            openTrades = true
+                        }                        
+                    }
+                    console.log(" openTrades "+JSON.stringify(openTrades))
+                    results.set("openTrades", openTrades)
+                    results.set("trades", tempTrades)
+                
+                await results.save() //very important to have await or else too quick to update
+
+            } else {
+                alert("Update query did not return any results")
+            }
+        })
+    }
+
     checkTradeAccounts()
+
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
     if (Object.keys(mfePrices).length > 0) await updateMfePrices()
+    if (openTradesParseNonMutable.length > 0) {
+        openTradesParseNonMutable.forEach(async (element) => {
+            console.log(" element "+JSON.stringify(element))
+            let index = openTradesFile.findIndex(x => x.id == element.id)
+            console.log(" index "+index)
+            if (index == -1) {
+                //open trades parse element not anymore in openTradesFile = trade is now closed
+                await updateOpenTrades(element.id, element.td)
+            }
+        });
+    }
+
     window.location.href = "/dashboard"
 
 }
