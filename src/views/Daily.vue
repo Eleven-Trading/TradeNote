@@ -7,7 +7,7 @@ import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet } from '../stores/globals';
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
 import { useGetExcursions } from '../utils/daily';
@@ -45,6 +45,7 @@ onBeforeMount(async () => {
 })
 onMounted(async () => {
     await useMountDaily()
+    await useInitTooltip()
     tradesModal = new bootstrap.Modal("#tradesModal")
     window.addEventListener('scroll', async () => {
         let scrollFromTop = window.scrollY
@@ -65,9 +66,14 @@ onMounted(async () => {
         }
     })
     useCheckVisibleScreen()
+  
 
 })
 
+const checkDate = ((param1, param2) => {
+    let check = dayjs(param1*1000).isSame(param2*1000, 'day')
+  return check
+})
 
 /**************
  * SATISFACTION
@@ -284,6 +290,7 @@ async function clickTradesModal(param1, param2, param3) {
     //console.log("param1 "+param1)
     //console.log("param2 "+param2)
     //console.log("param3 "+param3)
+    
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
         return
@@ -342,6 +349,7 @@ async function clickTradesModal(param1, param2, param3) {
         await awaitClick()
         await (spinnerSetups.value = false)
         saveButton.value = false
+        await useInitTooltip()
     }
 
 }
@@ -508,7 +516,7 @@ function resetExcursion() {
                                                         <tr>
                                                             <th scope="col">Symbol</th>
                                                             <th scope="col">Vol</th>
-                                                            <th scope="col">Entry</th>
+                                                            <th scope="col">Position</th>
                                                             <th scope="col">Time</th>
                                                             <th scope="col">Price</th>
                                                             <!--<th scope="col">Duration</th>-->
@@ -534,14 +542,16 @@ function resetExcursion() {
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
                                                                 trade.strategy.slice(1) }}</td>
-                                                            <td>{{ useTimeFormat(trade.entryTime) }}</td>
-                                                            <td><span v-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}</span></td>
+                                                            <td><span v-if="trade.tradesCount==0"><span v-if="trade.tradeOpen">Open</span><span v-else>Closed</span></span><span v-else>{{ useTimeFormat(trade.entryTime) }}<span v-if="checkDate(trade.td, trade.entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(trade.entryTime)"></i></span></span></td>
+
+                                                            <td><span v-if="trade.tradesCount==0"></span><span v-else-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}<span v-if="checkDate(trade.td, trade.entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(trade.entryTime)"></i></span></span></td>
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                                                             <td>
-                                                                <span v-if="trade.type!='forex'" v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{ (trade.grossSharePL).toFixed(2) }}</span><span v-else>-</span></td>
-                                                            <td
-                                                                v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                                {{ (trade.netProceeds).toFixed(2) }}</td>
+                                                                <span v-if="trade.tradesCount==0"></span><span v-else-if="trade.type=='forex'">-</span><span v-else v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{ (trade.grossSharePL).toFixed(2) }}</span></td>
+                                                            <td>
+                                                                <span v-if="trade.tradesCount==0"></span><span v-else v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
+                                                                {{ (trade.netProceeds).toFixed(2) }}</span>
+                                                            </td>
                                                             <td>
                                                                 {{ trade.patternNameShort }}
                                                             </td>
@@ -680,7 +690,7 @@ function resetExcursion() {
                                 <tr>
                                     <th scope="col">Symbol</th>
                                     <th scope="col">Vol</th>
-                                    <th scope="col">Side</th>
+                                    <th scope="col">Position</th>
                                     <th scope="col">Time(i)</th>
                                     <th scope="col">Time(o)</th>
                                     <th scope="col">Duration</th>
@@ -699,23 +709,27 @@ function resetExcursion() {
                                     </td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' : 'Short'
                                     }}</td>
-                                    <td>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}
-                                    </td>
-                                    <td>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime) }}</td>
-                                    <td>{{ useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
-                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</td>
                                     
-                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2) }}</span></td>
-                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</span></td>
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradeOpen">Open</span><span v-else>Closed</span></span><span v-else>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}<span v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span>
+                                    </td>
+                                    
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else>{{ useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime) }}</span></td>
+                                    
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else><span v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{ useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
+                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</span><span v-else>{{ useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
+                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</span></span></td>
+                                    
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2) }}<span v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span></td>
+                                    
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5) }}</span><span v-else>{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2) }}</span></td>
                                     
                                     <td>
-                                        <span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type!='forex'"
-                                        v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}</span><span v-else>-</span>
+                                        <span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type=='forex'"></span><span v-else v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{ (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2) }}</span>
                                     </td>
                                     
-                                    <td
+                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount==0"></span><span v-else
                                         v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                        {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds).toFixed(2) }}
+                                        {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds).toFixed(2) }}</span>
                                     </td>
                                 </tr>
                             </tbody>

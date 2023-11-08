@@ -686,6 +686,15 @@ export function useInitPopover() {
 
 }
 
+export function useInitTooltip() {
+    //console.log(" -> Init Tooltip")
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map((tooltipTriggerEl) => {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+}
+
 export async function useInitPostHog() {
     return new Promise((resolve, reject) => {
         axios.post('/posthog')
@@ -1066,6 +1075,13 @@ export function useTimeFormatFromDate(param) {
 
 export function useTimeDuration(param) {
     return dayjs.duration(param * 1000).format("HH:mm:ss")
+}
+
+export function useSwingDuration(param) {
+    let duration = Number(dayjs.duration(param * 1000).format("D"))
+    let period
+    duration > 1 ? period = "days" : period = "day"
+    return (duration + " " + period)
 }
 
 export function useHourMinuteFormat(param) {

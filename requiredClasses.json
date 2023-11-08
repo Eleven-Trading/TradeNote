@@ -162,7 +162,7 @@
             "satisfaction": {
                 "type": "Boolean"
             },
-            "openTrades": {
+            "openPositions": {
                 "type": "Boolean"
             }
         },
