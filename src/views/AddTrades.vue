@@ -48,7 +48,9 @@ async function getExistingTradesArray() {
 </script>
 <template>
     <SpinnerLoadingPage />
-
+    <p class="txt-small">See export instructions for your broker on <a
+            href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub</a>. <span v-if="!currentUser.marketDataApiKey">To add MFE prices automatically (stocks only), insert your API key in <a href="/settings">settings</a>.</span>
+    </p>
     <!--DROPDOWN LIST-->
     <div class="form-floating">
         <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
@@ -57,10 +59,7 @@ async function getExistingTradesArray() {
         </select>
         <label for="floatingSelect">Select your broker or trading platform</label>
     </div>
-    <p class="txt-small fst-italic">You will find export instructions for your broker on the <a
-            href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub page</a>
-    </p>
-    <p v-show="selectedBroker">
+    <p class="mt-2" v-show="selectedBroker">
         Supported asset types: <span
             v-for="(item, index) in brokers.filter(f => f.value == selectedBroker)[0].assetTypes">{{ item }}<span
                 v-show="brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length > 1 && (index + 1) < brokers.filter(f => f.value == selectedBroker)[0].assetTypes.length">,
@@ -84,9 +83,6 @@ async function getExistingTradesArray() {
             <input class="form-check-input" type="checkbox" role="switch" v-model="uploadMfePrices"
                 v-on:click="uploadMfePrices = !uploadMfePrices">
         </div>
-    </div>
-    <div v-else>
-        <p>Add your API in <a href="/settings">settings</a> to add MFE prices automatically</p>
     </div>
 
     <!--IMPORT-->
