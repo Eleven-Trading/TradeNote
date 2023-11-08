@@ -258,7 +258,14 @@ export async function useBrokerTdAmeritrade(param) {
                 if (element.Side == "SELL" && element["Pos Effect"] == "TO CLOSE") {
                     temp.Side = "S"
                 }
+                
                 temp.Symbol = element.Symbol
+                if (temp.Symbol.includes("/")){
+                    let temp1 = temp.Symbol.slice(1)
+                    let temp2 = temp1.slice(0,-3)
+                    temp.Symbol = temp2    
+                }
+                //console.log("Symbol "+temp.Symbol)
 
                 let qtyNumber = Number(element.Qty)
                 qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
