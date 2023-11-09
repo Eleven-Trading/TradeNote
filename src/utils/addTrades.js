@@ -671,7 +671,7 @@ async function createTrades() {
 
                     //console.log("trde "+JSON.stringify(trde))
                     console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy + " at " + useTimeFormat(tempExec.execTime))
-                    console.log("trde " + JSON.stringify(trde))
+                    //console.log("trde " + JSON.stringify(trde))
                     //console.log(" -> exec id "+tempExec.id)
                     //tempExecIds.push(tempExec.id)
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
@@ -746,8 +746,8 @@ async function createTrades() {
                      * If Buy Qty = Sell Qty
                      *******************/
                     if (trde.buyQuantity == trde.sellQuantity) { //When buy and sell quantities are equal means position is closed
-                        console.log("trde " + JSON.stringify(trde))
-                        console.log(" tempExec "+JSON.stringify(tempExec))
+                        //console.log("trde " + JSON.stringify(trde))
+                        //console.log(" tempExec "+JSON.stringify(tempExec))
                         trde.exitPrice = tempExec.price;
                         trde.exitTime = tempExec.execTime;
                         /*if (trde.exitTime >= startTimeUnix.value) {
@@ -996,7 +996,7 @@ async function createTrades() {
                             }   
                         }
 
-                        console.log("trde " + JSON.stringify(trde))
+                        //console.log("trde " + JSON.stringify(trde))
 
                         //check if other trades open of same id in 
 
@@ -1038,9 +1038,9 @@ async function createTrades() {
             });*/
 
         }
-        console.log(" -> Open positionsFile " + JSON.stringify(openPositionsFile))
-        console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
-        console.log("temp2 " + JSON.stringify(temp2))
+        //console.log(" -> Open positionsFile " + JSON.stringify(openPositionsFile))
+        //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
+        //console.log("temp2 " + JSON.stringify(temp2))
         var c = _
             .chain(temp2)
             .orderBy(["entryTime"], ["asc"])

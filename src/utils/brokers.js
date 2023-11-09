@@ -184,34 +184,99 @@ export async function useBrokerTdAmeritrade(param) {
 
             let commonJsonArray = []
 
+            /*****************************
+             * CREATING CASH BALANCE
+             *****************************/
             const keys = Object.keys(cashBalanceJsonArrayTemp);
             for (const key of keys) {
-                console.log("key " + JSON.stringify(papaParseCashBalance.data[key]))
+                //console.log("key " + JSON.stringify(papaParseCashBalance.data[key]))
                 if (cashBalanceJsonArrayTemp[key].TYPE === "TRD") {
+
+                    /*const dateArrayTD = cashBalanceJsonArrayTemp[key].DATE
+                    //console.log("dateArrayTD " + dateArrayTD)
+                    const formatedDateExecTime = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1] + " " + cashBalanceJsonArrayTemp[key].TIME
+                    //console.log("formatedDateTD " + formatedDateTD)
+                    cashBalanceJsonArrayTemp[key].execTime = dayjs.tz(formatedDateExecTime, timeZoneTrade.value).unix()*/
+
                     cashBalanceJsonArray.push(cashBalanceJsonArrayTemp[key])
+
+                    if (cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("EXERCISE")) {
+                        //Exercicing the option => add line in Trade History
+                        let descArray = cashBalanceJsonArrayTemp[key].DESCRIPTION.split(" ")
+                        //console.log(" desc array "+descArray)
+                        //BOT,100.0,GDDY,UPON,OPTION,EXERCISE
+                        let temp = {}
+                        temp[""] = ""
+                        let tempExecTime = cashBalanceJsonArrayTemp[key].DATE + " " + cashBalanceJsonArrayTemp[key].TIME
+                        temp["Exec Time"] = tempExecTime
+                        temp.execTime =
+                            temp["Spread"] = "STOCK"
+                        temp["Side"] = descArray[0] == "BOT" ? "BUY" : "SELL"
+                        let numQty = Math.trunc(descArray[1])
+                        temp["Qty"] = temp["Side"] == "BUY" ? numQty.toString() : "-" + numQty.toString()
+                        temp["Pos Effect"] = "TO OPEN"
+                        temp["Symbol"] = descArray[2]
+                        temp["Exp"] = ""
+                        temp["Strike"] = ""
+                        temp["Type"] = "STOCK"
+                        let numAmount = parseFloat(cashBalanceJsonArrayTemp[key].AMOUNT.replace(/,/g, ''))
+                        let tempPrice = temp["Side"] == "BUY" ? -numAmount / numQty : numAmount / numQty
+                        temp["Price"] = tempPrice.toString()
+                        temp["Net Price"] = temp["Price"]
+                        temp["Order Type"] = "MKT"
+                        //console.log(" temp "+JSON.stringify(temp))
+                        accountTradeHistoryJsonArray.push(temp)
+
+                    }
                 }
             }
 
+            /*****************************
+             * CREATING ACCOUNT TRADE HISTORY
+             *****************************/
             const keys2 = Object.keys(accountTradeHistoryJsonArrayTemp);
             for (const key2 of keys2) {
                 if (accountTradeHistoryJsonArrayTemp[key2].hasOwnProperty("Symbol")) {
+
+                    /*const execTimeArray = accountTradeHistoryJsonArrayTemp[key2]["Exec Time"].split(" ")
+                    const dateArrayTD = execTimeArray[0]
+                    //console.log("dateArrayTD " + dateArrayTD)
+                    const formatedDateExecTime = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1] + " " + execTimeArray[1]
+                    //console.log("formatedDateTD " + formatedDateTD)
+                    accountTradeHistoryJsonArrayTemp[key2].execTime = dayjs.tz(formatedDateExecTime, timeZoneTrade.value).unix()*/
                     accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
                 }
             }
             //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
             //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
-            console.log("cashBalanceJsonArray " + JSON.stringify(cashBalanceJsonArray))
-            console.log("accountTradeHistoryJsonArray " + JSON.stringify(accountTradeHistoryJsonArray))
-            console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
-            console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
+            //console.log("cashBalanceJsonArray " + JSON.stringify(cashBalanceJsonArray))
+            //console.log("accountTradeHistoryJsonArray " + JSON.stringify(accountTradeHistoryJsonArray))
+            console.log("  --> Count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
+            console.log("  --> Count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
+
+            /*****************************
+            * CREATING COMMON JSON
+            *****************************/
             if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
                 alert("Cash Balance Json is different from Account Trade History Json")
                 return
+            } else {
+                accountTradeHistoryJsonArray.forEach(element => {
+                    let index = cashBalanceJsonArray.findIndex(x => x.DATE + " " + x.TIME == element["Exec Time"])
+                    if (index == -1) {
+                        alert("No matching line")
+                    } else {
+                        commonJsonArray.push({ ...cashBalanceJsonArray[index], ...element })
+                    }
+                });
             }
-            for (let index = 0; index < Object.keys(cashBalanceJsonArray).length; index++) {
+
+            /*for (let index = 0; index < Object.keys(cashBalanceJsonArray).length; index++) {
                 commonJsonArray.push({ ...cashBalanceJsonArray[index], ...accountTradeHistoryJsonArray[index] })
-            }
-            //console.log("commonJsonArray "+JSON.stringify(commonJsonArray))
+            }*/
+            //console.log("commonJsonArray " + JSON.stringify(commonJsonArray))
+
+
             commonJsonArray.forEach(element => {
                 //console.log("element "+JSON.stringify(element))
                 let temp = {}
@@ -238,13 +303,12 @@ export async function useBrokerTdAmeritrade(param) {
 
                 //Type
                 temp.Type = "stock"
-                if (element.type == "FUTURE") {
+                if (element.Type == "FUTURE") {
                     temp.Type = "future"
                 }
-                if (element.type == "CALL" || element.type == "PUT") {
-                    element.type == "CALL" ? temp.Type = "call" : element.type == "put"
+                if (element.Type == "CALL" || element.typType == "PUT") {
+                    element.Type == "CALL" ? temp.Type = "call" : element.Type == "put"
                 }
-                console.log("  --> Type " + temp.Type)
 
                 if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
                     temp.Side = "B"
@@ -258,12 +322,12 @@ export async function useBrokerTdAmeritrade(param) {
                 if (element.Side == "SELL" && element["Pos Effect"] == "TO CLOSE") {
                     temp.Side = "S"
                 }
-                
+
                 temp.Symbol = element.Symbol
-                if (temp.Symbol.includes("/")){
+                if (temp.Symbol.includes("/")) {
                     let temp1 = temp.Symbol.slice(1)
-                    let temp2 = temp1.slice(0,-3)
-                    temp.Symbol = temp2    
+                    let temp2 = temp1.slice(0, -3)
+                    temp.Symbol = temp2
                 }
                 //console.log("Symbol "+temp.Symbol)
 
@@ -680,7 +744,7 @@ export async function useTradovate(param) {
                     temp["Exec Time"] = dayjs(tempExec["Fill Time"], "hh:mm:ss A").format("HH:mm:ss")
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    console.log(" -> contractSpecs "+JSON.stringify(contractSpecs))
+                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
 
