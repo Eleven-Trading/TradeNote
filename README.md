@@ -11,12 +11,42 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
+### Project
+#### Dicsussions and Feeback
+For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHekKYb85 "Discord"), or create an issue on this repository.
+
+#### Upcoming features
+You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").
+
+#### Built with
+The TradeNote website runs on VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
+
+#### Coffee
+If you like this project, <font size="5">please 🌟 this repository</font> and don't hesitate to show me <s>the money</s> love ;)
+<p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
+
+
+# TradeNote
+### Structure
+TradeNote is divided in 2 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
+
+#### Analyze
+TradeNote offers a dashboard, daily view and calendar view so you can measure your progress. You can easily filter your trades by month or date range.
+
+
+#### Reflect
+With TradeNote you can keep a daily diary of your trading journey to work on your trader psychology as well as add annotated screenshots of interesting setups or your entries. You can also write your (yearly) playbook.
+
 ### Supported trades
 #### Day trades
 This project arose from a personal need and as such is most widely used (and tested) for intraday stock trades (using TradeZero Broker). 
 
 #### Swing trades
-Importing swing trades is currently in alpha phase and being tested. You can use the alpha version if you want to test and import swing trades or wait for the stable version that will shortly be available.
+Importing swing trades is currently in beta phase and being tested. It will be shortly  available.
+
+To avoid open positions and/or P&L Discrepancy when importing swing trades, please make sure of the following. 
+1. Begin importing from a point in time where you were flat (no previous open positions). If you begin importing from a point in time where you had pre-existing positions, there is a chance the data will be incorrect as TradeNote doesn’t know about these existing positions. 
+2. Alternatively, before importing your file, if you know it contains execution(s) from an open position (and that you're closing or adding to), simply remove that/these execution(s).
 
 ### Supported Assets. 
 Depending on the broker and thanks to the contribution of the community, you can import and journal the following assets in TradeNote: Stocks, Futures, Options and Forex. 
@@ -28,55 +58,29 @@ You can contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you
 
 Alternatively, you can use the [template](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/Template.csv "template") and adapt it to your export file.
 
-### Project
-You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").
-
-#### Dicsussions and Feeback
-For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHekKYb85 "Discord"), or create an issue on this repository.
-
-#### Built with
-The TradeNote website runs on VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
-
-#### Coffee
-If you like this project, <font size="5">please 🌟 this repository</font> and don't hesitate to show me <s>the money</s> love ;)
-<p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
-
-
-
-
-# TradeNote
-TradeNote is divided in 2 sections, each being an essential building block for becoming a consistent trading and managing your trading business.
-
-### Analyze
-TradeNote offers a dashboard, daily view and calendar view so you can measure your progress. You can easily filter your trades by month or date range.
-
-#### Dashboard
+### Screenshots
+##### Dashboard
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
-#### Daily Page
+##### Daily Page
 On daily page you can see your trades per day. You can add pattern, mistake and note to each of you trades. Moreover, you can specify your satisfaction with the trade (for example if you followed or not your rules) with thumbs up or down. 
 
 ![Add Trade Information](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.04.03.png "Add Trade Information")
 ![Daily Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.05.34.png "Daily Page")
 
-
-### Reflect
-With TradeNote you can keep a daily diary of your trading journey to work on your trader psychology as well as add annotated screenshots of interesting setups or your entries. You can also write your (yearly) playbook.
-
-#### Diary Page
+##### Diary Page
 Besides notes for every trade, you can record things related to your every day trading, like feelings, moods and emotions or more technical related issues like patterns, in order to make important discoveries.  
 
 ![Add Journal Entry](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.41.png "Add Journal Entry")
 
 ![Journal Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.08.53.png "Journal Page")
 
-#### Screenshots Page
+##### Add Screenshots
 Upload screenshots of you trades ("Entry" option) or simply an interesting setup you have identified ("Setup" option) and make annotations for further analysis.
 
 ![Add Screenshot](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.02.png "Add Screenshots")
 
 ![Screenshots Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Screenshots Page")
-
 
 # Setup
 ## Installation
