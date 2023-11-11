@@ -543,7 +543,6 @@ function resetExcursion() {
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
                                                                 trade.strategy.slice(1) }}</td>
                                                             <td><span v-if="trade.tradesCount==0"><span v-if="trade.tradeOpen">Open</span><span v-else>Closed</span></span><span v-else>{{ useTimeFormat(trade.entryTime) }}<span v-if="checkDate(trade.td, trade.entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(trade.entryTime)"></i></span></span></td>
-
                                                             <td><span v-if="trade.tradesCount==0"></span><span v-else-if="trade.type=='forex'">{{ (trade.entryPrice).toFixed(5) }}</span><span v-else>{{ (trade.entryPrice).toFixed(2) }}<span v-if="checkDate(trade.td, trade.entryTime) == false"><i class="ps-1 uil uil-info-circle"  data-bs-toggle="tooltip" data-bs-html="true" v-bind:data-bs-title="'Swing trade from '+ useDateCalFormat(trade.entryTime)"></i></span></span></td>
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
                                                             <td>

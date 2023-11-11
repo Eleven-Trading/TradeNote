@@ -244,6 +244,7 @@ async function createTempExecutions() {
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
+                console.log("price "+temp2.price)
                 temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
                 let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
                 // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
@@ -413,7 +414,7 @@ async function getOpenPositionsParse() {
             });
 
         }
-        console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
+        //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
         resolve()
     })
 }
@@ -460,9 +461,9 @@ async function createTrades() {
                 //console.log("doing key "+key2)
 
                 //checking existing open positions array from Parse
-                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type ) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
                 //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
-                const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol)
+                const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type)
                 
                 if (newTrade == true && existingOpenPositionParse) {
                     console.log("\n -> Open position already in Parse for symbol "+key2+ " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
@@ -711,11 +712,11 @@ async function createTrades() {
                         }
                     }
 
-                    trde.commissionOpen = trde.commissionOpen + tempExec.commissionOpen;
-                    trde.secOpen = trde.secOpen + tempExec.secOpen;
-                    trde.tafOpen = trde.tafOpen + tempExec.tafOpen;
-                    trde.nsccOpen = trde.nsccOpen + tempExec.nsccOpen;
-                    trde.nasdaqOpen = trde.nasdaqOpen + tempExec.nasdaqOpen;
+                    trde.commissionOpen = trde.commissionOpen + tempExec.commission;
+                    trde.secOpen = trde.secOpen + tempExec.sec;
+                    trde.tafOpen = trde.tafOpen + tempExec.taf;
+                    trde.nsccOpen = trde.nsccOpen + tempExec.nscc;
+                    trde.nasdaqOpen = trde.nasdaqOpen + tempExec.nasdaq;
 
                     trde.grossExitProceedsOpen = trde.grossExitProceedsOpen + tempExec.grossProceeds
                     trde.grossProceedsOpen = trde.grossProceedsOpen + tempExec.grossProceeds
