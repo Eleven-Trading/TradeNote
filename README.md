@@ -49,7 +49,7 @@ To avoid open positions and/or P&L Discrepancy when importing swing trades, plea
 2. Alternatively, before importing your file, if you know it contains execution(s) from an open position (and that you're closing or adding to), simply remove that/these execution(s).
 
 ### Supported Assets. 
-Depending on the broker and thanks to the contribution of the community, you can import and journal the following assets in TradeNote: Stocks, Futures, Options and Forex. 
+Depending on the broker and thanks to the contribution of the community, you can import and journal the following assets in TradeNote: Stocks, Futures, Options (only tested on single options) and Forex. 
 
 ### Supported Brokers
 Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the list of supported brokers and instructions for exporting and importing to TradeNote..
