@@ -269,24 +269,17 @@ export function useInitShepherd() {
         useModalOverlay: true,
         defaultStepOptions: {
             classes: 'tour-guide',
-            scrollTo: true,
+            scrollTo: false,
             useModalOverlay: true,
-            /*when: {
-                show() {
-                    const currentStepElement = shepherd.currentStep.el;
-                    const header = currentStepElement.querySelector('.shepherd-header');
-                    const progress = document.createElement('span');
-                    progress.style['margin-right'] = '15px';
-                    progress.innerText = `${shepherd.steps.indexOf(shepherd.currentStep) + 1}/${shepherd.steps.length}`;
-                    header.insertBefore(progress, currentStepElement.querySelector('.shepherd-cancel-icon'));
-                }
-            }*/
         }
     });
-
+    if (pageId.value != "dashboard"){
+        alert("Please go to the dashboard page and launch the tutorial.")
+        return
+    }
     tour.addSteps([{
         id: 'step1',
-        text: 'Welcome onboard. guided.value tutorial will show you how TradeNote works.',
+        text: 'Welcome onboard. This guided tutorial will show you how TradeNote works.',
         buttons: [{
             text: 'Exit',
             action: tour.complete,
@@ -343,7 +336,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step4',
-        text: 'Calendar displays a calendar view of your daily trades.',
+        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a 4 tabs for a given day:<ul><li>Trades: list of your trades</li><li>Blotter: your trades grouped by symbol</li><li>Screenshots: your annotated screenshots</li><li>Diary: your diary entries</li></ul></p><p>In the trades tab you can click on the table row to add additional information (note, pattern, mistake, etc.).</p>',
         attachTo: {
             element: '#step4',
             on: 'right'
@@ -364,7 +357,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step5',
-        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a tab where you can see your daily diary entry (see below), all your trades and a blotter of your trades per symbol.</p><p>For each trade, you can click on the line to add a note per trade, a pattern and a mistake. Currently, patterns and mistakes must be first added manually in the Parse Dashboard.</p>',
+        text: 'Calendar displays a calendar view of your daily trades.',
         attachTo: {
             element: '#step5',
             on: 'right'
@@ -383,9 +376,10 @@ export function useInitShepherd() {
         }
         ]
     },
+   
     {
         id: 'step6',
-        text: 'Diary is where you can see and edit your daily entries.',
+        text: 'Diary is where you can see and edit your diary entries.',
         attachTo: {
             element: '#step6',
             on: 'right'
@@ -409,7 +403,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step7',
-        text: 'Screenshots: show all your screenshots of setups and entries.',
+        text: 'Screenshots is where you can see all your screenshots.',
         attachTo: {
             element: '#step7',
             on: 'right'
@@ -450,30 +444,6 @@ export function useInitShepherd() {
         ]
     },
     {
-        id: 'step9',
-        text: 'Forecast displays your estimated P&L (experimental feature).',
-        attachTo: {
-            element: '#step9',
-            on: 'right'
-        },
-        buttons: [{
-            text: 'Exit',
-            action: tour.complete,
-            classes: 'exitButton'
-        }, {
-            text: 'Back',
-            action: tour.back
-        },
-        {
-            text: 'Next',
-            action: tour.next
-        }
-        ],
-        popperOptions: {
-            modifiers: [{ name: 'offset', options: { offset: [0, 15] } }]
-        }
-    },
-    {
         id: 'step10',
         text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Share Per Trade (APPSPT) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
         attachTo: {
@@ -499,7 +469,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step11',
-        text: "<p>Click here to add trades, diary entries, screenshots or playbooks.</p><p>Trades is used for importing trades from your Broker's csv or excel file.</p><p>Diary is where you can write your daily thoughts and progress.</p><p>Setups lets you add a screenshot of an interesting setup or of your entry (you need to add entry time in case.value). In both cases, you can annotate the screenshot with drawings, notes and more.</p><p>Playbook is where you can write your (yearly) playbook.</p>",
+        text: "<p>Click here to add trades, diary entries, screenshots or playbooks.</p><ul><li>Trades is used for importing trades from your Broker's csv or excel file.</li><li>Diary is where you can write your daily thoughts and progress.</li><li>Screenshots is where you can add the screenshots of your charts. You can annotate the screenshot with drawings, notes and more. You can add 2 types of screenshots:<ul><li>General Setup: a general interesting screenshot, not related to any particular trade (you made).</li><li>Trade Entry: screenshot related to a particular trade you made, in which case you need to add the exact entry time of your execution to match your trade.</li></ul></li><li>Playbook is where you can write your (yearly) trading playbook.</li></ul>",
         attachTo: {
             element: '#step11',
             on: 'bottom'
@@ -523,7 +493,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step12',
-        text: "That's it. You are now ready to use TradeNote. You can come back to tutorial.value at any time by clicking 'Tutorial' in the sub-menu here.",
+        text: "In the sub-menu you can navigate to your settings, where you can amongst other add a profile picture and edit your patterns and mistakes. You can also see the version you are using as well as come back to this tutorial at any time as well as logout of your account (recommended when you update TradeNote version).",
         attachTo: {
             element: '#step12',
             on: 'bottom'
@@ -533,11 +503,23 @@ export function useInitShepherd() {
             action: tour.back
         },
         {
-            text: 'Done',
-            action: tour.complete
+            text: 'Next',
+            action: tour.next
         }
         ]
-    }
+    },
+    {
+        id: 'step13',
+        text: "That's it. You are now ready to use TradeNote. You can come back to this tutorial at any time by clicking 'Tutorial' in the sub-menu.",
+        buttons: [{
+            text: 'Back',
+            action: tour.back
+        },
+        {
+            text: 'Done',
+            action: tour.complete
+        }]
+    },
 
     ])
 

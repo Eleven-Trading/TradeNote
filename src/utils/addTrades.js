@@ -244,7 +244,7 @@ async function createTempExecutions() {
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
-                console.log("price "+temp2.price)
+
                 temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
                 let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
                 // It happens that two or more trades happen at the same (second) time. So we need to differentiated them

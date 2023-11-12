@@ -13,9 +13,9 @@ export async function useBrokerTradeZero(param) {
             //we need to recreate the JSON with proper date format + we simplify
             tradesData.length = 0
             papaParse.data.forEach(element => {
+                element.Type = "stock"
                 tradesData.push(JSON.parse(JSON.stringify(element)))
             });
-
             //console.log("tradesData " + JSON.stringify(tradesData))
         } catch (error) {
             //console.log("  --> ERROR " + error)
