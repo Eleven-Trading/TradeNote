@@ -359,7 +359,7 @@ export async function useBrokerTdAmeritrade(param) {
                 accountTradeHistoryJsonArray.forEach(element => {
                     let index = cashBalanceJsonArray.findIndex(x => x.DATE + " " + x.TIME == element["Exec Time"])
                     if (index == -1) {
-                        alert("No matching line")
+                        alert("No matching execution from Account Trade History in Cash Balance for symbol "+element.Symbol+" from "+element["Exec Time"])
                     } else {
                         commonJsonArray.push({ ...cashBalanceJsonArray[index], ...element })
                     }
