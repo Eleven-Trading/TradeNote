@@ -241,6 +241,7 @@ async function createTempExecutions() {
                 if (temp2.side == "SS") {
                     temp2.strategy = "short"
                 }
+
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);

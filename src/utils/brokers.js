@@ -182,7 +182,15 @@ export async function useBrokerTdAmeritrade(param) {
             let cashBalanceJsonArray = []
             let accountTradeHistoryJsonArray = []
 
-            let commonJsonArray = []
+            /*****************************
+             * CREATING ACCOUNT TRADE HISTORY
+             *****************************/
+            const keys2 = Object.keys(accountTradeHistoryJsonArrayTemp);
+            for (const key2 of keys2) {
+                if (accountTradeHistoryJsonArrayTemp[key2].hasOwnProperty("Symbol")) {
+                    accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
+                }
+            }
 
             /*****************************
              * CREATING CASH BALANCE
@@ -190,271 +198,193 @@ export async function useBrokerTdAmeritrade(param) {
             const keys = Object.keys(cashBalanceJsonArrayTemp);
             for (const key of keys) {
                 //console.log("key " + JSON.stringify(papaParseCashBalance.data[key]))
-                if (cashBalanceJsonArrayTemp[key].TYPE === "TRD" || (cashBalanceJsonArrayTemp[key].TYPE === "RAD" && cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("REMOVAL"))) {
-
-                    /*const dateArrayTD = cashBalanceJsonArrayTemp[key].DATE
-                    //console.log("dateArrayTD " + dateArrayTD)
-                    const formatedDateExecTime = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1] + " " + cashBalanceJsonArrayTemp[key].TIME
-                    //console.log("formatedDateTD " + formatedDateTD)
-                    cashBalanceJsonArrayTemp[key].execTime = dayjs.tz(formatedDateExecTime, timeZoneTrade.value).unix()*/
-                    if (cashBalanceJsonArrayTemp[key].TYPE === "TRD"){
-                        cashBalanceJsonArray.push(cashBalanceJsonArrayTemp[key])
-                    }
-
-                    /****
-                         * Exercicing or expriation the option 
-                         * => Exercicie = add Stock line in Trade History
-                         * => Exercice or Expire = Add directly to tradesData the closing position of the option
-                    ****/
-
-                    let temp = {}
-                    let descArray = cashBalanceJsonArrayTemp[key].DESCRIPTION.split(" ")
-
-                    if (cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("EXERCISE")) {
-                        //Adding stock line
-                        //console.log(" desc array "+descArray)
-                        //BOT,100.0,GDDY,UPON,OPTION,EXERCISE
-                        temp = {}
-                        temp[""] = ""
-                        let tempExecTime = cashBalanceJsonArrayTemp[key].DATE + " " + cashBalanceJsonArrayTemp[key].TIME
-                        temp["Exec Time"] = tempExecTime
-                        temp.execTime =
-                            temp["Spread"] = "STOCK"
-                        temp["Side"] = descArray[0] == "BOT" ? "BUY" : "SELL"
-                        let numQty = Math.trunc(descArray[1])
-                        temp["Qty"] = temp["Side"] == "BUY" ? numQty.toString() : "-" + numQty.toString()
-                        temp["Pos Effect"] = "TO OPEN"
-                        temp["Symbol"] = descArray[2]
-                        temp["Exp"] = ""
-                        temp["Strike"] = ""
-                        temp["Type"] = "STOCK"
-                        let amount
-                        cashBalanceJsonArrayTemp[key].AMOUNT == "" ? amount = "0" : amount = cashBalanceJsonArrayTemp[key].AMOUNT.toString()
-                        let numAmount = parseFloat(amount.replace(/,/g, ''))
-                        let tempPrice = temp["Side"] == "BUY" ? -numAmount / numQty : numAmount / numQty
-                        temp["Price"] = tempPrice.toString()
-                        temp["Net Price"] = temp["Price"]
-                        temp["Order Type"] = "MKT"
-                        //console.log(" temp "+JSON.stringify(temp))
-                        accountTradeHistoryJsonArray.push(temp)
-                    }
-
-                    if (cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("EXERCISE") || cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("REMOVAL")) {
-                        //Adding closing position
-                        //No need to add line when removal because it's a RAD
-                        let botSold
-                        let callPut
-                        let symb
-                        let side
-                        let numQty
-                        let qty
-                        if (cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("EXERCISE")) {
-                            botSold = descArray[0]
-                            botSold == "BOT" ? callPut = "call" : callPut = "put"// if buying when exerciing the stock, it's a call because you can then sell it
-                            symb = descArray[2]
-                            botSold == "BOT" ? side = "S" : side = "BC"
-                            numQty = Math.trunc(descArray[1])
-                            let tempQty = numQty / 100
-                            botSold == "BOT" ? qty = tempQty.toString() : qty = -tempQty.toString()
-
-                        } else {
-                            Number(descArray[6]) > 0 ? botSold = "BOT" : botSold = "SOLD"
-                            symb = descArray[7]
-                            callPut = descArray[descArray.length - 1].toLowerCase()
-                            Number(descArray[6]) > 0 ? side = "S" : side ="BC"
-                            Number(descArray[6]) > 0 ? qty = Number(descArray[6]).toString() : qty = -Number(descArray[6]).toString()
-                        }
-
-
-                        temp = {}
-                        temp.Account = account
-
-                        let tempDate = cashBalanceJsonArrayTemp[key].DATE.split(" ")[0]
-                        let month = tempDate.split("/")[0]
-                        let day = tempDate.split("/")[1]
-                        let year = tempDate.split("/")[2]
-                        //console.log(" -> Year " + year)
-                        //console.log(" -> Year length " + year.length)
-                        if (year.length == 4) {
-                            temp["T/D"] = cashBalanceJsonArrayTemp[key].DATE
-                            temp["S/D"] = cashBalanceJsonArrayTemp[key].DATE
-                        } else if (year.length == 2) {
-                            let newDate = month + "/" + day + "/20" + year
-                            temp["T/D"] = newDate
-                            temp["S/D"] = newDate
-                        } else {
-                            alert("Year length issue")
-                        }
-
-                        temp.Currency = "USD"
-
-                        //Type
-                        temp.Type = callPut // if buying when exerciing the stock, it's a call because you can then sell it
-
-
-                        temp.Side = side
-
-
-
-                        temp.Symbol = symb + "" + temp.Type.charAt(0)
-                        temp.Qty = qty
-
-                        temp.Price = "0"
-
-                        temp["Exec Time"] = cashBalanceJsonArrayTemp[key].TIME
-
-                        let numberAmount = 0
-                        let numberCommissions = cashBalanceJsonArrayTemp[key]["Commissions & Fees"] != "" ? parseFloat(cashBalanceJsonArrayTemp[key]["Commissions & Fees"].toString().replace(/,/g, '')) : 0
-                        let numberMisc = cashBalanceJsonArrayTemp[key]["Misc Fees"] != "" ? parseFloat(cashBalanceJsonArrayTemp[key]["Misc Fees"].toString().replace(/,/g, '')) : 0
-
-                        temp.Comm = (-numberCommissions).toString()
-                        temp.SEC = (-numberMisc).toString()
-                        temp.TAF = "0"
-                        temp.NSCC = "0"
-                        temp.Nasdaq = "0"
-                        temp["ECN Remove"] = "0"
-                        temp["ECN Add"] = "0"
-                        temp["Gross Proceeds"] = numberAmount.toString()
-                        temp["Net Proceeds"] = (numberAmount + numberCommissions + numberMisc).toString()
-                        temp["Clr Broker"] = ""
-                        temp.Liq = ""
-                        temp.Note = ""
-
-                        tradesData.push(temp)
-
-                    }
+                if (cashBalanceJsonArrayTemp[key].TYPE === "TRD" || (cashBalanceJsonArrayTemp[key].TYPE === "RAD" && cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("REMOVAL"))) {
+                    cashBalanceJsonArray.push(cashBalanceJsonArrayTemp[key])
                 }
             }
 
             /*****************************
-             * CREATING ACCOUNT TRADE HISTORY
+             * CREATING TRADES DATA
              *****************************/
-            const keys2 = Object.keys(accountTradeHistoryJsonArrayTemp);
-            for (const key2 of keys2) {
-                if (accountTradeHistoryJsonArrayTemp[key2].hasOwnProperty("Symbol")) {
 
-                    /*const execTimeArray = accountTradeHistoryJsonArrayTemp[key2]["Exec Time"].split(" ")
-                    const dateArrayTD = execTimeArray[0]
-                    //console.log("dateArrayTD " + dateArrayTD)
-                    const formatedDateExecTime = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1] + " " + execTimeArray[1]
-                    //console.log("formatedDateTD " + formatedDateTD)
-                    accountTradeHistoryJsonArrayTemp[key2].execTime = dayjs.tz(formatedDateExecTime, timeZoneTrade.value).unix()*/
-                    accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
-                }
-            }
-            //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
-            //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
-            //console.log("cashBalanceJsonArray " + JSON.stringify(cashBalanceJsonArray))
-            //console.log("accountTradeHistoryJsonArray " + JSON.stringify(accountTradeHistoryJsonArray))
-            console.log("  --> Count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
-            console.log("  --> Count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
+            const pushTradesData = (param1, param2, param3) => {
+                return new Promise(async (resolve, reject) => {
+                    let descArray = param1.DESCRIPTION.split(" ")
 
-            /*****************************
-            * CREATING COMMON JSON
-            *****************************/
-            if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
-                alert("Cash Balance Json is different from Account Trade History Json")
-                return
-            } else {
-                accountTradeHistoryJsonArray.forEach(element => {
-                    let index = cashBalanceJsonArray.findIndex(x => x.DATE + " " + x.TIME == element["Exec Time"])
-                    if (index == -1) {
-                        alert("No matching execution from Account Trade History in Cash Balance for symbol "+element.Symbol+" from "+element["Exec Time"])
-                    } else {
-                        commonJsonArray.push({ ...cashBalanceJsonArray[index], ...element })
+                    let type
+                    let side
+                    let symb
+                    let qtyNumber
+                    let priceNumber
+                    let amount
+                    let comm
+                    let fees
+
+                    if (param3 == 1) {
+                        type = "stock"
+                        if (param2.Type == "FUTURE") {
+                            type = "future"
+                        }
+                        if (param2.Type == "CALL" || param2.Type == "PUT") {
+                            param2.Type == "CALL" ? type = "call" : type == "put"
+                        }
+
+                        if (param2.Side == "BUY" && param2["Pos Effect"] == "TO OPEN") {
+                            side = "B"
+                        }
+                        if (param2.Side == "BUY" && param2["Pos Effect"] == "TO CLOSE") {
+                            side = "BC"
+                        }
+                        if (param2.Side == "SELL" && param2["Pos Effect"] == "TO OPEN") {
+                            side = "SS"
+                        }
+                        if (param2.Side == "SELL" && param2["Pos Effect"] == "TO CLOSE") {
+                            side = "S"
+                        }
+
+                        symb = param2.Symbol
+                        if (symb.includes("/")) {
+                            let temp1 = symb.slice(1)
+                            let temp2 = temp1.slice(0, -3)
+                            symb = temp2
+                        }
+
+                        qtyNumber = Number(param2.Qty)
+                        priceNumber = Number(param2.Price)
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
                     }
-                });
+                    if (param3 == 2) {//closing option position on exercice
+                        let botSell = descArray[0]
+                        botSell == "BOT" ? type = "call" : type = "put"// if buying when exerciing the stock, it's a call because you can then sell it
+                        symb = descArray[2]
+                        botSell == "BOT" ? side = "S" : side = "BC"
+                        let numQty = Math.trunc(descArray[1])
+                        let tempQty = numQty / 100
+                        botSell == "BOT" ? qtyNumber = tempQty : qtyNumber = -tempQty
+                        priceNumber = 0
+                        amount = ""
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
+                    }
+
+                    if (param3 == 3) {//opening underlying stock position on exercice
+                        type = "stock"
+                        let botSell = descArray[0] == "BOT" ? "BUY" : "SELL"
+                        symb = descArray[2]
+                        botSell == "BOT" ? side = "B" : side = "SS"
+                        let numQty = Math.trunc(descArray[1])
+                        botSell == "BOT" ? qtyNumber = numQty : qtyNumber = -numQty
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
+                        let numAmount = parseFloat(amount.replace(/,/g, ''))
+                        botSell == "BOT" ? priceNumber = -numAmount / numQty : priceNumber = numAmount / numQty
+                        
+                    }
+
+                    if (param3 == 4) {//closing option position on removal
+                        let botSell
+                        Number(descArray[6]) > 0 ? botSell = "BOT" : botSell = "SOLD"
+                        symb = descArray[7]
+                        type = descArray[descArray.length - 1].toLowerCase()
+                        Number(descArray[6]) > 0 ? side = "S" : side = "BC"
+                        Number(descArray[6]) > 0 ? qtyNumber = Number(descArray[6]) : qtyNumber = -Number(descArray[6])
+                        priceNumber = 0
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"]
+                        fees = param1["Misc Fees"]
+                    }
+                    
+                    let temp = {}
+                    temp.Account = account
+
+                    let tempDate = param1.DATE.split(" ")[0]
+                    let month = tempDate.split("/")[0]
+                    let day = tempDate.split("/")[1]
+                    let year = tempDate.split("/")[2]
+                    //console.log(" -> Year " + year)
+                    //console.log(" -> Year length " + year.length)
+                    if (year.length == 4) {
+                        temp["T/D"] = param1.DATE
+                        temp["S/D"] = param1.DATE
+                    } else if (year.length == 2) {
+                        let newDate = month + "/" + day + "/20" + year
+                        temp["T/D"] = newDate
+                        temp["S/D"] = newDate
+                    } else {
+                        alert("Year length issue")
+                    }
+                    temp.Currency = "USD"
+                    
+                    //Type
+                    temp.Type = type // if buying when exerciing the stock, it's a call because you can then sell it
+                    
+                    temp.Side = side
+                    
+                    type == "call" || type == "put" ? temp.Symbol = symb + "" + temp.Type.charAt(0) : temp.Symbol = symb
+                    
+                    qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
+                    temp.Qty = qtyNumber.toString()
+                    
+                    temp.Price = priceNumber.toString()
+                    
+                    temp["Exec Time"] = param1.TIME
+                    //console.log("\n Symbol "+temp.Symbol + " type "+temp.Type+" from "+temp["T/D"]+ " at "+temp["Exec Time"])
+                    
+                    let numberAmount
+                    amount != "" ? numberAmount = parseFloat(amount.replace(/,/g, '')) : numberAmount = 0
+
+                    let numberCommissions
+                    comm != "" ? numberCommissions = parseFloat(comm.replace(/,/g, '')) : numberCommissions = 0
+
+                    let numberMisc
+                    fees != "" ? numberMisc = parseFloat(fees.replace(/,/g, '')) : numberMisc = 0
+
+
+                    temp.Comm = (-numberCommissions).toString()
+                    temp.SEC = (-numberMisc).toString()
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Gross Proceeds"] = numberAmount.toString()
+                    temp["Net Proceeds"] = (numberAmount + numberCommissions + numberMisc).toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+
+                    tradesData.push(temp)
+                    resolve()
+                })
             }
 
-            /*for (let index = 0; index < Object.keys(cashBalanceJsonArray).length; index++) {
-                commonJsonArray.push({ ...cashBalanceJsonArray[index], ...accountTradeHistoryJsonArray[index] })
-            }*/
-            //console.log("commonJsonArray " + JSON.stringify(commonJsonArray))
-
-
-            commonJsonArray.forEach(element => {
-                //console.log("element "+JSON.stringify(element))
-                let temp = {}
-                temp.Account = account
-
-                let tempDate = element.DATE.split(" ")[0]
-                let month = tempDate.split("/")[0]
-                let day = tempDate.split("/")[1]
-                let year = tempDate.split("/")[2]
-                //console.log(" -> Year " + year)
-                //console.log(" -> Year length " + year.length)
-                if (year.length == 4) {
-                    temp["T/D"] = element.DATE
-                    temp["S/D"] = element.DATE
-                } else if (year.length == 2) {
-                    let newDate = month + "/" + day + "/20" + year
-                    temp["T/D"] = newDate
-                    temp["S/D"] = newDate
+            cashBalanceJsonArray.forEach(async (element) => {
+                //console.log(" element "+JSON.stringify(element))
+                //console.log("\n" + element.DATE + " " + element.TIME)
+                if (element.DESCRIPTION.includes("EXERCISE")) {
+                    await pushTradesData(element,"", 2) // closing option position
+                    await pushTradesData(element,"", 3) // opening underlying stock position
+                } else if (element.DESCRIPTION.includes("REMOVAL")) {
+                    await pushTradesData(element,"", 4) // closing option position
                 } else {
-                    alert("Year length issue")
+                    let match = false
+                    for (let index = 0; index < accountTradeHistoryJsonArray.length; index++) {
+                        const el = accountTradeHistoryJsonArray[index];
+
+                        if (element.DATE + " " + element.TIME == el["Exec Time"]) {
+                            await pushTradesData(element, el, 1)
+                            match = true
+                        }else{
+                            if ((index+1) == accountTradeHistoryJsonArray.length && match == false){ // we iterated through the entire acccount trade history and no match
+                                alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
+                            }
+                        }
+                    }
                 }
 
-                temp.Currency = "USD"
-
-                //Type
-                temp.Type = "stock"
-                if (element.Type == "FUTURE") {
-                    temp.Type = "future"
-                }
-                if (element.Type == "CALL" || element.typType == "PUT") {
-                    element.Type == "CALL" ? temp.Type = "call" : element.Type == "put"
-                }
-
-                if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
-                    temp.Side = "B"
-                }
-                if (element.Side == "BUY" && element["Pos Effect"] == "TO CLOSE") {
-                    temp.Side = "BC"
-                }
-                if (element.Side == "SELL" && element["Pos Effect"] == "TO OPEN") {
-                    temp.Side = "SS"
-                }
-                if (element.Side == "SELL" && element["Pos Effect"] == "TO CLOSE") {
-                    temp.Side = "S"
-                }
-
-                temp.Symbol = element.Symbol
-                if (temp.Symbol.includes("/")) {
-                    let temp1 = temp.Symbol.slice(1)
-                    let temp2 = temp1.slice(0, -3)
-                    temp.Symbol = temp2
-                }
-                if (element.Type == "CALL" || element.typType == "PUT") {
-                    temp.Symbol = temp.Symbol + "" + temp.Type.charAt(0)
-                }
-                //console.log("Symbol "+temp.Symbol)
-
-                let qtyNumber = Number(element.Qty)
-                qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
-                temp.Qty = qtyNumber.toString()
-
-                let priceNumber = Number(element.Price)
-                temp.Price = priceNumber.toString()
-
-                temp["Exec Time"] = element.TIME
-                let amount
-                element.AMOUNT == "" ? amount = "0" : amount = element.AMOUNT.toString()
-                let numberAmount = parseFloat(amount.replace(/,/g, ''))
-                let numberCommissions = element["Commissions & Fees"] != "" ? parseFloat(element["Commissions & Fees"].toString().replace(/,/g, '')) : 0
-                let numberMisc = element["Misc Fees"] != "" ? parseFloat(element["Misc Fees"].toString().replace(/,/g, '')) : 0
-                temp.Comm = (-numberCommissions).toString()
-                temp.SEC = (-numberMisc).toString()
-                temp.TAF = "0"
-                temp.NSCC = "0"
-                temp.Nasdaq = "0"
-                temp["ECN Remove"] = "0"
-                temp["ECN Add"] = "0"
-                temp["Gross Proceeds"] = numberAmount.toString()
-                temp["Net Proceeds"] = (numberAmount + numberCommissions + numberMisc).toString()
-                temp["Clr Broker"] = ""
-                temp.Liq = ""
-                temp.Note = ""
-                tradesData.push(temp)
             });
         } catch (error) {
             console.log("  --> ERROR " + error)
