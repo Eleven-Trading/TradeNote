@@ -281,7 +281,7 @@ export async function useBrokerTdAmeritrade(param) {
                         fees = param1["Misc Fees"].toString()
                         let numAmount = parseFloat(amount.replace(/,/g, ''))
                         botSell == "BOT" ? priceNumber = -numAmount / numQty : priceNumber = numAmount / numQty
-                        
+
                     }
 
                     if (param3 == 4) {//closing option position on removal
@@ -296,7 +296,7 @@ export async function useBrokerTdAmeritrade(param) {
                         comm = param1["Commissions & Fees"]
                         fees = param1["Misc Fees"]
                     }
-                    
+
                     let temp = {}
                     temp.Account = account
 
@@ -317,22 +317,22 @@ export async function useBrokerTdAmeritrade(param) {
                         alert("Year length issue")
                     }
                     temp.Currency = "USD"
-                    
+
                     //Type
                     temp.Type = type // if buying when exerciing the stock, it's a call because you can then sell it
-                    
+
                     temp.Side = side
-                    
+
                     type == "call" || type == "put" ? temp.Symbol = symb + "" + temp.Type.charAt(0) : temp.Symbol = symb
-                    
+
                     qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
                     temp.Qty = qtyNumber.toString()
-                    
+
                     temp.Price = priceNumber.toString()
-                    
+
                     temp["Exec Time"] = param1.TIME
                     //console.log("\n Symbol "+temp.Symbol + " type "+temp.Type+" from "+temp["T/D"]+ " at "+temp["Exec Time"])
-                    
+
                     let numberAmount
                     amount != "" ? numberAmount = parseFloat(amount.replace(/,/g, '')) : numberAmount = 0
 
@@ -365,25 +365,23 @@ export async function useBrokerTdAmeritrade(param) {
                 //console.log("\n" + element.DATE + " " + element.TIME)
                 //console.log(" element "+JSON.stringify(element))
                 if (element.DESCRIPTION.includes("EXERCISE")) {
-                    await pushTradesData(element,"", 2) // closing option position
-                    await pushTradesData(element,"", 3) // opening underlying stock position
+                    await pushTradesData(element, "", 2) // closing option position
+                    await pushTradesData(element, "", 3) // opening underlying stock position
                 } else if (element.DESCRIPTION.includes("REMOVAL")) {
-                    await pushTradesData(element,"", 4) // closing option position
+                    await pushTradesData(element, "", 4) // closing option position
                 } else {
                     let match = false
                     let index = accountTradeHistoryJsonArray.findIndex(x => x["Exec Time"] == element.DATE + " " + element.TIME)
-                        if (index != -1) {
-                            let el = accountTradeHistoryJsonArray[index]
-                            console.log(" el "+JSON.stringify(el))
-                            //await accountTradeHistoryJsonArray.filter((_, i) => i !== index);
-                            //await accountTradeHistoryJsonArray.filter(x => x != el);
-                            await accountTradeHistoryJsonArray.splice(index, 1); // we need to remove the element that has already been parsed in case different executions at same date and time happened
-                            await pushTradesData(element, el, 1)
-                            match = true
-                        }else{
-                            if ((index+1) == accountTradeHistoryJsonArray.length && match == false){ // we iterated through the entire acccount trade history and no match
-                                alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
-                            }
+                    if (index != -1) {
+                        let el = accountTradeHistoryJsonArray[index]
+                        //console.log(" el " + JSON.stringify(el))
+                        //await accountTradeHistoryJsonArray.filter((_, i) => i !== index);
+                        //await accountTradeHistoryJsonArray.filter(x => x != el);
+                        await accountTradeHistoryJsonArray.splice(index, 1); // we need to remove the element that has already been parsed in case different executions at same date and time happened
+                        await pushTradesData(element, el, 1)
+                        match = true
+                    } else {
+                        alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
                     }
                 }
             });
