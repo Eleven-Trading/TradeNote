@@ -362,8 +362,8 @@ export async function useBrokerTdAmeritrade(param) {
             }
 
             cashBalanceJsonArray.forEach(async (element) => {
-                //console.log(" element "+JSON.stringify(element))
                 //console.log("\n" + element.DATE + " " + element.TIME)
+                //console.log(" element "+JSON.stringify(element))
                 if (element.DESCRIPTION.includes("EXERCISE")) {
                     await pushTradesData(element,"", 2) // closing option position
                     await pushTradesData(element,"", 3) // opening underlying stock position
@@ -371,26 +371,27 @@ export async function useBrokerTdAmeritrade(param) {
                     await pushTradesData(element,"", 4) // closing option position
                 } else {
                     let match = false
-                    for (let index = 0; index < accountTradeHistoryJsonArray.length; index++) {
-                        const el = accountTradeHistoryJsonArray[index];
-
-                        if (element.DATE + " " + element.TIME == el["Exec Time"]) {
+                    let index = accountTradeHistoryJsonArray.findIndex(x => x["Exec Time"] == element.DATE + " " + element.TIME)
+                        if (index != -1) {
+                            let el = accountTradeHistoryJsonArray[index]
+                            console.log(" el "+JSON.stringify(el))
+                            //await accountTradeHistoryJsonArray.filter((_, i) => i !== index);
+                            //await accountTradeHistoryJsonArray.filter(x => x != el);
+                            await accountTradeHistoryJsonArray.splice(index, 1); // we need to remove the element that has already been parsed in case different executions at same date and time happened
                             await pushTradesData(element, el, 1)
                             match = true
                         }else{
                             if ((index+1) == accountTradeHistoryJsonArray.length && match == false){ // we iterated through the entire acccount trade history and no match
                                 alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
                             }
-                        }
                     }
                 }
-
             });
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
         }
-        //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         resolve()
 
     })
