@@ -25,8 +25,9 @@ export async function useImportTrades(e, param2) {
     // Using Papa Parse : https://www.papaparse.com/docs
     spinnerLoadingPage.value = true
     //spinnerLoadingPageText.value = "Importing file ..."
-    console.log(" got existing " + gotExistingTradesArray.value)
+    //console.log(" got existing " + gotExistingTradesArray.value)
     let files
+    let importFileError = false
     if (param2 == "file") {
         files = e.target.files || e.dataTransfer.files;
         if (!files.length) {
@@ -90,13 +91,22 @@ export async function useImportTrades(e, param2) {
         await (spinnerLoadingPage.value = false)
     }
 
+    const importFileErrorFunction = (param) => {
+        importFileError = true
+        spinnerLoadingPage.value = false
+        const file = document.querySelector('#tradesInput');
+        file.value = '';
+        alert("ERROR IN UPLOAD FILE\n" + param)
+    }
     /****************************
      * TRADEZERO
      ****************************/
     if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template") {
         console.log(" -> TradeZero / Template")
         let fileInput = await readAsText(files)
-        await useBrokerTradeZero(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerTradeZero(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -105,7 +115,9 @@ export async function useImportTrades(e, param2) {
     if (selectedBroker.value == "metaTrader5") {
         console.log(" -> MetaTrader 5")
         let fileInput = await readAsArrayBuffer(files)
-        await useBrokerMetaTrader5(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerMetaTrader5(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -114,7 +126,9 @@ export async function useImportTrades(e, param2) {
     if (selectedBroker.value == "tdAmeritrade") {
         console.log(" -> TD Ameritrade")
         let fileInput = await readAsText(files)
-        await useBrokerTdAmeritrade(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerTdAmeritrade(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -124,7 +138,9 @@ export async function useImportTrades(e, param2) {
         console.log(" -> Trade Station")
         let fileInput = brokerData.value
         //console.log("file input "+fileInput)
-        await useBrokerTradeStation(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerTradeStation(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -133,7 +149,9 @@ export async function useImportTrades(e, param2) {
     if (selectedBroker.value == "interactiveBrokers") {
         console.log(" -> Interactive Brokers")
         let fileInput = await readAsText(files)
-        await useBrokerInteractiveBrokers(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerInteractiveBrokers(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -148,7 +166,9 @@ export async function useImportTrades(e, param2) {
             return
         }
         let fileInput = await readAsText(files)
-        await useTradovate(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useTradovate(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -157,7 +177,9 @@ export async function useImportTrades(e, param2) {
     if (selectedBroker.value == "ninjaTrader") {
         console.log(" -> NinjaTrader")
         let fileInput = await readAsText(files)
-        await useNinjaTrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useNinjaTrader(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     /****************************
@@ -166,7 +188,9 @@ export async function useImportTrades(e, param2) {
     if (selectedBroker.value == "heldentrader") {
         console.log(" -> Heldentrader")
         let fileInput = await readAsText(files)
-        await useBrokerHeldentrader(fileInput).catch(error => alert("Error in upload file (" + error + ")"))
+        await useBrokerHeldentrader(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
     }
 
     const retryFunction = (callback, delay, tries) => {
@@ -180,7 +204,11 @@ export async function useImportTrades(e, param2) {
                 alert("TradeNote didn't have enough time to fetch existing trades from database before parsing your file. Please refresh the page and wait a little bit longer before adding your file and thus giving TradeNote some more time to run this background job.")
                 return;
             }
-            create()
+            if (!importFileError) {
+                create()
+            } else {
+                return
+            }
         }
     }
 
@@ -190,7 +218,11 @@ export async function useImportTrades(e, param2) {
     }
 
     if (gotExistingTradesArray.value) {
-        create()
+        if (!importFileError) {
+            create()
+        } else {
+            return
+        }
     } else {
         retryFunction(callbackFunction, 1000, 10);
     }
@@ -409,7 +441,7 @@ async function getOpenPositionsParse() {
             const object = results[i];
             //console.log("unix time "+ object.get('dateUnix'));
             object.get('trades').forEach(element => {
-                if (element.openPosition){
+                if (element.openPosition) {
                     openPositionsParse.push(element)
                 }
             });
@@ -462,25 +494,25 @@ async function createTrades() {
                 //console.log("doing key "+key2)
 
                 //checking existing open positions array from Parse
-                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type ) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
                 //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
                 const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type)
-                
+
                 if (newTrade == true && existingOpenPositionParse) {
-                    console.log("\n -> Open position already in Parse for symbol "+key2+ " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log("\n -> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     //existingOpenPosition = existingOpenPositionParse
                     existingOpenPosition = {}
                     Object.keys(existingOpenPositionParse).forEach((key) => {
-                        if (key == "td"){
+                        if (key == "td") {
                             existingOpenPosition.td = tempExec.td
-                        }else{
+                        } else {
                             existingOpenPosition[key] = existingOpenPositionParse[key]
                         }
                     })
                     currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
                     temp2.push(existingOpenPosition)
                     newTrade = false
-                    
+
                     //const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol)
                     //openPositionsParse.splice(existingOpenPositionParseIndex, 1)
                     //console.log(" Open positions "+JSON.stringify(openPositionsFile))
@@ -488,18 +520,18 @@ async function createTrades() {
                 }
                 //checking existing open positions array when importing file
                 else if (newTrade == true && existingOpenPositionFile) {
-                    console.log("\n -> Open position already in current file for symbol "+key2+ " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log("\n -> Open position already in current file for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
                     existingOpenPosition = {}
                     Object.keys(existingOpenPositionFile).forEach((key) => {
-                        if (key == "td"){
+                        if (key == "td") {
                             existingOpenPosition.td = tempExec.td
-                        }else{
+                        } else {
                             existingOpenPosition[key] = existingOpenPositionFile[key]
                         }
                     })
                     //existingOpenPosition = existingOpenPositionFile
-                   
+
                     //console.log(" -> existingOpenPosition "+JSON.stringify(existingOpenPosition))
                     currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
                     existingOpenPosition.td = tempExec.td;
@@ -993,9 +1025,9 @@ async function createTrades() {
 
                         for (let index = 0; index < temp2.length; index++) {
                             const element = temp2[index]
-                            if (element.id == trde.id){
+                            if (element.id == trde.id) {
                                 element.openPosition = false
-                            }   
+                            }
                         }
 
                         //console.log("trde " + JSON.stringify(trde))
@@ -1717,27 +1749,27 @@ export async function useUploadTrades() {
             //console.log(' results '+JSON.stringify(results))
             if (results) {
                 let parsedRes = JSON.parse(JSON.stringify(results))
-                
-                    let openPositions = false
-                    
-                    //console.log("unix time "+ object.get('dateUnix'));
-                    let tempTrades = parsedRes.trades
-                    //console.log("tempTrades "+JSON.stringify(tempTrades))
-                    let openPositionIndex = tempTrades.findIndex(x => x.id == param1)
-                    console.log(" openPositionIndex "+openPositionIndex)
-                    if (openPositionIndex != -1) {
-                        tempTrades[openPositionIndex].openPosition = false
+
+                let openPositions = false
+
+                //console.log("unix time "+ object.get('dateUnix'));
+                let tempTrades = parsedRes.trades
+                //console.log("tempTrades "+JSON.stringify(tempTrades))
+                let openPositionIndex = tempTrades.findIndex(x => x.id == param1)
+                console.log(" openPositionIndex " + openPositionIndex)
+                if (openPositionIndex != -1) {
+                    tempTrades[openPositionIndex].openPosition = false
+                }
+                for (let index = 0; index < tempTrades.length; index++) {
+                    const element = tempTrades[index];
+                    if (element.openPosition) {
+                        openPositions = true
                     }
-                    for (let index = 0; index < tempTrades.length; index++) {
-                        const element = tempTrades[index];
-                        if (element.openPosition){
-                            openPositions = true
-                        }                        
-                    }
-                    //console.log(" openPositions "+JSON.stringify(openPositions))
-                    //results.set("openPositions", openPositions)
-                    //results.set("trades", tempTrades)
-                
+                }
+                //console.log(" openPositions "+JSON.stringify(openPositions))
+                //results.set("openPositions", openPositions)
+                //results.set("trades", tempTrades)
+
                 await results.save().then(resolve()) //very important to have await or else too quick to update
 
             } else {
@@ -1759,7 +1791,7 @@ export async function useUploadTrades() {
                     //open positions parse element not anymore in openPositionsFile = trade is now closed
                     await updateOpenPositions(element.id, element.td)
                 }
-                if ((index +1) == openPositionsParse.length){
+                if ((index + 1) == openPositionsParse.length) {
                     resolve()
                 }
             }

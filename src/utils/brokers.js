@@ -314,7 +314,7 @@ export async function useBrokerTdAmeritrade(param) {
                         temp["T/D"] = newDate
                         temp["S/D"] = newDate
                     } else {
-                        alert("Year length issue")
+                        reject("Year length issue")
                     }
                     temp.Currency = "USD"
 
@@ -381,7 +381,8 @@ export async function useBrokerTdAmeritrade(param) {
                         await pushTradesData(element, el, 1)
                         match = true
                     } else {
-                        alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
+                        //alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
+                        reject("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
                     }
                 }
             });
@@ -389,7 +390,7 @@ export async function useBrokerTdAmeritrade(param) {
             console.log("  --> ERROR " + error)
             reject(error)
         }
-        console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         resolve()
 
     })
@@ -413,29 +414,7 @@ export async function useBrokerTradeStation(param) {
 
             tradesData.length = 0
             let papaParse = Papa.parse(newCsv, { header: true })
-            //we need to recreate the JSON with proper date format + we simplify
-            //console.log("papaparse " + JSON.stringify(papaParse.data))
 
-            /*var workbook = XLSX.read(param);
-            var result = {};
-            //As this is text but looks like an excel we need to take back and fourth steps
-            //1 - Create array of arrays (https://docs.sheetjs.com/docs/api/utilities)
-            let roa = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            if (roa.length > 0) {
-                //console.log("roa "+JSON.stringify(roa))
-                result = roa;
-            }
-
-            //console.log("result " + JSON.stringify(result))
-
-            //2 - Create an excel sheet
-            let toSheet = XLSX.utils.aoa_to_sheet(result)
-            //console.log("to sheet " + JSON.stringify(toSheet))
-            //3 - Now that we have a proper excel sheet, we create json with correct keys
-            let toJson = XLSX.utils.sheet_to_json(toSheet)
-            //console.log("to sheet " + JSON.stringify(toJson))
-            tradesData.length = 0
-            */
             papaParse.data.forEach(element => {
                 //console.log("element " + JSON.stringify(element))
                 if (element["Order Status"] == "Filled") {
@@ -537,7 +516,7 @@ export async function useBrokerTradeStation(param) {
                             console.log("serviceFeeNumber " + serviceFeeNumber)
                             temp.SEC = (serviceFeeNumber).toString()
                         } else {
-                            alert("No ECN Fees found")
+                            reject("No ECN Fees found")
                         }
 
                     }
@@ -730,7 +709,7 @@ export async function useTradovate(param) {
                         temp["T/D"] = newDate
                         temp["S/D"] = newDate
                     } else {
-                        alert("Year length issue")
+                        reject("Year length issue")
                     }
 
                     temp.Currency = "USD"
@@ -794,7 +773,7 @@ export async function useTradovate(param) {
                         //console.log(" -> fee "+echangeFees[0].fee[selectedTradovateTier.value])
                         commNumber = echangeFees[0].fee[selectedTradovateTier.value] * qtyNumber
                     } else {
-                        alert("No Fees found")
+                        reject("No Fees found")
                     }
                     temp.Comm = commNumber.toString()
                     temp.SEC = "0"
