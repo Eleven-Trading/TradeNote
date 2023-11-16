@@ -301,6 +301,18 @@ useMountDashboard()
                         role="tabpanel" aria-labelledby="nav-time-tab">
                         <div class="col-12">
                             <div class="row">
+                                <!-- GROUP BY DAY OF WEEK -->
+                                <div class="col-12 col-xl-4 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Group by Day of Week (<span v-if="selectedRatio == 'appt'">APPT</span>
+                                            <span v-else>APPST</span>)
+                                        </h6>
+                                        <!--<div class="text-center" v-if="!dashboardChartsMounted">
+                                    <div class="spinner-border text-blue" role="status"></div>
+                                </div>-->
+                                        <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
+                                    </div>
+                                </div>
 
                                 <!-- GROUP BY TIMEFRAME -->
                                 <div class="col-12 col-xl-4 mb-3">
@@ -328,20 +340,8 @@ useMountDashboard()
                                     </div>
                                 </div>
 
-                                <!-- GROUP BY DAY OF WEEK -->
-                                <div class="col-12 col-xl-4 mb-3">
-                                    <div class="dailyCard">
-                                        <h6>Group by Day of Week (<span v-if="selectedRatio == 'appt'">APPT</span>
-                                            <span v-else>APPST</span>)
-                                        </h6>
-                                        <!--<div class="text-center" v-if="!dashboardChartsMounted">
-                                    <div class="spinner-border text-blue" role="status"></div>
-                                </div>-->
-                                        <div v-bind:key="renderData" id="barChartNegative3" class="chartClass"></div>
-                                    </div>
-                                </div>
 
-                                <!-- SCATTER WINS -->
+                                <!-- SCATTER WINS
                                 <div class="col-12">
                                     <div class="dailyCard">
                                         <h6>Scatter Wins</h6>
@@ -349,13 +349,13 @@ useMountDashboard()
                                     </div>
                                 </div>
 
-                                <!-- SCATTER LOSSES -->
+                                SCATTER LOSSES 
                                 <div class="col-12">
                                     <div class="dailyCard">
                                         <h6>Scatter Losses</h6>
                                         <div v-bind:key="renderData" id="scatterChart2" class="chartClass"></div>
                                     </div>
-                                </div>
+                                </div>-->
 
                             </div>
                         </div>
@@ -398,6 +398,17 @@ useMountDashboard()
                         <div class="col-12">
                             <div class="row">
 
+                                <!-- GROUP BY POSITION -->
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Group by Position</h6>
+                                        <div class="text-center" v-if="!dashboardChartsMounted">
+                                            <div class="spinner-border text-blue" role="status"></div>
+                                        </div>
+                                        <div v-bind:key="renderData" id="barChartNegative17" class="chartClass"></div>
+                                    </div>
+                                </div>
+
                                 <!-- GROUP BY PATTERN -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
@@ -408,17 +419,7 @@ useMountDashboard()
                                         <div v-bind:key="renderData" id="barChartNegative10" class="chartClass"></div>
                                     </div>
                                 </div>
-                                <!-- GROUP BY PATTERN TYPE
-                        <div class="col-12 col-xl-4 mb-3">
-                            <div class="dailyCard">
-                                <h6>Group by Pattern Type</h6>
-                                <div class="text-center" v-if="!dashboardChartsMounted">
-                                    <div class="spinner-border text-blue" role="status"></div>
-                                </div>
-                                <div v-bind:key="renderData" id="barChartNegative11" class="chartClass"></div>
-                            </div>
-                        </div> -->
-
+                                
                                 <!-- GROUP BY MISTAKES -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">

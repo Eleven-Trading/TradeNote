@@ -1032,6 +1032,9 @@ export function useToggleMobileMenu() {
     console.log("sideMenuMobileOut " + sideMenuMobileOut.value)
 }
 
+export function useCapitalizeFirstLetter(param) {
+    return param.charAt(0).toUpperCase() + param.slice(1)
+}
 /**************************************
 * DATE FORMATS
 **************************************/

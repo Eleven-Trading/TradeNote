@@ -1,5 +1,5 @@
 import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals"
-import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat } from "./utils"
+import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
 const cssColor60 = "rgba(255, 255, 255, 0.60)"
@@ -77,7 +77,7 @@ export function useECharts(param) {
         }
     }
 
-    let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 15] // This way.value here because I took out some charts
+    let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 15, 17] // This way.value here because I took out some charts
     indexes.forEach(index => {
         var chartId = 'barChartNegative' + index
         if (param == "clear") {
@@ -88,7 +88,7 @@ export function useECharts(param) {
         }
     });
 
-    for (let index = 1; index <= 2; index++) {
+    /*for (let index = 1; index <= 2; index++) {
         var chartId = 'scatterChart' + index
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
@@ -96,7 +96,7 @@ export function useECharts(param) {
         if (param == "init" || param == "scatterChart") {
             useScatterChart(chartId)
         }
-    }
+    }*/
 
     /*for (let index = 1; index <= 1; index++) {
         echarts.init(document.getElementById('boxPlotChart' + index)).clear()
@@ -1002,6 +1002,14 @@ export function useBarChartNegative(param1) {
         if (param1 == "barChartNegative16") {
             var keyObject = groups.symbols
         }
+        
+        if (param1 == "barChartNegative7") {
+            var keyObject = groups.executions
+        }
+
+        if (param1 == "barChartNegative17") {
+            var keyObject = groups.position
+        }
 
         const keys = Object.keys(keyObject);
 
@@ -1106,7 +1114,7 @@ export function useBarChartNegative(param1) {
                         ratio = profitFactor
                     }
 
-                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16") {
+                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
                         series.unshift(ratio)
                     }
                     if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15") {
@@ -1115,7 +1123,7 @@ export function useBarChartNegative(param1) {
                 }
             })
         }
-        if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16") {
+        if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
             //1) combine the arrays:
             var list = [];
             for (var j = 0; j < series.length; j++)
@@ -1277,6 +1285,8 @@ export function useBarChartNegative(param1) {
                             } else {
                                 return "Big-cap (+10B)"
                             }
+                        } else if (param1 == "barChartNegative17") {
+                            return (useCapitalizeFirstLetter(params))
                         } else {
                             return params
                         }

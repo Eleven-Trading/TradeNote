@@ -859,6 +859,14 @@ export async function useGroupTrades() {
 
         //console.log("executions " + JSON.stringify(groups.executions))
 
+         /*******************
+         * GROUP BY POSITION
+         *******************/
+         groups.position = _(temp1)
+         .groupBy('strategy')
+         .value()
+        //console.log("group by position " + JSON.stringify(groups.position))
+
         /*******************
          * GROUP BY PATTERN
          *******************/
