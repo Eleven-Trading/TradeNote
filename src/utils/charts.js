@@ -168,17 +168,19 @@ export function useLineChart(param) { //chartID, chartDataGross, chartDataNet, c
 
         for (const key of keys) {
             var element = objectY[key]
+            //console.log("\nElement "+JSON.stringify(element))
 
             var pushingChartData = () => {
                 chartData.push(profitFactor)
             }
 
             if (selectedTimeFrame.value == "daily") {
-                wins = element[amountCase.value + 'Wins']
-                loss = -element[amountCase.value + 'Loss']
+                wins = parseFloat(element[amountCase.value + 'Wins']).toFixed(2)
+                loss = parseFloat(-element[amountCase.value + 'Loss']).toFixed(2)
                 //console.log("wins " + wins + " and loss " + loss)
                 if (loss != 0) {
                     profitFactor = wins / loss
+                    //console.log(" -> profitFactor "+profitFactor)
                 }
                 chartXAxis.push(useChartFormat(key))
                 pushingChartData()

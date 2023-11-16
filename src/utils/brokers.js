@@ -13,9 +13,9 @@ export async function useBrokerTradeZero(param) {
             //we need to recreate the JSON with proper date format + we simplify
             tradesData.length = 0
             papaParse.data.forEach(element => {
+                element.Type = "stock"
                 tradesData.push(JSON.parse(JSON.stringify(element)))
             });
-
             //console.log("tradesData " + JSON.stringify(tradesData))
         } catch (error) {
             //console.log("  --> ERROR " + error)
@@ -58,7 +58,7 @@ export async function useBrokerMetaTrader5(param) {
                 if (!row.hasOwnProperty("Trade History Report")) {
                     dealIterate = false
                 } else {
-                    console.log("row " + JSON.stringify(row))
+                    //console.log("row " + JSON.stringify(row))
                     //check for balance
                     let checkBalance = Object.values(row)[2]
                     if (checkBalance != "balance") {
@@ -182,110 +182,209 @@ export async function useBrokerTdAmeritrade(param) {
             let cashBalanceJsonArray = []
             let accountTradeHistoryJsonArray = []
 
-            let commonJsonArray = []
-
-            const keys = Object.keys(cashBalanceJsonArrayTemp);
-            for (const key of keys) {
-                console.log("key " + JSON.stringify(papaParseCashBalance.data[key]))
-                if (cashBalanceJsonArrayTemp[key].TYPE === "TRD") {
-                    cashBalanceJsonArray.push(cashBalanceJsonArrayTemp[key])
-                }
-            }
-
+            /*****************************
+             * CREATING ACCOUNT TRADE HISTORY
+             *****************************/
             const keys2 = Object.keys(accountTradeHistoryJsonArrayTemp);
             for (const key2 of keys2) {
                 if (accountTradeHistoryJsonArrayTemp[key2].hasOwnProperty("Symbol")) {
                     accountTradeHistoryJsonArray.push(accountTradeHistoryJsonArrayTemp[key2])
                 }
             }
-            //console.log("cashBalanceJsonArrayTemp "+JSON.stringify(cashBalanceJsonArrayTemp))
-            //console.log("accountTradeHistoryJsonArrayTemp "+JSON.stringify(accountTradeHistoryJsonArrayTemp))
-            console.log("cashBalanceJsonArray " + JSON.stringify(cashBalanceJsonArray))
-            console.log("accountTradeHistoryJsonArray " + JSON.stringify(accountTradeHistoryJsonArray))
-            console.log("count cashBalanceJsonArray " + Object.keys(cashBalanceJsonArray).length)
-            console.log("count accountTradeHistoryJsonArray " + Object.keys(accountTradeHistoryJsonArray).length)
-            if (Object.keys(cashBalanceJsonArray).length != Object.keys(accountTradeHistoryJsonArray).length) {
-                alert("Cash Balance Json is different from Account Trade History Json")
-                return
-            }
-            for (let index = 0; index < Object.keys(cashBalanceJsonArray).length; index++) {
-                commonJsonArray.push({ ...cashBalanceJsonArray[index], ...accountTradeHistoryJsonArray[index] })
-            }
-            //console.log("commonJsonArray "+JSON.stringify(commonJsonArray))
-            commonJsonArray.forEach(element => {
-                //console.log("element "+JSON.stringify(element))
-                let temp = {}
-                temp.Account = account
 
-                let tempDate = element.DATE.split(" ")[0]
-                let month = tempDate.split("/")[0]
-                let day = tempDate.split("/")[1]
-                let year = tempDate.split("/")[2]
-                //console.log(" -> Year " + year)
-                //console.log(" -> Year length " + year.length)
-                if (year.length == 4) {
-                    temp["T/D"] = element.DATE
-                    temp["S/D"] = element.DATE
-                } else if (year.length == 2) {
-                    let newDate = month + "/" + day + "/20" + year
-                    temp["T/D"] = newDate
-                    temp["S/D"] = newDate
+            /*****************************
+             * CREATING CASH BALANCE
+             *****************************/
+            const keys = Object.keys(cashBalanceJsonArrayTemp);
+            for (const key of keys) {
+                //console.log("key " + JSON.stringify(papaParseCashBalance.data[key]))
+                if (cashBalanceJsonArrayTemp[key].TYPE === "TRD" || (cashBalanceJsonArrayTemp[key].TYPE === "RAD" && cashBalanceJsonArrayTemp[key].DESCRIPTION.includes("REMOVAL"))) {
+                    cashBalanceJsonArray.push(cashBalanceJsonArrayTemp[key])
+                }
+            }
+
+            /*****************************
+             * CREATING TRADES DATA
+             *****************************/
+
+            const pushTradesData = (param1, param2, param3) => {
+                return new Promise(async (resolve, reject) => {
+                    let descArray = param1.DESCRIPTION.split(" ")
+
+                    let type
+                    let side
+                    let symb
+                    let qtyNumber
+                    let priceNumber
+                    let amount
+                    let comm
+                    let fees
+
+                    if (param3 == 1) {
+                        type = "stock"
+                        if (param2.Type == "FUTURE") {
+                            type = "future"
+                        }
+                        if (param2.Type == "CALL" || param2.Type == "PUT") {
+                            param2.Type == "CALL" ? type = "call" : type == "put"
+                        }
+
+                        if (param2.Side == "BUY" && param2["Pos Effect"] == "TO OPEN") {
+                            side = "B"
+                        }
+                        if (param2.Side == "BUY" && param2["Pos Effect"] == "TO CLOSE") {
+                            side = "BC"
+                        }
+                        if (param2.Side == "SELL" && param2["Pos Effect"] == "TO OPEN") {
+                            side = "SS"
+                        }
+                        if (param2.Side == "SELL" && param2["Pos Effect"] == "TO CLOSE") {
+                            side = "S"
+                        }
+
+                        symb = param2.Symbol
+                        if (symb.includes("/")) {
+                            let temp1 = symb.slice(1)
+                            let temp2 = temp1.slice(0, -3)
+                            symb = temp2
+                        }
+
+                        qtyNumber = Number(param2.Qty)
+                        priceNumber = Number(param2.Price)
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
+                    }
+                    if (param3 == 2) {//closing option position on exercice
+                        let botSell = descArray[0]
+                        botSell == "BOT" ? type = "call" : type = "put"// if buying when exerciing the stock, it's a call because you can then sell it
+                        symb = descArray[2]
+                        botSell == "BOT" ? side = "S" : side = "BC"
+                        let numQty = Math.trunc(descArray[1])
+                        let tempQty = numQty / 100
+                        botSell == "BOT" ? qtyNumber = tempQty : qtyNumber = -tempQty
+                        priceNumber = 0
+                        amount = ""
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
+                    }
+
+                    if (param3 == 3) {//opening underlying stock position on exercice
+                        type = "stock"
+                        let botSell = descArray[0] == "BOT" ? "BUY" : "SELL"
+                        symb = descArray[2]
+                        botSell == "BOT" ? side = "B" : side = "SS"
+                        let numQty = Math.trunc(descArray[1])
+                        botSell == "BOT" ? qtyNumber = numQty : qtyNumber = -numQty
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"].toString()
+                        fees = param1["Misc Fees"].toString()
+                        let numAmount = parseFloat(amount.replace(/,/g, ''))
+                        botSell == "BOT" ? priceNumber = -numAmount / numQty : priceNumber = numAmount / numQty
+
+                    }
+
+                    if (param3 == 4) {//closing option position on removal
+                        let botSell
+                        Number(descArray[6]) > 0 ? botSell = "BOT" : botSell = "SOLD"
+                        symb = descArray[7]
+                        type = descArray[descArray.length - 1].toLowerCase()
+                        Number(descArray[6]) > 0 ? side = "S" : side = "BC"
+                        Number(descArray[6]) > 0 ? qtyNumber = Number(descArray[6]) : qtyNumber = -Number(descArray[6])
+                        priceNumber = 0
+                        amount = param1.AMOUNT.toString()
+                        comm = param1["Commissions & Fees"]
+                        fees = param1["Misc Fees"]
+                    }
+
+                    let temp = {}
+                    temp.Account = account
+
+                    let tempDate = param1.DATE.split(" ")[0]
+                    let month = tempDate.split("/")[0]
+                    let day = tempDate.split("/")[1]
+                    let year = tempDate.split("/")[2]
+                    //console.log(" -> Year " + year)
+                    //console.log(" -> Year length " + year.length)
+                    if (year.length == 4) {
+                        temp["T/D"] = param1.DATE
+                        temp["S/D"] = param1.DATE
+                    } else if (year.length == 2) {
+                        let newDate = month + "/" + day + "/20" + year
+                        temp["T/D"] = newDate
+                        temp["S/D"] = newDate
+                    } else {
+                        reject("Year length issue")
+                    }
+                    temp.Currency = "USD"
+
+                    //Type
+                    temp.Type = type // if buying when exerciing the stock, it's a call because you can then sell it
+
+                    temp.Side = side
+
+                    type == "call" || type == "put" ? temp.Symbol = symb + "" + temp.Type.charAt(0) : temp.Symbol = symb
+
+                    qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
+                    temp.Qty = qtyNumber.toString()
+
+                    temp.Price = priceNumber.toString()
+
+                    temp["Exec Time"] = param1.TIME
+                    //console.log("\n Symbol "+temp.Symbol + " type "+temp.Type+" from "+temp["T/D"]+ " at "+temp["Exec Time"])
+
+                    let numberAmount
+                    amount != "" ? numberAmount = parseFloat(amount.replace(/,/g, '')) : numberAmount = 0
+
+                    let numberCommissions
+                    comm != "" ? numberCommissions = parseFloat(comm.replace(/,/g, '')) : numberCommissions = 0
+
+                    let numberMisc
+                    fees != "" ? numberMisc = parseFloat(fees.replace(/,/g, '')) : numberMisc = 0
+
+
+                    temp.Comm = (-numberCommissions).toString()
+                    temp.SEC = (-numberMisc).toString()
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Gross Proceeds"] = numberAmount.toString()
+                    temp["Net Proceeds"] = (numberAmount + numberCommissions + numberMisc).toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+
+                    tradesData.push(temp)
+                    resolve()
+                })
+            }
+
+            cashBalanceJsonArray.forEach(async (element) => {
+                //console.log("\n" + element.DATE + " " + element.TIME)
+                //console.log(" element "+JSON.stringify(element))
+                if (element.DESCRIPTION.includes("EXERCISE")) {
+                    await pushTradesData(element, "", 2) // closing option position
+                    await pushTradesData(element, "", 3) // opening underlying stock position
+                } else if (element.DESCRIPTION.includes("REMOVAL")) {
+                    await pushTradesData(element, "", 4) // closing option position
                 } else {
-                    alert("Year length issue")
+                    let match = false
+                    let index = accountTradeHistoryJsonArray.findIndex(x => x["Exec Time"] == element.DATE + " " + element.TIME)
+                    if (index != -1) {
+                        let el = accountTradeHistoryJsonArray[index]
+                        //console.log(" el " + JSON.stringify(el))
+                        //await accountTradeHistoryJsonArray.filter((_, i) => i !== index);
+                        //await accountTradeHistoryJsonArray.filter(x => x != el);
+                        await accountTradeHistoryJsonArray.splice(index, 1); // we need to remove the element that has already been parsed in case different executions at same date and time happened
+                        await pushTradesData(element, el, 1)
+                        match = true
+                    } else {
+                        //alert("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
+                        reject("No matching execution in Account Trade History for execution in Cash Balance on " + element.DATE + " " + element.TIME + ". Please correct your file manually and upload it again.")
+                    }
                 }
-
-                temp.Currency = "USD"
-
-                //Type
-                temp.Type = "stock"
-                if (element.type == "FUTURE") {
-                    temp.Type = "future"
-                }
-                if (element.type == "CALL" || element.type == "PUT") {
-                    element.type == "CALL" ? temp.Type = "call" : element.type == "put"
-                }
-                console.log("  --> Type " + temp.Type)
-
-                if (element.Side == "BUY" && element["Pos Effect"] == "TO OPEN") {
-                    temp.Side = "B"
-                }
-                if (element.Side == "BUY" && element["Pos Effect"] == "TO CLOSE") {
-                    temp.Side = "BC"
-                }
-                if (element.Side == "SELL" && element["Pos Effect"] == "TO OPEN") {
-                    temp.Side = "SS"
-                }
-                if (element.Side == "SELL" && element["Pos Effect"] == "TO CLOSE") {
-                    temp.Side = "S"
-                }
-                temp.Symbol = element.Symbol
-
-                let qtyNumber = Number(element.Qty)
-                qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
-                temp.Qty = qtyNumber.toString()
-
-                let priceNumber = Number(element.Price)
-                temp.Price = priceNumber.toString
-
-                temp["Exec Time"] = element.TIME
-
-                let numberAmount = parseFloat(element.AMOUNT.replace(/,/g, ''))
-                let numberCommissions = element["Commissions & Fees"] != "" ? parseFloat(element["Commissions & Fees"].replace(/,/g, '')) : 0
-                let numberMisc = element["Misc Fees"] != "" ? parseFloat(element["Misc Fees"].replace(/,/g, '')) : 0
-
-                temp.Comm = (-numberCommissions).toString()
-                temp.SEC = (-numberMisc).toString()
-                temp.TAF = "0"
-                temp.NSCC = "0"
-                temp.Nasdaq = "0"
-                temp["ECN Remove"] = "0"
-                temp["ECN Add"] = "0"
-                temp["Gross Proceeds"] = numberAmount.toString()
-                temp["Net Proceeds"] = (numberAmount + numberCommissions + numberMisc).toString()
-                temp["Clr Broker"] = ""
-                temp.Liq = ""
-                temp.Note = ""
-                tradesData.push(temp)
             });
         } catch (error) {
             console.log("  --> ERROR " + error)
@@ -315,29 +414,7 @@ export async function useBrokerTradeStation(param) {
 
             tradesData.length = 0
             let papaParse = Papa.parse(newCsv, { header: true })
-            //we need to recreate the JSON with proper date format + we simplify
-            //console.log("papaparse " + JSON.stringify(papaParse.data))
 
-            /*var workbook = XLSX.read(param);
-            var result = {};
-            //As this is text but looks like an excel we need to take back and fourth steps
-            //1 - Create array of arrays (https://docs.sheetjs.com/docs/api/utilities)
-            let roa = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
-            if (roa.length > 0) {
-                //console.log("roa "+JSON.stringify(roa))
-                result = roa;
-            }
-
-            //console.log("result " + JSON.stringify(result))
-
-            //2 - Create an excel sheet
-            let toSheet = XLSX.utils.aoa_to_sheet(result)
-            //console.log("to sheet " + JSON.stringify(toSheet))
-            //3 - Now that we have a proper excel sheet, we create json with correct keys
-            let toJson = XLSX.utils.sheet_to_json(toSheet)
-            //console.log("to sheet " + JSON.stringify(toJson))
-            tradesData.length = 0
-            */
             papaParse.data.forEach(element => {
                 //console.log("element " + JSON.stringify(element))
                 if (element["Order Status"] == "Filled") {
@@ -439,7 +516,7 @@ export async function useBrokerTradeStation(param) {
                             console.log("serviceFeeNumber " + serviceFeeNumber)
                             temp.SEC = (serviceFeeNumber).toString()
                         } else {
-                            alert("No ECN Fees found")
+                            reject("No ECN Fees found")
                         }
 
                     }
@@ -632,7 +709,7 @@ export async function useTradovate(param) {
                         temp["T/D"] = newDate
                         temp["S/D"] = newDate
                     } else {
-                        alert("Year length issue")
+                        reject("Year length issue")
                     }
 
                     temp.Currency = "USD"
@@ -673,7 +750,7 @@ export async function useTradovate(param) {
                     temp["Exec Time"] = dayjs(tempExec["Fill Time"], "hh:mm:ss A").format("HH:mm:ss")
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    console.log(" -> contractSpecs "+JSON.stringify(contractSpecs))
+                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
 
@@ -696,7 +773,7 @@ export async function useTradovate(param) {
                         //console.log(" -> fee "+echangeFees[0].fee[selectedTradovateTier.value])
                         commNumber = echangeFees[0].fee[selectedTradovateTier.value] * qtyNumber
                     } else {
-                        alert("No Fees found")
+                        reject("No Fees found")
                     }
                     temp.Comm = commNumber.toString()
                     temp.SEC = "0"

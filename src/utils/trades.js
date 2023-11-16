@@ -58,7 +58,7 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
                     }
-                    //console.log("temp "+JSON.stringify(temp))
+                    
                     //console.log("element "+JSON.stringify(element))
                     element.trades.forEach(element => {
                         if (element.side == "long") {
@@ -133,7 +133,9 @@ export async function useGetFilteredTrades(param) {
                         //console.log(" selected patterns "+selectedPatterns.value)
                         //console.log(" pattern "+pattern)
                         //console.log(" Account "+element.account)
-                        if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
+                        //if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
+                        
+                        if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
                             if (patternName != undefined) {
                                 element.pattern = pattern
                                 element.patternName = " | " + patternName
@@ -159,6 +161,7 @@ export async function useGetFilteredTrades(param) {
                     /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
                     if (temp.trades.length > 0) {
                         if (pageId.value == "daily") {
+                            //console.log(" temp "+JSON.stringify(temp))
                             filteredTradesDaily.push(temp)
                         } else {
                             filteredTrades.push(temp)
@@ -201,6 +204,7 @@ export async function useGetFilteredTrades(param) {
         }
 
         //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
+        //console.log(" -> Filtered trades daily " + JSON.stringify(filteredTradesDaily))
         //console.log("\nFinished getting filtered trades\n\n")
         resolve()
     })
@@ -248,6 +252,7 @@ export function useGetFilteredTradesForDaily() {
             filteredTrades.push(element)
         }
     }
+    //console.log("filtered trade for daily " + JSON.stringify(filteredTrades))
     dailyPagination.value = dailyPagination.value + dailyQueryLimit.value
 }
 
