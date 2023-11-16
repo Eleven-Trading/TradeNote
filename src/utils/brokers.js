@@ -845,7 +845,7 @@ export async function useBrokerHeldentrader(param) {
                     temp["S/D"] = dayjs(newTime).tz(timeZoneTrade.value).format('MM/DD/YYYY')
                     //console.log("td "+temp["T/D"])
                     temp.Currency = "USD"
-                    temp.Type = "0"
+                    temp.Type = "future"
                     if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Buy") {
                         temp.Side = "B"
                     }

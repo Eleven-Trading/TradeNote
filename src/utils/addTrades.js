@@ -1020,12 +1020,24 @@ async function createTrades() {
                          * END GETTING MFE PRICE
                          *****/
 
-
                         trde.openPosition = false
 
+                        //Updating exit time in parse open positions. Close position is update later
+                        if (openPositionsParse.length>0){
+                            for (let index = 0; index < openPositionsParse.length; index++) {
+                                const element = openPositionsParse[index];
+                                if (element.symbol == trde.symbol && element.type == trde.type){
+                                    element.exitTime = tempExec.execTime;
+                                }
+                                
+                            }
+                        }
+                        
+                        //Updating exit time and closing position in existing file
                         for (let index = 0; index < temp2.length; index++) {
                             const element = temp2[index]
                             if (element.id == trde.id) {
+                                element.exitTime = tempExec.execTime;
                                 element.openPosition = false
                             }
                         }
@@ -1058,18 +1070,6 @@ async function createTrades() {
 
                 //console.log("New trade status of symbol "+key2+" is "+newTrade+". the JSON is "+JSON.stringify(temp7))
             }
-
-
-            /* For later, when doing swing trades
-            newIds.forEach(element => {
-                swingCheck = temp2.filter(x => x.id == element)
-                //console.log("swing check "+JSON.stringify(swingCheck))
-                if (swingCheck.length > 0){
-                    console.log("Id "+element+" is day trade")
-                }else{
-                    console.log("Id "+element+" is swing trade")
-                }
-            });*/
 
         }
         //console.log(" -> Open positionsFile " + JSON.stringify(openPositionsFile))
@@ -1738,7 +1738,7 @@ export async function useUploadTrades() {
         })
     }
 
-    const updateOpenPositions = async (param1, param2) => {
+    const updateOpenPositions = async (param1, param2, param3) => {
         //console.log(" -> Upload function for "+param)
         return new Promise(async (resolve, reject) => {
             console.log(" -> Updating open position " + param1 + " from " + param2)
@@ -1756,9 +1756,10 @@ export async function useUploadTrades() {
                 let tempTrades = parsedRes.trades
                 //console.log("tempTrades "+JSON.stringify(tempTrades))
                 let openPositionIndex = tempTrades.findIndex(x => x.id == param1)
-                console.log(" openPositionIndex " + openPositionIndex)
+                //console.log(" openPositionIndex " + openPositionIndex)
                 if (openPositionIndex != -1) {
                     tempTrades[openPositionIndex].openPosition = false
+                    tempTrades[openPositionIndex].exitTime = param3
                 }
                 for (let index = 0; index < tempTrades.length; index++) {
                     const element = tempTrades[index];
@@ -1767,8 +1768,8 @@ export async function useUploadTrades() {
                     }
                 }
                 //console.log(" openPositions "+JSON.stringify(openPositions))
-                //results.set("openPositions", openPositions)
-                //results.set("trades", tempTrades)
+                results.set("openPositions", openPositions)
+                results.set("trades", tempTrades)
 
                 await results.save().then(resolve()) //very important to have await or else too quick to update
 
@@ -1789,7 +1790,7 @@ export async function useUploadTrades() {
                 let opIndex = openPositionsFile.findIndex(x => x.id == element.id)
                 if (opIndex == -1) {
                     //open positions parse element not anymore in openPositionsFile = trade is now closed
-                    await updateOpenPositions(element.id, element.td)
+                    await updateOpenPositions(element.id, element.td, element.exitTime)
                 }
                 if ((index + 1) == openPositionsParse.length) {
                     resolve()
