@@ -19,7 +19,7 @@ For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHe
 You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").
 
 #### Built with
-The TradeNote website runs on VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
+TradeNote is a responsive website that runs on VueJs, JS and HTML and uses [Parse](https://parseplatform.org/ "Parse") for its backend.
 
 #### Coffee
 If you like this project, <font size="5">please 🌟 this repository</font> and don't hesitate to show me <s>the money</s> love ;)
