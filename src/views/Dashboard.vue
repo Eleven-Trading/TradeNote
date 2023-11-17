@@ -99,7 +99,7 @@ useMountDashboard()
                                                     <span class="dashInfoTitle">APPT</span>
                                                 </div>
                                             </div>
-                                            <div class="col-6 col-lg-3">
+                                            <div v-bind:class="[profitAnalysis[amountCase + 'MfeR'] != null ? 'col-6 col-lg-3' : 'col-12 col-lg-6']">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         <span v-if="!isNaN(profitAnalysis[amountCase + 'R'])">{{
@@ -111,7 +111,7 @@ useMountDashboard()
                                                     <span class="dashInfoTitle">P/L Ratio</span>
                                                 </div>
                                             </div>
-                                            <div class="col-6 col-lg-3">
+                                            <div v-show="profitAnalysis[amountCase + 'MfeR'] != null" class="col-6 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
                                                         <span v-if="profitAnalysis[amountCase + 'MfeR'] != null">{{
@@ -195,7 +195,7 @@ useMountDashboard()
                                             <!-- Right square -->
                                             <div class="col-12 order-lg-1 col-lg-6">
                                                 <div class="row text-center mb-3">
-                                                    <div class="col-6">
+                                                    <div v-bind:class="[satisfactionArray.length > 0 ? 'col-6' : 'col-12']">
                                                         <div class="dailyCard">
                                                             <div v-if="dashboardIdMounted">
                                                                 <div v-bind:key="renderData" id="pieChart1"
@@ -205,7 +205,7 @@ useMountDashboard()
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-6">
+                                                    <div v-show="satisfactionArray.length > 0" class="col-6">
                                                         <div v-if="dashboardIdMounted">
                                                             <div v-if="!satisfactionArray.length > 0" class="dailyCard">
                                                                 <div
