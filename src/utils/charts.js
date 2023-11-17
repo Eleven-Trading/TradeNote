@@ -26,21 +26,21 @@ export function useECharts(param) {
         if (param == "init") {
             let green
             let red
-            if(index == 1){
+            if (index == 1) {
                 //green = probWins
                 //red = probLoss
                 green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
                 red = (totals[amountCase.value + 'LossCount'] / totals.trades)
-                
+
             }
-            if (index == 2){
+            if (index == 2) {
                 //green = satisfied
                 //red = dissatisfied
                 let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
                 let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
-                if (satisfactionArray.length>0){
-                    green = satisfied/satisfactionArray.length
-                    red = dissatisfied/satisfactionArray.length
+                if (satisfactionArray.length > 0) {
+                    green = satisfied / satisfactionArray.length
+                    red = dissatisfied / satisfactionArray.length
                 }
             }
             usePieChart(chartId, green, red)
@@ -641,7 +641,7 @@ export function usePieChart(param1, param2, param3) { //chart ID, green, red, pa
                 avoidLabelOverlap: false,
                 data: [
                     { value: green },
-                    { value: red},
+                    { value: red },
                 ],
                 itemStyle: {
                     color: (params) => {
@@ -660,10 +660,10 @@ export function usePieChart(param1, param2, param3) { //chart ID, green, red, pa
                     formatter: (params) => {
                         if (pageId.value == "dashboard") {
                             let rate
-                            if(param1 == "pieChart1"){
+                            if (param1 == "pieChart1") {
                                 rate = "\nWin rate"
                             }
-                            if(param1 == "pieChart2"){
+                            if (param1 == "pieChart2") {
                                 rate = "\nSatisfaction"
                             }
                             return useOneDecPercentFormat(green) + rate
@@ -1002,7 +1002,7 @@ export function useBarChartNegative(param1) {
         if (param1 == "barChartNegative16") {
             var keyObject = groups.symbols
         }
-        
+
         if (param1 == "barChartNegative7") {
             var keyObject = groups.executions
         }
@@ -1123,6 +1123,7 @@ export function useBarChartNegative(param1) {
                 }
             })
         }
+
         if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
             //1) combine the arrays:
             var list = [];
@@ -1149,171 +1150,173 @@ export function useBarChartNegative(param1) {
 
         }
 
-        var myChart = echarts.init(document.getElementById(param1));
-        const option = {
-            tooltip: {
-                trigger: 'axis',
-                backgroundColor: blackbg7,
-                borderColor: blackbg7,
-                textStyle: {
-                    color: white87.value
-                },
-                axisPointer: {
-                    type: 'shadow'
-                },
-                formatter: (params) => {
-                    return useTwoDecCurrencyFormat(params[0].value)
-                }
-            },
-            grid: {
-                top: 80,
-                bottom: 30,
-                containLabel: true // or else the yaxis labels are cutout
-            },
-            xAxis: {
-                type: 'value',
-                position: 'bottom',
-                splitLine: {
-                    lineStyle: {
-                        type: 'solid',
-                        color: cssColor38
+        if (series.length > 0) {
+            var myChart = echarts.init(document.getElementById(param1));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: blackbg7,
+                    borderColor: blackbg7,
+                    textStyle: {
+                        color: white87.value
+                    },
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    formatter: (params) => {
+                        return useTwoDecCurrencyFormat(params[0].value)
                     }
                 },
-                axisLabel: {
-                    formatter: (params) => {
-                        if (selectedRatio.value == "profitFactor") {
-                            return params.toFixed(0)
-                        } else {
-                            return useThousandCurrencyFormat(params)
+                grid: {
+                    top: 80,
+                    bottom: 30,
+                    containLabel: true // or else the yaxis labels are cutout
+                },
+                xAxis: {
+                    type: 'value',
+                    position: 'bottom',
+                    splitLine: {
+                        lineStyle: {
+                            type: 'solid',
+                            color: cssColor38
+                        }
+                    },
+                    axisLabel: {
+                        formatter: (params) => {
+                            if (selectedRatio.value == "profitFactor") {
+                                return params.toFixed(0)
+                            } else {
+                                return useThousandCurrencyFormat(params)
+                            }
                         }
                     }
-                }
-            },
-            yAxis: {
-                type: 'category',
-                axisLine: { show: false },
-                axisLabel: { show: true },
-                axisTick: { show: false },
-                splitLine: { show: false },
-                data: yAxis,
-                axisLabel: {
-                    formatter: (params) => {
-                        if (param1 == "barChartNegative4") {
-                            if (params <= 30) {
-                                var range
-                                if (params <= 5) {
-                                    range = 5
-                                } else {
-                                    range = 4
+                },
+                yAxis: {
+                    type: 'category',
+                    axisLine: { show: false },
+                    axisLabel: { show: true },
+                    axisTick: { show: false },
+                    splitLine: { show: false },
+                    data: yAxis,
+                    axisLabel: {
+                        formatter: (params) => {
+                            if (param1 == "barChartNegative4") {
+                                if (params <= 30) {
+                                    var range
+                                    if (params <= 5) {
+                                        range = 5
+                                    } else {
+                                        range = 4
+                                    }
+                                    return (params - range) + "-" + params
                                 }
-                                return (params - range) + "-" + params
-                            }
-                            if (params > 30) {
-                                return "+30"
-                            }
-                        } else if (param1 == "barChartNegative2") { //Duration
-                            //console.log("params "+params)
-                            if (params < 1) {
-                                return "00:00-00:59"
-                            }
-                            if (params >= 1 && params < 2) {
-                                return "01:00-01:59"
-                            }
-                            if (params >= 2 && params < 5) {
-                                return "02:00-04:59"
-                            }
-                            if (params >= 5 && params < 10) {
-                                return "05:00-09:59"
-                            }
-                            if (params >= 10 && params < 20) {
-                                return "10:00-19:59"
-                            }
-                            if (params >= 20 && params < 40) {
-                                return "20:00-39:59"
-                            }
-                            if (params >= 40 && params < 60) {
-                                return "40:00-59:59"
-                            }
-                            if (params >= 60) {
-                                return "+60:00"
-                            }
-                        } else if (param1 == "barChartNegative3") { //Day of week
-                            //console.log(dayjs.updateLocale('en').weekdays[params])
-                            return dayjs.updateLocale('en').weekdays[params]
-                        } else if (param1 == "barChartNegative13") {
-                            //console.log("params "+params)
-                            if (params < 30) {
-                                if (params < 5) {
-                                    return "0-4.99$"
-                                } else {
-                                    return params + "-" + (Number(params) + 4.99).toFixed(2) + "$"
+                                if (params > 30) {
+                                    return "+30"
                                 }
-                            }
-                            if (params >= 30) {
-                                return "+30$"
-                            }
-                        } else if (param1 == "barChartNegative12") { //Float
-                            params = params / 1000000
-                            if (params < 20) {
-                                var range = 4.9
-                                if (params < 5) {
-                                    return "0-" + (params + range) + "M"
-                                } else {
+                            } else if (param1 == "barChartNegative2") { //Duration
+                                //console.log("params "+params)
+                                if (params < 1) {
+                                    return "00:00-00:59"
+                                }
+                                if (params >= 1 && params < 2) {
+                                    return "01:00-01:59"
+                                }
+                                if (params >= 2 && params < 5) {
+                                    return "02:00-04:59"
+                                }
+                                if (params >= 5 && params < 10) {
+                                    return "05:00-09:59"
+                                }
+                                if (params >= 10 && params < 20) {
+                                    return "10:00-19:59"
+                                }
+                                if (params >= 20 && params < 40) {
+                                    return "20:00-39:59"
+                                }
+                                if (params >= 40 && params < 60) {
+                                    return "40:00-59:59"
+                                }
+                                if (params >= 60) {
+                                    return "+60:00"
+                                }
+                            } else if (param1 == "barChartNegative3") { //Day of week
+                                //console.log(dayjs.updateLocale('en').weekdays[params])
+                                return dayjs.updateLocale('en').weekdays[params]
+                            } else if (param1 == "barChartNegative13") {
+                                //console.log("params "+params)
+                                if (params < 30) {
+                                    if (params < 5) {
+                                        return "0-4.99$"
+                                    } else {
+                                        return params + "-" + (Number(params) + 4.99).toFixed(2) + "$"
+                                    }
+                                }
+                                if (params >= 30) {
+                                    return "+30$"
+                                }
+                            } else if (param1 == "barChartNegative12") { //Float
+                                params = params / 1000000
+                                if (params < 20) {
+                                    var range = 4.9
+                                    if (params < 5) {
+                                        return "0-" + (params + range) + "M"
+                                    } else {
+                                        return params + "M-" + (params + range) + "M"
+                                    }
+                                }
+                                if (params >= 20 && params < 50) {
+                                    var range = 9.9
                                     return params + "M-" + (params + range) + "M"
                                 }
-                            }
-                            if (params >= 20 && params < 50) {
-                                var range = 9.9
-                                return params + "M-" + (params + range) + "M"
-                            }
-                            if (params >= 50) {
-                                return "+50M"
-                            }
-                        } else if (param1 == "barChartNegative14") {
-                            params = params / 1000000
-                            if (params <= 50) {
-                                return "Nano-cap (0-" + params + "M)"
-                            }
-                            if (params > 50 && params <= 300) {
-                                return "Micro-cap (50M-" + params + "M)"
-                            }
-                            if (params > 300 && params <= 2000) {
-                                return "Small-cap (300M-" + params / 1000 + "B)"
-                            }
-                            if (params > 2000 && params <= 10000) {
-                                return "Mid-cap (2B-" + params / 1000 + "B)"
+                                if (params >= 50) {
+                                    return "+50M"
+                                }
+                            } else if (param1 == "barChartNegative14") {
+                                params = params / 1000000
+                                if (params <= 50) {
+                                    return "Nano-cap (0-" + params + "M)"
+                                }
+                                if (params > 50 && params <= 300) {
+                                    return "Micro-cap (50M-" + params + "M)"
+                                }
+                                if (params > 300 && params <= 2000) {
+                                    return "Small-cap (300M-" + params / 1000 + "B)"
+                                }
+                                if (params > 2000 && params <= 10000) {
+                                    return "Mid-cap (2B-" + params / 1000 + "B)"
+                                } else {
+                                    return "Big-cap (+10B)"
+                                }
+                            } else if (param1 == "barChartNegative17") {
+                                return (useCapitalizeFirstLetter(params))
                             } else {
-                                return "Big-cap (+10B)"
+                                return params
                             }
-                        } else if (param1 == "barChartNegative17") {
-                            return (useCapitalizeFirstLetter(params))
-                        } else {
-                            return params
                         }
-                    }
+                    },
                 },
-            },
-            series: [{
-                type: 'bar',
-                itemStyle: {
-                    color: '#35C4FE',
-                },
-                label: {
-                    show: true,
-                    position: "right",
-                    color: cssColor87,
-                    formatter: (params) => {
-                        if (selectedRatio.value == "profitFactor") {
-                            return params.value.toFixed(2)
-                        } else {
-                            return useTwoDecCurrencyFormat(params.value)
+                series: [{
+                    type: 'bar',
+                    itemStyle: {
+                        color: '#35C4FE',
+                    },
+                    label: {
+                        show: true,
+                        position: "right",
+                        color: cssColor87,
+                        formatter: (params) => {
+                            if (selectedRatio.value == "profitFactor") {
+                                return params.value.toFixed(2)
+                            } else {
+                                return useTwoDecCurrencyFormat(params.value)
+                            }
                         }
-                    }
-                },
-                data: series
-            }]
-        };
-        myChart.setOption(option);
+                    },
+                    data: series
+                }]
+            };
+            myChart.setOption(option);
+        }
         resolve()
     })
 }

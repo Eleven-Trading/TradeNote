@@ -413,10 +413,11 @@ useMountDashboard()
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6>Group by Pattern</h6>
+                                        
                                         <div class="text-center" v-if="!dashboardChartsMounted">
                                             <div class="spinner-border text-blue" role="status"></div>
                                         </div>
-                                        <div v-bind:key="renderData" id="barChartNegative10" class="chartClass"></div>
+                                        <div v-bind:key="renderData" id="barChartNegative10" class="chartClass d-flex align-items-center justify-content-center">No Data</div>
                                     </div>
                                 </div>
                                 
@@ -427,7 +428,7 @@ useMountDashboard()
                                         <div class="text-center" v-if="!dashboardChartsMounted">
                                             <div class="spinner-border text-blue" role="status"></div>
                                         </div>
-                                        <div v-bind:key="renderData" id="barChartNegative15" class="chartClass"></div>
+                                        <div v-bind:key="renderData" id="barChartNegative15" class="chartClass d-flex align-items-center justify-content-center">No Data</div>
                                     </div>
                                 </div>
 
