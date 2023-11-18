@@ -19,6 +19,7 @@ export const quill = ref()
 export const sideMenuMobileOut = ref(false)
 export const screenType = ref()
 export const saveButton = ref(false)
+export const latestVersion = ref()
 
 /**************************************
 * PATTERNS, MISTAKES & SETUPS

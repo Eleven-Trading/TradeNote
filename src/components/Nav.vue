@@ -1,8 +1,9 @@
 <script setup>
+import { onMounted } from 'vue';
 import { useToggleMobileMenu } from '../utils/utils.js'
-import { useInitShepherd } from "../utils/utils.js";
-import { pageId, currentUser, renderProfile, screenType } from "../stores/globals"
-import {version} from '../../package.json';
+import { useInitShepherd, useInitTooltip } from "../utils/utils.js";
+import { pageId, currentUser, renderProfile, screenType, latestVersion } from "../stores/globals"
+import { version } from '../../package.json';
 
 const pages = [{
     id: "registerSignup",
@@ -91,9 +92,13 @@ const pages = [{
 }
 ]
 //console.log(" user "+useCheckCurrentUser())
+onMounted(async () => {
+    await getLatestVersion()
+    await useInitTooltip()
+})
 
 function logout() {
-    Parse.User.logOut().then(async() => {
+    Parse.User.logOut().then(async () => {
         Parse.User.current(); // this will now be null
         localStorage.clear()
 
@@ -102,6 +107,27 @@ function logout() {
     });
 }
 
+function getLatestVersion() {
+    return new Promise(async (resolve, reject) => {
+        await axios.get("https://raw.githubusercontent.com/Eleven-Trading/TradeNote/main/package.json")
+            .then((response) => {
+                //console.log(" -> data " + JSON.stringify(response.data))
+                latestVersion.value = response.data.version
+                console.log(" -> Latest version " + latestVersion.value)
+                if (latestVersion.value == version) {
+                    console.log(" -> Running latest version")
+                } else {
+                    console.log(" -> New version is available")
+                }
+            })
+            .catch((error) => {
+            })
+            .finally(function () {
+                // always executed
+            })
+        resolve()
+    })
+}
 
 </script>
 
@@ -114,7 +140,8 @@ function logout() {
                         pages.filter(item => item.id == pageId)[0].name }}</a>
             </span>
             <span v-else>
-                <i v-bind:class="pages.filter(item => item.id == pageId)[0].icon" class="me-1"></i>{{ pages.filter(item=>item.id== pageId)[0].name }}</span>
+                <i v-bind:class="pages.filter(item => item.id == pageId)[0].icon" class="me-1"></i>{{
+                    pages.filter(item => item.id == pageId)[0].name }}</span>
         </div>
         <div class="col-6 ms-auto text-end">
             <div class="row">
@@ -157,9 +184,13 @@ function logout() {
                             <a class="dropdown-item" v-on:click="logout()">
                                 <i class="uil uil-signout me-2"></i>Logout</a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li class="text-center">
-                            <span class="txt-small">v{{ version }}</span>
+                            <span class="txt-small">v{{ version }}<i v-if="latestVersion != version"
+                                    class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
+                                    v-bind:data-bs-title="'New version available<br>v' + latestVersion"></i></span>
                         </li>
                     </ul>
                 </div>
