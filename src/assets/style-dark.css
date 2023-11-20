@@ -253,6 +253,10 @@ input:checked+.slider:before {
     border-bottom: 1px solid var(--white-38);
 }
 
+.noDataTab {
+    color: var(--grey-color)
+}
+
 .parentIcon {
     position: relative;
 }

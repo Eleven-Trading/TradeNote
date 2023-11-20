@@ -498,7 +498,7 @@ function resetExcursion() {
                                     <div class="col-12 table-responsive">
                                         <nav>
                                             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-                                                <button v-for="dashTab in dailyTabs" class="nav-link"
+                                                <!--<button v-for="dashTab in dailyTabs" class="nav-link"
                                                     v-bind:id="dashTab.id + '-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="dashTab.target + '-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true">{{
@@ -507,7 +507,29 @@ function resetExcursion() {
                                                         v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
                                                         class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
                                                             itemTrade.dateUnix).length }})</span>
-                                                    <!--({{itemTrade[dashTab.id].length}})-->
+                                                </button>-->
+                                                <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
+                                                    aria-controls="nav-overview" aria-selected="true">Trades
+                                                </button>
+                                                <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
+                                                    aria-controls="nav-overview" aria-selected="true">Blotter
+                                                </button>
+                                                <button class="nav-link" v-bind:id="'screenshots-' + index"
+                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#screenshotsNav-' + index"
+                                                    type="button" role="tab" aria-controls="nav-overview"
+                                                    aria-selected="true"><span
+                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0">Screenshots<span class="txt-small">
+                                                            ({{ screenshots.filter(obj => obj.dateUnixDay ==
+                                                                itemTrade.dateUnix).length }})</span></span><span v-else
+                                                        class="noDataTab">Screenshots</span>
+                                                </button>
+                                                <button class="nav-link" v-bind:id="'diaries-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
+                                                    aria-controls="nav-overview" aria-selected="true"><span
+                                                        v-if="diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0">Diary</span><span v-else
+                                                        class="noDataTab">Diary</span>
                                                 </button>
                                             </div>
                                         </nav>
@@ -741,7 +763,8 @@ function resetExcursion() {
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' : 'Short'
                                     }}</td>
 
-                                    <td><span v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"><span
+                                    <td><span
+                                            v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"><span
                                                 v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].openPosition">Open<i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -858,83 +881,83 @@ function resetExcursion() {
                                                 class="form-select">
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in activeMistakes" v-bind:value="item.objectId"
-                                                v-bind:selected="item.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].mistake">
-                                                {{ item.name }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-4" v-else>
-                                        <span class="form-control">Add mistake tags in <a
-                                                href="/settings">settings</a></span>
-                                    </div>
-                                    <div class="col-3">
-                                        <input type="number" class="form-control" placeholder="MFE Price"
-                                            style="font-size: small;" v-bind:value="excursion.mfePrice"
-                                            v-on:click="tradeExcursionClicked"
-                                            v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
-                                    </div>
-                                    <!-- Delete
+                                                    v-bind:selected="item.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].mistake">
+                                                    {{ item.name }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-4" v-else>
+                                            <span class="form-control">Add mistake tags in <a
+                                                    href="/settings">settings</a></span>
+                                        </div>
+                                        <div class="col-3">
+                                            <input type="number" class="form-control" placeholder="MFE Price"
+                                                style="font-size: small;" v-bind:value="excursion.mfePrice"
+                                                v-on:click="tradeExcursionClicked"
+                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
+                                        </div>
+                                        <!-- Delete
                                         <div class="col-1">
                                             <i v-on:click="useDeleteSetup(filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex])"
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div> -->
-                                </div>
-                            </div>
-
-                            <!-- Second line -->
-                            <div class="col-12 mt-2" v-show="!spinnerSetups">
-                                <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                    v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
-                                    v-on:change="useTradeSetupChange($event.target.value, 'note')"
-                                    v-on:click="noteClicked"></textarea>
-                            </div>
-
-                            <!-- Forth line -->
-                            <div class="col-12 mt-3" v-show="!spinnerSetups">
-                                <input class="screenshotFile" type="file"
-                                    @change="useSetupImageUpload($event, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime, filteredTrades[itemTradeIndex].trades[tradeIndex].symbol, filteredTrades[itemTradeIndex].trades[tradeIndex].side)" />
-                            </div>
-
-
-                            <!-- Fifth line -->
-                            <div class="col-12 mt-3" v-show="!spinnerSetups">
-                                <div class="row">
-                                    <div class="col-4 text-start">
-                                        <button
-                                            v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
-                                            class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                            v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
-                                            v-bind:disabled="spinnerSetups == true">
-                                            <i class="fa fa-chevron-left me-2"></i></button>
-                                    </div>
-                                    <div class="col-4 text-center">
-                                        <button v-if="saveButton" class="btn btn-outline-success btn-sm"
-                                            v-on:click="hideTradesModal()">Close
-                                            & Save</button>
-                                        <button v-else class="btn btn-outline-primary btn-sm"
-                                            v-on:click="hideTradesModal()">Close</button>
-                                    </div>
-                                    <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
-                                        class="ms-auto col-4 text-end">
-                                        <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                            v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
-                                            v-bind:disabled="spinnerSetups == true"><i
-                                                class="fa fa-chevron-right ms-2"></i>
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Spinner -->
-                            <div v-show="spinnerSetups" class="col-12">
-                                <div class="d-flex justify-content-center">
-                                    <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                <!-- Second line -->
+                                <div class="col-12 mt-2" v-show="!spinnerSetups">
+                                    <textarea class="form-control" placeholder="note" id="floatingTextarea"
+                                        v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
+                                        v-on:change="useTradeSetupChange($event.target.value, 'note')"
+                                        v-on:click="noteClicked"></textarea>
+                                </div>
+
+                                <!-- Forth line -->
+                                <div class="col-12 mt-3" v-show="!spinnerSetups">
+                                    <input class="screenshotFile" type="file"
+                                        @change="useSetupImageUpload($event, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime, filteredTrades[itemTradeIndex].trades[tradeIndex].symbol, filteredTrades[itemTradeIndex].trades[tradeIndex].side)" />
+                                </div>
+
+
+                                <!-- Fifth line -->
+                                <div class="col-12 mt-3" v-show="!spinnerSetups">
+                                    <div class="row">
+                                        <div class="col-4 text-start">
+                                            <button
+                                                v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
+                                                class="btn btn-outline-primary btn-sm ms-3 mb-2"
+                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
+                                                v-bind:disabled="spinnerSetups == true">
+                                                <i class="fa fa-chevron-left me-2"></i></button>
+                                        </div>
+                                        <div class="col-4 text-center">
+                                            <button v-if="saveButton" class="btn btn-outline-success btn-sm"
+                                                v-on:click="hideTradesModal()">Close
+                                                & Save</button>
+                                            <button v-else class="btn btn-outline-primary btn-sm"
+                                                v-on:click="hideTradesModal()">Close</button>
+                                        </div>
+                                        <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
+                                            class="ms-auto col-4 text-end">
+                                            <button class="btn btn-outline-primary btn-sm me-3 mb-2"
+                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
+                                                v-bind:disabled="spinnerSetups == true"><i
+                                                    class="fa fa-chevron-right ms-2"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Spinner -->
+                                <div v-show="spinnerSetups" class="col-12">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="spinner-border spinner-border-sm text-blue" role="status"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <hr>
                 </div>
-                <hr>
             </div>
         </div>
-    </div>
 </div></template>
