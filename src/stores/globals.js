@@ -153,11 +153,11 @@ export const futureContractsJson = ref(
             "type": "Micro E-mini Futures",
             "exchange": "CBOT\/CME",
             "unit": "USD",
-            "contractSize": 0.5,
+            "contractSize": 0,
             "contractSizeExpl": "$0.50 x DJIA Index",
             "months": "H,M,U,Z",
             "tick": 1,
-            "value": 0.5
+            "value": 0
         },
         {
             "name": "Micro E-mini Russell 2000",
@@ -169,6 +169,30 @@ export const futureContractsJson = ref(
             "contractSizeExpl": "$5 x Russell 2000 Index",
             "months": "H,M,U,Z",
             "tick": 0.1,
+            "value": 0.5
+        },
+        {
+            "name": "Micro-DAX",
+            "symbol": "FDXS",
+            "type": "Micro E-mini Futures",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 1,
+            "contractSizeExpl": "€1 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 1,
+            "value": 1
+        },
+        {
+            "name": "Micro-EURO STOXX 50",
+            "symbol": "FSXE",
+            "type": "Micro E-mini Futures",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 1,
+            "contractSizeExpl": "€1 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 0.5,
             "value": 0.5
         },
         {
@@ -244,6 +268,78 @@ export const futureContractsJson = ref(
             "value": 25
         },
         {
+            "name": "DAX",
+            "symbol": "FDAX",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 25,
+            "contractSizeExpl": "€25 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 1,
+            "value": 25
+        },
+        {
+            "name": "Mini-DAX",
+            "symbol": "FDXM",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 5,
+            "contractSizeExpl": "€5 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 1,
+            "value": 5
+        },
+        {
+            "name": "EURO STOXX 50",
+            "symbol": "FESX",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 20,
+            "contractSizeExpl": "€10 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 1,
+            "value": 20
+        },
+        {
+            "name": "STOXX Europe 600",
+            "symbol": "FXXP",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 50,
+            "contractSizeExpl": "€50 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 0.1,
+            "value": 5
+        },
+        {
+            "name": "EURO STOXX Banks",
+            "symbol": "FESB",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 50,
+            "contractSizeExpl": "€50 x Index Value",
+            "months": "H,M,U,Z",
+            "tick": 0.05,
+            "value": 2.5
+        },
+        {
+            "name": "VSTOXX",
+            "symbol": "FVS",
+            "type": "Stock Index",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100,
+            "contractSizeExpl": "€100 x Index Value",
+            "months": "see exch.",
+            "tick": 0.05,
+            "value": 5
+        },
+        {
             "name": "CBOE Volatility Index (VIX)",
             "symbol": "VX",
             "type": "Stock Index",
@@ -314,6 +410,114 @@ export const futureContractsJson = ref(
             "months": "H,M,U,Z",
             "tick": 1,
             "value": 25
+        },
+        {
+            "name": "British Pound",
+            "symbol": "6B",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "GBP",
+            "contractSize": 62500,
+            "contractSizeExpl": "62.5K £",
+            "months": "H,M,U,Z",
+            "tick": 0.0001,
+            "value": 6.25
+        },
+        {
+            "name": "Canadian Dollar",
+            "symbol": "6C",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "USD",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K $",
+            "months": "H,M,U,Z",
+            "tick": 5E-05,
+            "value": 5
+        },
+        {
+            "name": "Euro FX",
+            "symbol": "6E",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "USD",
+            "contractSize": 125000,
+            "contractSizeExpl": "125K €",
+            "months": "H,M,U,Z",
+            "tick": 5E-05,
+            "value": 6.25
+        },
+        {
+            "name": "Japanese Yen",
+            "symbol": "6J",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "USD",
+            "contractSize": 12500000,
+            "contractSizeExpl": "12.5 mil ¥",
+            "months": "H,M,U,Z",
+            "tick": 5E-07,
+            "value": 6.25
+        },
+        {
+            "name": "New Zealand Dollar",
+            "symbol": "6N",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "NZD",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K NZD",
+            "months": "H,M,U,Z",
+            "tick": 5E-05,
+            "value": 5
+        },
+        {
+            "name": "Swiss Franc",
+            "symbol": "6S",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "CHF",
+            "contractSize": 125000,
+            "contractSizeExpl": "125K CHF",
+            "months": "H,M,U,Z",
+            "tick": 0.0001,
+            "value": 12.5
+        },
+        {
+            "name": "E-mini Euro FX",
+            "symbol": "E7",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "EUR",
+            "contractSize": 62500,
+            "contractSizeExpl": "62.5K €",
+            "months": "H,M,U,Z",
+            "tick": 0.0001,
+            "value": 6.25
+        },
+        {
+            "name": "E-mini Japanese Yen",
+            "symbol": "J7",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "YEN",
+            "contractSize": 62500000,
+            "contractSizeExpl": "6.25 mil ¥",
+            "months": "H,M,U,Z",
+            "tick": 1E-06,
+            "value": 62.5
+        },
+        {
+            "name": "Micro AUD\/USD",
+            "symbol": "M6A",
+            "type": "Currencies",
+            "exchange": "CME",
+            "unit": "AUD",
+            "contractSize": 10000,
+            "contractSizeExpl": "10K AUD",
+            "months": "H,M,U,Z",
+            "tick": 0.0001,
+            "value": 1
         },
         {
             "name": "Dollar Index",
@@ -561,11 +765,11 @@ export const futureContractsJson = ref(
             "type": "Metals",
             "exchange": "ICE Futures U.S.",
             "unit": "oz",
-            "contractSize": 33.15,
+            "contractSize": 33,
             "contractSizeExpl": "33.15 oz",
             "months": "All",
             "tick": 0.1,
-            "value": 3.315
+            "value": 3.3000000000000003
         },
         {
             "name": "Mini-Silver",
@@ -758,6 +962,90 @@ export const futureContractsJson = ref(
             "months": "H,M,U,Z",
             "tick": 0.01,
             "value": 10000
+        },
+        {
+            "name": "Long-Term Euro-BTP",
+            "symbol": "FBTP",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K€",
+            "months": "H,M,U,Z",
+            "tick": 0.01,
+            "value": 10
+        },
+        {
+            "name": "Short-Term Euro-BTP",
+            "symbol": "FBTS",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K€",
+            "months": "H,M,U,Z",
+            "tick": 0.01,
+            "value": 10
+        },
+        {
+            "name": "Euro-Bund",
+            "symbol": "FGBL",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K €",
+            "months": "H,M,U,Z",
+            "tick": 0.01,
+            "value": 10
+        },
+        {
+            "name": "Euro-Bobl",
+            "symbol": "FGBM",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K €",
+            "months": "H,M,U,Z",
+            "tick": 0.01,
+            "value": 10
+        },
+        {
+            "name": "Euro-Schatz",
+            "symbol": "FGBS",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K €",
+            "months": "H,M,U,Z",
+            "tick": 0.005,
+            "value": 5
+        },
+        {
+            "name": "Euro-Buxl",
+            "symbol": "FGBX",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K€",
+            "months": "H,M,U,Z",
+            "tick": 0.02,
+            "value": 20
+        },
+        {
+            "name": "Euro-OAT",
+            "symbol": "FOAT",
+            "type": "Financials",
+            "exchange": "Eurex",
+            "unit": "EUR",
+            "contractSize": 100000,
+            "contractSizeExpl": "100K€",
+            "months": "H,M,U,Z",
+            "tick": 0.01,
+            "value": 10
         }
     ]
 )

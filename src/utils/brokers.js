@@ -751,6 +751,9 @@ export async function useTradovate(param) {
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
                     console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    if (contractSpecs.length == 0){
+                        reject("Missing information for future symbol "+temp.Symbol)
+                    }
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
 
