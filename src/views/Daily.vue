@@ -508,32 +508,34 @@ function resetExcursion() {
                                                         class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
                                                             itemTrade.dateUnix).length }})</span>
                                                 </button>-->
+                                                
                                                 <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Trades
                                                 </button>
+                                                
                                                 <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Blotter
                                                 </button>
-                                                <button class="nav-link" v-bind:id="'screenshots-' + index"
+                                                
+                                                <button v-bind:id="'screenshots-' + index"
                                                     data-bs-toggle="tab" v-bind:data-bs-target="'#screenshotsNav-' + index"
                                                     type="button" role="tab" aria-controls="nav-overview"
-                                                    aria-selected="true"><span
-                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0">Screenshots<span class="txt-small">
+                                                    aria-selected="true" v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0" class="txt-small">
                                                             ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                                itemTrade.dateUnix).length }})</span></span><span v-else
-                                                        class="noDataTab">Screenshots</span>
+                                                                itemTrade.dateUnix).length }})</span>
                                                 </button>
-                                                <button class="nav-link" v-bind:id="'diaries-' + index" data-bs-toggle="tab"
+                                                
+                                                <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true"><span
-                                                        v-if="diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0">Diary</span><span v-else
-                                                        class="noDataTab">Diary</span>
+                                                    aria-controls="nav-overview" aria-selected="true" v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
                                         </nav>
                                         <div class="tab-content" id="nav-tabContent">
+                                           
                                             <!-- TRADES TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">

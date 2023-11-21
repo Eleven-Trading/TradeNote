@@ -254,7 +254,7 @@ input:checked+.slider:before {
 }
 
 .noDataTab {
-    color: var(--grey-color)
+    color: var(--grey-color) !important;
 }
 
 .parentIcon {
