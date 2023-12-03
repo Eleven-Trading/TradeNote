@@ -57,9 +57,9 @@ onMounted(async () => {
         console.log("documentHeight "+documentHeight)
         //console.log("difference "+difference)*/
         if (difference <= 0) {
-            /*console.log("spinnerLoadMore "+spinnerLoadMore.value)
+            console.log("spinnerLoadMore "+spinnerLoadMore.value)
             console.log("spinnerLoadingPage "+spinnerLoadingPage.value)
-            console.log("endOfList "+endOfList.value)*/
+            console.log("endOfList "+endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }

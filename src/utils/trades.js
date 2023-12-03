@@ -246,6 +246,7 @@ export async function useGetTrades() {
 export function useGetFilteredTradesForDaily() {
     for (let index = dailyPagination.value; index < (dailyPagination.value + dailyQueryLimit.value); index++) {
         const element = filteredTradesDaily[index];
+        //console.log("element "+JSON.stringify(element))
         if (!element) {
             endOfList.value = true
         } else {
