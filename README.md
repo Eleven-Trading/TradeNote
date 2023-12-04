@@ -37,21 +37,14 @@ TradeNote offers a dashboard, daily view and calendar view so you can measure yo
 #### Reflect
 With TradeNote you can keep a daily diary of your trading journey to work on your trader psychology as well as add annotated screenshots of interesting setups or your entries. You can also write your (yearly) playbook.
 
-### Supported trades
-#### Day trades
-This project arose from a personal need and as such is most widely used (and tested) for intraday stock trades (using TradeZero Broker). 
+### Trades, Assets and Brokers
+#### Supported trades
+TradeNote supports intraday and swing trades but keep in mind that the project arose from a personal need and as such is most widely used (and tested) for intraday stock trades (using TradeZero Broker).
 
-#### Swing trades
-Importing swing trades is currently in beta phase and being tested. It will be shortly  available.
-
-To avoid open positions and/or P&L Discrepancy when importing swing trades, please make sure of the following. 
-1. Begin importing from a point in time where you were flat (no previous open positions). If you begin importing from a point in time where you had pre-existing positions, there is a chance the data will be incorrect as TradeNote doesn’t know about these existing positions. 
-2. Alternatively, before importing your file, if you know it contains execution(s) from an open position (and that you're closing or adding to), simply remove that/these execution(s).
-
-### Supported Assets. 
+#### Supported Assets. 
 Depending on the broker and thanks to the contribution of the community, you can import and journal the following assets in TradeNote: Stocks, Futures, Options (only tested on single options) and Forex. 
 
-### Supported Brokers
+#### Supported Brokers
 Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the list of supported brokers and instructions for exporting and importing to TradeNote..
 
 You can contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
@@ -152,9 +145,39 @@ If you want to run the latest version of TradeNote you can also build the image 
 4. Run `APP_ID=xxx MASTER_KEY=xxx ANALYTICS_OFF="true" MONGO_USER=xxx MONGO_PASSWORD=xxx TRADENOTE_DATABASE=xxx MONGO_URL=xxx MONGO_PORT=xxx TRADENOTE_PORT=xxx NODE_ENV='dev' node index.js`
 
 ## First Steps
-1. Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user. Use any email and set a password
-2. When you log in for the first time, you will see a step by step tutorial explaining how TradeNote works
-2. Import your trades. See the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for more information
+### Registering a User
+Start by registering a user. Visit `http://localhost:8080/register` to register a TradeNote user.
+- Use any (random) email and set a password.
+- Choose your broker and/or account timezone.
+
+### Importing Trades
+#### Instructions
+Please make sure to follow the instruction in the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for exporting and importing trades. 
+
+
+#### Swing trades
+❗Important Notice❗
+- Importing swing trades is currently in beta phase and being tested. Please use [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you have questions or comments.
+- Importing swing trades is prone to P&L Discrepancy and it is therefore crucial to follow the instructions below.
+
+##### Avoiding P&L Discrepancy
+To avoid open positions and/or P&L Discrepancy when importing swing trades, please make sure of the following. 
+1. Begin importing from a point in time where you were flat (no previous open positions). If you begin importing from a point in time where you had pre-existing positions, there is a chance the data will be incorrect as TradeNote doesn’t know about these existing positions. 
+2. Alternatively, before importing your file, if you know it contains execution(s) from an open position (and that you're closing or adding to), simply remove that/these execution(s).
+
+Example 1 (recommended)
+- You remember that on the 10th of August 2022 you did not have any open trades from before the 10th of August 2022
+- You import your trades between 10/08/22-30/11/2023.
+- From there, if you later decide to import trades before 10/08/22 they will likely be inaccurate and cause future discrepancies.
+- If you import trades in between the dates, for example on the 12/03/2023, it will say "already imported" (this is standard TradeNote behavior - you cannot import already imported dates)
+- If you import trades after 30/11/23 it will work.
+- The best is to start with a clean TradeNote database but it is not mandatory as long as you respect these steps.
+
+Example 2 (advanced)
+- You want to start your imports 10th of August 2022, but you know you have 1 open trade from before.
+- You want to import your trades between 10/08/22-30/11/2023 and you know that you closed the open trade on the 20th of August 2022. 
+- Edit your export file on the 20th of August 2022 by removing all executions related to closing the mentioned trade.
+- The reste of the process is the same as example 1.
 
 
 ## Side note
