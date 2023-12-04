@@ -45,7 +45,7 @@ TradeNote supports intraday and swing trades but keep in mind that the project a
 Depending on the broker and thanks to the contribution of the community, you can import and journal the following assets in TradeNote: Stocks, Futures, Options (only tested on single options) and Forex. 
 
 #### Supported Brokers
-Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the list of supported brokers and instructions for exporting and importing to TradeNote..
+Please look at the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") to see the list of supported brokers and instructions for exporting and importing to TradeNote.
 
 You can contact me via [Discord](https://discord.gg/ZbHekKYb85 "Discord") if you wish to integrate your broker.
 
@@ -152,7 +152,7 @@ Start by registering a user. Visit `http://localhost:8080/register` to register 
 
 ### Importing Trades
 #### Instructions
-Please make sure to follow the instruction in the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for exporting and importing trades. 
+Please make sure to follow the instructions in the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for exporting and importing trades. 
 
 
 #### Swing trades
@@ -179,6 +179,10 @@ Example 2 (advanced)
 - Edit your export file on the 20th of August 2022 by removing all executions related to closing the mentioned trade.
 - The reste of the process is the same as example 1.
 
+##### P&L Calculation and View
+When you have an open trade you will see "Open" in the time column on the daily page and "Closed" when the swing trade has been closed. Hover your mouse over the question mark to get information when the trade was opened and closed. 
+
+P&L as well as partial close is calculated on the closing day.
 
 ## Side note
 ### Parse

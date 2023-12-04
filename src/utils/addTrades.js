@@ -494,9 +494,11 @@ async function createTrades() {
                 //console.log("doing key "+key2)
 
                 //checking existing open positions array from Parse
-                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
                 //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
-                const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type)
+                //console.log(" -> Open positions in File "+JSON.stringify(openPositionsFile))
+                //console.log(" -> "+JSON.stringify(tempExec))
+                const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
                 if (newTrade == true && existingOpenPositionParse) {
                     console.log("\n -> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
@@ -1057,11 +1059,11 @@ async function createTrades() {
 
                     } else {
                         openPositionsFile.push(trde)
-
-                        if ((i + 1) == tempExecs.length) {
+                        console.log("   ---> Position OPEN")
+                        /*if ((i + 1) == tempExecs.length) {
                             console.log("   ---> Position OPEN")
                             //console.log("   ---> tempExecs " + JSON.stringify(tempExecs))
-                        }
+                        }*/
 
                     }
                 } else {

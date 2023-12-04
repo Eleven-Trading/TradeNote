@@ -72,7 +72,7 @@ export async function useBrokerMetaTrader5(param) {
                         if (Object.values(row)[2].length == 6 && /^[a-zA-Z]/.test(Object.values(row)[2])) {
                             temp.Type = "forex"
                         }
-                        console.log("  --> Type: " + temp.Type)
+                        //console.log("  --> Type: " + temp.Type)
                         if (Object.values(row)[3] == "buy" && Object.values(row)[4] == "in") {
                             temp.Side = "B"
                         }
@@ -111,7 +111,7 @@ export async function useBrokerMetaTrader5(param) {
             console.log("  --> ERROR " + error)
             reject(error)
         }
-        console.log("trade data " + JSON.stringify(tradesData))
+        //console.log("trade data " + JSON.stringify(tradesData))
         resolve()
     })
 }
