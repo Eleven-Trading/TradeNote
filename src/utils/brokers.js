@@ -765,7 +765,8 @@ export async function useTradovate(param) {
                         qtyNumberSide = qtyNumber
                     }
 
-                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value
+                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
+                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
 
                     temp["Gross Proceeds"] = proceedsNumber.toString()
 
