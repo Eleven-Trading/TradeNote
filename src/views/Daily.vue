@@ -11,6 +11,7 @@ import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMi
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
 import { useGetExcursions } from '../utils/daily';
+import { useCandlestickChart } from '../utils/charts';
 
 const dailyTabs = [{
     id: "trades",
@@ -40,6 +41,10 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
+let ohlcDates = []
+let ohlcPrices = []
+let ohlcVolumes = []
+
 onBeforeMount(async () => {
 
 })
@@ -57,9 +62,9 @@ onMounted(async () => {
         console.log("documentHeight "+documentHeight)
         //console.log("difference "+difference)*/
         if (difference <= 0) {
-            console.log("spinnerLoadMore "+spinnerLoadMore.value)
-            console.log("spinnerLoadingPage "+spinnerLoadingPage.value)
-            console.log("endOfList "+endOfList.value)
+            console.log("spinnerLoadMore " + spinnerLoadMore.value)
+            console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
+            console.log("endOfList " + endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }
@@ -279,6 +284,38 @@ async function updateExcursions() {
     })
 }
 
+function getOHLC() {
+    console.log(" get ohlc")
+    return new Promise(async (resolve, reject) => {
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/GOOG/range/1/minute/2023-12-18/2023-12-18?adjusted=true&sort=asc&limit=50000&apiKey=BzWmndkOFOX_ktsDOLPCKhXc5GSDR3vX")
+            .then((response) => {
+                //console.log(" res "+JSON.stringify(response.data))
+                for (let index = 0; index < response.data.results.length; index++) {
+                    const element = response.data.results[index];
+
+                    let temp = []
+                    ohlcDates.push(useHourMinuteFormat(element.t / 1000))
+                    temp.push(element.c)
+                    temp.push(element.o)
+                    temp.push(element.l)
+                    temp.push(element.h)
+                    ohlcPrices.push(temp)
+                    ohlcVolumes.push(element.v)
+                }
+                console.log(" -> ohlc date " + JSON.stringify(ohlcDates))
+                console.log(" -> ohlc array " + JSON.stringify(ohlcPrices))
+
+
+            })
+            .catch((error) => {
+            })
+            .finally(function () {
+                // always executed
+            })
+        resolve()
+    })
+}
+
 /**************
  * MISC
  ***************/
@@ -322,6 +359,8 @@ async function clickTradesModal(param1, param2, param3) {
             modalDailyTradeOpen.value = true
 
             await resetExcursion()
+            console.log(" elm " + JSON.stringify(filteredTrades[itemTradeIndex.value].trades[param3].id))
+            
 
             //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
             let findScreenshot = screenshots.find(obj => obj.name == filteredTrades[itemTradeIndex.value].trades[param3].id)
@@ -350,6 +389,13 @@ async function clickTradesModal(param1, param2, param3) {
         await (spinnerSetups.value = false)
         saveButton.value = false
         await useInitTooltip()
+        const myModalEl = document.getElementById('tradesModal')
+        myModalEl.addEventListener('shown.bs.modal', async (event) => {
+            await getOHLC()
+            await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes)
+
+        })
+
     }
 
 }
@@ -508,34 +554,36 @@ function resetExcursion() {
                                                         class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
                                                             itemTrade.dateUnix).length }})</span>
                                                 </button>-->
-                                                
+
                                                 <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Trades
                                                 </button>
-                                                
+
                                                 <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Blotter
                                                 </button>
-                                                
-                                                <button v-bind:id="'screenshots-' + index"
-                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#screenshotsNav-' + index"
-                                                    type="button" role="tab" aria-controls="nav-overview"
-                                                    aria-selected="true" v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0" class="txt-small">
-                                                            ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                                itemTrade.dateUnix).length }})</span>
+
+                                                <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
+                                                    role="tab" aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
+                                                        class="txt-small">
+                                                        ({{ screenshots.filter(obj => obj.dateUnixDay ==
+                                                            itemTrade.dateUnix).length }})</span>
                                                 </button>
-                                                
+
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true" v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
+                                                    aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
                                         </nav>
                                         <div class="tab-content" id="nav-tabContent">
-                                           
+
                                             <!-- TRADES TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
@@ -731,6 +779,7 @@ function resetExcursion() {
 
         </div>
     </div>
+
     <!-- ============ TRADES MODAL ============ -->
     <div class="modal fade" id="tradesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -738,6 +787,9 @@ function resetExcursion() {
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
                     <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="dailyModal" />
+                    <div>
+                        <div id="candlestickChart" class="candlestickClass"></div>
+                    </div>
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
                         <table class="table">
@@ -962,4 +1014,5 @@ function resetExcursion() {
                 </div>
             </div>
         </div>
-</div></template>
+    </div>
+</template>

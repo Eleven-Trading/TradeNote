@@ -738,6 +738,11 @@ img.logo {
     min-width: 100%;
 }
 
+.candlestickClass {
+    height: 500px;
+    min-width: 100%;
+}
+
 .dayNumber {
     font-size: small !important;
 }
