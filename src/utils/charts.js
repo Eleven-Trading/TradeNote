@@ -1313,7 +1313,7 @@ export function useBarChartNegative(param1) {
                 data: series
             }]
         };
-        
+
         if (series.length > 0) {
             var myChart = echarts.init(document.getElementById(param1));
             myChart.setOption(option);
@@ -1604,6 +1604,44 @@ export function useScatterChart(param1) { //chart ID, green, red, page
                     color: '#35C4FE',
                 }
             }
+        };
+        myChart.setOption(option);
+        resolve()
+    })
+}
+
+export function useCandlestickChart(param1, param2, param3) { //
+    return new Promise((resolve, reject) => {
+        //console.log("  --> " + param1)
+        //console.log("para 2 " + param2 + " and 3 " + param3)
+        let myChart = echarts.init(document.getElementById("candlestickChart"));
+        const option = {
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 50,
+                    end: 100,
+                    preventDefaultMouseMove: false
+                },
+               
+            ],
+            xAxis: {
+                data: param1,
+                min: 'dataMin',
+                max: 'dataMax'
+            },
+            yAxis: {
+                scale: true,
+                //min: 132,
+                //max: 139
+            },
+            series: [
+
+                {
+                    type: 'candlestick',
+                    data: param2
+                }
+            ]
         };
         myChart.setOption(option);
         resolve()

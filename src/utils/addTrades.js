@@ -486,70 +486,91 @@ async function createTrades() {
             let initEntryTime
             let initEntryPrice
             let i
-            let existingOpenPosition
+            let existingOpenPosition // common name given to existing open position found in Parse or locally
+            console.log("\n ------ ITERATING SYMBOL " + key2 + " on " + useChartFormat(tempExecs[0].td) + " ------")
             for (i = 0; i < tempExecs.length; i++) {
                 let tempExec = tempExecs[i];
-
+                
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
 
-                //checking existing open positions array from Parse
+
+                /**
+                 * 1- Get all open positions from parse => getOpenPositionsParse()
+                 * 2- Check if there is an existing position amongst all open positions in Parse (existingOpenPositionParse) or amongst all open position in current upload/fil (existingOpenPositionFile)
+                 * 3- Now, if it's a new trade and there is an existing open position (in Parse or File), then we give it a common name, existingOpenPosition, and we make some td and id modifications
+                 * 4- It newTrade == false, the we check if we're in a classical process, in which case trde is derived from temp2, else it's
+                 **/
+
+                //checking existing open position amongst Parse open positions
                 const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+
                 //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
                 //console.log(" -> Open positions in File "+JSON.stringify(openPositionsFile))
                 //console.log(" -> "+JSON.stringify(tempExec))
+
+                //checking existing open position amongst open positions stored locally
                 const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
-                if (newTrade == true && existingOpenPositionParse) {
-                    console.log("\n -> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
-                    //existingOpenPosition = existingOpenPositionParse
-                    existingOpenPosition = {}
-                    Object.keys(existingOpenPositionParse).forEach((key) => {
-                        if (key == "td") {
-                            existingOpenPosition.td = tempExec.td
-                        } else {
-                            existingOpenPosition[key] = existingOpenPositionParse[key]
-                        }
-                    })
-                    currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
-                    temp2.push(existingOpenPosition)
-                    newTrade = false
-
-                    //const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol)
-                    //openPositionsParse.splice(existingOpenPositionParseIndex, 1)
-                    //console.log(" Open positions "+JSON.stringify(openPositionsFile))
-                    //console.log(" Open positions length "+openPositionsFile.length)
-                }
                 //checking existing open positions array when importing file
-                else if (newTrade == true && existingOpenPositionFile) {
-                    console.log("\n -> Open position already in current file for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
-                    //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
+                if (newTrade == true) {
+                    //console.log("\n -> New trade for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                    console.log(" -> New trade from " + useTimeFormat(tempExec.execTime))
                     existingOpenPosition = {}
-                    Object.keys(existingOpenPositionFile).forEach((key) => {
-                        if (key == "td") {
-                            existingOpenPosition.td = tempExec.td
-                        } else {
-                            existingOpenPosition[key] = existingOpenPositionFile[key]
-                        }
-                    })
-                    //existingOpenPosition = existingOpenPositionFile
+                    if (existingOpenPositionParse) {
+                        //console.log("  --> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                        console.log("  --> Open position already in Parse")
+                        //existingOpenPosition = existingOpenPositionParse
+                        Object.keys(existingOpenPositionParse).forEach((key) => {
+                            if (key == "td") {
+                                existingOpenPosition.td = tempExec.td
+                            } else {
+                                existingOpenPosition[key] = existingOpenPositionParse[key]
+                            }
+                        })
+                        currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
+                        temp2.push(existingOpenPosition)
+                        newTrade = false
 
-                    //console.log(" -> existingOpenPosition "+JSON.stringify(existingOpenPosition))
-                    currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
-                    existingOpenPosition.td = tempExec.td;
-                    temp2.push(existingOpenPosition)
-                    newTrade = false
-                    //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
-                    const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol)
-                    openPositionsFile.splice(existingOpenPositionFileIndex, 1)
-                    //console.log(" Open positions "+JSON.stringify(openPositionsFile))
-                    //console.log(" Open positions length "+openPositionsFile.length)
-                    //console.log(" temp 2 "+JSON.stringify(temp2))
+                        //const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol)
+                        //openPositionsParse.splice(existingOpenPositionParseIndex, 1)
+                        //console.log(" Open positions "+JSON.stringify(openPositionsFile))
+                        //console.log(" Open positions length "+openPositionsFile.length)
+                    }
+                    else if (existingOpenPositionFile) {
+                        //console.log("  --> Open position already in current file for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
+                        console.log("  --> Open position already in current file")
+                        //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
+                        Object.keys(existingOpenPositionFile).forEach((key) => {
+                            if (key == "td") {
+                                existingOpenPosition.td = tempExec.td
+                            } else {
+                                existingOpenPosition[key] = existingOpenPositionFile[key]
+                            }
+                        })
+                        //existingOpenPosition = existingOpenPositionFile
+
+                        //console.log(" -> existingOpenPosition "+JSON.stringify(existingOpenPosition))
+                        currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
+                        existingOpenPosition.td = tempExec.td;
+                        temp2.push(existingOpenPosition)
+                        newTrade = false
+
+                        //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
+                        const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol)
+                        openPositionsFile.splice(existingOpenPositionFileIndex, 1)
+                        //console.log(" Open positions "+JSON.stringify(openPositionsFile))
+                        //console.log(" Open positions length "+openPositionsFile.length)
+                        //console.log(" temp 2 "+JSON.stringify(temp2))
+                    } else{
+                        console.log("  --> No existing open position (in Parse nor in current file)")
+                        existingOpenPosition = undefined
+                    }
+
                 }
                 //console.log(" -> existingOpenPosition "+JSON.stringify(existingOpenPosition))
 
                 if (newTrade == true) { //= new trade
-                    console.log("\n -> New trade for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     //If qty buy != qty sell and new cycnle, we have an open position, that we push to open positions
 
                     openPosition = true
@@ -689,28 +710,35 @@ async function createTrades() {
                     let exec = executions[tempExec.td].find(x => x.id == tempExec.id)
                     exec.trade = temp7.id;
 
+                    console.log("  --> buy quantity " + temp7.buyQuantity + " and sell quantity " + temp7.sellQuantity)
+
                     temp2.push(temp7)
                     //console.log(" temp2 "+JSON.stringify(temp2))
 
                     //we push to openPositionsFile
+                    //console.log("openPositionsFile "+JSON.stringify(openPositionsFile))
                     openPositionsFile.push(temp7)
+                    //console.log("openPositionsFile after "+JSON.stringify(openPositionsFile))
 
                 } else if (newTrade == false) { //= concatenating trade
+                    console.log("  --> Concatenating trade from " + useTimeFormat(tempExec.execTime))
+
                     let trde
-                    //console.log(" existingOpenPosition "+JSON.stringify(existingOpenPosition))
                     if (existingOpenPosition != undefined) {
+                        //console.log("  --> Getting trd from existing open position")
                         trde = temp2.find(x => x.id == existingOpenPosition.id && x.td == existingOpenPosition.td)
 
                     } else {
+                        //console.log("  --> Getting trd from temp7")
                         trde = temp2.find(x => x.id == temp7.id)
                     }
 
-                    //console.log("trde "+JSON.stringify(trde))
-                    console.log("  --> Concatenating trade for symbol " + tempExec.symbol + " and strategy " + trde.strategy + " at " + useTimeFormat(tempExec.execTime))
                     //console.log("trde " + JSON.stringify(trde))
+
                     //console.log(" -> exec id "+tempExec.id)
                     //tempExecIds.push(tempExec.id)
                     //console.log(" -> temp2 concat is " + JSON.stringify(temp2))
+                    //console.log(" trd sell quantity "+trde.sellQuantity)
                     if (trde.strategy == "long") {
                         //console.log(" -> Strategy is long and "+invertedLong+" for symbol "+tempExec.symbol)
                         if (!invertedLong) {
@@ -1025,16 +1053,16 @@ async function createTrades() {
                         trde.openPosition = false
 
                         //Updating exit time in parse open positions. Close position is update later
-                        if (openPositionsParse.length>0){
+                        if (openPositionsParse.length > 0) {
                             for (let index = 0; index < openPositionsParse.length; index++) {
                                 const element = openPositionsParse[index];
-                                if (element.symbol == trde.symbol && element.type == trde.type){
+                                if (element.symbol == trde.symbol && element.type == trde.type) {
                                     element.exitTime = tempExec.execTime;
                                 }
-                                
+
                             }
                         }
-                        
+
                         //Updating exit time and closing position in existing file
                         for (let index = 0; index < temp2.length; index++) {
                             const element = temp2[index]
