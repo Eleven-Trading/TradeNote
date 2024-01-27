@@ -601,7 +601,7 @@ export async function useBrokerInteractiveBrokers(param) {
                     if (element.AssetClass == "OPT") {
                         element["Put/Call"] == "C" ? temp.Type = "call" : temp.Type = "put"
                     }
-                    console.log("  --> Type " + temp.Type)
+                    //console.log("  --> Type " + temp.Type)
 
                     if (element["Buy/Sell"] == "BUY" && (element["Code"].includes("O"))) {
                         temp.Side = "B"
