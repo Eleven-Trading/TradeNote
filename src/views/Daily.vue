@@ -786,8 +786,10 @@ function resetExcursion() {
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
-                    <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="dailyModal" />
-                    <div>
+                    <div v-if="screenshot.originalBase64">
+                        <Screenshot :screenshot-data="screenshot" source="dailyModal" />
+                    </div>
+                    <div v-else>
                         <div id="candlestickChart" class="candlestickClass"></div>
                     </div>
                     <!-- *** Table *** -->
