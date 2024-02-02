@@ -905,7 +905,7 @@ export async function useNinjaTrader(param) {
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
-            let side
+
             papaParse.data.forEach(element => {
                 if (element.Instrument) {
                     //console.log("element " + JSON.stringify(element))
@@ -913,53 +913,74 @@ export async function useNinjaTrader(param) {
                     temp.Account = element.Account
                     //console.log("element.TradeDate. " + element.TradeDate)
                     let date = element.Time.split(" ")[0]
-                    if (element.Position.split(" ")[1] != undefined) {
-                        side = element.Position.split(" ")[1]
-                    }
-
-                    //console.log("side "+side)
+                    
                     temp["T/D"] = date
                     temp["S/D"] = date
+
                     temp.Currency = "USD"
-                    temp.Type = "0"
-                    if (element.Action == "Buy" && side == "L") {
+                    temp.Type = "future"
+
+                    let qtyNumber = Number(element.Quantity)
+                    temp.Qty = qtyNumber.toString()
+
+                    
+                    if (element.Action == "Buy" && element["E/X"] == "Entry") {
                         temp.Side = "B"
                     }
-                    if (element.Action == "Buy" && side == "S") {
+                    if (element.Action == "Buy" && element["E/X"] == "Exit") {
                         temp.Side = "BC"
                     }
-                    if (element.Action == "Sell" && side == "L") {
+                    if (element.Action == "Sell" && element["E/X"] == "Exit") {
                         temp.Side = "S"
                     }
-                    if (element.Action == "Sell" && side == "S") {
+                    if (element.Action == "Sell" && element["E/X"] == "Entry") {
                         temp.Side = "SS"
                     }
-                    temp.Symbol = element.Instrument
-                    temp.Qty = element.Quantity
-                    temp.Price = element.Price
+
+                    temp.Symbol = element.Instrument.split(" ")[0]
+
+                    let priceNumber = Number(element.Price)
+                    temp.Price = priceNumber.toString()
 
 
                     temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
 
-                    temp.Comm = element.Commission.split("$")[1]
+                    let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
+                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    if (contractSpecs.length == 0){
+                        reject("Missing information for future symbol "+temp.Symbol)
+                    }
+                    let tick = contractSpecs[0].tick
+                    let value = contractSpecs[0].value
+
+                    let qtyNumberSide
+
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        qtyNumberSide = -qtyNumber
+                    } else {
+                        qtyNumberSide = qtyNumber
+                    }
+
+                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
+                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
+
+                    temp["Gross Proceeds"] = proceedsNumber.toString()
+
+                    let commNumber = Number(element.Commission.split("$")[1])
+                    temp.Comm = commNumber.toString()
+
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
-                    if (temp.Side == "B" || temp.Side == "BC") {
-                        temp["Gross Proceeds"] = (-element.Quantity * element.Price).toString()
-                        temp["Net Proceeds"] = ((-element.Quantity * element.Price) - temp.Comm).toString()
-
-                    } else {
-                        temp["Gross Proceeds"] = (element.Quantity * element.Price).toString()
-                        temp["Net Proceeds"] = ((element.Quantity * element.Price) - temp.Comm).toString()
-                    }
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
                     temp.Note = ""
-                    //console.log("temp "+JSON.stringify(temp))
+                    
+                    console.log("temp "+JSON.stringify(temp))
                     tradesData.push(temp)
                 }
             });

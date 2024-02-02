@@ -2798,11 +2798,11 @@ export const brokers = reactive([{
     label: "Tradovate",
     assetTypes: ["futures"]
 },
-/*{
+{
     value: "ninjaTrader",
     label: "NinjaTrader",
     assetTypes: ["futures"]
-},*/
+},
 {
     value: "heldentrader",
     label: "Heldentrader",
