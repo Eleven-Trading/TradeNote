@@ -1098,8 +1098,7 @@ h4 {
 
 #btn-return-to-top {
     position: fixed; 
-    top: 20px; 
-    left: 50%; 
-    transform: translateX(-50%); 
+    bottom: 2em; 
+    right: 2em; 
     z-index: 999;
 }
