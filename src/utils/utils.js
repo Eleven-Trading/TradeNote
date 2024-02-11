@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -857,6 +857,12 @@ export async function useLoadMore() {
 
 }
 
+export function useCheckIfWindowIsScrolled() {
+    window.addEventListener('scroll', () => {
+        windowIsScrolled.value = window.scrollY > 100;
+    });
+}
+
 /**************************************
 * MISC
 **************************************/
@@ -1035,6 +1041,11 @@ export function useToggleMobileMenu() {
 export function useCapitalizeFirstLetter(param) {
     return param.charAt(0).toUpperCase() + param.slice(1)
 }
+
+export function returnToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 /**************************************
 * DATE FORMATS
 **************************************/
