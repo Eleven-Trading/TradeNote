@@ -1699,7 +1699,7 @@ export const futuresTradovateFees = ref([
         "name": "Nano Bloomberg Large Cap",
         "symbol": "B5",
         "fee": {
-            "free": 0.24,
+            "free": 0.39,
             "monthly": 0.34,
             "lifetime": 0.24
         }
@@ -1708,7 +1708,7 @@ export const futuresTradovateFees = ref([
         "name": "Micro Bloomberg Large Cap",
         "symbol": "LB5",
         "fee": {
-            "free": 0.27,
+            "free": 0.42,
             "monthly": 0.37,
             "lifetime": 0.27
         }
@@ -1717,7 +1717,7 @@ export const futuresTradovateFees = ref([
         "name": "Nano SuperTech",
         "symbol": "TEC",
         "fee": {
-            "free": 0.24,
+            "free": 0.39,
             "monthly": 0.34,
             "lifetime": 0.24
         }
@@ -1726,7 +1726,7 @@ export const futuresTradovateFees = ref([
         "name": "Micro SuperTech",
         "symbol": "LTEC",
         "fee": {
-            "free": 0.27,
+            "free": 0.42,
             "monthly": 0.37,
             "lifetime": 0.27
         }
@@ -1735,7 +1735,7 @@ export const futuresTradovateFees = ref([
         "name": "Coinbase Futures Crude Oil",
         "symbol": "OIL",
         "fee": {
-            "free": 0.27,
+            "free": 0.42,
             "monthly": 0.37,
             "lifetime": 0.27
         }
@@ -1744,7 +1744,7 @@ export const futuresTradovateFees = ref([
         "name": "Nano Bitcoin",
         "symbol": "BIT",
         "fee": {
-            "free": 0.32,
+            "free": 0.47,
             "monthly": 0.42,
             "lifetime": 0.32
         }
@@ -1753,7 +1753,7 @@ export const futuresTradovateFees = ref([
         "name": "Nano Ether",
         "symbol": "ET",
         "fee": {
-            "free": 0.32,
+            "free": 0.47,
             "monthly": 0.42,
             "lifetime": 0.32
         }
@@ -1762,88 +1762,105 @@ export const futuresTradovateFees = ref([
         "name": "E-Mini Dow ($5)",
         "symbol": "YM",
         "fee": {
-            "free": 2.09,
+            "free": 2.79,
             "monthly": 2.49,
-            "lifetime": 2.09
+            "lifetime": 2.09,
+            "Apex": 1.5,
+            "Topstep": 2.09
         }
     },
     {
         "name": "E-Mini S&P 500",
         "symbol": "ES",
         "fee": {
-            "free": 2.09,
+            "free": 2.79,
             "monthly": 2.49,
-            "lifetime": 2.09
+            "lifetime": 2.09,
+            "Apex": 1.5,
+            "Topstep": 2.09
         }
     },
     {
         "name": "E-Mini NASDAQ",
         "symbol": "NQ",
         "fee": {
-            "free": 2.09,
+            "free": 2.79,
             "monthly": 2.49,
-            "lifetime": 2.09
+            "lifetime": 2.09,
+            "Apex": 1.5,
+            "Topstep": 2.09
         }
     },
     {
         "name": "E-Mini Russell",
         "symbol": "RTY",
         "fee": {
-            "free": 2.09,
+            "free": 2.79,
             "monthly": 2.49,
-            "lifetime": 2.09
+            "lifetime": 2.09,
+            "Apex": 1.5,
+            "Topstep": 2.29
         }
     },
     {
         "name": "Micro E-Mini Dow",
         "symbol": "MYM",
         "fee": {
-            "free": 0.61,
+            "free": 0.87,
             "monthly": 0.77,
-            "lifetime": 0.61
+            "lifetime": 0.61,
+            "Apex": 0.52,
+            "Topstep": 0.67
         }
     },
     {
         "name": "Micro E-Mini S&P 500",
         "symbol": "MES",
         "fee": {
-            "free": 0.61,
+            "free": 0.87,
             "monthly": 0.77,
-            "lifetime": 0.61
+            "lifetime": 0.61,
+            "Apex": 0.52,
+            "Topstep": 0.67
         }
     },
     {
         "name": "Micro E-Mini NASDAQ",
         "symbol": "MNQ",
         "fee": {
-            "free": 0.61,
+            "free": 0.87,
             "monthly": 0.77,
-            "lifetime": 0.61
+            "lifetime": 0.61,
+            "Apex": 0.52,
+            "Topstep": 0.67
         }
     },
     {
         "name": "Micro E-Mini Russell",
         "symbol": "M2K",
         "fee": {
-            "free": 0.61,
+            "free": 0.87,
             "monthly": 0.77,
-            "lifetime": 0.61
+            "lifetime": 0.61,
+            "Apex": 0.52,
+            "Topstep": 0.67
         }
     },
     {
         "name": "E-Mini S&P Midcap 400",
         "symbol": "EMD",
         "fee": {
-            "free": 2.09,
+            "free": 2.79,
             "monthly": 2.49,
-            "lifetime": 2.09
+            "lifetime": 2.09,
+            "Apex": 1.5
         }
     },
     {
         "name": "Nikkei 225 (Yen)",
         "symbol": "NIY",
         "fee": {
-            "free": 2.61,
+            "free": 3.31,
             "monthly": 3.01,
             "lifetime": 2.61
         }
@@ -1852,16 +1869,18 @@ export const futuresTradovateFees = ref([
         "name": "Nikkei 225 (USD)",
         "symbol": "NKD",
         "fee": {
-            "free": 2.91,
+            "free": 3.61,
             "monthly": 3.31,
-            "lifetime": 2.91
+            "lifetime": 2.91,
+            "Apex": 2.32,
+            "Topstep": 2.91
         }
     },
     {
         "name": "Bitcoin",
         "symbol": "BTC",
         "fee": {
-            "free": 6.76,
+            "free": 7.46,
             "monthly": 7.16,
             "lifetime": 6.76
         }
@@ -1870,7 +1889,7 @@ export const futuresTradovateFees = ref([
         "name": "Ether",
         "symbol": "ETH",
         "fee": {
-            "free": 4.76,
+            "free": 5.46,
             "monthly": 5.16,
             "lifetime": 4.76
         }
@@ -1879,99 +1898,112 @@ export const futuresTradovateFees = ref([
         "name": "Micro Bitcoin",
         "symbol": "MBT",
         "fee": {
-            "free": 2.76,
+            "free": 3.02,
             "monthly": 2.92,
-            "lifetime": 2.76
+            "lifetime": 2.76,
+            "Apex": 2.67,
+            "Topstep": 1.32
         }
     },
     {
         "name": "Micro Ether",
         "symbol": "MET",
         "fee": {
-            "free": 0.46,
+            "free": 0.72,
             "monthly": 0.62,
-            "lifetime": 0.46
+            "lifetime": 0.46,
+            "Apex": 0.37,
+            "Topstep": 0.42
         }
     },
     {
         "name": "DAX Index",
         "symbol": "FDAX",
         "fee": {
-            "free": 2.06,
+            "free": 2.72,
             "monthly": 2.46,
-            "lifetime": 2.06
+            "lifetime": 2.06,
+            "Apex": 1.46
         }
     },
     {
         "name": "Mini-DAX",
         "symbol": "FDXM",
         "fee": {
-            "free": 1.05,
+            "free": 1.75,
             "monthly": 1.45,
-            "lifetime": 1.05
+            "lifetime": 1.05,
+            "Apex": 0.46
         }
     },
     {
         "name": "Euro Stoxx 50",
         "symbol": "FESX",
         "fee": {
-            "free": 1.19,
+            "free": 1.87,
             "monthly": 1.59,
-            "lifetime": 1.19
+            "lifetime": 1.19,
+            "Apex": 0.59
         }
     },
     {
         "name": "VSTOXX",
         "symbol": "FVS",
         "fee": {
-            "free": 1.28,
+            "free": 1.96,
             "monthly": 1.68,
-            "lifetime": 1.28
+            "lifetime": 1.28,
+            "Apex": 0.68
         }
     },
     {
         "name": "STOXX Europe 600",
         "symbol": "FXXP",
         "fee": {
-            "free": 0.98,
+            "free": 1.67,
             "monthly": 1.38,
-            "lifetime": 0.98
+            "lifetime": 0.98,
+            "Apex": 0.39
         }
     },
     {
         "name": "Micro DAX Index",
         "symbol": "FDXS",
         "fee": {
-            "free": 0.43,
+            "free": 0.69,
             "monthly": 0.59,
-            "lifetime": 0.43
+            "lifetime": 0.43,
+            "Apex": 0.34
         }
     },
     {
         "name": "Micro Euro Stoxx 50",
         "symbol": "FSXE",
         "fee": {
-            "free": 0.39,
+            "free": 0.65,
             "monthly": 0.55,
-            "lifetime": 0.39
+            "lifetime": 0.39,
+            "Apex": 0.30
         }
     },
     {
         "name": "Mini-MSCI Emerging Mkt",
         "symbol": "MME",
         "fee": {
-            "free": 1.92,
+            "free": 2.62,
             "monthly": 2.32,
-            "lifetime": 1.92
+            "lifetime": 1.92,
+            "Apex": 1.33
         }
     },
     {
         "name": "Mini-MSCI EAFE Index",
         "symbol": "MFS",
         "fee": {
-            "free": 1.92,
+            "free": 2.62,
             "monthly": 2.32,
-            "lifetime": 1.92
+            "lifetime": 1.92,
+            "Apex": 1.33
         }
     },
     {
@@ -1987,61 +2019,72 @@ export const futuresTradovateFees = ref([
         "name": "5-Year Note",
         "symbol": "ZF",
         "fee": {
-            "free": 1.41,
+            "free": 2.11,
             "monthly": 1.81,
-            "lifetime": 1.41
+            "lifetime": 1.41,
+            "Apex": 0.82,
+            "Topstep": 1.41
         }
     },
     {
         "name": "2-Year Note",
         "symbol": "ZT",
         "fee": {
-            "free": 1.41,
+            "free": 2.11,
             "monthly": 1.81,
-            "lifetime": 1.41
+            "lifetime": 1.41,
+            "Apex": 0.82,
+            "Topstep": 1.41
         }
     },
     {
         "name": "Ultra US Treasury Bond",
         "symbol": "UB",
         "fee": {
-            "free": 1.71,
+            "free": 2.41,
             "monthly": 2.11,
-            "lifetime": 1.71
+            "lifetime": 1.71,
+            "Apex": 1.12,
+            "Topstep": 1.71
         }
     },
     {
         "name": "10-Year T-Note",
         "symbol": "ZN",
         "fee": {
-            "free": 1.56,
+            "free": 2.26,
             "monthly": 1.96,
-            "lifetime": 1.56
+            "lifetime": 1.56,
+            "Apex": 0.97,
+            "Topstep": 1.65
         }
     },
     {
         "name": "US Treasury Bond",
         "symbol": "ZB",
         "fee": {
-            "free": 1.63,
+            "free": 2.33,
             "monthly": 2.03,
-            "lifetime": 1.63
+            "lifetime": 1.63,
+            "Apex": 1.04,
+            "Topstep": 1.63
         }
     },
     {
         "name": "Ultra 10-Year T-Note",
         "symbol": "TN",
         "fee": {
-            "free": 1.56,
+            "free": 2.26,
             "monthly": 1.96,
-            "lifetime": 1.56
+            "lifetime": 1.56,
+            "Topstep": 1.56
         }
     },
     {
         "name": "20yr US Treasury Bond",
         "symbol": "TWE",
         "fee": {
-            "free": 1.63,
+            "free": 2.33,
             "monthly": 2.03,
             "lifetime": 1.63
         }
@@ -2050,16 +2093,17 @@ export const futuresTradovateFees = ref([
         "name": "Eurodollar",
         "symbol": "GE",
         "fee": {
-            "free": 2.01,
+            "free": 2.71,
             "monthly": 2.41,
-            "lifetime": 2.01
+            "lifetime": 2.01,
+            "Topstep": 2.01
         }
     },
     {
         "name": "Fed Funds 30 Day",
         "symbol": "ZQ",
         "fee": {
-            "free": 1.72,
+            "free": 2.42,
             "monthly": 2.12,
             "lifetime": 1.72
         }
@@ -2068,16 +2112,17 @@ export const futuresTradovateFees = ref([
         "name": "Micro 10-Year Yield",
         "symbol": "10Y",
         "fee": {
-            "free": 0.56,
+            "free": 0.82,
             "monthly": 0.72,
-            "lifetime": 0.56
+            "lifetime": 0.56,
+            "Apex": 0.47
         }
     },
     {
         "name": "Micro 2-Year Yield",
         "symbol": "2YY",
         "fee": {
-            "free": 0.56,
+            "free": 0.82,
             "monthly": 0.72,
             "lifetime": 0.56
         }
@@ -2086,7 +2131,7 @@ export const futuresTradovateFees = ref([
         "name": "Micro 30-Year Yield",
         "symbol": "30Y",
         "fee": {
-            "free": 0.56,
+            "free": 0.82,
             "monthly": 0.72,
             "lifetime": 0.56
         }
@@ -2095,7 +2140,7 @@ export const futuresTradovateFees = ref([
         "name": "Micro 5-Year Yield",
         "symbol": "5YY",
         "fee": {
-            "free": 0.56,
+            "free": 0.82,
             "monthly": 0.72,
             "lifetime": 0.56
         }
@@ -2104,70 +2149,80 @@ export const futuresTradovateFees = ref([
         "name": "Euro-Buxl",
         "symbol": "FGBX",
         "fee": {
-            "free": 1.04,
+            "free": 1.74,
             "monthly": 1.44,
-            "lifetime": 1.04
+            "lifetime": 1.04,
+            "Apex": 0.45
         }
     },
     {
         "name": "Euro-Schatz",
         "symbol": "FGBS",
         "fee": {
-            "free": 1.04,
+            "free": 1.74,
             "monthly": 1.44,
-            "lifetime": 1.04
+            "lifetime": 1.04,
+            "Apex": 0.45
         }
     },
     {
         "name": "Euro-Bobl",
         "symbol": "FGBM",
         "fee": {
-            "free": 1.04,
+            "free": 1.74,
             "monthly": 1.44,
-            "lifetime": 1.04
+            "lifetime": 1.04,
+            "Apex": 0.45
         }
     },
     {
         "name": "Euro-Bund",
         "symbol": "FGBL",
         "fee": {
-            "free": 1.04,
+            "free": 1.74,
             "monthly": 1.44,
-            "lifetime": 1.04
+            "lifetime": 1.04,
+            "Apex": 0.45
         }
     },
     {
         "name": "Gold",
         "symbol": "GC",
         "fee": {
-            "free": 2.31,
+            "free": 3.01,
             "monthly": 2.71,
-            "lifetime": 2.31
+            "lifetime": 2.31,
+            "Apex": 1.72,
+            "Topstep": 2.31
         }
     },
     {
         "name": "E-Micro Gold",
         "symbol": "MGC",
         "fee": {
-            "free": 0.76,
+            "free": 1.02,
             "monthly": 0.92,
-            "lifetime": 0.76
+            "lifetime": 0.76,
+            "Apex": 0.67,
+            "Topstep": 0.82
         }
     },
     {
         "name": "Copper",
         "symbol": "HG",
         "fee": {
-            "free": 2.31,
+            "free": 3.01,
             "monthly": 2.71,
-            "lifetime": 2.31
+            "lifetime": 2.31,
+            "Apex": 1.72,
+            "Topstep": 2.31
         }
     },
     {
         "name": "Micro Copper",
         "symbol": "MHG",
         "fee": {
-            "free": 0.86,
+            "free": 1.12,
             "monthly": 1.02,
             "lifetime": 0.86
         }
@@ -2176,25 +2231,28 @@ export const futuresTradovateFees = ref([
         "name": "Silver",
         "symbol": "SI",
         "fee": {
-            "free": 2.31,
+            "free": 3.01,
             "monthly": 2.71,
-            "lifetime": 2.31
+            "lifetime": 2.31,
+            "Apex": 1.72,
+            "Topstep": 2.31
         }
     },
     {
         "name": "Micro Silver",
         "symbol": "SIL",
         "fee": {
-            "free": 1.26,
+            "free": 1.52,
             "monthly": 1.42,
-            "lifetime": 1.26
+            "lifetime": 1.26,
+            "Topstep": 1.32
         }
     },
     {
         "name": "E-Mini Copper",
         "symbol": "QC",
         "fee": {
-            "free": 1.51,
+            "free": 2.21,
             "monthly": 1.91,
             "lifetime": 1.51
         }
@@ -2203,61 +2261,68 @@ export const futuresTradovateFees = ref([
         "name": "miNY Silver",
         "symbol": "QI",
         "fee": {
-            "free": 1.51,
+            "free": 2.21,
             "monthly": 1.91,
-            "lifetime": 1.51
+            "lifetime": 1.51,
+            "Apex": 0.92
         }
     },
     {
         "name": "E-Mini Gold",
         "symbol": "QO",
         "fee": {
-            "free": 1.51,
+            "free": 2.21,
             "monthly": 1.91,
-            "lifetime": 1.51
+            "lifetime": 1.51,
+            "Apex": 0.92
         }
     },
     {
         "name": "Mini-Gold",
         "symbol": "YG",
         "fee": {
-            "free": 1.26,
+            "free": 1.96,
             "monthly": 1.66,
-            "lifetime": 1.26
+            "lifetime": 1.26,
+            "Apex": 0.67
         }
     },
     {
         "name": "Mini-Silver",
         "symbol": "YI",
         "fee": {
-            "free": 1.26,
+            "free": 1.96,
             "monthly": 1.66,
-            "lifetime": 1.26
+            "lifetime": 1.26,
+            "Apex": 0.67
         }
     },
     {
         "name": "Platinum",
         "symbol": "PL",
         "fee": {
-            "free": 2.31,
+            "free": 3.01,
             "monthly": 2.71,
-            "lifetime": 2.31
+            "lifetime": 2.31,
+            "Apex": 1.72,
+            "Topstep": 1.81
         }
     },
     {
         "name": "Palladium",
         "symbol": "PA",
         "fee": {
-            "free": 2.31,
+            "free": 3.01,
             "monthly": 2.71,
-            "lifetime": 2.31
+            "lifetime": 2.31,
+            "Apex": 1.72
         }
     },
     {
         "name": "E-Mini Heating Oil",
         "symbol": "QH",
         "fee": {
-            "free": 1.96,
+            "free": 2.66,
             "monthly": 2.36,
             "lifetime": 1.96
         }
@@ -2266,25 +2331,29 @@ export const futuresTradovateFees = ref([
         "name": "E-Mini Crude Oil",
         "symbol": "QM",
         "fee": {
-            "free": 1.96,
+            "free": 2.66,
             "monthly": 2.36,
-            "lifetime": 1.96
+            "lifetime": 1.96,
+            "Apex": 1.37,
+            "Topstep": 1.96
         }
     },
     {
         "name": "E-Mini Natural Gas",
         "symbol": "QG",
         "fee": {
-            "free": 1.26,
+            "free": 1.96,
             "monthly": 1.66,
-            "lifetime": 1.26
+            "lifetime": 1.26,
+            "Apex": 0.67,
+            "Topstep": 1.26
         }
     },
     {
         "name": "Brent Crude Last Day",
         "symbol": "BZ",
         "fee": {
-            "free": 2.26,
+            "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26
         }
@@ -2293,304 +2362,358 @@ export const futuresTradovateFees = ref([
         "name": "Heating Oil",
         "symbol": "HO",
         "fee": {
-            "free": 2.26,
+            "free": 2.96,
             "monthly": 2.66,
-            "lifetime": 2.26
+            "lifetime": 2.26,
+            "Apex": 1.67,
+            "Topstep": 2.26
         }
     },
     {
         "name": "RBOB Gasoline",
         "symbol": "RB",
         "fee": {
-            "free": 2.26,
+            "free": 2.96,
             "monthly": 2.66,
-            "lifetime": 2.26
+            "lifetime": 2.26,
+            "Apex": 1.67,
+            "Topstep": 2.26
         }
     },
     {
         "name": "Crude Oil",
         "symbol": "CL",
         "fee": {
-            "free": 2.26,
+            "free": 2.96,
             "monthly": 2.66,
-            "lifetime": 2.26
+            "lifetime": 2.26,
+            "Apex": 1.67,
+            "Topstep": 2.26
         }
     },
     {
         "name": "Micro Crude Oil",
         "symbol": "MCL",
         "fee": {
-            "free": 0.76,
+            "free": 1.02,
             "monthly": 0.92,
-            "lifetime": 0.76
+            "lifetime": 0.76,
+            "Apex": 0.67,
+            "Topstep": 0.82
         }
     },
     {
         "name": "Natural Gas",
         "symbol": "NG",
         "fee": {
-            "free": 2.26,
+            "free": 2.96,
             "monthly": 2.66,
-            "lifetime": 2.26
+            "lifetime": 2.26,
+            "Apex": 1.67,
+            "Topstep": 2.26
         }
     },
     {
         "name": "Rough Rice",
         "symbol": "ZR",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Mini Wheat",
         "symbol": "XW",
         "fee": {
-            "free": 1.79,
+            "free": 2.49,
             "monthly": 2.19,
-            "lifetime": 1.79
+            "lifetime": 1.79,
+            "Apex": 1.2
         }
     },
     {
         "name": "Oats",
         "symbol": "ZO",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Mini Corn",
         "symbol": "XC",
         "fee": {
-            "free": 1.79,
+            "free": 2.49,
             "monthly": 2.19,
-            "lifetime": 1.79
+            "lifetime": 1.79,
+            "Apex": 1.2
         }
     },
     {
         "name": "Soybeans",
         "symbol": "ZS",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Soybean Oil",
         "symbol": "ZL",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Corn",
         "symbol": "ZC",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Wheat",
         "symbol": "ZW",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Soybean Meal",
         "symbol": "ZM",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Mini Soybean",
         "symbol": "XK",
         "fee": {
-            "free": 1.79,
+            "free": 2.49,
             "monthly": 2.19,
-            "lifetime": 1.79
+            "lifetime": 1.79,
+            "Apex": 1.2
         }
     },
     {
         "name": "E-Mini Japanese Yen",
         "symbol": "J7",
         "fee": {
-            "free": 1.61,
+            "free": 2.31,
             "monthly": 2.01,
-            "lifetime": 1.61
+            "lifetime": 1.61,
+            "Apex": 1.02
         }
     },
     {
         "name": "E-Micro Australian Dollar",
         "symbol": "M6A",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41,
+            "Topstep": 0.56
         }
     },
     {
         "name": "E-Micro Euro",
         "symbol": "M6E",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41,
+            "Topstep": 0.56
         }
     },
     {
         "name": "E-Micro Swiss Franc",
         "symbol": "MSF",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41
         }
     },
     {
         "name": "E-Micro Canadian Dollar",
         "symbol": "MCD",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41
         }
     },
     {
         "name": "E-Micro British Pound",
         "symbol": "M6B",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41
         }
     },
     {
         "name": "E-Micro Japanese Yen",
         "symbol": "MJY",
         "fee": {
-            "free": 0.5,
+            "free": 0.76,
             "monthly": 0.66,
-            "lifetime": 0.5
+            "lifetime": 0.5,
+            "Apex": 0.41
         }
     },
     {
         "name": "E-Mini Euro FX",
         "symbol": "E7",
         "fee": {
-            "free": 1.61,
+            "free": 2.31,
             "monthly": 2.01,
-            "lifetime": 1.61
+            "lifetime": 1.61,
+            "Apex": 1.02,
+            "Topstep": 1.61
         }
     },
     {
         "name": "Mexican Peso",
         "symbol": "6M",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Australian Dollar",
         "symbol": "6A",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "British Pound",
         "symbol": "6B",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Japanese Yen",
         "symbol": "6J",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Canadian Dollar",
         "symbol": "6C",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Swiss Franc",
         "symbol": "6S",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Euro FX",
         "symbol": "6E",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "New Zealand Dollar",
         "symbol": "6N",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77,
+            "Topstep": 2.36
         }
     },
     {
         "name": "Brazilian Real",
         "symbol": "6L",
         "fee": {
-            "free": 2.36,
+            "free": 3.06,
             "monthly": 2.76,
-            "lifetime": 2.36
+            "lifetime": 2.36,
+            "Apex": 1.77
         }
     },
     {
         "name": "US Dollar Index",
         "symbol": "DX",
         "fee": {
-            "free": 2.11,
+            "free": 2.81,
             "monthly": 2.51,
-            "lifetime": 2.11
+            "lifetime": 2.11,
+            "Apex": 1.52
         }
     },
     {
         "name": "Feeder Cattle",
         "symbol": "GF",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86
         }
@@ -2599,70 +2722,79 @@ export const futuresTradovateFees = ref([
         "name": "Lean Hogs",
         "symbol": "HE",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Live Cattle",
         "symbol": "LE",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27,
+            "Topstep": 2.86
         }
     },
     {
         "name": "Sugar No. 11",
         "symbol": "SB",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Coffee",
         "symbol": "KC",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Cocoa",
         "symbol": "CC",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Cotton",
         "symbol": "CT",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Orange Juice",
         "symbol": "OJ",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "Apex": 2.27
         }
     },
     {
         "name": "Random Length Lumber",
         "symbol": "LBS",
         "fee": {
-            "free": 2.86,
+            "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86
         }
