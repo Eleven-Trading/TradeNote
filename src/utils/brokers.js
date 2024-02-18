@@ -751,8 +751,8 @@ export async function useTradovate(param) {
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
                     console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
-                    if (contractSpecs.length == 0){
-                        reject("Missing information for future symbol "+temp.Symbol)
+                    if (contractSpecs.length == 0) {
+                        reject("Missing information for future symbol " + temp.Symbol)
                     }
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
@@ -913,7 +913,7 @@ export async function useNinjaTrader(param) {
                     temp.Account = element.Account
                     //console.log("element.TradeDate. " + element.TradeDate)
                     let date = element.Time.split(" ")[0]
-                    
+
                     temp["T/D"] = date
                     temp["S/D"] = date
 
@@ -923,7 +923,7 @@ export async function useNinjaTrader(param) {
                     let qtyNumber = Number(element.Quantity)
                     temp.Qty = qtyNumber.toString()
 
-                    
+
                     if (element.Action == "Buy" && element["E/X"] == "Entry") {
                         temp.Side = "B"
                     }
@@ -947,8 +947,8 @@ export async function useNinjaTrader(param) {
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
                     console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
-                    if (contractSpecs.length == 0){
-                        reject("Missing information for future symbol "+temp.Symbol)
+                    if (contractSpecs.length == 0) {
+                        reject("Missing information for future symbol " + temp.Symbol)
                     }
                     let tick = contractSpecs[0].tick
                     let value = contractSpecs[0].value
@@ -979,12 +979,141 @@ export async function useNinjaTrader(param) {
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
                     temp.Note = ""
-                    
-                    console.log("temp "+JSON.stringify(temp))
+
+                    console.log("temp " + JSON.stringify(temp))
                     tradesData.push(temp)
                 }
             });
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        } catch (error) {
+            console.log("  --> ERROR " + error)
+            reject(error)
+        }
+        resolve()
+    })
+}
+
+/****************************
+ * RITHMIC
+ ****************************/
+export async function useRithmic(param) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            tradesData.length = 0
+            const lines = param.split('\n');
+            console.log(" lines " + lines)
+
+            let found = false
+            let lineNumber = 0
+            for (let line of lines) {
+                lineNumber++;
+                if (line.includes("Completed Orders")) {
+                    console.log(" line number " + lineNumber)
+                    found = true;
+                    break;
+                }
+            }
+
+            param = lines.slice(lineNumber).join('\n');
+
+            let papaParse = Papa.parse(param, { header: true })
+            //we need to recreate the JSON with proper date format + we simplify
+            //console.log("papaparse " + JSON.stringify(papaParse.data))
+            let newTrade = true
+            let strategy
+            let totalQty = 0
+            for (let i = 0; i < papaParse.data.length; i++) {
+                let tempExec = papaParse.data[i];
+                console.log("-> tempExec: " + JSON.stringify(tempExec))
+                if (tempExec.Status == "Filled") {
+                    let temp = {}
+                    temp.Account = tempExec.Account
+                    let dateTime = tempExec["Create Time"].split(" ")
+                    let month = dateTime[0].split("-")[1]
+                    let day = dateTime[0].split("-")[2]
+                    let year = dateTime[0].split("-")[0]
+
+                    //08/25/2023
+                    let newDate = month + "/" + day + "/" + year
+                    temp["T/D"] = newDate
+                    temp["S/D"] = newDate
+
+                    temp.Currency = "USD"
+                    temp.Type = "future"
+
+                    let qtyNumber = Number(tempExec["Qty Filled"])
+                    temp.Qty = qtyNumber.toString()
+
+                    if (newTrade == true && tempExec["Buy/Sell"] == "B") { //= new trade
+                        newTrade = false
+                        strategy = "long"
+                        temp.Side = "B"
+                        totalQty += qtyNumber
+
+                    } else if (newTrade == true && tempExec["Buy/Sell"] == "S") {
+                        newTrade = false
+                        strategy = "short"
+                        temp.Side = "SS"
+                        totalQty += -qtyNumber
+                    }
+                    else if (newTrade == false && tempExec["Buy/Sell"] == "B") {
+                        strategy == "long" ? temp.Side = "B" : temp.Side = "BC"
+                        totalQty += +qtyNumber
+                    }
+                    else if (newTrade == false && tempExec["Buy/Sell"] == "S") {
+                        strategy == "long" ? temp.Side = "S" : temp.Side = "SS"
+                        totalQty += -qtyNumber
+                    }
+
+                    totalQty == 0 ? newTrade = true : newTrade = false
+
+                    temp.Symbol = tempExec.Symbol.slice(0, -2)
+
+
+                    let priceNumber = Number(tempExec["Avg Fill Price"])
+                    temp.Price = priceNumber.toString()
+                    temp["Exec Time"] = dateTime[1]
+
+                    let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
+                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    if (contractSpecs.length == 0) {
+                        reject("Missing information for future symbol " + temp.Symbol)
+                    }
+                    let tick = contractSpecs[0].tick
+                    let value = contractSpecs[0].value
+
+                    let qtyNumberSide
+
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        qtyNumberSide = -qtyNumber
+                    } else {
+                        qtyNumberSide = qtyNumber
+                    }
+
+                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
+                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
+
+                    temp["Gross Proceeds"] = proceedsNumber.toString()
+
+                    let commNumber = Number(tempExec["Commission Fill Rate"])
+                    temp.Comm = commNumber.toString()
+                    temp.SEC = "0"
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+                    //console.log("temp "+JSON.stringify(temp))
+                    tradesData.push(temp)
+                }
+
+
+            }
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)

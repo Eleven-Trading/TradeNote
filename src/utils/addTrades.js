@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier } from '../stores/globals'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader } from './brokers'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic } from './brokers'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -189,6 +189,17 @@ export async function useImportTrades(e, param2) {
         console.log(" -> Heldentrader")
         let fileInput = await readAsText(files)
         await useBrokerHeldentrader(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
+    }
+
+     /****************************
+     * RITHMIC
+     ****************************/
+     if (selectedBroker.value == "rithmic") {
+        console.log(" -> Rithmic")
+        let fileInput = await readAsText(files)
+        await useRithmic(fileInput).catch(error => {
             importFileErrorFunction(error)
         })
     }
