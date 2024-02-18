@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier } from '../stores/globals'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic } from './brokers'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders } from './brokers'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils'
 
 let openPosition = false
@@ -204,6 +204,17 @@ export async function useImportTrades(e, param2) {
         })
     }
 
+    /****************************
+     * FUNDTRADERS
+     ****************************/
+    if (selectedBroker.value == "fundTraders") {
+        console.log(" -> FundTraders")
+        let fileInput = await readAsText(files)
+        await useFundTraders(fileInput).catch(error => {
+            importFileErrorFunction(error)
+        })
+    }
+
     const retryFunction = (callback, delay, tries) => {
 
         if (tries && callback() !== true) {
@@ -260,7 +271,7 @@ async function createTempExecutions() {
                 //frDate = usDate.tz("Europe/Paris")
                 console.log("date "+usDate+" and fr ")*/
                 const dateArrayTD = tradesData[key]['T/D'].split('/');
-                //console.log("dateArrayTD " + dateArrayTD)
+                console.log("dateArrayTD " + dateArrayTD)
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
                 //console.log("formatedDateTD " + formatedDateTD)
                 temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()

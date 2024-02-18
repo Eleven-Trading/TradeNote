@@ -2812,6 +2812,11 @@ export const brokers = reactive([{
     value: "heldentrader",
     label: "Heldentrader",
     assetTypes: ["stocks"]
+},
+{
+    value: "fundTraders",
+    label: "FundTraders",
+    assetTypes: ["stocks"]
 }
 ])
 
