@@ -150,7 +150,7 @@ Please use the standalone MT5 windows application and follow the steps below.
 
 Please note that trades need to be ordered in ascending order 
 
-# FunTraders
+# FundTraders
 1. Login to your account
 2. Click Reports on the left pane
 3. Click Trade History
