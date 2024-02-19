@@ -3,6 +3,7 @@ import SideMenu from '../components/SideMenu.vue'
 import Nav from '../components/Nav.vue'
 import FullScreenImg from '../components/FullScreenImg.vue'
 import Screenshot from '../components/Screenshot.vue'
+import ReturnToTopButton from '../components/ReturnToTopButton.vue'
 import { onBeforeMount } from 'vue'
 import { useInitParse, usePageId, useScreenType, useGetTimeZone, useGetPeriods, useInitPostHog, useCreatedDateFormat, useTimeFormat, useHourMinuteFormat } from '../utils/utils.js'
 import { screenType, sideMenuMobileOut, expandedScreenshot, screenshots, setups, pageId, screenshot, selectedScreenshot, selectedScreenshotIndex, getMore } from '../stores/globals'
@@ -21,6 +22,7 @@ onBeforeMount(async () => {
 useInitPostHog()
 </script>
 <template>
+  <ReturnToTopButton />
   <div v-cloak class="container-fluid g-0">
     <div class="row g-0">
       <div id="sideMenu" v-bind:class="'min-vh-100 ' +

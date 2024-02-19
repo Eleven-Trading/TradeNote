@@ -887,11 +887,12 @@ ul.timeline>li:before {
 
 /* BUTTONS */
 .blueBtn {
-    background: var(--blue-color)
+    background: var(--blue-color);
+    color: var(--white-87);
 }
 
 .blueBtn:hover {
-    background: var(--blue-active-color)
+    background: var(--blue-active-color);
 }
 
 /* FOOTER BOTTOM */
@@ -1093,3 +1094,11 @@ h4 {
     background-color: var(--dark-grey) !important;
 }
 
+/* RETURN TO TOP BUTTON */
+
+#btn-return-to-top {
+    position: fixed; 
+    bottom: 2em; 
+    right: 2em; 
+    z-index: 999;
+}
