@@ -133,10 +133,26 @@ Please use the standalone MT5 windows application and follow the steps below.
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/MT51.png" width="200">
 
 # HeldenTrader Pro
-1. In the upper section of the application select the "Account" button
-2. In the dropdown menu select "Reports" and a new window "Reports" will appear
-3. Select in the "Report type" dropdown menu - "Trades report"
+1. In the upper section of the application select the "Account" button.
+2. In the dropdown menu select "Reports" and a new window "Reports" will appear.
+3. Select in the "Report type" dropdown menu - "Trades report".
 4. Select the timeframe you want to export in the "From" - "To" dropdown menu. One export file can contain one or more trading days/weeks.
-5. Select "Export to CSV"
+5. Select "Export to CSV".
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader1.png" width="200">
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader2.png" width="200"></div>
+
+# Rithmic
+1. Open your Rithmic Trader application.
+2. Navigate to the <b>Order History</b> window.
+3. In the top nav bar find <b>Account</b> drop down and select which account you would like to track.
+4. In the top nav bar find <b>Date</b> drop down and select the trading session you would like to upload.
+5. Select <b>Export as CSV</b> in the top nav bar.
+
+Please note that trades need to be ordered in ascending order 
+
+# FunTraders
+1. Login to your account
+2. Click Reports on the left pane
+3. Click Trade History
+4. Click View Report
+5. Click download as csv
