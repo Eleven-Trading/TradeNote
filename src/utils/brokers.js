@@ -808,28 +808,62 @@ export async function useTradovate(param) {
 }
 
 /****************************
- * HELDENTRADER
+ * HELDENTRADER (no swing trading)
  ****************************/
+// Removed csv lines + reversed csv
 export async function useBrokerHeldentrader(param) {
     return new Promise(async (resolve, reject) => {
         try {
             //console.log(" param " + param)
-            let newCsv = [];
-            let lines = param.split("\n");
-            lines.forEach((item, i) => {
-                if (i !== 0) newCsv.push(item);
-            })
 
-            newCsv = newCsv.join("\n");
-            //console.log(newCsv);
-
+            // 1- remove Trades Report line
             tradesData.length = 0
-            let papaParse = Papa.parse(newCsv, { header: true })
+            const lines = param.split('\n');
+
+            let found = false
+            let lineNumber = 0
+            for (let line of lines) {
+                lineNumber++;
+                if (line.includes("Trades report")) {
+                    found = true;
+                    break;
+                }
+            }
+            let tempLines = lines.slice(lineNumber)
+
+            // 2- Remove and store the header
+            let header = tempLines.shift(); 
+
+            // 3- Reverse the order of lines (excluding the header)
+            let reversedLines = tempLines.reverse();
+
+            // 4- Remove Total
+            let foundTotal = false
+            let lineNumberTotal = 0
+            for (let line of reversedLines) {
+                lineNumberTotal++;
+                if (line.includes("Total")) {
+                    foundTotal = true;
+                    break;
+                }
+            }
+           
+            let tempReversedLines = reversedLines.slice(lineNumberTotal)
+            
+            // 5- Re-add the header to the top
+            tempReversedLines.unshift(header);
+
+            // 6- Recreate the csv
+            param = tempReversedLines.join('\n');
+            
+            let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
+            let newTrade = true
+            let strategy
+            let totalQty = 0
             papaParse.data.forEach(element => {
                 if (element.Account && element.Account != "Total") {
-                    //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = element.Account
                     //let tempDate = dayjs(element.Date).tz(timeZoneTrade.value).format('MM/DD/YYYYTHH:mm:ss')
@@ -849,22 +883,51 @@ export async function useBrokerHeldentrader(param) {
                     temp["S/D"] = dayjs(newTime).tz(timeZoneTrade.value).format('MM/DD/YYYY')
                     //console.log("td "+temp["T/D"])
                     temp.Currency = "USD"
-                    temp.Type = "future"
+                    temp.Type = "stock"
+                    /* NO Client order ID means closing trade
+                    if (!element["Client order ID"] && element.Operation == "Sell") {
+                        temp.Side = "S"
+                    }
+                    if (!element["Client order ID"] && element.Operation == "Buy") {
+                        temp.Side = "BC"
+                    }
+                    
+                    // IF Client order ID and profit == 0 means new trade trade
                     if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Buy") {
                         temp.Side = "B"
                     }
                     if (element["Client order ID"] && Number(element.Profit) == 0 && element.Operation == "Sell") {
                         temp.Side = "SS"
+                    }*/
+
+                    let qtyNumber = Number(element["Amount"])
+                    temp.Qty = qtyNumber.toString()
+
+                    if (newTrade == true && element.Operation == "Buy") { //= new trade
+                        newTrade = false
+                        strategy = "long"
+                        temp.Side = "B"
+                        totalQty += qtyNumber
+
+                    } else if (newTrade == true && element.Operation == "Sell") {
+                        newTrade = false
+                        strategy = "short"
+                        temp.Side = "SS"
+                        totalQty += -qtyNumber
                     }
-                    if (!element["Client order ID"] && element.Operation == "Buy") {
-                        temp.Side = "BC"
+                    else if (newTrade == false && element.Operation == "Buy") {
+                        strategy == "long" ? temp.Side = "B" : temp.Side = "BC"
+                        totalQty += +qtyNumber
                     }
-                    if (!element["Client order ID"] && element.Operation == "Sell") {
-                        temp.Side = "S"
+                    else if (newTrade == false && element.Operation == "Sell") {
+                        strategy == "long" ? temp.Side = "S" : temp.Side = "SS"
+                        totalQty += -qtyNumber
                     }
 
+                    totalQty == 0 ? newTrade = true : newTrade = false
+
                     temp.Symbol = element.Instrument
-                    temp.Qty = element.Amount
+
                     temp.Price = element.Price
 
                     temp["Exec Time"] = dayjs(newTime).tz(timeZoneTrade.value).format('HH:mm:ss')
@@ -882,7 +945,7 @@ export async function useBrokerHeldentrader(param) {
                     temp.Liq = ""
                     temp.Note = ""
                     //console.log("temp "+JSON.stringify(temp))*/
-                    tradesData.unshift(temp)
+                    tradesData.push(temp)
                 }
             })
 
@@ -994,8 +1057,9 @@ export async function useNinjaTrader(param) {
 }
 
 /****************************
- * RITHMIC
+ * RITHMIC (no swing trading)
  ****************************/
+// start papaparse from specific line number
 export async function useRithmic(param) {
     return new Promise(async (resolve, reject) => {
         try {

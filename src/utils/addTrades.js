@@ -271,7 +271,7 @@ async function createTempExecutions() {
                 //frDate = usDate.tz("Europe/Paris")
                 console.log("date "+usDate+" and fr ")*/
                 const dateArrayTD = tradesData[key]['T/D'].split('/');
-                console.log("dateArrayTD " + dateArrayTD)
+                //console.log("dateArrayTD " + dateArrayTD)
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
                 //console.log("formatedDateTD " + formatedDateTD)
                 temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
@@ -348,7 +348,7 @@ async function createTempExecutions() {
 
                 //console.log(" -> Trade start date " + tradedStartDate)
                 //console.log(" -> Trade end date " + tradedEndDate)
-                //console.log("temp " + JSON.stringify(temp))
+                //console.log("temp " + JSON.stringify(temp2))
                 //console.log(" -> Created temp executions");
             } catch (error) {
                 console.log("  --> ERROR " + error)
