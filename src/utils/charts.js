@@ -1619,11 +1619,12 @@ export function useCandlestickChart(param1, param2, param3) { //
             dataZoom: [
                 {
                     type: 'inside',
-                    start: 50,
-                    end: 100,
+                    startValue: "12:08",
+                    endValue: "13:04",
+                    //rangeMode:["12:08", "13:04"],
                     preventDefaultMouseMove: false
                 },
-               
+
             ],
             xAxis: {
                 data: param1,
@@ -1639,8 +1640,31 @@ export function useCandlestickChart(param1, param2, param3) { //
 
                 {
                     type: 'candlestick',
-                    data: param2
-                }
+                    data: param2,
+                    markPoint: {
+                        label: {
+                            formatter: function (param) {
+                                return param != null ? Math.round(param.value) + '' : '';
+                            }
+                        },
+                        data: [
+                            {
+                                name: 'Mark',
+                                coord: ['12:17', 49.35],
+                                value: 49.35,
+                                itemStyle: {
+                                    color: 'rgb(41,60,85)'
+                                }
+                            }
+                        ],
+                        tooltip: {
+                            formatter: function (param) {
+                                return param.name + '<br>' + (param.data.coord || '');
+                            }
+                        }
+                    }
+                },
+
             ]
         };
         myChart.setOption(option);

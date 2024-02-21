@@ -284,38 +284,6 @@ async function updateExcursions() {
     })
 }
 
-function getOHLC() {
-    console.log(" get ohlc")
-    return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/GOOG/range/1/minute/2023-12-18/2023-12-18?adjusted=true&sort=asc&limit=50000&apiKey="+currentUser.value.marketDataApiKey)
-            .then((response) => {
-                //console.log(" res "+JSON.stringify(response.data))
-                for (let index = 0; index < response.data.results.length; index++) {
-                    const element = response.data.results[index];
-
-                    let temp = []
-                    ohlcDates.push(useHourMinuteFormat(element.t / 1000))
-                    temp.push(element.c)
-                    temp.push(element.o)
-                    temp.push(element.l)
-                    temp.push(element.h)
-                    ohlcPrices.push(temp)
-                    ohlcVolumes.push(element.v)
-                }
-                console.log(" -> ohlc date " + JSON.stringify(ohlcDates))
-                console.log(" -> ohlc array " + JSON.stringify(ohlcPrices))
-
-
-            })
-            .catch((error) => {
-            })
-            .finally(function () {
-                // always executed
-            })
-        resolve()
-    })
-}
-
 /**************
  * MISC
  ***************/
@@ -351,6 +319,7 @@ async function clickTradesModal(param1, param2, param3) {
         tradeIndexPrevious.value = param2
         tradeIndex.value = param3
 
+        let selectedTrade = filteredTrades[itemTradeIndex.value].trades[param3]
 
         let awaitClick = async () => {
             tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
@@ -359,11 +328,10 @@ async function clickTradesModal(param1, param2, param3) {
             modalDailyTradeOpen.value = true
 
             await resetExcursion()
-            console.log(" elm " + JSON.stringify(filteredTrades[itemTradeIndex.value].trades[param3].id))
-            
+
 
             //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
-            let findScreenshot = screenshots.find(obj => obj.name == filteredTrades[itemTradeIndex.value].trades[param3].id)
+            let findScreenshot = screenshots.find(obj => obj.name == selectedTrade.id)
             if (findScreenshot) {
                 for (let key in screenshot) delete screenshot[key]
                 for (let key in findScreenshot) {
@@ -373,10 +341,12 @@ async function clickTradesModal(param1, param2, param3) {
                 for (let key in screenshot) delete screenshot[key]
                 screenshot.side = null
                 screenshot.type = null
+                await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
+                await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes)
             }
 
 
-            let findExcursion = excursions.filter(obj => obj.tradeId == filteredTrades[itemTradeIndex.value].trades[param3].id)
+            let findExcursion = excursions.filter(obj => obj.tradeId == selectedTrade.id)
             if (findExcursion.length) {
                 findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
                 findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
@@ -391,8 +361,6 @@ async function clickTradesModal(param1, param2, param3) {
         await useInitTooltip()
         const myModalEl = document.getElementById('tradesModal')
         myModalEl.addEventListener('shown.bs.modal', async (event) => {
-            await getOHLC()
-            await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes)
 
         })
 
@@ -433,6 +401,45 @@ function resetExcursion() {
     excursion.maePrice = null
     excursion.mfePrice = null
 
+}
+
+function getOHLC(param1, param2, param3, param4) {
+    //date, symbol, entryTime, exitTime
+    console.log(" get ohlc")
+    return new Promise(async (resolve, reject) => {
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + param2 + "/range/1/minute/" + useDateCalFormat(param1) + "/" + useDateCalFormat(param1) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
+
+            .then((response) => {
+                //console.log(" res "+JSON.stringify(response.data))
+                ohlcDates = []
+                ohlcPrices = []
+                ohlcVolumes = []
+
+                for (let index = 0; index < response.data.results.length; index++) {
+                    const element = response.data.results[index];
+
+                    let temp = []
+
+                    ohlcDates.push(useHourMinuteFormat(element.t / 1000))
+                    temp.push(element.c)
+                    temp.push(element.o)
+                    temp.push(element.l)
+                    temp.push(element.h)
+                    ohlcPrices.push(temp)
+                    ohlcVolumes.push(element.v)
+                }
+                //console.log(" -> ohlc date " + JSON.stringify(ohlcDates))
+                //console.log(" -> ohlc array " + JSON.stringify(ohlcPrices))
+
+
+            })
+            .catch((error) => {
+            })
+            .finally(function () {
+                // always executed
+            })
+        resolve()
+    })
 }
 
 </script>
