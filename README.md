@@ -77,12 +77,28 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 
 # Setup
 ## Installation
-### ❗Important Notice❗
+### ❗Important Notice ❗
+#### MongoDB
 TradeNote uses MongodDB as its database. Please make sure to follow MongoDB's recommendations and requirements before installing and running TradeNote with MongoDB. 
 
-As an example, some users have experienced issues running MongoDB on a Raspberry Pi. At the time of writing, they managed to make it work using v4.4.8 of MongoDB rather than the latest version.
-
 For detailed information, please read MongdoDB's [production notes ](https://www.mongodb.com/docs/manual/administration/production-notes/#platform-support  "production notes").
+
+#### RaspberryPi
+Some users have experienced issues running MongoDB on a Raspberry Pi. At the time of writing, they managed to make it work using v4.4.8 of MongoDB rather than the latest version.
+
+#### Windows with Ubuntu VM
+MongoDB 5.0+ version is (currently) not compatible with Ubuntu VM on windows platform. Indeed, MongoDB 5.0+ needs a CPU that supports AVX, which seems like a known issue with latest version of MongoDB 5.0+ and Windows+Ubuntu VM. A workaround is to use MongoDB 4.4.18 (last known version that does not need AVX support) in the docker compose file. 
+
+#### Other issues
+Here is the list of the other, most common issues
+- Your server / computer cannot run MongoDB (see above).
+- Docker is not running on your server / computer.
+- The required ports are not open on your server / computer.
+- You are running an incompatible NodeJs or MongoDB version with Parse Server ([compatibility table](https://github.com/parse-community/parse-server#compatibility "compatibility table")).
+- You already have a MongoDB instance running which is interfering with the installation process.
+
+If you have any other issues, please visite the [Discord](https://discord.gg/ZbHekKYb85 "Discord") #installation channel and use the search bar to see if your issue has already been discussed. 
+
 
 ### Docker Compose (recommended)
 #### Requirements

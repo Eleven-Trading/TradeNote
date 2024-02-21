@@ -2907,9 +2907,9 @@ export const brokers = reactive([{
     assetTypes: ["stocks"]
 },
 {
-    value: "metaTrader5",
-    label: "MetaTrader 5",
-    assetTypes: ["forex"]
+    value: "interactiveBrokers",
+    label: "Interactive Brokers",
+    assetTypes: ["stocks", "options", "futures"]
 },
 {
     value: "tdAmeritrade",
@@ -2922,24 +2922,14 @@ export const brokers = reactive([{
     assetTypes: ["stocks", "options", "futures"]
 },
 {
-    value: "interactiveBrokers",
-    label: "Interactive Brokers",
-    assetTypes: ["stocks", "options", "futures"]
-},
-{
     value: "tradovate",
     label: "Tradovate",
     assetTypes: ["futures"]
 },
 {
-    value: "ninjaTrader",
-    label: "NinjaTrader",
-    assetTypes: ["futures"]
-},
-{
-    value: "rithmic",
-    label: "Rithmic",
-    assetTypes: ["futures"]
+    value: "metaTrader5",
+    label: "MetaTrader 5",
+    assetTypes: ["forex"]
 },
 {
     value: "heldentrader",
@@ -2947,9 +2937,19 @@ export const brokers = reactive([{
     assetTypes: ["stocks"]
 },
 {
+    value: "rithmic",
+    label: "Rithmic",
+    assetTypes: ["futures"]
+},
+{
     value: "fundTraders",
     label: "FundTraders",
     assetTypes: ["stocks"]
+},
+{
+    value: "ninjaTrader",
+    label: "NinjaTrader",
+    assetTypes: ["futures"]
 }
 ])
 

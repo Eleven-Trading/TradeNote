@@ -156,3 +156,13 @@ Please note that trades need to be ordered in ascending order
 3. Click Trade History
 4. Click View Report
 5. Click download as csv
+
+# NinjaTrader
+1. In the NinjaTrader 8 Control Panel Window, select New, and choose Trade Performance.
+2. In the top right corner of the Trade Performance window, choose the date(s) you would like to export.  To export a single day, please ensure both fields reflect the same day you wish to export.
+3. Click the 'funnel' icon in the top left of the Trade Performace window, and ensure only the account you wish to export is selected.
+4. Next, change the "Display" dropdown menu to "Executions".
+5. In the Trade Performance window, click the "Generate" button in the top right corner.
+6. Right-click anywhere in the output window, and choose "Export".
+7. Next, change the "Save as type" field to "CSV (*.csv).
+8. Finally, click "Save".  Your exported file will save to the location specified
