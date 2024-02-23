@@ -507,7 +507,11 @@ img.logo {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 90%;
+    height: 70vh;
+    /* Set height to 100% of viewport height */
+    width: 100%;
+    /* Set width to 100% of parent container */
+    object-fit: cover;
 }
 
 

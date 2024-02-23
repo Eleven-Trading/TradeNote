@@ -50,93 +50,110 @@ async function updateProfile() {
 </script>
 <template>
     <div class="row mt-2">
-        <nav>
-            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
-                    type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Profile</button>
-                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-patterns"
-                    type="button" role="tab" aria-controls="nav-patterns" aria-selected="false">Patterns</button>
-                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-mistakes"
-                    type="button" role="tab" aria-controls="nav-mistakes" aria-selected="false">Mistakes</button>
-            </div>
-        </nav>
-        <div class="tab-content" id="nav-tabContent">
-            <!--=============== PROFILE ===============-->
-            <div class="tab-pane fade active show" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab">
+        <div class="row justify-content-md-center">
+            <div class="col-12 col-md-9">
+                <!--=============== PROFILE ===============-->
                 <!-- Picture -->
-                <div class="mt-3">
-                    <h5>Choose Profile picture</h5>
-                    <input type="file" @change="uploadProfileAvatar" />
-                </div>
-
-                <!-- API Key -->
-                <div class="mt-3">
-                    <h5>Insert your Polygon API Key</h5>
-                    <p>Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades. Currently, only for US stocks.</p>
-                    <input type="text" :value="currentUser.marketDataApiKey"
-                        @input="marketDataApiKey = $event.target.value" />
+                <div class="row align-items-center">
+                    <p class="fs-5 fw-bold">Profile</p>
+                    <div class="col-3">
+                        Your profile picture
+                    </div>
+                    <div class="col-9">
+                        <input type="file" @change="uploadProfileAvatar" />
+                    </div>
                 </div>
 
                 <div class="mt-3 mb-3">
                     <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
                 </div>
-            </div>
 
-            <!--=============== PATTERNS ===============-->
-            <div class="tab-pane fade" id="nav-patterns" role="tabpanel" aria-labelledby="nav-profile-tab">
+                <hr />
 
-                <div class="mt-3">
+                <!--=============== API KEY ===============-->
+                <div class="mt-3 row align-items-center">
+                    <p class="fs-5 fw-bold">API Key</p>
+                    <p class="mb-4 fw-lighter">Your Polygon API Key will be used to fill out automatically MFE
+                        prices when you add new
+                        trades as well as provide you with charts for your trades on daily page.</p>
+                    <div class="col-3">
+                        Polygon API Key
+                    </div>
+                    <div class="col-9">
+                        <input type="text" class="form-control" :value="currentUser.marketDataApiKey"
+                            @input="marketDataApiKey = $event.target.value" />
+                    </div>
 
-                    <!--=============== PATTERN ===============-->
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="col-md-4">Pattern</th>
-                                <th scope="col" class="col-md-6">Description</th>
-                                <th scope="col" class="col-md-1">active</th>
-                                <th scope="col" class="col-md-1"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="txt-small" v-for="pattern in patterns">
-                            <tr>
-                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
-                                        v-bind:value="pattern.name" v-on:input="patternUpdate.name = $event.target.value">
-                                    <span v-else>{{ pattern.name }}</span>
-                                </td>
-                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
-                                        v-bind:value="pattern.description"
-                                        v-on:input="patternUpdate.description = $event.target.value">
-                                    <span v-else>{{ pattern.description }}</span>
-                                </td>
-                                <td>
-                                    <span class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch"
-                                            v-bind:disabled="patternUpdate.edit != pattern.objectId"
-                                            v-bind:checked="pattern.active"
-                                            v-on:change="patternUpdate.active = !patternUpdate.active">
-                                    </span>
-                                </td>
-                                <td>
-                                    <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass"
-                                        v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
-                                    <i v-else class="uil uil-edit-alt pointerClass"
-                                        v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
-                <div class="mt-2 input-group">
-                    <input type="text" class="form-control" v-on:input="patternNew.name = $event.target.value"
-                        placeholder="Pattern">
-                    <input type="text" class="form-control" v-on:input="patternNew.description = $event.target.value"
-                        placeholder="Description">
-                    <button type="button" v-on:click="useSaveNewPatternMistake('pattern')" class="btn btn-success">Add</button>
+
+                <div class="mt-3 mb-3">
+                    <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
                 </div>
-            </div>
-            <!--=============== MISTAKE ===============-->
-            <div class="tab-pane fade" id="nav-mistakes" role="tabpanel" aria-labelledby="nav-profile-tab">
-                <div class="mt-3">
+
+
+                <hr />
+
+                <!--=============== PATTERNS ===============-->
+
+                <div class="">
+                    <p class="fs-5 fw-bold">Patterns</p>
+                    <p class="mb-4 fw-lighter">Add a list of patterns used for labelling your trades.</p>
+
+                        <!--=============== PATTERN ===============-->
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="col-md-4">Pattern</th>
+                                    <th scope="col" class="col-md-6">Description</th>
+                                    <th scope="col" class="col-md-1">active</th>
+                                    <th scope="col" class="col-md-1"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="txt-small" v-for="pattern in patterns">
+                                <tr>
+                                    <td><input v-if="patternUpdate.edit == pattern.objectId" type="text"
+                                            class="form-control" v-bind:value="pattern.name"
+                                            v-on:input="patternUpdate.name = $event.target.value">
+                                        <span v-else>{{ pattern.name }}</span>
+                                    </td>
+                                    <td><input v-if="patternUpdate.edit == pattern.objectId" type="text"
+                                            class="form-control" v-bind:value="pattern.description"
+                                            v-on:input="patternUpdate.description = $event.target.value">
+                                        <span v-else>{{ pattern.description }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                v-bind:disabled="patternUpdate.edit != pattern.objectId"
+                                                v-bind:checked="pattern.active"
+                                                v-on:change="patternUpdate.active = !patternUpdate.active">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass"
+                                            v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
+                                        <i v-else class="uil uil-edit-alt pointerClass"
+                                            v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    <div class="mt-2 input-group">
+                        <input type="text" class="form-control" v-on:input="patternNew.name = $event.target.value"
+                            placeholder="Pattern">
+                        <input type="text" class="form-control" v-on:input="patternNew.description = $event.target.value"
+                            placeholder="Description">
+                        <button type="button" v-on:click="useSaveNewPatternMistake('pattern')"
+                            class="btn btn-success">Add</button>
+                    </div>
+
+                </div>
+
+                <!--=============== MISTAKE ===============-->
+                <hr />
+                <p class="fs-5 fw-bold">Mistakes</p>
+                <p class="mb-4 fw-lighter">Add a list of mistakes used for labelling your trades.</p>
                     <table class="table">
                         <thead>
                             <tr>
@@ -174,17 +191,18 @@ async function updateProfile() {
                             </tr>
                         </tbody>
                     </table>
-                </div>
                 <div class="mt-2 input-group">
                     <input type="text" class="form-control" v-on:input="mistakeNew.name = $event.target.value"
                         placeholder="Mistake">
                     <input type="text" class="form-control" v-on:input="mistakeNew.description = $event.target.value"
                         placeholder="Description">
-                    <button type="button" v-on:click="useSaveNewPatternMistake('mistake')" class="btn btn-success">Add</button>
+                    <button type="button" v-on:click="useSaveNewPatternMistake('mistake')"
+                        class="btn btn-success">Add</button>
+
 
                 </div>
             </div>
-            <div class="tab-pane fade" id="nav-misc" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
         </div>
+
     </div>
 </template>
