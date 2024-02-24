@@ -57,9 +57,9 @@ onMounted(async () => {
         console.log("documentHeight "+documentHeight)
         //console.log("difference "+difference)*/
         if (difference <= 0) {
-            console.log("spinnerLoadMore "+spinnerLoadMore.value)
-            console.log("spinnerLoadingPage "+spinnerLoadingPage.value)
-            console.log("endOfList "+endOfList.value)
+            console.log("spinnerLoadMore " + spinnerLoadMore.value)
+            console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
+            console.log("endOfList " + endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }
@@ -508,34 +508,36 @@ function resetExcursion() {
                                                         class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
                                                             itemTrade.dateUnix).length }})</span>
                                                 </button>-->
-                                                
+
                                                 <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Trades
                                                 </button>
-                                                
+
                                                 <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Blotter
                                                 </button>
-                                                
-                                                <button v-bind:id="'screenshots-' + index"
-                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#screenshotsNav-' + index"
-                                                    type="button" role="tab" aria-controls="nav-overview"
-                                                    aria-selected="true" v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0" class="txt-small">
-                                                            ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                                itemTrade.dateUnix).length }})</span>
+
+                                                <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
+                                                    v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
+                                                    role="tab" aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
+                                                        class="txt-small">
+                                                        ({{ screenshots.filter(obj => obj.dateUnixDay ==
+                                                            itemTrade.dateUnix).length }})</span>
                                                 </button>
-                                                
+
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true" v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
+                                                    aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
                                         </nav>
                                         <div class="tab-content" id="nav-tabContent">
-                                           
+
                                             <!-- TRADES TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'tradesNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
@@ -545,8 +547,8 @@ function resetExcursion() {
                                                             <th scope="col">Symbol</th>
                                                             <th scope="col">Vol</th>
                                                             <th scope="col">Position</th>
-                                                            <th scope="col">Time</th>
-                                                            <th scope="col">Price</th>
+                                                            <th scope="col">Entry</th>
+                                                            <!--<th scope="col">Price</th>-->
                                                             <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Vol</th>
                                                             <th scope="col">P&L(n)</th>
@@ -566,10 +568,15 @@ function resetExcursion() {
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
                                                             v-on:click="clickTradesModal(index, index2, index2)"
                                                             class="pointerClass">
+                                                            
                                                             <td>{{ trade.symbol }}</td>
+                                                            
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
+                                                            
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
                                                                 trade.strategy.slice(1) }}</td>
+                                                            
+                                                            <!--Entry-->
                                                             <td><span v-if="trade.tradesCount == 0"><span
                                                                         v-if="trade.openPosition">Open<i
                                                                             class="ps-1 uil uil-info-circle"
@@ -584,26 +591,32 @@ function resetExcursion() {
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
+
+                                                            <!--Price
                                                             <td><span v-if="trade.tradesCount == 0"></span><span
                                                                     v-else-if="trade.type == 'forex'">{{
                                                                         (trade.entryPrice).toFixed(5) }}</span><span v-else>{{
-        (trade.entryPrice).toFixed(2) }}<span
+                                                                            useTwoDecCurrencyFormat(trade.entryPrice) }}<span
                                                                         v-if="checkDate(trade.td, trade.entryTime) == false"><i
                                                                             class="ps-1 uil uil-info-circle"
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
-                                                            </td>
+                                                            </td>-->
                                                             <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
+
+                                                            <!--P&L/Vol-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span
                                                                     v-else-if="trade.type == 'forex'">-</span><span v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                                        (trade.grossSharePL).toFixed(2) }}</span>
+                                                                        useTwoDecCurrencyFormat(trade.grossSharePL) }}</span>
                                                             </td>
+
+                                                            <!--P&L-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span v-else
                                                                     v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                                    {{ (trade.netProceeds).toFixed(2) }}</span>
+                                                                    {{ useTwoDecCurrencyFormat(trade.netProceeds) }}</span>
                                                             </td>
                                                             <td>
                                                                 {{ trade.patternNameShort }}
@@ -746,11 +759,11 @@ function resetExcursion() {
                                     <th scope="col">Symbol</th>
                                     <th scope="col">Vol</th>
                                     <th scope="col">Position</th>
-                                    <th scope="col">Time(i)</th>
-                                    <th scope="col">Time(o)</th>
+                                    <th scope="col">Entry</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Exit</th>
+                                    <th scope="col">Price</th>
                                     <th scope="col">Duration</th>
-                                    <th scope="col">Price(i)</th>
-                                    <th scope="col">Price(o)</th>
                                     <th scope="col">P&L/Vol</th>
                                     <th scope="col">P/L(n)</th>
                                 </tr>
@@ -765,7 +778,8 @@ function resetExcursion() {
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' : 'Short'
                                     }}</td>
 
-                                    <td><span
+                                    <td>
+                                        <span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"><span
                                                 v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].openPosition">Open<i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
@@ -782,13 +796,37 @@ function resetExcursion() {
                                                     data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span>
                                     </td>
+                                    <!--Entry Price-->
+                                    <td><span
+                                            v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
+                                            v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
+                                            }}</span><span
+                                            v-else>{{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice) }}<span
+                                                v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
+                                                    class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                                                    data-bs-html="true"
+                                                    v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span>
+                                    </td>
 
+                                    <!--Exit-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else>{{
                                                 useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
                                             }}</span></td>
 
+
+                                    <!--Exit Price-->
+                                    <td><span
+                                            v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
+                                            v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
+                                            }}</span><span v-else>{{
+    useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
+}}</span></td>
+
+                                    <!--Duration-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else><span
@@ -799,44 +837,26 @@ function resetExcursion() {
                                                 v-else>{{
                                                     useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
                                                         filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-                                                }}</span></span></td>
-
-                                    <td><span
-                                            v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
-                                            v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-                                            }}</span><span v-else>{{
-    (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(2)
-}}<span
-                                                v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
-                                                    class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                                    data-bs-html="true"
-                                                    v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span>
+                                                }}</span></span>
                                     </td>
-
-                                    <td><span
-                                            v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
-                                            v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
-                                            }}</span><span v-else>{{
-    (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(2)
-}}</span></td>
-
+                                    
+                                    <!--P&L/Vol-->
                                     <td>
                                         <span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'"></span><span
                                             v-else
                                             v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL).toFixed(2)
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
                                             }}</span>
                                     </td>
 
+                                    <!--P&L-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                            {{ (filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds).toFixed(2)
+                                            {{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
                                             }}</span>
                                     </td>
                                 </tr>
@@ -962,4 +982,5 @@ function resetExcursion() {
                 </div>
             </div>
         </div>
-</div></template>
+    </div>
+</template>
