@@ -56,10 +56,10 @@ async function updateProfile() {
                 <!-- Picture -->
                 <div class="row align-items-center">
                     <p class="fs-5 fw-bold">Profile</p>
-                    <div class="col-3">
+                    <div class="col-12 col-md-3">
                         Your profile picture
                     </div>
-                    <div class="col-9">
+                    <div class="col-12 col-md-9">
                         <input type="file" @change="uploadProfileAvatar" />
                     </div>
                 </div>
@@ -76,10 +76,10 @@ async function updateProfile() {
                     <p class="mb-4 fw-lighter">Your Polygon API Key will be used to fill out automatically MFE
                         prices when you add new
                         trades as well as provide you with charts for your trades on daily page.</p>
-                    <div class="col-3">
+                    <div class="col-12 col-md-3">
                         Polygon API Key
                     </div>
-                    <div class="col-9">
+                    <div class="col-12 col-md-9">
                         <input type="text" class="form-control" :value="currentUser.marketDataApiKey"
                             @input="marketDataApiKey = $event.target.value" />
                     </div>
