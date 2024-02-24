@@ -673,11 +673,11 @@ function resetExcursion() {
                                                                 blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                                {{ (blot.grossProceeds).toFixed(2) }}</td>
-                                                            <td>{{ (blot.fees).toFixed(2) }}</td>
+                                                                {{ useTwoDecCurrencyFormat(blot.grossProceeds) }}</td>
+                                                            <td>{{ useTwoDecCurrencyFormat(blot.fees) }}</td>
                                                             <td
                                                                 v-bind:class="[blot[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">
-                                                                {{ (blot.netProceeds).toFixed(2) }}</td>
+                                                                {{ useTwoDecCurrencyFormat(blot.netProceeds) }}</td>
                                                             <td>{{ blot.grossWinsCount }}</td>
                                                             <td>{{ blot.grossLossCount }}</td>
                                                             <td>{{ blot.trades }}</td>
