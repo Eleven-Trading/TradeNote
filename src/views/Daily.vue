@@ -1,10 +1,12 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount, onMounted, computed, ref, watch } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
+
+
 
 import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
@@ -66,7 +68,6 @@ onMounted(async () => {
         }
     })
     useCheckVisibleScreen()
-
 
 })
 
@@ -389,6 +390,66 @@ function resetExcursion() {
 
 }
 
+
+/**************
+ * TAGS
+ ***************/
+const tagInput = ref('');
+const selectedTags = ref([]);
+const selectedTagIndex = ref(-1)
+const availableTags = ["Head&Shoulders", "FOMO", "Emotions", "Double Top"];
+const showTagsList = ref(false)
+
+const filteredSuggestions = computed(() => {
+    return availableTags.filter(tag =>
+        tag.toLowerCase().startsWith(tagInput.value.toLowerCase())
+    );
+});
+
+const addTag = (tag) => {
+    if (selectedTagIndex.value != -1) {
+        if (!selectedTags.value.includes(filteredSuggestions.value[selectedTagIndex.value])) {
+            selectedTags.value.push(filteredSuggestions.value[selectedTagIndex.value]);
+            tagInput.value = ''; // Clear input after adding tag
+        }
+    } else if (tag && !selectedTags.value.includes(tag)) {
+        selectedTags.value.push(tag);
+        tagInput.value = ''; // Clear input after adding tag
+    }
+    selectedTagIndex.value = -1
+    showTagsList.value = false
+};
+
+const removeTag = (index) => {
+    //console.log(" removeTag")
+    selectedTags.value.splice(index, 1);
+};
+
+const filterTags = () => {
+    if (tagInput.value == '') selectedTagIndex.value = -1
+    let showDropdownToReturn = tagInput.value !== '' && filteredSuggestions.value.length > 0
+    //console.log("Filtered tags showDropdownToReturn " + showDropdownToReturn)
+    showTagsList.value = showDropdownToReturn
+};
+
+const handleKeyDown = (event) => {
+    if (showTagsList.value) {
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.value.length - 1);
+            //console.log(" arrow down and selectedTagIndex " + selectedTagIndex.value)
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            selectedTagIndex.value = Math.max(selectedTagIndex.value - 1, 0);
+        }
+    }
+};
+
+const toggleTagsDropdown = () => {
+    selectedTagIndex.value = -1
+    showTagsList.value = !showTagsList.value
+}
+
 </script>
 
 <template>
@@ -399,6 +460,29 @@ function resetExcursion() {
             <NoData />
         </div>
         <div v-show="hasData">
+            <div class="container-tags">
+                <div class="form-control dropdown form-select" style="height: auto;">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                        <span v-for="(tag, index) in selectedTags" :key="index" class="tag txt-small"
+                            @click="removeTag(index)">
+                            {{ tag }}<span class="remove-tag">×</span>
+                        </span>
+
+                        <input type="text" v-model="tagInput" @input="filterTags" @keydown.enter.prevent="addTag(tagInput)"
+                            @keydown.tab.prevent="addTag(tagInput)" @keydown="handleKeyDown" class="form-control tag-input"
+                            placeholder="Add a tag">
+                        <div class="clickable-area" v-on:click="toggleTagsDropdown">
+                        </div>
+                    </div>
+                </div>
+                <ul class="dropdown-menu-tags" v-show="showTagsList">
+                    <li v-for="(suggestion, index) in filteredSuggestions" :key="index"
+                        :class="{ active: index === selectedTagIndex }" @click="addTag(suggestion)"
+                        class="dropdown-item dropdown-item-tags ">{{ suggestion }}</li>
+                </ul>
+            </div>
+
+
             <!-- added v-if instead v-show because need to wait for patterns to load -->
             <div class="row">
                 <!-- ============ CARD ============ -->
@@ -411,6 +495,7 @@ function resetExcursion() {
                                     <!-- ============ PART 1 ============ -->
                                     <!-- Line 1 : Date and P&L -->
                                     <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
+
 
                                     <div class="col-12 cardFirstLine mb-2">
                                         <div class="row">
@@ -568,14 +653,14 @@ function resetExcursion() {
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
                                                             v-on:click="clickTradesModal(index, index2, index2)"
                                                             class="pointerClass">
-                                                            
+
                                                             <td>{{ trade.symbol }}</td>
-                                                            
+
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
-                                                            
+
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
                                                                 trade.strategy.slice(1) }}</td>
-                                                            
+
                                                             <!--Entry-->
                                                             <td><span v-if="trade.tradesCount == 0"><span
                                                                         v-if="trade.openPosition">Open<i
@@ -801,8 +886,9 @@ function resetExcursion() {
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
                                                 (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-                                            }}</span><span
-                                            v-else>{{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice) }}<span
+                                            }}</span><span v-else>{{
+    useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
+}}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -839,7 +925,7 @@ function resetExcursion() {
                                                         filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
                                                 }}</span></span>
                                     </td>
-                                    
+
                                     <!--P&L/Vol-->
                                     <td>
                                         <span
@@ -856,7 +942,8 @@ function resetExcursion() {
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                            {{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
+                                            {{
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
                                             }}</span>
                                     </td>
                                 </tr>
@@ -885,6 +972,7 @@ function resetExcursion() {
                                         <div class="col-4" v-if="patterns.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
                                                 class="form-select">
+
                                                 <option value='null' selected>Pattern</option>
                                                 <option v-for="itemActivePattern in activePatterns"
                                                     v-bind:value="itemActivePattern.objectId"
@@ -901,6 +989,7 @@ function resetExcursion() {
                                         <div class="col-4" v-if="mistakes.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
                                                 class="form-select">
+
                                                 <option value='null' selected>Mistake</option>
                                                 <option v-for="item in activeMistakes" v-bind:value="item.objectId"
                                                     v-bind:selected="item.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].mistake">
@@ -922,6 +1011,21 @@ function resetExcursion() {
                                             <i v-on:click="useDeleteSetup(filteredTrades[itemTradeIndex].dateUnix, filteredTrades[itemTradeIndex].trades[tradeIndex])"
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div> -->
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3 g-3">
+                                    <div class="col-md-4">
+                                        <label for="validationTagsNew" class="form-label">Tags (allow new)</label>
+
+                                        <select class="form-select" id="validationTagsNew" name="tags_new[]" multiple
+                                            data-allow-new="true">
+                                            <option selected disabled hidden value="">Choose a tag...</option>
+                                            <option value="1" selected="selected">Apple</option>
+                                            <option value="2">Banana</option>
+                                            <option value="3">Orange</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a valid tag.</div>
                                     </div>
                                 </div>
 

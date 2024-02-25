@@ -2856,6 +2856,8 @@ export const tradeExcursionDateUnix = ref()
 export const satisfactionTradeArray = reactive([])
 export const satisfactionArray = reactive([])
 export const excursions = reactive([])
+export const tagsTradeArray = reactive([])
+export const tagsArray = reactive([])
 /**************************************
 * SCREENSHOTS
 **************************************/
