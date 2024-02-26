@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, selectedRange } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tagsArray, tagsTradeArray, selectedRange, availableTags } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -61,11 +61,11 @@ export async function useGetExcursions() {
 export async function useGetTags() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING TAGS");
-        satisfactionTradeArray.length = 0
-        satisfactionArray.length = 0
+        tagsTradeArray.length = 0
+        tagsArray.length = 0
         let startD = selectedRange.value.start
         let endD = selectedRange.value.end
-        const parseObject = Parse.Object.extend("satisfactions");
+        const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.greaterThanOrEqualTo("dateUnix", startD)
@@ -77,16 +77,20 @@ export async function useGetTags() {
             let temp = {}
             const object = results[i];
             temp.tradeId = object.get('tradeId')
-            temp.satisfaction = object.get('satisfaction')
+            temp.tags = object.get('tags')
             temp.dateUnix = object.get('dateUnix')
             if (temp.tradeId != undefined) {
-                satisfactionTradeArray.push(temp)
+                tagsTradeArray.push(temp)
             } else {
-                satisfactionArray.push(temp)
+                tagsArray.push(temp)
             }
+            object.get('tags').forEach(element => {
+                if (!availableTags.includes(element)) availableTags.push(element)        
+            });
 
         }
-        //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        
+        //console.log(" -> Trades tags " + JSON.stringify(tagsArray))
         resolve()
 
     })

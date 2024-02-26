@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, tagsArray, tagsTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -46,15 +46,24 @@ export async function useGetFilteredTrades(param) {
                     temp.month = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).month()
                     temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
 
-                    //Adding satisfaction for daily page
                     if (pageId.value == "daily") {
-
+                        
+                        //Adding satisfaction for daily page
                         temp.satisfaction = null
                         for (let index = 0; index < satisfactionArray.length; index++) {
                             const el = satisfactionArray[index];
                             if (el.dateUnix == element.dateUnix) {
                                 //console.log("satisfaction "+el.satisfaction)
                                 temp.satisfaction = el.satisfaction
+                            }
+                        }
+                        
+                        //Adding tags for daily page
+                        temp.tags = null
+                        for (let index = 0; index < tagsArray.length; index++) {
+                            const el = tagsArray[index];
+                            if (el.dateUnix == element.dateUnix) {
+                                temp.tags = el.tags
                             }
                         }
                     }
@@ -130,6 +139,14 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
 
+                        let tradeTags = null
+                        for (let index = 0; index < tagsTradeArray.length; index++) {
+                            const el = tagsTradeArray[index];
+                            if (el.tradeId == element.id) {
+                                tradeTags = el.tags
+                            }
+                        }
+
                         //console.log(" selected patterns "+selectedPatterns.value)
                         //console.log(" pattern "+pattern)
                         //console.log(" Account "+element.account)
@@ -152,6 +169,7 @@ export async function useGetFilteredTrades(param) {
                             }
 
                             element.satisfaction = tradeSatisfaction
+                            element.tags = tradeTags
 
                             temp.trades.push(element)
                             filteredTradesTrades.push(element)
@@ -170,7 +188,9 @@ export async function useGetFilteredTrades(param) {
                 }
             });
         }
+
         //console.log("trades "+JSON.stringify(trades))
+        //console.log("filteredTrades "+JSON.stringify(filteredTrades))
         loopTrades(trades)
         //console.log(" selectedRange.value.start "+selectedRange.value.start)
         //console.log(" -> Filtered trades of trades "+JSON.stringify(filteredTradesTrades))

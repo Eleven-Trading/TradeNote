@@ -2849,15 +2849,26 @@ export const tradeSatisfactionChanged = ref(false)
 export const tradeSatisfactionDateUnix = ref()
 export const tradeSatisfactionId = ref()
 export const editingScreenshot = ref(false)
+
+export const excursions = reactive([])
 export const tradeExcursionChanged = ref(false)
 export const tradeExcursionId = ref()
 export const tradeExcursionDateUnix = ref()
 
 export const satisfactionTradeArray = reactive([])
 export const satisfactionArray = reactive([])
-export const excursions = reactive([])
+
 export const tagsTradeArray = reactive([])
 export const tagsArray = reactive([])
+export const availableTags = reactive([])
+export const tradeTagsChanged = ref(false)
+export const tagInput = ref('');
+export const selectedTags = reactive([]);
+export const selectedTagIndex = ref(-1)
+export const showTagsList = ref(false)
+export const tradeTagsId = ref()
+export const tradeTagsDateUnix = ref()
+
 /**************************************
 * SCREENSHOTS
 **************************************/

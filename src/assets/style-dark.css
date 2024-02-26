@@ -1127,9 +1127,9 @@ h4 {
     background-color: var(--black-bg-7);
 }
 .tag {
-    background-color: var(--blue-color);
+    background-color: var(--blue-active-color);
     padding: 1px 10px;
-    margin: 2px 3px;
+    margin: 0px 3px;
     border-radius: 5px;
     cursor: pointer;
 }

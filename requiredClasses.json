@@ -917,6 +917,68 @@
         }
     },
     {
+        "className": "tags",
+        "fields": {
+            "objectId": {
+                "type": "String"
+            },
+            "createdAt": {
+                "type": "Date"
+            },
+            "updatedAt": {
+                "type": "Date"
+            },
+            "ACL": {
+                "type": "ACL"
+            },
+            "user": {
+                "type": "Pointer",
+                "targetClass": "_User",
+                "required": false
+            },
+            "dateUnix": {
+                "type": "Number"
+            },
+            "tradeId": {
+                "type": "String"
+            },
+            "tags": {
+                "type": "Array"
+            }
+        },
+        "classLevelPermissions": {
+            "find": {
+                "*": true
+            },
+            "count": {
+                "*": true
+            },
+            "get": {
+                "*": true
+            },
+            "create": {
+                "*": true
+            },
+            "update": {
+                "*": true
+            },
+            "delete": {
+                "*": true
+            },
+            "addField": {
+                "*": true
+            },
+            "protectedFields": {
+                "*": []
+            }
+        },
+        "indexes": {
+            "_id_": {
+                "_id": 1
+            }
+        }
+    },
+    {
         "className": "excursions",
         "fields": {
             "objectId": {
