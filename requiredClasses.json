@@ -44,6 +44,9 @@
             },
             "timeZone": {
                 "type": "String"
+            },
+            "tags": {
+                "type": "Array"
             }
         },
         "classLevelPermissions": {

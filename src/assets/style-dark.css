@@ -1183,3 +1183,35 @@ h4 {
     background-color: var(--blue-active-color) !important;
     color: white;
 }
+
+.availableTags {
+    padding: 3px;
+    margin-bottom: 3px;
+}
+
+
+.availableTagsCard {
+    background-color: var(--black-bg-5);
+    border: 1px solid var(--white-38);
+    border-radius: 5px;
+    padding: 5px;
+}
+
+#colorPicker {
+    width: 30px; /* Set the width */
+    height: 30px; /* Set the height */
+    border-radius: 50%; /* Make it round */
+    border: none; /* Remove default border */
+    padding: 0; /* Remove default padding */
+  }
+  
+  /* Hide the default color picker arrow */
+  #colorPicker::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  
+  #colorPicker::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+    padding: 0;
+  }

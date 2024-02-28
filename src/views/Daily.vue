@@ -6,11 +6,11 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, selectedTags, showTagsList, selectedTagIndex, tagsTradeArray, tradeTagsId, tradeTagsDateUnix } from '../stores/globals';
+import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions, useGetTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -309,6 +309,7 @@ async function clickTradesModal(param1, param2, param3) {
         }
 
         if (tradeTagsChanged.value) {
+            await updateAvailableTags()
             await updateTags()
         }
 
@@ -341,10 +342,10 @@ async function clickTradesModal(param1, param2, param3) {
                 screenshot.type = null
             }
 
-            let findTags = tagsTradeArray.find(obj => obj.tradeId == filteredTradeId)
+            let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
             if (findTags) {
                 findTags.tags.forEach(element => {
-                    selectedTags.push(element)
+                    tradeTags.push(element)
                 });
             }
 
@@ -381,6 +382,7 @@ async function hideTradesModal() {
             await updateExcursions()
         }
         if (tradeTagsChanged.value) {
+            await updateAvailableTags()
             await updateTags()
         }
 
@@ -406,7 +408,7 @@ function resetExcursion() {
 }
 
 const resetTags = () => {
-    selectedTags.splice(0);
+    tradeTags.splice(0);
 }
 
 /**************
@@ -415,19 +417,24 @@ const resetTags = () => {
 
 const filteredSuggestions = computed(() => {
     return availableTags.filter(tag =>
-        tag.toLowerCase().startsWith(tagInput.value.toLowerCase())
+        tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase())
     );
 });
 
 const tradeTagsChange = (param1, param2) => {
+    console.log(" param 2 " + param2)
+    console.log(" tags " + JSON.stringify(tags))
     if (param1 == "add") {
+        //arrow select and enter button
         if (selectedTagIndex.value != -1) {
-            if (!selectedTags.includes(filteredSuggestions.value[selectedTagIndex.value])) {
-                selectedTags.push(filteredSuggestions.value[selectedTagIndex.value]);
+            if (!tradeTags.includes(filteredSuggestions.value[selectedTagIndex.value].name)) {
+                tradeTags.push(filteredSuggestions.value[selectedTagIndex.value].name);
                 tagInput.value = ''; // Clear input after adding tag
             }
-        } else if (param2 && !selectedTags.includes(param2)) {
-            selectedTags.push(param2);
+
+        } else if (param2 && !tradeTags.includes(param2)) {
+            tradeTags.push(param2);
+            console.log(" tradeTags " + JSON.stringify(tradeTags))
             tagInput.value = ''; // Clear input after adding tag
         }
         selectedTagIndex.value = -1
@@ -435,8 +442,11 @@ const tradeTagsChange = (param1, param2) => {
     }
 
     if (param1 == "remove") {
-        selectedTags.splice(param2, 1);
+        tradeTags.splice(param2, 1);
     }
+
+    filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].tags = tradeTags // updated the background page / behind modal in realtime
+
     saveButton.value = true
     tradeTagsChanged.value = true
     tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
@@ -472,7 +482,6 @@ const toggleTagsDropdown = () => {
 async function updateTags() {
     console.log("\nUPDATING OR SAVING TAGS IN PARSE DB")
     return new Promise(async (resolve, reject) => {
-
         spinnerSetups.value = true
         //tradeSetupChanged.value = true
         const parseObject = Parse.Object.extend("tags");
@@ -482,13 +491,13 @@ async function updateTags() {
         if (results) {
             console.log(" -> Updating tags")
             spinnerSetupsText.value = "Updating"
-            results.set("tags", selectedTags)
+            results.set("tags", tradeTags)
 
             results.save()
                 .then(async () => {
                     console.log(' -> Updated tags with id ' + results.id)
                     //await useGetSelectedRange()
-                    await useGetTags()
+                    await Promise.all([useGetTags(), useGetAvailableTags()])
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
@@ -498,7 +507,7 @@ async function updateTags() {
 
             const object = new parseObject();
             object.set("user", Parse.User.current())
-            object.set("tags", selectedTags)
+            object.set("tags", tradeTags)
             object.set("dateUnix", tradeTagsDateUnix.value)
             object.set("tradeId", tradeTagsId.value)
             object.setACL(new Parse.ACL(Parse.User.current()));
@@ -506,9 +515,7 @@ async function updateTags() {
                 .then(async (object) => {
                     console.log(' -> Added new tags with id ' + object.id)
                     //await useGetSelectedRange()
-                    await useGetTags()
-                    //spinnerSetupsText.value = "Added new setup"
-                    tradeId.value = tradeExcursionId.value // we need to do this if I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+                    await Promise.all([useGetTags(), useGetAvailableTags()])
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
@@ -519,6 +526,58 @@ async function updateTags() {
     })
 }
 
+async function updateAvailableTags() {
+    console.log("\nUPDATING OR SAVING AVAILABLE TAGS")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentTags = parsedResults.tags
+
+            if (currentTags == undefined || currentTags.length == 0) {
+                console.log(" -> Saving available tags")
+                currentTags = []
+                let temp = {}
+                temp.id = "0"
+                temp.name = "Ungrouped"
+                temp.color = "#6c757d"
+                temp.tags = []
+                for (let index = 0; index < tradeTags.length; index++) {
+                    const element = tradeTags[index];
+                    temp.tags.push(element)
+                }
+                currentTags.push(temp)
+            } else {
+                console.log(" -> Updating available tags")
+                let currentTagsTags = currentTags.filter(obj => obj.id == "0")[0].tags // tags array inside currentTags
+                console.log(" currentTagsTags "+JSON.stringify(currentTagsTags))
+                for (let index = 0; index < tradeTags.length; index++) {
+                    const element = tradeTags[index];
+                    if (!currentTagsTags.includes(element)){
+                        currentTagsTags.push(element)
+                    }
+                }
+            }
+
+            results.set("tags", currentTags)
+            results.save()
+                .then(async () => {
+                    console.log(' -> Saved/Updated available tags with id ' + results.id)
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to save/update available tags, with error code: ' + error.message);
+                    reject()
+                })
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
 </script>
 
 <template>
@@ -683,8 +742,8 @@ async function updateTags() {
                                                             <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Vol</th>
                                                             <th scope="col">P&L(n)</th>
-                                                            <th scope="col">Pattern</th>
-                                                            <th scope="col">Mistake</th>
+                                                            <!--<th scope="col">Pattern</th>
+                                                            <th scope="col">Mistake</th>-->
                                                             <th scope="col">Tags</th>
                                                             <th scope="col">Note</th>
                                                             <th scope="col"></th>
@@ -750,12 +809,12 @@ async function updateTags() {
                                                                     v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                     {{ useTwoDecCurrencyFormat(trade.netProceeds) }}</span>
                                                             </td>
-                                                            <td>
+                                                            <!--<td>
                                                                 {{ trade.patternNameShort }}
                                                             </td>
                                                             <td>
                                                                 {{ trade.mistakeNameShort }}
-                                                            </td>
+                                                            </td>-->
                                                             <td>
                                                                 <span v-for="tag in trade.tags" class="tag txt-small">{{ tag
                                                                 }}
@@ -1021,7 +1080,7 @@ async function updateTags() {
                                                 v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == false ? 'redTrade' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
-                                        <!-- Patterns -->
+                                        <!-- Patterns
                                         <div class="col-4" v-if="patterns.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
                                                 class="form-select">
@@ -1038,7 +1097,7 @@ async function updateTags() {
                                                     href="/settings">settings</a></span>
                                         </div>
 
-                                        <!--Mistakes-->
+                                        Mistakes
                                         <div class="col-4" v-if="mistakes.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
                                                 class="form-select">
@@ -1052,8 +1111,33 @@ async function updateTags() {
                                         <div class="col-4" v-else>
                                             <span class="form-control">Add mistake tags in <a
                                                     href="/settings">settings</a></span>
-                                        </div>
+                                        </div>-->
+                                        <!-- Tags -->
+                                        <div class="container-tags col-8">
+                                            <div class="form-control dropdown form-select" style="height: auto;">
+                                                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                                                    <span v-for="(tag, index) in tradeTags" :key="index"
+                                                        class="tag txt-small" @click="tradeTagsChange('remove', index)">
+                                                        {{ tag }}<span class="remove-tag">×</span>
+                                                    </span>
 
+                                                    <input type="text" v-model="tagInput" @input="filterTags"
+                                                        @keydown.enter.prevent="tradeTagsChange('add', tagInput)"
+                                                        @keydown.tab.prevent="tradeTagsChange('add', tagInput)"
+                                                        @keydown="handleKeyDown" class="form-control tag-input"
+                                                        placeholder="Add a tag">
+                                                    <div class="clickable-area" v-on:click="toggleTagsDropdown">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ul class="dropdown-menu-tags" v-show="showTagsList">
+                                                <li v-for="(suggestion, index) in filteredSuggestions" :key="index"
+                                                    :class="{ active: index === selectedTagIndex }"
+                                                    @click="tradeTagsChange('add', suggestion.name)"
+                                                    class="dropdown-item dropdown-item-tags ">
+                                                    {{ suggestion.name }}</li>
+                                            </ul>
+                                        </div>
                                         <!-- MFE -->
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price"
@@ -1067,33 +1151,6 @@ async function updateTags() {
                                                 class="ps-2 uil uil-trash-alt pointerClass"></i>
                                         </div> -->
                                     </div>
-                                </div>
-
-                                <!-- Tags -->
-                                <div class="container-tags mt-2">
-                                    <div class="form-control dropdown form-select" style="height: auto;">
-                                        <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                                            <span v-for="(tag, index) in selectedTags" :key="index" class="tag txt-small"
-                                                @click="tradeTagsChange('remove', index)">
-                                                {{ tag }}<span class="remove-tag">×</span>
-                                            </span>
-
-                                            <input type="text" v-model="tagInput" @input="filterTags"
-                                                @keydown.enter.prevent="tradeTagsChange('add', tagInput)"
-                                                @keydown.tab.prevent="tradeTagsChange('add', tagInput)"
-                                                @keydown="handleKeyDown" class="form-control tag-input"
-                                                placeholder="Add a tag">
-                                            <div class="clickable-area" v-on:click="toggleTagsDropdown">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <ul class="dropdown-menu-tags" v-show="showTagsList">
-                                        <li v-for="(suggestion, index) in filteredSuggestions" :key="index"
-                                            :class="{ active: index === selectedTagIndex }"
-                                            @click="tradeTagsChange('add', suggestion)"
-                                            class="dropdown-item dropdown-item-tags ">
-                                            {{ suggestion }}</li>
-                                    </ul>
                                 </div>
 
                                 <!-- Second line -->

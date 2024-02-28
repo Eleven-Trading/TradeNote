@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, tagsArray, tagsTradeArray, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -60,8 +60,8 @@ export async function useGetFilteredTrades(param) {
                         
                         //Adding tags for daily page
                         temp.tags = null
-                        for (let index = 0; index < tagsArray.length; index++) {
-                            const el = tagsArray[index];
+                        for (let index = 0; index < tags.length; index++) {
+                            const el = tags[index];
                             if (el.dateUnix == element.dateUnix) {
                                 temp.tags = el.tags
                             }
@@ -139,11 +139,11 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
 
-                        let tradeTags = null
-                        for (let index = 0; index < tagsTradeArray.length; index++) {
-                            const el = tagsTradeArray[index];
+                        let tempTags = null 
+                        for (let index = 0; index < tags.length; index++) {
+                            const el = tags[index];
                             if (el.tradeId == element.id) {
-                                tradeTags = el.tags
+                                tempTags = el.tags
                             }
                         }
 
@@ -169,7 +169,7 @@ export async function useGetFilteredTrades(param) {
                             }
 
                             element.satisfaction = tradeSatisfaction
-                            element.tags = tradeTags
+                            element.tags = tempTags
 
                             temp.trades.push(element)
                             filteredTradesTrades.push(element)

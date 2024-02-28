@@ -68,7 +68,6 @@ export const activePatterns = reactive([])
 export const activeMistakes = reactive([])
 
 
-
 /**************************************
 * LOADING AND MOUNTING
 **************************************/
@@ -2858,12 +2857,11 @@ export const tradeExcursionDateUnix = ref()
 export const satisfactionTradeArray = reactive([])
 export const satisfactionArray = reactive([])
 
-export const tagsTradeArray = reactive([])
-export const tagsArray = reactive([])
+export const tags = reactive([]) //all tags, from useGetTags
+export const tradeTags = reactive([]) // on daily page, tags of a specific trade (when push modal)
 export const availableTags = reactive([])
 export const tradeTagsChanged = ref(false)
 export const tagInput = ref('');
-export const selectedTags = reactive([]);
 export const selectedTagIndex = ref(-1)
 export const showTagsList = ref(false)
 export const tradeTagsId = ref()
@@ -3043,6 +3041,7 @@ export const plSatisfaction = ref([{
 export const selectedPatterns = localStorage.getItem('selectedPatterns') ? ref(localStorage.getItem('selectedPatterns').split(",")) : ref([])
 export const selectedMistakes = localStorage.getItem('selectedMistakes') ? ref(localStorage.getItem('selectedMistakes').split(",")) : ref([])
 
+export const selectedTags = localStorage.getItem('selectedTags') ? ref(localStorage.getItem('selectedTags').split(",")) : ref([])
 
 export const selectedPositions = localStorage.getItem('selectedPositions') ? ref(localStorage.getItem('selectedPositions').split(",")) : ref([])
 export const selectedTimeFrame = ref(localStorage.getItem('selectedTimeFrame'))
