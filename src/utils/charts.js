@@ -1610,10 +1610,10 @@ export function useScatterChart(param1) { //chart ID, green, red, page
     })
 }
 
-export function useCandlestickChart(param1, param2, param3) { //
+export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes) {
     return new Promise((resolve, reject) => {
-        //console.log("  --> " + param1)
-        //console.log("para 2 " + param2 + " and 3 " + param3)
+        //console.log("  --> " + ohlcDates)
+        //console.log("para 2 " + ohlcPrices + " and 3 " + ohlcVolumes)
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
             dataZoom: [
@@ -1624,10 +1624,9 @@ export function useCandlestickChart(param1, param2, param3) { //
                     //rangeMode:["12:08", "13:04"],
                     preventDefaultMouseMove: false
                 },
-
             ],
             xAxis: {
-                data: param1,
+                data: ohlcDates,
                 min: 'dataMin',
                 max: 'dataMax'
             },
@@ -1637,10 +1636,9 @@ export function useCandlestickChart(param1, param2, param3) { //
                 //max: 139
             },
             series: [
-
                 {
                     type: 'candlestick',
-                    data: param2,
+                    data: ohlcPrices,
                     markPoint: {
                         label: {
                             formatter: function (param) {
@@ -1664,9 +1662,9 @@ export function useCandlestickChart(param1, param2, param3) { //
                         }
                     }
                 },
-
             ]
         };
+
         myChart.setOption(option);
         resolve()
     })

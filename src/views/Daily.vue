@@ -403,11 +403,10 @@ function resetExcursion() {
 
 }
 
-function getOHLC(param1, param2, param3, param4) {
-    //date, symbol, entryTime, exitTime
+function getOHLC(date, symbol, entryTime, exitTime) {
     console.log(" get ohlc")
     return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + param2 + "/range/1/minute/" + useDateCalFormat(param1) + "/" + useDateCalFormat(param1) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
             .then((response) => {
                 //console.log(" res "+JSON.stringify(response.data))
