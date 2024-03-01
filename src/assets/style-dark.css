@@ -1187,7 +1187,15 @@ h4 {
 .availableTags {
     padding: 3px;
     margin-bottom: 3px;
+    border: transparent;
+    width: 94%;
+    color: var(--white-87);
 }
+.availableTags.i {
+    width: 1%;
+    background-color: red;
+}
+
 
 
 .availableTagsCard {
@@ -1215,3 +1223,9 @@ h4 {
     border-radius: 50%;
     padding: 0;
   }
+
+  .groupInput{
+    background-color: var(--black-bg-7);
+    color: var(--white-87);
+    border: transparent;
+}
