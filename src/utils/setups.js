@@ -1,4 +1,4 @@
-import { patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes,filteredTrades, itemTradeIndex, tradeIndex, screenshot, patternUpdate, mistakeUpdate, mistakeNew, patternNew } from '../stores/globals';
+import { patterns, mistakes, queryLimit, setups, tradeSetupDateUnixDay, tradeSetupId, tradeSetupDateUnix, tradeSetupChanged, spinnerSetupsText, spinnerSetups, pageId, tradeId, saveButton, selectedRange, activePatterns, activeMistakes, filteredTrades, itemTradeIndex, tradeIndex, screenshot, patternUpdate, mistakeUpdate, mistakeNew, patternNew } from '../stores/globals';
 import { useGetSelectedRange } from './utils';
 
 
@@ -171,7 +171,7 @@ export async function useUpdateSetups() {
 
         if (pageId.value == "daily") {
             temp = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value]
-                upsertSetups()
+            upsertSetups()
         }
         if (pageId.value == "addScreenshot") {
             temp = screenshot
@@ -355,8 +355,8 @@ export async function useSaveNewPatternMistake(param) {
                 } else {
                     selectedItems = "selectedMistakes"
                 }
-                
-                updateSelectedPatternsMistakes(selectedItems,object.id)
+
+                updateSelectedPatternsMistakes(selectedItems, object.id)
                 if (param == "pattern") {
                     await useGetPatterns()
                 } else {

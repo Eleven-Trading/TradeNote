@@ -139,13 +139,6 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
 
-                        let tempTags = null 
-                        for (let index = 0; index < tags.length; index++) {
-                            const el = tags[index];
-                            if (el.tradeId == element.id) {
-                                tempTags = el.tags
-                            }
-                        }
 
                         //console.log(" selected patterns "+selectedPatterns.value)
                         //console.log(" pattern "+pattern)
@@ -169,7 +162,7 @@ export async function useGetFilteredTrades(param) {
                             }
 
                             element.satisfaction = tradeSatisfaction
-                            element.tags = tempTags
+
 
                             temp.trades.push(element)
                             filteredTradesTrades.push(element)

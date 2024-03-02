@@ -11,10 +11,10 @@ import { useRefreshScreenshot } from "../utils/screenshots"
 
 let filtersOpen = ref(false)
 let filters = ref({
-    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes", "tags"],
+    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio","tags"],
     "calendar": ["month", "grossNet", "plSatisfaction"],
-    "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "tags"],
-    "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes", "tags"],
+    "daily": ["accounts", "month", "grossNet", "positions", "tags"],
+    "screenshots": ["accounts", "grossNet", "positions", "tags"],
 })
 
 
@@ -303,7 +303,7 @@ async function saveFilter() {
                         {{ selectedRatio.toUpperCase() }} |
                     </span>
 
-                    <span v-show="filters[pageId].includes('patterns')">
+                    <!--<span v-show="filters[pageId].includes('patterns')">
                         <span v-if="activePatterns.length + 1 == selectedPatterns.length">All
                             patterns |</span>
                         <span v-else>Selected patterns |</span>
@@ -314,7 +314,7 @@ async function saveFilter() {
                             mistakes |</span>
                         <span v-else>Selected mistakes <span
                                 v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
-                    </span>
+                    </span>-->
 
                     <span v-show="filters[pageId].includes('tags')">
                         <span v-if="tags.length == selectedTags.length">All
@@ -417,7 +417,7 @@ async function saveFilter() {
                     </select>
                 </div>
 
-                <!-- Patterns -->
+                <!-- Patterns
                 <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
                     v-show="pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -436,7 +436,7 @@ async function saveFilter() {
                     </ul>
                 </div>
 
-                <!-- Mistakes -->
+                Mistakes
                 <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
                     v-show="pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -453,7 +453,7 @@ async function saveFilter() {
                             {{ item.name }}
                         </div>
                     </ul>
-                </div>
+                </div>-->
 
                 <!-- P&L / Satisfaction  -->
                 <div :class="[pageId == 'daily' ? 'col-4' : 'col-6']" v-show="pageId == 'calendar'">

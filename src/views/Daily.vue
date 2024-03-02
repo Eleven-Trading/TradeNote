@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted, computed, ref, watch } from 'vue';
+import { onBeforeMount, onMounted, computed, reactive } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
@@ -40,12 +40,18 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
+const availableTagsArray = reactive([])
+
+let newTradeTags = []
+
 onBeforeMount(async () => {
 
 })
 onMounted(async () => {
     await useMountDaily()
     await useInitTooltip()
+    createAvailableTagsArray()
+
     tradesModal = new bootstrap.Modal("#tradesModal")
     window.addEventListener('scroll', async () => {
         let scrollFromTop = window.scrollY
@@ -57,9 +63,9 @@ onMounted(async () => {
         console.log("documentHeight "+documentHeight)
         //console.log("difference "+difference)*/
         if (difference <= 0) {
-            console.log("spinnerLoadMore " + spinnerLoadMore.value)
-            console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
-            console.log("endOfList " + endOfList.value)
+            //console.log("spinnerLoadMore " + spinnerLoadMore.value)
+            //console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
+            //console.log("endOfList " + endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }
@@ -186,12 +192,6 @@ async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : 
  * EXCURSIONS
  ***************/
 
-function noteClicked() {
-    //console.log("click")
-    tradeSetupChanged.value = true
-    saveButton.value = true
-}
-
 function tradeExcursionClicked() {
     //console.log("click")
     tradeExcursionChanged.value = true
@@ -281,6 +281,12 @@ async function updateExcursions() {
 /**************
  * MISC
  ***************/
+function noteClicked() {
+    //console.log("click")
+    tradeSetupChanged.value = true
+    saveButton.value = true
+}
+
 async function clickTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
     //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
@@ -309,8 +315,9 @@ async function clickTradesModal(param1, param2, param3) {
         }
 
         if (tradeTagsChanged.value) {
-            await updateAvailableTags()
-            await updateTags()
+            await Promise.all([updateAvailableTags(), updateTags()])
+            await Promise.all([useGetTags(), useGetAvailableTags()])
+            createAvailableTagsArray()
         }
 
         //Then we change indexes
@@ -341,6 +348,7 @@ async function clickTradesModal(param1, param2, param3) {
                 screenshot.side = null
                 screenshot.type = null
             }
+
 
             let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
             if (findTags) {
@@ -382,8 +390,9 @@ async function hideTradesModal() {
             await updateExcursions()
         }
         if (tradeTagsChanged.value) {
-            await updateAvailableTags()
-            await updateTags()
+            await Promise.all([updateAvailableTags(), updateTags()])
+            await Promise.all([useGetTags(), useGetAvailableTags()])
+            createAvailableTagsArray()
         }
 
         tradeSetupChanged.value = false
@@ -415,42 +424,139 @@ const resetTags = () => {
  * TAGS
  ***************/
 
+const createAvailableTagsArray = () => {
+    availableTagsArray.splice(0)
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        for (let index = 0; index < element.tags.length; index++) {
+            const el = element.tags[index];
+            availableTagsArray.push(el)
+        }
+    }
+}
+
 const filteredSuggestions = computed(() => {
-    return availableTags.filter(tag =>
+    console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+    return availableTagsArray.filter(tag =>
         tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase())
     );
 });
 
-const tradeTagsChange = (param1, param2) => {
+const tradeTagsChange = async (param1, param2) => {
+    console.log(" param 1 " + param1)
     console.log(" param 2 " + param2)
-    console.log(" tags " + JSON.stringify(tags))
+    //console.log(" tags " + JSON.stringify(tags))
+
     if (param1 == "add") {
-        //arrow select and enter button
+
+        //Case when arrow select and enter button
         if (selectedTagIndex.value != -1) {
-            if (!tradeTags.includes(filteredSuggestions.value[selectedTagIndex.value].name)) {
-                tradeTags.push(filteredSuggestions.value[selectedTagIndex.value].name);
+            console.log(" -> Adding on arrow down and enter " + param2)
+
+            let tradeTagsIndex = tradeTags.findIndex(obj => obj.id == filteredSuggestions.value[selectedTagIndex.value].id)
+
+            //only add if does not exist in tradeTags already
+            if (tradeTagsIndex == -1) {
+                tradeTags.push(filteredSuggestions.value[selectedTagIndex.value]);
                 tagInput.value = ''; // Clear input after adding tag
             }
 
-        } else if (param2 && !tradeTags.includes(param2)) {
+        } else if (param2) {
+
+            let inputTextIndex = tradeTags.findIndex(obj => obj.name.toLowerCase() == param2.toLowerCase())
+            console.log(" -> InputTextIndex " + inputTextIndex)
+            //First check if input text already exists in trades tags ( = current array of tags)
+            if (inputTextIndex != -1) {
+                console.log("  --> Input text already exists in trades tags")
+            }
+
+            else {
+                //Check if already in availableTags
+                let inAvailableTagsIndex = availableTagsArray.findIndex(tag =>
+                    tag.name.toLowerCase() == param2.toLowerCase())
+                console.log("  --> InAvailableTagsIndex " + JSON.stringify(inAvailableTagsIndex))
+
+                if (inAvailableTagsIndex != -1) {
+                    console.log("  --> Input text already exists in availableTags")
+                    tradeTags.push(availableTagsArray[inAvailableTagsIndex])
+                }
+                else {
+                    //Else new tag
+                    console.log("  --> Input is a new tag")
+                    let temp = {}
+
+                    const findHighestIdNumber = (param) => {
+                        let highestId = -Infinity;
+                        param.forEach(innerArray => {
+                            innerArray.tags.forEach(obj => {
+                                if (Number(obj.id.replace("tag_", "")) > highestId) {
+                                    highestId = Number(obj.id.replace("tag_", ""))
+                                }
+                            });
+                        });
+                        return highestId;
+                    }
+                    const findHighestIdNumberTradeTags = (param) => {
+                        let highestId = -Infinity;
+                        param.forEach(obj => {
+                            if (Number(obj.id.replace("tag_", "")) > highestId) {
+                                highestId = Number(obj.id.replace("tag_", ""))
+                            }
+                        });
+                        return highestId;
+                    }
+
+                    // Get the highest id number
+                    const highestIdNumberAvailableTags = findHighestIdNumber(availableTags);
+                    const highestIdNumberTradeTags = findHighestIdNumberTradeTags(tradeTags);
+
+                    function chooseHighestNumber(num1, num2) {
+                        return Math.max(num1, num2);
+                    }
+
+                    // Example usage:
+                    const highestIdNumber = chooseHighestNumber(highestIdNumberAvailableTags, highestIdNumberTradeTags);
+
+                    //console.log(" -> Highest tag id number " + highestIdNumber);
+
+                    temp.id = "tag_" + (highestIdNumber + 1).toString()
+                    temp.name = param2
+                    tradeTags.push(temp)
+
+                    newTradeTags.push(temp)
+
+
+                    tagInput.value = ''; // Clear input after adding tag
+                }
+
+            }
+        }
+        selectedTagIndex.value = -1
+        showTagsList.value = false
+        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
+    }
+    if (param1 == "addFromDropdownMenu") {
+        let index = tradeTags.findIndex(obj => obj.id == param2.id)
+        //First check if input text already exists in trades tags ( = current array of tags)
+        if (index == -1) {
+            console.log(" -> Adding " + param2)
             tradeTags.push(param2);
-            console.log(" tradeTags " + JSON.stringify(tradeTags))
             tagInput.value = ''; // Clear input after adding tag
         }
         selectedTagIndex.value = -1
         showTagsList.value = false
+        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
     }
 
     if (param1 == "remove") {
+        //param2 is index of element to remove inside tradeTags
         tradeTags.splice(param2, 1);
     }
 
-    filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].tags = tradeTags // updated the background page / behind modal in realtime
-
-    saveButton.value = true
     tradeTagsChanged.value = true
     tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
     tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+    saveButton.value = true
 
 };
 
@@ -479,17 +585,43 @@ const toggleTagsDropdown = () => {
     showTagsList.value = !showTagsList.value
 }
 
+
+const getTagColor = (param) => {
+    const findGroupColor = (tagId) => {
+        for (let obj of availableTags) {
+            for (let tag of obj.tags) {
+                if (tag.id === tagId) {
+                    return obj.color;
+                }
+            }
+        }
+
+        let color = null
+        if (availableTags.length > 0) {
+            color = availableTags.filter(obj => obj.id == "group_0")[0].color
+        }
+        return color // Return ungroupcolor if no result
+    }
+
+    const tagIdToFind = param;
+    const groupColor = findGroupColor(tagIdToFind);
+
+    return "background-color: " + groupColor + ";"
+}
+
 async function updateTags() {
     console.log("\nUPDATING OR SAVING TAGS IN PARSE DB")
     return new Promise(async (resolve, reject) => {
         spinnerSetups.value = true
         //tradeSetupChanged.value = true
+
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
         query.equalTo("tradeId", tradeTagsId.value)
         const results = await query.first();
         if (results) {
             console.log(" -> Updating tags")
+
             spinnerSetupsText.value = "Updating"
             results.set("tags", tradeTags)
 
@@ -497,14 +629,14 @@ async function updateTags() {
                 .then(async () => {
                     console.log(' -> Updated tags with id ' + results.id)
                     //await useGetSelectedRange()
-                    await Promise.all([useGetTags(), useGetAvailableTags()])
+                    resolve()
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
         } else {
             console.log(" -> Saving tags")
             spinnerSetupsText.value = "Saving"
-
+            console.log(" -> Trade tags " + JSON.stringify(tradeTags))
             const object = new parseObject();
             object.set("user", Parse.User.current())
             object.set("tags", tradeTags)
@@ -515,16 +647,17 @@ async function updateTags() {
                 .then(async (object) => {
                     console.log(' -> Added new tags with id ' + object.id)
                     //await useGetSelectedRange()
-                    await Promise.all([useGetTags(), useGetAvailableTags()])
+                    resolve()
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);
                 })
         }
-        resolve()
+
 
 
     })
 }
+
 
 async function updateAvailableTags() {
     console.log("\nUPDATING OR SAVING AVAILABLE TAGS")
@@ -537,7 +670,7 @@ async function updateAvailableTags() {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
 
-            if (currentTags == undefined || currentTags.length == 0) {
+            if (currentTags == undefined || currentTags.length == 0) {
                 console.log(" -> Saving available tags")
                 currentTags = []
                 let temp = {}
@@ -550,15 +683,14 @@ async function updateAvailableTags() {
                     temp.tags.push(element)
                 }
                 currentTags.push(temp)
+
             } else {
                 console.log(" -> Updating available tags")
-                let currentTagsTags = currentTags.filter(obj => obj.id == "0")[0].tags // tags array inside currentTags
-                console.log(" currentTagsTags "+JSON.stringify(currentTagsTags))
-                for (let index = 0; index < tradeTags.length; index++) {
-                    const element = tradeTags[index];
-                    if (!currentTagsTags.includes(element)){
-                        currentTagsTags.push(element)
-                    }
+                let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
+
+                for (let index = 0; index < newTradeTags.length; index++) {
+                    const element = newTradeTags[index];
+                    currentTags[ungroupedIndex].tags.push(element)
                 }
             }
 
@@ -816,8 +948,12 @@ async function updateAvailableTags() {
                                                                 {{ trade.mistakeNameShort }}
                                                             </td>-->
                                                             <td>
-                                                                <span v-for="tag in trade.tags" class="tag txt-small">{{ tag
-                                                                }}
+                                                                <span
+                                                                    v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
+                                                                    <span v-for="tag in tags.tags" class="tag txt-small"
+                                                                        :style="getTagColor(tag.id)">{{ tag.name
+                                                                        }}
+                                                                    </span>
                                                                 </span>
                                                             </td>
                                                             <td>
@@ -1117,8 +1253,9 @@ async function updateAvailableTags() {
                                             <div class="form-control dropdown form-select" style="height: auto;">
                                                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                                     <span v-for="(tag, index) in tradeTags" :key="index"
-                                                        class="tag txt-small" @click="tradeTagsChange('remove', index)">
-                                                        {{ tag }}<span class="remove-tag">×</span>
+                                                        class="tag txt-small" :style="getTagColor(tag.id)"
+                                                        @click="tradeTagsChange('remove', index)">
+                                                        {{ tag.name }}<span class="remove-tag">×</span>
                                                     </span>
 
                                                     <input type="text" v-model="tagInput" @input="filterTags"
@@ -1133,7 +1270,7 @@ async function updateAvailableTags() {
                                             <ul class="dropdown-menu-tags" v-show="showTagsList">
                                                 <li v-for="(suggestion, index) in filteredSuggestions" :key="index"
                                                     :class="{ active: index === selectedTagIndex }"
-                                                    @click="tradeTagsChange('add', suggestion.name)"
+                                                    @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
                                                     class="dropdown-item dropdown-item-tags ">
                                                     {{ suggestion.name }}</li>
                                             </ul>

@@ -1127,7 +1127,6 @@ h4 {
     background-color: var(--black-bg-7);
 }
 .tag {
-    background-color: var(--blue-active-color);
     padding: 1px 10px;
     margin: 0px 3px;
     border-radius: 5px;
@@ -1190,10 +1189,6 @@ h4 {
     border: transparent;
     width: 94%;
     color: var(--white-87);
-}
-.availableTags.i {
-    width: 1%;
-    background-color: red;
 }
 
 
