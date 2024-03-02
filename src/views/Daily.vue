@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted, computed, reactive } from 'vue';
+import { onBeforeMount, onMounted, computed, reactive, ref } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
@@ -434,13 +434,28 @@ const createAvailableTagsArray = () => {
         }
     }
 }
+let filteredSuggestions = []
+const filteredSuggestions2 = (param) => {
+    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+    //console.log(" filtered suggestion param " + param)
+    let index = availableTags.findIndex(obj => obj.id == param)
+    //console.log(" index " + index)
+    filteredSuggestions = availableTags[index].tags.filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
+    return filteredSuggestions
+}
 
-const filteredSuggestions = computed(() => {
-    console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
-    return availableTagsArray.filter(tag =>
-        tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase())
-    );
-});
+/*const filteredSuggestions = computed((param) => {
+    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+    console.log(" filtered suggestion param " + param)
+    let index = availableTags.findIndex(obj => obj.id == param)
+    console.log(" index " + index)
+    if (index == -1) {
+        return null
+    } else {
+        return availableTags[index].filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
+    }
+});*/
 
 const tradeTagsChange = async (param1, param2) => {
     console.log(" param 1 " + param1)
@@ -453,11 +468,11 @@ const tradeTagsChange = async (param1, param2) => {
         if (selectedTagIndex.value != -1) {
             console.log(" -> Adding on arrow down and enter " + param2)
 
-            let tradeTagsIndex = tradeTags.findIndex(obj => obj.id == filteredSuggestions.value[selectedTagIndex.value].id)
+            let tradeTagsIndex = tradeTags.findIndex(obj => obj.id == filteredSuggestions[selectedTagIndex.value].id)
 
             //only add if does not exist in tradeTags already
             if (tradeTagsIndex == -1) {
-                tradeTags.push(filteredSuggestions.value[selectedTagIndex.value]);
+                tradeTags.push(filteredSuggestions[selectedTagIndex.value]);
                 tagInput.value = ''; // Clear input after adding tag
             }
 
@@ -562,7 +577,7 @@ const tradeTagsChange = async (param1, param2) => {
 
 const filterTags = () => {
     if (tagInput.value == '') selectedTagIndex.value = -1
-    let showDropdownToReturn = tagInput.value !== '' && filteredSuggestions.value.length > 0
+    let showDropdownToReturn = tagInput.value !== '' && filteredSuggestions.length > 0
     //console.log("Filtered tags showDropdownToReturn " + showDropdownToReturn)
     showTagsList.value = showDropdownToReturn
 };
@@ -571,7 +586,7 @@ const handleKeyDown = (event) => {
     if (showTagsList.value) {
         if (event.key === 'ArrowDown') {
             event.preventDefault();
-            selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.value.length - 1);
+            selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.length - 1);
             //console.log(" arrow down and selectedTagIndex " + selectedTagIndex.value)
         } else if (event.key === 'ArrowUp') {
             event.preventDefault();
@@ -607,6 +622,29 @@ const getTagColor = (param) => {
     const groupColor = findGroupColor(tagIdToFind);
 
     return "background-color: " + groupColor + ";"
+}
+
+const getTagGroup = (param) => {
+    const findGroupName = (tagId) => {
+        for (let obj of availableTags) {
+            for (let tag of obj.tags) {
+                if (tag.id === tagId) {
+                    return obj.name;
+                }
+            }
+        }
+
+        let name = null
+        if (availableTags.length > 0) {
+            name = availableTags.filter(obj => obj.id == "group_0")[0].name
+        }
+        return name // Return ungroupcolor if no result
+    }
+
+    const tagIdToFind = param;
+    const groupName = findGroupName(tagIdToFind);
+
+    return groupName
 }
 
 async function updateTags() {
@@ -1248,6 +1286,7 @@ async function updateAvailableTags() {
                                             <span class="form-control">Add mistake tags in <a
                                                     href="/settings">settings</a></span>
                                         </div>-->
+
                                         <!-- Tags -->
                                         <div class="container-tags col-8">
                                             <div class="form-control dropdown form-select" style="height: auto;">
@@ -1267,12 +1306,22 @@ async function updateAvailableTags() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <ul class="dropdown-menu-tags" v-show="showTagsList">
-                                                <li v-for="(suggestion, index) in filteredSuggestions" :key="index"
-                                                    :class="{ active: index === selectedTagIndex }"
-                                                    @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
-                                                    class="dropdown-item dropdown-item-tags ">
-                                                    {{ suggestion.name }}</li>
+                                            <!--<div v-for="group in availableTags" class="dropdown-menu-tags">
+                                                {{ group.name }}
+                                                <div v-for="tags in group.tags">
+                                                    {{ tags.name }}
+                                                </div>
+                                            </div>-->
+                                            <ul class="dropdown-menu-tags">
+                                                <span v-show="showTagsList" v-for="group in availableTags">
+                                                    <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'">{{ group.name }}</h6>
+                                                    <li v-for="(suggestion, index) in filteredSuggestions2(group.id)"
+                                                        :key="index" :class="{ active: index === selectedTagIndex }"
+                                                        @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
+                                                        class="dropdown-item dropdown-item-tags">
+                                                        <span class="ms-2">{{ suggestion.name }}</span>
+                                                    </li>
+                                                </span>
                                             </ul>
                                         </div>
                                         <!-- MFE -->

@@ -1152,7 +1152,7 @@ h4 {
     display: list-item; /* Changed from display: none; */
     position: absolute;
     top: calc(100% + 1px); /* Position the dropdown below the input */
-    left: 0;
+    left: 2.5%;
     z-index: 1000;
     background-color: #2f2f2f;
     color: var(--white-87);
@@ -1161,12 +1161,14 @@ h4 {
     padding: 0;
     list-style-type: none;
     margin: 0;
-    width: 100%;
+    width: 95%;
 }
+
 .dropdown-menu-tags li {
     padding: 5px 10px;
     cursor: pointer;
 }
+
 
 .clickable-area {
     position: absolute;
