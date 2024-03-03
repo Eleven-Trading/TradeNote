@@ -435,13 +435,22 @@ const createAvailableTagsArray = () => {
     }
 }
 let filteredSuggestions = []
-const filteredSuggestions2 = (param) => {
-    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+
+const filterSuggestions = (param) => {
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
     //console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
     //console.log(" index " + index)
-    filteredSuggestions = availableTags[index].tags.filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
+    let temp = {}
+    temp.id = param
+    temp.tags = availableTags[index].tags.filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
+    let index2 = filteredSuggestions.findIndex(obj => obj.id == temp.id)
+    if (index2 == -1) {
+        filteredSuggestions.push(temp)
+    } else {
+        filteredSuggestions[index2].tags = temp.tags
+    }
+    //console.log(" filteredSuggestions " + JSON.stringify(filteredSuggestions))
     return filteredSuggestions
 }
 
@@ -586,6 +595,7 @@ const handleKeyDown = (event) => {
     if (showTagsList.value) {
         if (event.key === 'ArrowDown') {
             event.preventDefault();
+            console.log("filteredSuggestions " + JSON.stringify(filteredSuggestions))
             selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.length - 1);
             //console.log(" arrow down and selectedTagIndex " + selectedTagIndex.value)
         } else if (event.key === 'ArrowUp') {
@@ -1300,7 +1310,7 @@ async function updateAvailableTags() {
                                                     <input type="text" v-model="tagInput" @input="filterTags"
                                                         @keydown.enter.prevent="tradeTagsChange('add', tagInput)"
                                                         @keydown.tab.prevent="tradeTagsChange('add', tagInput)"
-                                                        @keydown="handleKeyDown" class="form-control tag-input"
+                                                        class="form-control tag-input"
                                                         placeholder="Add a tag">
                                                     <div class="clickable-area" v-on:click="toggleTagsDropdown">
                                                     </div>
@@ -1314,8 +1324,9 @@ async function updateAvailableTags() {
                                             </div>-->
                                             <ul class="dropdown-menu-tags">
                                                 <span v-show="showTagsList" v-for="group in availableTags">
-                                                    <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'">{{ group.name }}</h6>
-                                                    <li v-for="(suggestion, index) in filteredSuggestions2(group.id)"
+                                                    <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
+                                                        v-show="filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">{{ group.name }}</h6>
+                                                    <li v-for="(suggestion, index) in filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
                                                         :key="index" :class="{ active: index === selectedTagIndex }"
                                                         @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
                                                         class="dropdown-item dropdown-item-tags">
