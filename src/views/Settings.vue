@@ -79,7 +79,7 @@ const initSortable = (param1) => {
                     name: "common",
                 },
                 animation: 100,
-                onEnd: function( /**Event*/ evt) {
+                onEnd: function ( /**Event*/ evt) {
                     let itemEl = evt.item; // dragged HTMLElement
                     let tagName = itemEl.querySelector('input').value
                     let tagId = itemEl.querySelector('input').id
@@ -128,19 +128,29 @@ const addNewGroup = async () => {
     let temp = {}
     const addToAvailableTags = async () => {
         return new Promise(async (resolve, reject) => {
-            const highestId = newAvailableTags.reduce((max, obj) => Math.max(max, parseInt(obj.id.replace("group_", ""), 10)), -Infinity);
-            const getRandomHexColor = () => {
-                const red = Math.floor(Math.random() * 256);
-                const green = Math.floor(Math.random() * 256);
-                const blue = Math.floor(Math.random() * 256);
-                const hexColor = '#' + ((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1);
-                return hexColor;
-            }
+            console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 
-            temp.id = "group_" + (highestId + 1).toString()
-            temp.name = "GroupName"
-            temp.color = getRandomHexColor()
-            temp.tags = []
+            if (newAvailableTags.length > 0) {
+                const highestId = newAvailableTags.reduce((max, obj) => Math.max(max, parseInt(obj.id.replace("group_", ""), 10)), -Infinity);
+
+                const getRandomHexColor = () => {
+                    const red = Math.floor(Math.random() * 256);
+                    const green = Math.floor(Math.random() * 256);
+                    const blue = Math.floor(Math.random() * 256);
+                    const hexColor = '#' + ((1 << 24) + (red << 16) + (green << 8) + blue).toString(16).slice(1);
+                    return hexColor;
+                }
+                temp.id = "group_" + (highestId + 1).toString()
+                temp.name = "GroupName"
+                temp.color = getRandomHexColor()
+                temp.tags = []
+            }
+            else {
+                temp.id = "group_0"
+                temp.name = "Ungrouped"
+                temp.color = "#6c757d"
+                temp.tags = []
+            }
             newAvailableTags.push(temp)
 
             resolve()
@@ -251,7 +261,10 @@ const inputGroupColor = (param1, param2) => {
     console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 }
 
+let tagsToUpdate = []
 const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
+    console.log(" param 1 " + param1)
+    console.log(" param 2 " + param2)
     let groupIndex = -1;
 
     newAvailableTags.some((group, index) => {
@@ -274,27 +287,89 @@ const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
     temp.name = param2
     newAvailableTags[groupIndex].tags.splice(tagIndex, 0, temp)
 
-    console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+    let index = tagsToUpdate.findIndex(obj => obj.id == param1)
+    if (index == -1) {
+        tagsToUpdate.push(temp)
+    } else {
+        tagsToUpdate[index] = temp
+    }
+
+    //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+    console.log(" Tags to update " + JSON.stringify(tagsToUpdate))
 }
 
 const updateSortedTags = async () => {
     return new Promise(async (resolve, reject) => {
-        console.log("\nUPDATING SORTED TAGS")
-        const parseObject = Parse.Object.extend("_User");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", currentUser.value.objectId);
-        const results = await query.first();
-        if (results) {
-            results.set("tags", newAvailableTags)
-            await results.save().then(async () => {
-                console.log(" -> Updated sorted tags")
-                await useGetAvailableTags()
-                initSortable()
-                resolve()
+
+        const updateAvailableTags = async () => {
+            return new Promise(async (resolve, reject) => {
+                console.log("\nUPDATING AVAILABLE TAGS")
+                const parseObject = Parse.Object.extend("_User");
+                const query = new Parse.Query(parseObject);
+                query.equalTo("objectId", currentUser.value.objectId);
+                const results = await query.first();
+                if (results) {
+                    results.set("tags", newAvailableTags)
+                    await results.save().then(async () => {
+                        console.log(" -> Updated sorted tags")
+                        await useGetAvailableTags()
+                        initSortable()
+                        resolve()
+                    })
+                } else {
+                    alert("Update query did not return any results")
+                }
             })
-        } else {
-            alert("Update query did not return any results")
         }
+
+        const updateTradeTags = async (param) => {
+            return new Promise(async (resolve, reject) => {
+                console.log("\nUPDATING TRADE TAGS")
+                const parseObject = Parse.Object.extend("tags");
+                const query = new Parse.Query(parseObject);
+                const results = await query.find();
+                console
+                if (results.length > 0) {
+                    for (let i = 0; i < results.length; i++) {
+                        const object = results[i];
+                        console.log(" -> Object id " + object.id)
+                        let temp = []
+                        let updated = false
+                        for (let index = 0; index < object.get('tags').length; index++) {
+                            const element = object.get('tags')[index];
+                            if (element.id == param.id) {
+                                updated = true
+                                temp.push(param)
+                            } else {
+                                temp.push(element)
+                            }
+
+                            if (((index + 1) == object.get('tags').length) && updated) {
+                                console.log("  --> Updating")
+                                object.set("tags", temp)
+                                await object.save().then(async () => {
+                                    console.log("   ---> Updated tags")
+                                })
+                            }
+
+                        }
+                    }
+                    resolve()
+                } else {
+                    alert("Updating trade tags did not return any results")
+                }
+            })
+        }
+
+        if (tagsToUpdate.length > 0) {
+            for (let index = 0; index < tagsToUpdate.length; index++) {
+                const element = tagsToUpdate[index];
+                await updateTradeTags(element)
+            }
+        }
+
+        await updateAvailableTags()
+
     })
 }
 </script>
@@ -314,79 +389,87 @@ const updateSortedTags = async () => {
                         <input type="file" @change="uploadProfileAvatar" />
                     </div>
                 </div>
-    
+
                 <div class="mt-3 mb-3">
                     <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
                 </div>
-    
+
                 <hr />
-    
+
                 <!--=============== API KEY ===============-->
                 <div class="mt-3 row align-items-center">
                     <p class="fs-5 fw-bold">API Key</p>
-                    <p class="mb-4 fw-lighter">Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page.</p>
+                    <p class="mb-4 fw-lighter">Your Polygon API Key will be used to fill out automatically MFE prices when
+                        you add new trades as well as provide you with charts for your trades on daily page.</p>
                     <div class="col-12 col-md-3">
                         Polygon API Key
                     </div>
                     <div class="col-12 col-md-9">
-                        <input type="text" class="form-control" :value="currentUser.marketDataApiKey" @input="marketDataApiKey = $event.target.value" />
+                        <input type="text" class="form-control" :value="currentUser.marketDataApiKey"
+                            @input="marketDataApiKey = $event.target.value" />
                     </div>
-    
+
                 </div>
-    
+
                 <div class="mt-3 mb-3">
                     <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
                 </div>
-    
-    
+
+
                 <hr />
-    
+
                 <!--=============== TAGS ===============-->
                 <div class="mt-3 row">
                     <p class="fs-5 fw-bold">TAGS</p>
                     <p class="fw-lighter">Create tag groups and assign tags to your groups.</p>
                     <div>
+
                         <button type="button" v-on:click="addNewGroup" class="btn blueBtn btn-sm"><i
-                                    class="uil uil-plus me-2"></i>Group</button>
-                        <button type="button" v-on:click="addNewTag" class="btn blueBtn btn-sm ms-3"><i
-                                    class="uil uil-plus me-2"></i>Tag</button>
+                                class="uil uil-plus me-2"></i>Group</button>
+                        <button v-show="newAvailableTags.length > 0" type="button" v-on:click="addNewTag"
+                            class="btn blueBtn btn-sm ms-3"><i class="uil uil-plus me-2"></i>Tag</button>
                     </div>
                     <div v-for="(group, groupIndex) in availableTags" class="col-12 col-md-6">
                         <div class="availableTagsCard mt-3">
                             <div class="row align-items-center">
                                 <div class="col-6">
                                     <h5 v-if="group.id == 'group_0'">{{ group.name }}</h5>
-                                    <h5 v-else><input type="text" class="groupInput" v-on:input="inputGroupName(groupIndex, $event.target.value)" :value="group.name">
+                                    <h5 v-else><input type="text" class="groupInput"
+                                            v-on:input="inputGroupName(groupIndex, $event.target.value)"
+                                            :value="group.name">
                                     </h5>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <input type="color" id="colorPicker" class="" v-on:input="inputGroupColor(groupIndex, $event.target.value)" :value="group.color">
+                                    <input type="color" id="colorPicker" class=""
+                                        v-on:input="inputGroupColor(groupIndex, $event.target.value)" :value="group.color">
                                 </div>
                             </div>
                             <div :id="group.id">
                                 <div v-for="tag in group.tags">
-                                    <input type="text" :style="{ backgroundColor: group.color }" class="availableTags" v-on:input="inputGroupTag(tag.id, $event.target.value)" :id="tag.id" :value="tag.name">
+                                    <input type="text" :style="{ backgroundColor: group.color }" class="availableTags"
+                                        v-on:input="inputGroupTag(tag.id, $event.target.value)" :id="tag.id"
+                                        :value="tag.name">
                                     <i class="uil uil-draggabledots"></i>
                                 </div>
                             </div>
                         </div>
                     </div>
-    
+
                 </div>
-    
+
                 <div class="mt-3 mb-3">
                     <button type="button" v-on:click="updateSortedTags" class="btn btn-success">Save</button>
                 </div>
-    
-    
+
+
                 <hr />
-    
+
                 <!--=============== PATTERNS ===============-->
-    
+
                 <div class="">
                     <p class="fs-5 fw-bold">Patterns</p>
                     <p class="mb-4 fw-lighter">Add a list of patterns used for labelling your trades.</p>
-    
+
                     <!--=============== PATTERN ===============-->
                     <table class="table">
                         <thead>
@@ -399,36 +482,44 @@ const updateSortedTags = async () => {
                         </thead>
                         <tbody class="txt-small" v-for="pattern in patterns">
                             <tr>
-                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control" v-bind:value="pattern.name" v-on:input="patternUpdate.name = $event.target.value">
+                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
+                                        v-bind:value="pattern.name" v-on:input="patternUpdate.name = $event.target.value">
                                     <span v-else>{{ pattern.name }}</span>
                                 </td>
-                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control" v-bind:value="pattern.description" v-on:input="patternUpdate.description = $event.target.value">
+                                <td><input v-if="patternUpdate.edit == pattern.objectId" type="text" class="form-control"
+                                        v-bind:value="pattern.description"
+                                        v-on:input="patternUpdate.description = $event.target.value">
                                     <span v-else>{{ pattern.description }}</span>
                                 </td>
                                 <td>
                                     <span class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                v-bind:disabled="patternUpdate.edit != pattern.objectId"
-                                                v-bind:checked="pattern.active"
-                                                v-on:change="patternUpdate.active = !patternUpdate.active">
-                                        </span>
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                            v-bind:disabled="patternUpdate.edit != pattern.objectId"
+                                            v-bind:checked="pattern.active"
+                                            v-on:change="patternUpdate.active = !patternUpdate.active">
+                                    </span>
                                 </td>
                                 <td>
-                                    <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass" v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
-                                    <i v-else class="uil uil-edit-alt pointerClass" v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
+                                    <i v-if="patternUpdate.edit == pattern.objectId" class="uil uil-save pointerClass"
+                                        v-on:click="useUpdateEditPatternMistake(pattern, 'pattern')"></i>
+                                    <i v-else class="uil uil-edit-alt pointerClass"
+                                        v-on:click="useEditPatternMistake(pattern, 'pattern')"></i>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-    
+
                     <div class="mt-2 input-group">
-                        <input type="text" class="form-control" v-on:input="patternNew.name = $event.target.value" placeholder="Pattern">
-                        <input type="text" class="form-control" v-on:input="patternNew.description = $event.target.value" placeholder="Description">
-                        <button type="button" v-on:click="useSaveNewPatternMistake('pattern')" class="btn btn-success">Add</button>
+                        <input type="text" class="form-control" v-on:input="patternNew.name = $event.target.value"
+                            placeholder="Pattern">
+                        <input type="text" class="form-control" v-on:input="patternNew.description = $event.target.value"
+                            placeholder="Description">
+                        <button type="button" v-on:click="useSaveNewPatternMistake('pattern')"
+                            class="btn btn-success">Add</button>
                     </div>
-    
+
                 </div>
-    
+
                 <!--=============== MISTAKE ===============-->
                 <hr />
                 <p class="fs-5 fw-bold">Mistakes</p>
@@ -444,36 +535,44 @@ const updateSortedTags = async () => {
                     </thead>
                     <tbody class="txt-small" v-for="mistake in mistakes">
                         <tr>
-                            <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control" v-bind:value="mistake.name" v-on:input="mistakeUpdate.name = $event.target.value">
+                            <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control"
+                                    v-bind:value="mistake.name" v-on:input="mistakeUpdate.name = $event.target.value">
                                 <span v-else>{{ mistake.name }}</span>
                             </td>
-                            <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control" v-bind:value="mistake.description" v-on:input="mistakeUpdate.description = $event.target.value">
+                            <td><input v-if="mistakeUpdate.edit == mistake.objectId" type="text" class="form-control"
+                                    v-bind:value="mistake.description"
+                                    v-on:input="mistakeUpdate.description = $event.target.value">
                                 <span v-else>{{ mistake.description }}</span>
                             </td>
                             <td>
                                 <span class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch"
-                                            v-bind:disabled="mistakeUpdate.edit != mistake.objectId"
-                                            v-bind:checked="mistake.active"
-                                            v-on:change="mistakeUpdate.active = !mistakeUpdate.active">
-                                    </span>
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        v-bind:disabled="mistakeUpdate.edit != mistake.objectId"
+                                        v-bind:checked="mistake.active"
+                                        v-on:change="mistakeUpdate.active = !mistakeUpdate.active">
+                                </span>
                             </td>
                             <td>
-                                <i v-if="mistakeUpdate.edit == mistake.objectId" class="uil uil-save pointerClass" v-on:click="useUpdateEditPatternMistake(mistake, 'mistake')"></i>
-                                <i v-else class="uil uil-edit-alt pointerClass" v-on:click="useEditPatternMistake(mistake, 'mistake')"></i>
+                                <i v-if="mistakeUpdate.edit == mistake.objectId" class="uil uil-save pointerClass"
+                                    v-on:click="useUpdateEditPatternMistake(mistake, 'mistake')"></i>
+                                <i v-else class="uil uil-edit-alt pointerClass"
+                                    v-on:click="useEditPatternMistake(mistake, 'mistake')"></i>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="mt-2 input-group">
-                    <input type="text" class="form-control" v-on:input="mistakeNew.name = $event.target.value" placeholder="Mistake">
-                    <input type="text" class="form-control" v-on:input="mistakeNew.description = $event.target.value" placeholder="Description">
-                    <button type="button" v-on:click="useSaveNewPatternMistake('mistake')" class="btn btn-success">Add</button>
-    
-    
+                    <input type="text" class="form-control" v-on:input="mistakeNew.name = $event.target.value"
+                        placeholder="Mistake">
+                    <input type="text" class="form-control" v-on:input="mistakeNew.description = $event.target.value"
+                        placeholder="Description">
+                    <button type="button" v-on:click="useSaveNewPatternMistake('mistake')"
+                        class="btn btn-success">Add</button>
+
+
                 </div>
             </div>
         </div>
-    
+
     </div>
 </template>

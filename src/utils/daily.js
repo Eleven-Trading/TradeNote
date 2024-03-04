@@ -72,17 +72,18 @@ export async function useGetTags() {
         query.limit(queryLimit.value); // limit to at most 10 results
 
         const results = await query.find();
-        //console.log(" results "+JSON.stringify(results))
-        for (let i = 0; i < results.length; i++) {
-            let temp = {}
-            const object = results[i];
-            temp.tradeId = object.get('tradeId')
-            temp.tags = object.get('tags')
-            temp.dateUnix = object.get('dateUnix')
-            tags.push(temp)
+        if (results.length > 0) {
+            for (let i = 0; i < results.length; i++) {
+                let temp = {}
+                const object = results[i];
+                temp.tradeId = object.get('tradeId')
+                temp.tags = object.get('tags')
+                temp.dateUnix = object.get('dateUnix')
+                tags.push(temp)
 
+            }
         }
-        //console.log("  --> Tags " + JSON.stringify(tags))
+        console.log("  --> Tags " + JSON.stringify(tags))
         resolve()
 
     })
@@ -98,11 +99,15 @@ export async function useGetAvailableTags() {
         const query = new Parse.Query(parseObject);
         query.equalTo("objectId", currentUser.value.objectId);
         const results = await query.first();
+
         if (results) {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
-
-            if (currentTags != undefined) {
+            console.log(" current tags " + JSON.stringify(currentTags))
+            if (currentTags == undefined) {
+                console.log("  --> Available Tags " + JSON.stringify(availableTags))
+                resolve()
+            } else if (currentTags.length > 0) {
                 for (let index = 0; index < currentTags.length; index++) {
                     const element = currentTags[index];
                     availableTags.push(element)
@@ -111,7 +116,12 @@ export async function useGetAvailableTags() {
                         resolve()
                     }
                 }
+            } else {
+                console.log("  --> Available Tags " + JSON.stringify(availableTags))
+                resolve()
             }
+        } else {
+            alert("No user")
         }
 
         /*let currentTags = currentUser.value.tags

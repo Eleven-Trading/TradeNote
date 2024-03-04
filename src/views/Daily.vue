@@ -75,6 +75,8 @@ onMounted(async () => {
 
 })
 
+
+
 const checkDate = ((param1, param2) => {
     let check = dayjs(param1 * 1000).isSame(param2 * 1000, 'day')
     return check
@@ -296,6 +298,8 @@ async function clickTradesModal(param1, param2, param3) {
     //console.log("param2 " + param2)
     //console.log("param3 " + param3)
 
+    showTagsList.value = false
+
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
         return
@@ -511,22 +515,30 @@ const tradeTagsChange = async (param1, param2) => {
 
                     const findHighestIdNumber = (param) => {
                         let highestId = -Infinity;
-                        param.forEach(innerArray => {
-                            innerArray.tags.forEach(obj => {
-                                if (Number(obj.id.replace("tag_", "")) > highestId) {
-                                    highestId = Number(obj.id.replace("tag_", ""))
-                                }
+                        if (param.length == 0) {
+                            highestId = 0
+                        } else {
+                            param.forEach(innerArray => {
+                                innerArray.tags.forEach(obj => {
+                                    if (Number(obj.id.replace("tag_", "")) > highestId) {
+                                        highestId = Number(obj.id.replace("tag_", ""))
+                                    }
+                                });
                             });
-                        });
+                        }
                         return highestId;
                     }
                     const findHighestIdNumberTradeTags = (param) => {
                         let highestId = -Infinity;
-                        param.forEach(obj => {
-                            if (Number(obj.id.replace("tag_", "")) > highestId) {
-                                highestId = Number(obj.id.replace("tag_", ""))
-                            }
-                        });
+                        if (param.length == 0) {
+                            highestId = 0
+                        } else {
+                            param.forEach(obj => {
+                                if (Number(obj.id.replace("tag_", "")) > highestId) {
+                                    highestId = Number(obj.id.replace("tag_", ""))
+                                }
+                            });
+                        }
                         return highestId;
                     }
 
@@ -621,7 +633,7 @@ const getTagColor = (param) => {
             }
         }
 
-        let color = null
+        let color = "#6c757d"
         if (availableTags.length > 0) {
             color = availableTags.filter(obj => obj.id == "group_0")[0].color
         }
@@ -717,12 +729,12 @@ async function updateAvailableTags() {
         if (results) {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
-
-            if (currentTags == undefined || currentTags.length == 0) {
+            console.log(" currentTags " + JSON.stringify(currentTags))
+            const saveTags = () => {
                 console.log(" -> Saving available tags")
                 currentTags = []
                 let temp = {}
-                temp.id = "0"
+                temp.id = "group_0"
                 temp.name = "Ungrouped"
                 temp.color = "#6c757d"
                 temp.tags = []
@@ -731,8 +743,14 @@ async function updateAvailableTags() {
                     temp.tags.push(element)
                 }
                 currentTags.push(temp)
+            }
+            if (currentTags == undefined) {
+                saveTags()
 
-            } else {
+            } else if (currentTags.length == 0) {
+                saveTags()
+            }
+            else {
                 console.log(" -> Updating available tags")
                 let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
 
@@ -998,10 +1016,13 @@ async function updateAvailableTags() {
                                                             <td>
                                                                 <span
                                                                     v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
-                                                                    <span v-for="tag in tags.tags" class="tag txt-small"
+                                                                    <span v-for="tag in tags.tags.slice(0, 2)"
+                                                                        class="tag txt-small"
                                                                         :style="getTagColor(tag.id)">{{ tag.name
                                                                         }}
                                                                     </span>
+                                                                    <span v-show="tags.tags.length > 2">+{{ tags.tags.length
+                                                                        - 2 }}</span>
                                                                 </span>
                                                             </td>
                                                             <td>
@@ -1310,22 +1331,18 @@ async function updateAvailableTags() {
                                                     <input type="text" v-model="tagInput" @input="filterTags"
                                                         @keydown.enter.prevent="tradeTagsChange('add', tagInput)"
                                                         @keydown.tab.prevent="tradeTagsChange('add', tagInput)"
-                                                        class="form-control tag-input"
-                                                        placeholder="Add a tag">
+                                                        class="form-control tag-input" placeholder="Add a tag">
                                                     <div class="clickable-area" v-on:click="toggleTagsDropdown">
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!--<div v-for="group in availableTags" class="dropdown-menu-tags">
-                                                {{ group.name }}
-                                                <div v-for="tags in group.tags">
-                                                    {{ tags.name }}
-                                                </div>
-                                            </div>-->
-                                            <ul class="dropdown-menu-tags">
+
+                                            <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
+                                                :style="[!showTagsList ? 'border: none;' : '']">
                                                 <span v-show="showTagsList" v-for="group in availableTags">
                                                     <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
-                                                        v-show="filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">{{ group.name }}</h6>
+                                                        v-show="filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                                        {{ group.name }}</h6>
                                                     <li v-for="(suggestion, index) in filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
                                                         :key="index" :class="{ active: index === selectedTagIndex }"
                                                         @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
