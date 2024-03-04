@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -1046,6 +1046,87 @@ export function returnToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
+export const useGetLegacy = async () => {
+    console.log("\nGetting LEGACY")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            //console.log(" currentLegacy " + JSON.stringify(currentLegacy))
+            if (currentLegacy != undefined && currentLegacy.length > 0) {
+                for (let index = 0; index < currentLegacy.length; index++) {
+                    const element = currentLegacy[index];
+                    legacy.push(element)
+                }
+                
+            }
+            console.log(" -> Legacy "+JSON.stringify(legacy))
+            resolve()
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+export const useUpdateLegacy = async (param1) => {
+    console.log("\nUPDATING LEGACY")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            //console.log(" currentLegacy " + JSON.stringify(currentLegacy))
+            const saveLegacy = () => {
+                console.log(" -> Saving legacy")
+                currentLegacy = []
+                let temp = {}
+                temp.name = param1
+                temp.updated = true
+                currentLegacy.push(temp)
+            }
+
+            if (currentLegacy == undefined) {
+                saveLegacy()
+
+            } else if (currentLegacy.length == 0) {
+                saveLegacy()
+            }
+            else {
+                console.log(" -> Updating legacy")
+                let index = currentLegacy.findIndex(obj => obj.name == param1)
+                if (index == -1){
+                    saveLegacy()
+                }else{
+                    currentLegacy[index].updated = true
+                }
+                
+            }
+
+            results.set("legacy", currentLegacy)
+            results.save()
+                .then(async () => {
+                    console.log(' -> Saved/Updated legacy with id ' + results.id)
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to save/update legacy, with error code: ' + error.message);
+                    reject()
+                })
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
 /**************************************
 * DATE FORMATS
 **************************************/

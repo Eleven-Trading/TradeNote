@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, newTradeTags, pageId } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -56,6 +56,41 @@ export async function useGetExcursions() {
         //console.log(" -> excursions " + JSON.stringify(excursions))
         resolve()
     })
+}
+
+/****************************************$
+ * 
+ * TAGS 
+ ****************************************/
+
+export const useFindHighestIdNumber = (param) => {
+    let highestId = -Infinity;
+    if (param.length == 0) {
+        highestId = 0
+    } else {
+        param.forEach(innerArray => {
+            innerArray.tags.forEach(obj => {
+                if (Number(obj.id.replace("tag_", "")) > highestId) {
+                    highestId = Number(obj.id.replace("tag_", ""))
+                }
+            });
+        });
+    }
+    return highestId;
+}
+
+export const useFindHighestIdNumberTradeTags = (param) => {
+    let highestId = -Infinity;
+    if (param.length == 0) {
+        highestId = 0
+    } else {
+        param.forEach(obj => {
+            if (Number(obj.id.replace("tag_", "")) > highestId) {
+                highestId = Number(obj.id.replace("tag_", ""))
+            }
+        });
+    }
+    return highestId;
 }
 
 export async function useGetTags() {
@@ -135,5 +170,119 @@ export async function useGetAvailableTags() {
         console.log("  --> Available Tags " + JSON.stringify(availableTags))
         resolve()*/
 
+    })
+}
+
+export const useUpdateTags = async () => {
+    console.log("\nUPDATING OR SAVING TAGS IN PARSE DB")
+    return new Promise(async (resolve, reject) => {
+        spinnerSetups.value = true
+        //tradeSetupChanged.value = true
+
+        const parseObject = Parse.Object.extend("tags");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("tradeId", tradeTagsId.value)
+        const results = await query.first();
+        if (results) {
+            console.log(" -> Updating tags")
+
+            spinnerSetupsText.value = "Updating"
+            results.set("tags", tradeTags)
+
+            results.save()
+                .then(async () => {
+                    console.log(' -> Updated tags with id ' + results.id)
+                    //await useGetSelectedRange()
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        } else {
+            console.log(" -> Saving tags")
+            spinnerSetupsText.value = "Saving"
+            console.log(" -> Trade tags " + JSON.stringify(tradeTags))
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("tags", tradeTags)
+            object.set("dateUnix", tradeTagsDateUnix.value)
+            object.set("tradeId", tradeTagsId.value)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then(async (object) => {
+                    console.log(' -> Added new tags with id ' + object.id)
+                    //await useGetSelectedRange()
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        }
+
+
+
+    })
+}
+
+export const useUpdateAvailableTags = async () => {
+    console.log("\nUPDATING OR SAVING AVAILABLE TAGS")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentTags = parsedResults.tags
+            //console.log(" currentTags " + JSON.stringify(currentTags))
+            const saveTags = () => {
+                console.log(" -> Saving available tags")
+                currentTags = []
+                let temp = {}
+                temp.id = "group_0"
+                temp.name = "Ungrouped"
+                temp.color = "#6c757d"
+                temp.tags = []
+                for (let index = 0; index < tradeTags.length; index++) {
+                    const element = tradeTags[index];
+                    temp.tags.push(element)
+                }
+                currentTags.push(temp)
+            }
+            if (currentTags == undefined) {
+                saveTags()
+
+            } else if (currentTags.length == 0) {
+                saveTags()
+            }
+            else {
+                console.log(" -> Updating available tags")
+                let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
+
+                let tempArray = []
+                if (pageId.value == "daily"){
+                    tempArray = newTradeTags
+                }else{
+                    tempArray = tradeTags
+                }
+
+                for (let index = 0; index < tempArray.length; index++) {
+                    const element = tempArray[index];
+                    currentTags[ungroupedIndex].tags.push(element)
+                }
+            }
+
+            results.set("tags", currentTags)
+            results.save()
+                .then(async () => {
+                    console.log(' -> Saved/Updated available tags with id ' + results.id)
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to save/update available tags, with error code: ' + error.message);
+                    reject()
+                })
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
     })
 }

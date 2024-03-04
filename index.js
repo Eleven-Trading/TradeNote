@@ -11,15 +11,15 @@ let databaseURI
 
 if (process.env.MONGO_URI) {
     databaseURI = process.env.MONGO_URI
-} else if (process.env.MONGO_ATLAS){
-    databaseURI = "mongodb+srv://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
-}else{
-    databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+} else if (process.env.MONGO_ATLAS) {
+    databaseURI = "mongodb+srv://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_URL + "/" + process.env.TRADENOTE_DATABASE + "?authSource=admin"
+} else {
+    databaseURI = "mongodb://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_URL + ":" + process.env.MONGO_PORT + "/" + process.env.TRADENOTE_DATABASE + "?authSource=admin"
 }
 
 console.log("\nCONNECTING TO MONGODB")
 let hiddenDatabaseURI = databaseURI.replace(/:\/\/[^@]*@/, "://***@")
-console.log(' -> Database URI '+hiddenDatabaseURI)
+console.log(' -> Database URI ' + hiddenDatabaseURI)
 
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
@@ -220,14 +220,14 @@ const startIndex = async () => {
                 //If Parse (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
                 if (existingSchema.includes(param1)) {
                     mySchema.update().then((result) => {
-                        console.log("  --> Updating field "+param3)
+                        console.log("  --> Updating field " + param3)
                         //console.log(" -> Updated schema " + JSON.stringify(result))
                         resolve()
                     })
                 } else {
                     mySchema.save().then((result) => {
                         //console.log(" -> Save new schema " + JSON.stringify(result))
-                        console.log("  --> Saving field "+param3)
+                        console.log("  --> Saving field " + param3)
                         existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
                         //console.log(" -> Existing Schema " + existingSchema)
                         resolve()
@@ -239,7 +239,7 @@ const startIndex = async () => {
         for (let i = 0; i < schemasJson.length; i++) {
             //console.log("el " + schemasJson[i].className)
             let className = schemasJson[i].className
-            console.log(" -> Upsert class/collection "+className+" in Parse Schema")
+            console.log(" -> Upsert class/collection " + className + " in Parse Schema")
             let obj = schemasJson[i].fields
             for (const key of Object.keys(obj)) {
                 //console.log(key, obj[key]);
@@ -250,6 +250,7 @@ const startIndex = async () => {
 
             }
         }
+
         res.sendStatus(200)
 
 

@@ -26,9 +26,11 @@ async function login() {
       useGetTimeZone()
       await useGetPeriods()
       await useSetValues()
+      //await legacySetups()
+
       console.log("Hooray! You are logged in")
       signingUp.value = false
-      window.location.replace("/dashboard");
+      //window.location.replace("/dashboard");
     } catch (error) {
       // Show the error message somewhere and let the user try again.
       signingUp.value = false

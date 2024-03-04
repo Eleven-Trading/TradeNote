@@ -328,7 +328,6 @@ const updateSortedTags = async () => {
                 const parseObject = Parse.Object.extend("tags");
                 const query = new Parse.Query(parseObject);
                 const results = await query.find();
-                console
                 if (results.length > 0) {
                     for (let i = 0; i < results.length; i++) {
                         const object = results[i];

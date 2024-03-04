@@ -6,11 +6,11 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix } from '../stores/globals';
+import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags } from '../stores/globals';
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions, useGetTags, useGetAvailableTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -41,8 +41,6 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 const availableTagsArray = reactive([])
-
-let newTradeTags = []
 
 onBeforeMount(async () => {
 
@@ -319,7 +317,7 @@ async function clickTradesModal(param1, param2, param3) {
         }
 
         if (tradeTagsChanged.value) {
-            await Promise.all([updateAvailableTags(), updateTags()])
+            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
             await Promise.all([useGetTags(), useGetAvailableTags()])
             createAvailableTagsArray()
         }
@@ -394,7 +392,7 @@ async function hideTradesModal() {
             await updateExcursions()
         }
         if (tradeTagsChanged.value) {
-            await Promise.all([updateAvailableTags(), updateTags()])
+            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
             await Promise.all([useGetTags(), useGetAvailableTags()])
             createAvailableTagsArray()
         }
@@ -513,38 +511,11 @@ const tradeTagsChange = async (param1, param2) => {
                     console.log("  --> Input is a new tag")
                     let temp = {}
 
-                    const findHighestIdNumber = (param) => {
-                        let highestId = -Infinity;
-                        if (param.length == 0) {
-                            highestId = 0
-                        } else {
-                            param.forEach(innerArray => {
-                                innerArray.tags.forEach(obj => {
-                                    if (Number(obj.id.replace("tag_", "")) > highestId) {
-                                        highestId = Number(obj.id.replace("tag_", ""))
-                                    }
-                                });
-                            });
-                        }
-                        return highestId;
-                    }
-                    const findHighestIdNumberTradeTags = (param) => {
-                        let highestId = -Infinity;
-                        if (param.length == 0) {
-                            highestId = 0
-                        } else {
-                            param.forEach(obj => {
-                                if (Number(obj.id.replace("tag_", "")) > highestId) {
-                                    highestId = Number(obj.id.replace("tag_", ""))
-                                }
-                            });
-                        }
-                        return highestId;
-                    }
+                    
 
                     // Get the highest id number
-                    const highestIdNumberAvailableTags = findHighestIdNumber(availableTags);
-                    const highestIdNumberTradeTags = findHighestIdNumberTradeTags(tradeTags);
+                    const highestIdNumberAvailableTags = useFindHighestIdNumber(availableTags);
+                    const highestIdNumberTradeTags = useFindHighestIdNumberTradeTags(tradeTags);
 
                     function chooseHighestNumber(num1, num2) {
                         return Math.max(num1, num2);
@@ -669,113 +640,7 @@ const getTagGroup = (param) => {
     return groupName
 }
 
-async function updateTags() {
-    console.log("\nUPDATING OR SAVING TAGS IN PARSE DB")
-    return new Promise(async (resolve, reject) => {
-        spinnerSetups.value = true
-        //tradeSetupChanged.value = true
 
-        const parseObject = Parse.Object.extend("tags");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("tradeId", tradeTagsId.value)
-        const results = await query.first();
-        if (results) {
-            console.log(" -> Updating tags")
-
-            spinnerSetupsText.value = "Updating"
-            results.set("tags", tradeTags)
-
-            results.save()
-                .then(async () => {
-                    console.log(' -> Updated tags with id ' + results.id)
-                    //await useGetSelectedRange()
-                    resolve()
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        } else {
-            console.log(" -> Saving tags")
-            spinnerSetupsText.value = "Saving"
-            console.log(" -> Trade tags " + JSON.stringify(tradeTags))
-            const object = new parseObject();
-            object.set("user", Parse.User.current())
-            object.set("tags", tradeTags)
-            object.set("dateUnix", tradeTagsDateUnix.value)
-            object.set("tradeId", tradeTagsId.value)
-            object.setACL(new Parse.ACL(Parse.User.current()));
-            object.save()
-                .then(async (object) => {
-                    console.log(' -> Added new tags with id ' + object.id)
-                    //await useGetSelectedRange()
-                    resolve()
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        }
-
-
-
-    })
-}
-
-
-async function updateAvailableTags() {
-    console.log("\nUPDATING OR SAVING AVAILABLE TAGS")
-    return new Promise(async (resolve, reject) => {
-        const parseObject = Parse.Object.extend("_User");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", currentUser.value.objectId);
-        const results = await query.first();
-        if (results) {
-            let parsedResults = JSON.parse(JSON.stringify(results))
-            let currentTags = parsedResults.tags
-            console.log(" currentTags " + JSON.stringify(currentTags))
-            const saveTags = () => {
-                console.log(" -> Saving available tags")
-                currentTags = []
-                let temp = {}
-                temp.id = "group_0"
-                temp.name = "Ungrouped"
-                temp.color = "#6c757d"
-                temp.tags = []
-                for (let index = 0; index < tradeTags.length; index++) {
-                    const element = tradeTags[index];
-                    temp.tags.push(element)
-                }
-                currentTags.push(temp)
-            }
-            if (currentTags == undefined) {
-                saveTags()
-
-            } else if (currentTags.length == 0) {
-                saveTags()
-            }
-            else {
-                console.log(" -> Updating available tags")
-                let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
-
-                for (let index = 0; index < newTradeTags.length; index++) {
-                    const element = newTradeTags[index];
-                    currentTags[ungroupedIndex].tags.push(element)
-                }
-            }
-
-            results.set("tags", currentTags)
-            results.save()
-                .then(async () => {
-                    console.log(' -> Saved/Updated available tags with id ' + results.id)
-                    resolve()
-                }, (error) => {
-                    console.log('Failed to save/update available tags, with error code: ' + error.message);
-                    reject()
-                })
-
-        } else {
-            console.log(" -> NO USER !!!")
-            reject()
-        }
-    })
-}
 </script>
 
 <template>
@@ -1285,7 +1150,7 @@ async function updateAvailableTags() {
                                                 v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == false ? 'redTrade' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
-                                        <!-- Patterns
+                                        <!-- Patterns -->
                                         <div class="col-4" v-if="patterns.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
                                                 class="form-select">
@@ -1302,7 +1167,7 @@ async function updateAvailableTags() {
                                                     href="/settings">settings</a></span>
                                         </div>
 
-                                        Mistakes
+                                        
                                         <div class="col-4" v-if="mistakes.length > 0">
                                             <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
                                                 class="form-select">
@@ -1316,7 +1181,7 @@ async function updateAvailableTags() {
                                         <div class="col-4" v-else>
                                             <span class="form-control">Add mistake tags in <a
                                                     href="/settings">settings</a></span>
-                                        </div>-->
+                                        </div>
 
                                         <!-- Tags -->
                                         <div class="container-tags col-8">

@@ -89,6 +89,8 @@ export const renderingCharts = ref(true) // this is for spinner
 export const spinnerSetups = ref(true)
 export const spinnerSetupsText = ref()
 
+//Legacy 
+export const legacy = reactive([])
 
 /**************************************
 * MODALS
@@ -2859,6 +2861,7 @@ export const satisfactionArray = reactive([])
 
 export const tags = reactive([]) //all tags, from useGetTags
 export const tradeTags = reactive([]) // on daily page, tags of a specific trade (when push modal)
+export const newTradeTags = reactive([])
 export const availableTags = reactive([])
 export const tradeTagsChanged = ref(false)
 export const tagInput = ref('');
