@@ -2,7 +2,7 @@
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Screenshot from '../components/Screenshot.vue'
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade, pageId } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
 import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'
@@ -16,7 +16,7 @@ onBeforeMount(async () => {
     await (spinnerLoadingPage.value = false)
 })
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
-
+console.log(" current page id "+pageId.value)
 let setupType = [{
     value: null,
     label: "Type"
