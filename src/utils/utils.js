@@ -1048,7 +1048,7 @@ export function returnToTop() {
 
 
 export const useGetLegacy = async () => {
-    console.log("\nGetting LEGACY")
+    console.log(" -> Getting legacy information")
     return new Promise(async (resolve, reject) => {
         const parseObject = Parse.Object.extend("_User");
         const query = new Parse.Query(parseObject);
@@ -1065,7 +1065,7 @@ export const useGetLegacy = async () => {
                 }
                 
             }
-            console.log(" -> Legacy "+JSON.stringify(legacy))
+            console.log("  --> Legacy "+JSON.stringify(legacy))
             resolve()
         } else {
             console.log(" -> NO USER !!!")
@@ -1075,7 +1075,7 @@ export const useGetLegacy = async () => {
 }
 
 export const useUpdateLegacy = async (param1) => {
-    console.log("\nUPDATING LEGACY")
+    console.log("\n -> Updating legacy information")
     return new Promise(async (resolve, reject) => {
         const parseObject = Parse.Object.extend("_User");
         const query = new Parse.Query(parseObject);
@@ -1084,10 +1084,8 @@ export const useUpdateLegacy = async (param1) => {
         if (results) {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentLegacy = parsedResults.legacy
-            //console.log(" currentLegacy " + JSON.stringify(currentLegacy))
             const saveLegacy = () => {
-                console.log(" -> Saving legacy")
-                currentLegacy = []
+                console.log("  --> Saving legacy")
                 let temp = {}
                 temp.name = param1
                 temp.updated = true
@@ -1095,13 +1093,15 @@ export const useUpdateLegacy = async (param1) => {
             }
 
             if (currentLegacy == undefined) {
+                currentLegacy = []
                 saveLegacy()
 
             } else if (currentLegacy.length == 0) {
+                currentLegacy = []
                 saveLegacy()
             }
             else {
-                console.log(" -> Updating legacy")
+                console.log("  --> Updating legacy")
                 let index = currentLegacy.findIndex(obj => obj.name == param1)
                 if (index == -1){
                     saveLegacy()

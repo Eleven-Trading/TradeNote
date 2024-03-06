@@ -138,7 +138,7 @@ export async function useGetAvailableTags() {
         if (results) {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
-            console.log(" current tags " + JSON.stringify(currentTags))
+            //console.log(" current tags " + JSON.stringify(currentTags))
             if (currentTags == undefined) {
                 console.log("  --> Available Tags " + JSON.stringify(availableTags))
                 resolve()
