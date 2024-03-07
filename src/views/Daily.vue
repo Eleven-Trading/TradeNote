@@ -199,10 +199,10 @@ const checkDate = ((param1, param2) => {
  ***************/
 async function dailySatisfactionChange(param1, param2, param3) {
     console.log("\nDAILY SATISFACTION CHANGE")
-    console.time("  --> Duration daily satisfaction change")
+    //console.time("  --> Duration daily satisfaction change")
     param3.satisfaction = param2
     await updateDailySatisfaction(param1, param2)
-    await console.timeEnd("  --> Duration daily satisfaction change")
+    //await console.timeEnd("  --> Duration daily satisfaction change")
 }
 
 async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId

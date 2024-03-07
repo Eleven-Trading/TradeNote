@@ -463,7 +463,7 @@ async function saveFilter() {
                     </select>
                 </div>
 
-                <!-- Tags -->
+                <!-- Tags 
                 <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
                     v-show="pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -480,7 +480,7 @@ async function saveFilter() {
                             {{ item }}
                         </div>
                     </ul>
-                </div>
+                </div>-->
 
                 <div class="col-12 text-center">
                     <button class="btn btn-success btn-sm mt-2" v-on:click="saveFilter">Filter</button>
