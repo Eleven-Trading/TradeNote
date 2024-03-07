@@ -1,8 +1,7 @@
 <script setup>
-import { expandedScreenshot, screenshots, selectedItem, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, endOfList, modalDailyTradeOpen, getMore } from '../stores/globals';
-import { ref, reactive } from "vue";
+import { selectedItem, modalDailyTradeOpen, pageId } from '../stores/globals';
 import { useSetupMarkerArea, useSelectedScreenshotFunction } from '../utils/screenshots';
-import { useHourMinuteFormat, useTimeFormat, useEditItem, useCreatedDateFormat, useLoadMore } from '../utils/utils';
+import { useHourMinuteFormat, useTimeFormat, useEditItem, useCreatedDateFormat } from '../utils/utils';
 
 
 const props = defineProps({
@@ -83,7 +82,7 @@ const props = defineProps({
     </div>
 
     <!-- SCREENSHOTS -->
-    <div class="imgContainer">
+    <div :class="[pageId === 'addScreenshot' ? 'imgContainerAddScreenshot' : 'imgContainer']">
         <img
         :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
         <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />

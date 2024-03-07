@@ -615,7 +615,13 @@ export async function useBrokerInteractiveBrokers(param) {
                     if (element["Buy/Sell"] == "SELL" && (element["Code"].includes("O"))) {
                         temp.Side = "SS"
                     }
-                    temp.Symbol = element["UnderlyingSymbol"]
+                    
+                    if(temp.Type == "stock"){
+                        temp.Symbol = element["Symbol"]    
+                    }else{
+                        temp.Symbol = element["UnderlyingSymbol"]
+                    }
+                    
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
                     temp.Price = element.Price
 
