@@ -1614,7 +1614,9 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
     return new Promise((resolve, reject) => {
         const zoomPadding = dayjs(0).minute(5).unix()
         const minZoom = dayjs(0).minute(30).unix()
-        
+        const entryColor = 'rgb(60,85,41)'
+        const exitColor = 'rgb(85,41,60)'
+
         const entryTime = trade.entryTime
         const exitTime = trade.exitTime
         const spreadTime = Math.abs(exitTime - entryTime)
@@ -1655,10 +1657,18 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                         data: [
                             {
                                 name: 'Mark',
-                                coord: ['12:17', 49.35],
-                                value: 49.35,
+                                coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
+                                value: trade.entryPrice,
                                 itemStyle: {
-                                    color: 'rgb(41,60,85)'
+                                    color: entryColor
+                                }
+                            },
+                            {
+                                name: 'Mark',
+                                coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
+                                value: trade.exitPrice,
+                                itemStyle: {
+                                    color: exitColor
                                 }
                             }
                         ],
