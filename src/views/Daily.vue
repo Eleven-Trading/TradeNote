@@ -6,11 +6,12 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags } from '../stores/globals';
+import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId } from '../stores/globals';
+
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -41,6 +42,7 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 const availableTagsArray = reactive([])
+
 
 onBeforeMount(async () => {
 
@@ -74,6 +76,118 @@ onMounted(async () => {
 })
 
 
+/**************
+ * MODAL INTERACTION
+ ***************/
+
+async function clickTradesModal(param1, param2, param3) {
+    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
+    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
+    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
+    //console.log(" param 3 "+JSON.stringify(param3))
+    //console.log("param1 " + param1)
+    //console.log("param2 " + param2)
+    //console.log("param3 " + param3)
+
+    if (markerAreaOpen.value == true) {
+        alert("Please save your screenshot annotation")
+        return
+    } else {
+        await (spinnerSetups.value = true)
+
+        if (tradeNoteChanged.value) {
+            await useUpdateNote()
+            await useGetNotes()
+        }
+
+        if (tradeExcursionChanged.value) {
+            await updateExcursions()
+        }
+
+        if (tradeTagsChanged.value) {
+            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
+            await Promise.all([useGetTags(), useGetAvailableTags()])
+            createAvailableTagsArray()
+        }
+
+        if (tradeScreenshotChanged.value) {
+            await useSaveScreenshot()
+        }
+
+
+        tradeNoteChanged.value = false
+        tradeExcursionChanged.value = false
+        tradeScreenshotChanged.value = false
+        tradeTagsChanged.value = false
+
+        showTagsList.value = false
+
+
+        if (param1 === undefined && param2 === undefined && param3 === undefined) {
+            //console.log(" -> Closing Modal")
+            await (spinnerSetups.value = false)
+            tradesModal.hide()
+            modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
+        }
+        else {
+            //console.log(" -> Opening Modal or clicking next/back")
+
+            itemTradeIndex.value = param1
+            tradeIndexPrevious.value = param2
+            tradeIndex.value = param3
+
+            let awaitClick = async () => {
+
+                modalDailyTradeOpen.value = true
+                let filteredTradeId = filteredTrades[itemTradeIndex.value].trades[param3].id
+                await Promise.all([resetExcursion(), resetTags()])
+
+                //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
+                let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                if (findScreenshot) {
+                    for (let key in screenshot) delete screenshot[key]
+                    for (let key in findScreenshot) {
+                        screenshot[key] = findScreenshot[key]
+                    }
+                } else {
+                    for (let key in screenshot) delete screenshot[key]
+                    screenshot.side = null
+                    screenshot.type = null
+                }
+
+
+                let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
+                if (findTags) {
+                    findTags.tags.forEach(element => {
+                        tradeTags.push(element)
+                    });
+                }
+
+                let noteIndex = notes.findIndex(obj => obj.tradeId == filteredTradeId)
+                tradeNote.value = null
+                if (noteIndex != -1) {
+                    tradeNote.value = notes[noteIndex].note
+                }
+
+                let findExcursion = excursions.filter(obj => obj.tradeId == filteredTradeId)
+                if (findExcursion.length) {
+                    findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                    findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                    findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                    //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+                }
+
+            }
+            await awaitClick()
+            await (spinnerSetups.value = false)
+            saveButton.value = false
+            await useInitTooltip()
+        }
+
+    }
+
+}
+
 
 const checkDate = ((param1, param2) => {
     let check = dayjs(param1 * 1000).isSame(param2 * 1000, 'day')
@@ -83,8 +197,6 @@ const checkDate = ((param1, param2) => {
 /**************
  * SATISFACTION
  ***************/
-
-
 async function dailySatisfactionChange(param1, param2, param3) {
     console.log("\nDAILY SATISFACTION CHANGE")
     console.time("  --> Duration daily satisfaction change")
@@ -186,8 +298,6 @@ async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : 
     })
 }
 
-
-
 /**************
  * EXCURSIONS
  ***************/
@@ -278,136 +388,6 @@ async function updateExcursions() {
     })
 }
 
-/**************
- * MISC
- ***************/
-function noteClicked() {
-    //console.log("click")
-    tradeSetupChanged.value = true
-    saveButton.value = true
-}
-
-async function clickTradesModal(param1, param2, param3) {
-    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
-    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
-    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
-    //console.log(" param 3 "+JSON.stringify(param3))
-    //console.log("param1 " + param1)
-    //console.log("param2 " + param2)
-    //console.log("param3 " + param3)
-
-    showTagsList.value = false
-
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        //We first update because setups rely on tradeIndex, so before tradeIndex changes to new modal page or simply use tradeIndex if we close
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-        }
-
-        if (tradeExcursionChanged.value) {
-            await updateExcursions()
-        }
-
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-
-        if (tradeTagsChanged.value) {
-            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
-            await Promise.all([useGetTags(), useGetAvailableTags()])
-            createAvailableTagsArray()
-        }
-
-        //Then we change indexes
-        itemTradeIndex.value = param1
-        tradeIndexPrevious.value = param2
-        tradeIndex.value = param3
-
-
-        let awaitClick = async () => {
-            tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
-            tradeExcursionChanged.value = false
-            tradeScreenshotChanged.value = false
-            tradeTagsChanged.value = false
-
-            modalDailyTradeOpen.value = true
-            let filteredTradeId = filteredTrades[itemTradeIndex.value].trades[param3].id
-            await Promise.all([resetExcursion(), resetTags()])
-
-            //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
-            let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
-            if (findScreenshot) {
-                for (let key in screenshot) delete screenshot[key]
-                for (let key in findScreenshot) {
-                    screenshot[key] = findScreenshot[key]
-                }
-            } else {
-                for (let key in screenshot) delete screenshot[key]
-                screenshot.side = null
-                screenshot.type = null
-            }
-
-
-            let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
-            if (findTags) {
-                findTags.tags.forEach(element => {
-                    tradeTags.push(element)
-                });
-            }
-
-            let findExcursion = excursions.filter(obj => obj.tradeId == filteredTradeId)
-            if (findExcursion.length) {
-                findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
-                findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
-                findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
-                //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
-            }
-
-        }
-        await awaitClick()
-        await (spinnerSetups.value = false)
-        saveButton.value = false
-        await useInitTooltip()
-    }
-
-}
-
-async function hideTradesModal() {
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-        }
-        if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
-            await updateExcursions()
-        }
-        if (tradeTagsChanged.value) {
-            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
-            await Promise.all([useGetTags(), useGetAvailableTags()])
-            createAvailableTagsArray()
-        }
-
-        tradeSetupChanged.value = false
-        tradeExcursionChanged.value = false
-        tradeScreenshotChanged.value = false
-        tradeTagsChanged.value = false
-
-        await (spinnerSetups.value = false)
-        tradesModal.hide()
-        modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
-    }
-}
-
 function resetExcursion() {
     //console.log(" -> Resetting excursion")
     //we need to reset the setup variable each time
@@ -416,10 +396,6 @@ function resetExcursion() {
     excursion.maePrice = null
     excursion.mfePrice = null
 
-}
-
-const resetTags = () => {
-    tradeTags.splice(0);
 }
 
 /**************
@@ -455,18 +431,6 @@ const filterSuggestions = (param) => {
     //console.log(" filteredSuggestions " + JSON.stringify(filteredSuggestions))
     return filteredSuggestions
 }
-
-/*const filteredSuggestions = computed((param) => {
-    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
-    console.log(" filtered suggestion param " + param)
-    let index = availableTags.findIndex(obj => obj.id == param)
-    console.log(" index " + index)
-    if (index == -1) {
-        return null
-    } else {
-        return availableTags[index].filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
-    }
-});*/
 
 const tradeTagsChange = async (param1, param2) => {
     console.log(" param 1 " + param1)
@@ -511,7 +475,7 @@ const tradeTagsChange = async (param1, param2) => {
                     console.log("  --> Input is a new tag")
                     let temp = {}
 
-                    
+
 
                     // Get the highest id number
                     const highestIdNumberAvailableTags = useFindHighestIdNumber(availableTags);
@@ -593,7 +557,6 @@ const toggleTagsDropdown = () => {
     showTagsList.value = !showTagsList.value
 }
 
-
 const getTagColor = (param) => {
     const findGroupColor = (tagId) => {
         for (let obj of availableTags) {
@@ -638,6 +601,27 @@ const getTagGroup = (param) => {
     const groupName = findGroupName(tagIdToFind);
 
     return groupName
+}
+
+const resetTags = () => {
+    tradeTags.splice(0);
+}
+
+/**************
+ * NOTES
+ ***************/
+function noteClicked() {
+    //console.log("click")
+    tradeNoteChanged.value = true
+    saveButton.value = true
+}
+
+const tradeNoteChange = (param) => {
+    tradeNote.value = param
+    console.log(" -> New note " + tradeNote.value)
+    tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
+    tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+
 }
 
 
@@ -751,17 +735,6 @@ const getTagGroup = (param) => {
                                     <div class="col-12 table-responsive">
                                         <nav>
                                             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-                                                <!--<button v-for="dashTab in dailyTabs" class="nav-link"
-                                                    v-bind:id="dashTab.id + '-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="dashTab.target + '-' + index" type="button"
-                                                    role="tab" aria-controls="nav-overview" aria-selected="true">{{
-                                                        dashTab.label }}
-                                                    <span
-                                                        v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
-                                                        class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                            itemTrade.dateUnix).length }})</span>
-                                                </button>-->
-
                                                 <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
                                                     aria-controls="nav-overview" aria-selected="true">Trades
@@ -801,12 +774,8 @@ const getTagGroup = (param) => {
                                                             <th scope="col">Vol</th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
-                                                            <!--<th scope="col">Price</th>-->
-                                                            <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Vol</th>
                                                             <th scope="col">P&L(n)</th>
-                                                            <!--<th scope="col">Pattern</th>
-                                                            <th scope="col">Mistake</th>-->
                                                             <th scope="col">Tags</th>
                                                             <th scope="col">Note</th>
                                                             <th scope="col"></th>
@@ -846,17 +815,6 @@ const getTagGroup = (param) => {
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
 
-                                                            <!--Price
-                                                            <td><span v-if="trade.tradesCount == 0"></span><span
-                                                                    v-else-if="trade.type == 'forex'">{{
-                                                                        (trade.entryPrice).toFixed(5) }}</span><span v-else>{{
-                                                                            useTwoDecCurrencyFormat(trade.entryPrice) }}<span
-                                                                        v-if="checkDate(trade.td, trade.entryTime) == false"><i
-                                                                            class="ps-1 uil uil-info-circle"
-                                                                            data-bs-toggle="tooltip" data-bs-html="true"
-                                                                            v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
-                                                            </td>-->
-                                                            <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
 
                                                             <!--P&L/Vol-->
                                                             <td>
@@ -872,12 +830,8 @@ const getTagGroup = (param) => {
                                                                     v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                     {{ useTwoDecCurrencyFormat(trade.netProceeds) }}</span>
                                                             </td>
-                                                            <!--<td>
-                                                                {{ trade.patternNameShort }}
-                                                            </td>
-                                                            <td>
-                                                                {{ trade.mistakeNameShort }}
-                                                            </td>-->
+
+                                                            <!--TAGS-->
                                                             <td>
                                                                 <span
                                                                     v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
@@ -891,7 +845,12 @@ const getTagGroup = (param) => {
                                                                 </span>
                                                             </td>
                                                             <td>
-                                                                {{ trade.noteShort }}
+                                                                <span
+                                                                    v-for="note in notes.filter(obj => obj.tradeId == trade.id)">
+                                                                    <span v-if="note.note.length > 12">{{
+                                                                        note.note.substring(0, 12) }}...</span><span
+                                                                        v-else>{{ note.note }}</span>
+                                                                </span>
                                                             </td>
                                                             <td>
                                                                 <span v-if="trade.satisfaction == true">
@@ -1150,38 +1109,6 @@ const getTagGroup = (param) => {
                                                 v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == false ? 'redTrade' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
-                                        <!-- Patterns -->
-                                        <div class="col-4" v-if="patterns.length > 0">
-                                            <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
-                                                class="form-select">
-
-                                                <option value='null' selected>Pattern</option>
-                                                <option v-for="itemActivePattern in activePatterns"
-                                                    v-bind:value="itemActivePattern.objectId"
-                                                    v-bind:selected="itemActivePattern.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].pattern">
-                                                    {{ itemActivePattern.name }}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-4" v-else>
-                                            <span class="form-control">Add pattern tags in <a
-                                                    href="/settings">settings</a></span>
-                                        </div>
-
-                                        
-                                        <div class="col-4" v-if="mistakes.length > 0">
-                                            <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
-                                                class="form-select">
-
-                                                <option value='null' selected>Mistake</option>
-                                                <option v-for="item in activeMistakes" v-bind:value="item.objectId"
-                                                    v-bind:selected="item.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].mistake">
-                                                    {{ item.name }}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-4" v-else>
-                                            <span class="form-control">Add mistake tags in <a
-                                                    href="/settings">settings</a></span>
-                                        </div>
 
                                         <!-- Tags -->
                                         <div class="container-tags col-8">
@@ -1235,8 +1162,7 @@ const getTagGroup = (param) => {
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
-                                        v-on:change="useTradeSetupChange($event.target.value, 'note')"
+                                        v-bind:value="tradeNote" v-on:change="tradeNoteChange($event.target.value)"
                                         v-on:click="noteClicked"></textarea>
                                 </div>
 
@@ -1260,10 +1186,10 @@ const getTagGroup = (param) => {
                                         </div>
                                         <div class="col-4 text-center">
                                             <button v-if="saveButton" class="btn btn-outline-success btn-sm"
-                                                v-on:click="hideTradesModal()">Close
+                                                v-on:click="clickTradesModal()">Close
                                                 & Save</button>
                                             <button v-else class="btn btn-outline-primary btn-sm"
-                                                v-on:click="hideTradesModal()">Close</button>
+                                                v-on:click="clickTradesModal()">Close</button>
                                         </div>
                                         <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">

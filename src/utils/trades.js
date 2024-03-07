@@ -57,15 +57,6 @@ export async function useGetFilteredTrades(param) {
                                 temp.satisfaction = el.satisfaction
                             }
                         }
-                        
-                        //Adding tags for daily page
-                        temp.tags = null
-                        for (let index = 0; index < tags.length; index++) {
-                            const el = tags[index];
-                            if (el.dateUnix == element.dateUnix) {
-                                temp.tags = el.tags
-                            }
-                        }
                     }
                     
                     //console.log("element "+JSON.stringify(element))

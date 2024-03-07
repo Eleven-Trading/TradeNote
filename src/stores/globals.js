@@ -2859,6 +2859,8 @@ export const tradeExcursionDateUnix = ref()
 export const satisfactionTradeArray = reactive([])
 export const satisfactionArray = reactive([])
 
+
+//TAGS
 export const tags = reactive([]) //all tags, from useGetTags
 export const tradeTags = reactive([]) // on daily page, tags of a specific trade (when push modal)
 export const newTradeTags = reactive([])
@@ -2869,6 +2871,14 @@ export const selectedTagIndex = ref(-1)
 export const showTagsList = ref(false)
 export const tradeTagsId = ref()
 export const tradeTagsDateUnix = ref()
+
+//NOTES
+export const notes = reactive([])
+export const tradeNote = ref(null)
+export const tradeNoteChanged = ref(false)
+export const tradeNoteDateUnixDay = ref(null)
+export const tradeNoteDateUnix = ref(null)
+export const tradeNoteId = ref(null)
 
 /**************************************
 * SCREENSHOTS

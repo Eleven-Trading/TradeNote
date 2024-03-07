@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, newTradeTags, pageId } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -284,5 +284,88 @@ export const useUpdateAvailableTags = async () => {
             console.log(" -> NO USER !!!")
             reject()
         }
+    })
+}
+
+/****************************************$
+ * 
+ * NOTES 
+ ****************************************/
+
+export async function useGetNotes() {
+    return new Promise(async (resolve, reject) => {
+        console.log(" -> Getting Notes");
+        notes.length = 0
+        let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
+        const parseObject = Parse.Object.extend("notes");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("user", Parse.User.current());
+        query.greaterThanOrEqualTo("dateUnix", startD)
+        query.lessThan("dateUnix", endD)
+        query.limit(queryLimit.value); // limit to at most 10 results
+
+        const results = await query.find();
+        if (results.length > 0) {
+            for (let i = 0; i < results.length; i++) {
+                let temp = {}
+                const object = results[i];
+                temp.tradeId = object.get('tradeId')
+                temp.note = object.get('note')
+                temp.dateUnix = object.get('dateUnix')
+                notes.push(temp)
+
+            }
+        }
+        console.log("  --> notes " + JSON.stringify(notes))
+        resolve()
+
+    })
+}
+
+export const useUpdateNote = async () => {
+    console.log("\nUPDATING OR SAVING NOTE IN PARSE DB")
+    return new Promise(async (resolve, reject) => {
+        spinnerSetups.value = true
+
+        const parseObject = Parse.Object.extend("notes");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("tradeId", tradeNoteId.value)
+        const results = await query.first();
+        if (results) {
+            console.log(" -> Updating note")
+
+            spinnerSetupsText.value = "Updating"
+            results.set("note", tradeNote.value)
+
+            results.save()
+                .then(async () => {
+                    console.log(' -> Updated note with id ' + results.id)
+                    //await useGetSelectedRange()
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        } else {
+            console.log(" -> Saving note")
+            spinnerSetupsText.value = "Saving"
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("note", tradeNote.value)
+            object.set("dateUnix", tradeNoteDateUnix.value)
+            object.set("tradeId", tradeNoteId.value)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then(async (object) => {
+                    console.log(' -> Added new note with id ' + object.id)
+                    //await useGetSelectedRange()
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        }
+
+
+
     })
 }

@@ -6,7 +6,7 @@ import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } f
 import { useDeletePlaybook } from "./playbooks";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
-import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags } from "./daily";
+import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily";
 import { useGetMistakes, useGetPatterns, useGetSetups } from "./setups";
 
 /**************************************
@@ -774,8 +774,8 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()])
-    useGetPatterns(), useGetMistakes()
+    await Promise.all([/*useGetSetups()*/, useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
+    //useGetPatterns(), useGetMistakes()
     /*useGetSetups()
     useGetPatterns()
     useGetMistakes()
