@@ -1610,18 +1610,27 @@ export function useScatterChart(param1) { //chart ID, green, red, page
     })
 }
 
-export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes) {
+export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
     return new Promise((resolve, reject) => {
-        //console.log("  --> " + ohlcDates)
-        //console.log("para 2 " + ohlcPrices + " and 3 " + ohlcVolumes)
+        const zoomPadding = dayjs(0).minute(5).unix()
+        const minZoom = dayjs(0).minute(30).unix()
+        
+        const entryTime = trade.entryTime
+        const exitTime = trade.exitTime
+        const spreadTime = Math.abs(exitTime - entryTime)
+    
+        const zoomLevel = Math.max(minZoom, spreadTime + 2 * zoomPadding)
+    
+        const zoomUnixStartValue = entryTime - zoomLevel / 2 - spreadTime / 2
+        const zoomUnixEndValue = exitTime + zoomLevel / 2 + spreadTime / 2
+
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
             dataZoom: [
                 {
                     type: 'inside',
-                    startValue: "12:08",
-                    endValue: "13:04",
-                    //rangeMode:["12:08", "13:04"],
+                    startValue: useHourMinuteFormat(zoomUnixStartValue),
+                    endValue: useHourMinuteFormat(zoomUnixEndValue),
                     preventDefaultMouseMove: false
                 },
             ],
@@ -1631,9 +1640,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes) {
                 max: 'dataMax'
             },
             yAxis: {
-                scale: true,
-                //min: 132,
-                //max: 139
+                scale: true
             },
             series: [
                 {

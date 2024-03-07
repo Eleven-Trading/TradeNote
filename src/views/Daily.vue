@@ -342,7 +342,7 @@ async function clickTradesModal(param1, param2, param3) {
                 screenshot.side = null
                 screenshot.type = null
                 await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
-                await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes)
+                await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, selectedTrade)
             }
 
 
