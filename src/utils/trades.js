@@ -89,9 +89,9 @@ export async function useGetFilteredTrades(param) {
                         let selectedTagsArray = Object.values(selectedTags.value)
                         let index = tags.findIndex(obj => obj.tradeId == element.id)
                         if (index != -1){
-                            console.log(" -> selected tags "+Object.values(selectedTags.value))
-                            console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
-                            console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
+                            //console.log(" -> selected tags "+Object.values(selectedTags.value))
+                            //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
+                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
                             if(selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))){
                                 tradeTagsSelected = true
                             }
@@ -101,7 +101,7 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
                         
-                        console.log(" -> tradeTagsSelected "+tradeTagsSelected)
+                        //console.log(" -> tradeTagsSelected "+tradeTagsSelected)
                         //let setup = setups.filter(obj => obj.tradeId == element.id)
                         //console.log("setup "+JSON.stringify(setup))
                         //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 

@@ -63,6 +63,86 @@ export async function useGetExcursions() {
  * TAGS 
  ****************************************/
 
+export async function useGetTags() {
+    return new Promise(async (resolve, reject) => {
+        console.log(" -> Getting Tags");
+        tags.length = 0
+        let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
+        const parseObject = Parse.Object.extend("tags");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("user", Parse.User.current());
+        query.greaterThanOrEqualTo("dateUnix", startD)
+        query.lessThan("dateUnix", endD)
+        query.limit(queryLimit.value); // limit to at most 10 results
+
+        const results = await query.find();
+        if (results.length > 0) {
+            for (let i = 0; i < results.length; i++) {
+                let temp = {}
+                const object = results[i];
+                temp.tradeId = object.get('tradeId')
+                temp.tags = object.get('tags')
+                temp.dateUnix = object.get('dateUnix')
+                tags.push(temp)
+
+            }
+        }
+        //console.log("  --> Tags " + JSON.stringify(tags))
+        resolve()
+
+    })
+}
+
+export async function useGetAvailableTags() {
+    return new Promise(async (resolve, reject) => {
+        console.log(" -> Getting Available Tags");
+        availableTags.splice(0);
+
+
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentTags = parsedResults.tags
+            //console.log(" current tags " + JSON.stringify(currentTags))
+            if (currentTags == undefined) {
+                //console.log("  --> Available Tags " + JSON.stringify(availableTags))
+                resolve()
+            } else if (currentTags.length > 0) {
+                for (let index = 0; index < currentTags.length; index++) {
+                    const element = currentTags[index];
+                    availableTags.push(element)
+                    if ((index + 1) == currentTags.length) {
+                        //console.log("  --> Available Tags " + JSON.stringify(availableTags))
+                        resolve()
+                    }
+                }
+            } else {
+                //console.log("  --> Available Tags " + JSON.stringify(availableTags))
+                resolve()
+            }
+        } else {
+            alert("No user")
+        }
+
+        /*let currentTags = currentUser.value.tags
+        if (currentTags != undefined){
+            for (let index = 0; index < currentTags.length; index++) {
+                const element = currentTags[index];
+                availableTags.push(element)   
+            }
+        }  
+
+        console.log("  --> Available Tags " + JSON.stringify(availableTags))
+        resolve()*/
+
+    })
+}
+
 export const useFindHighestIdNumber = (param) => {
     let highestId = -Infinity;
     if (param.length == 0) {
@@ -91,86 +171,6 @@ export const useFindHighestIdNumberTradeTags = (param) => {
         });
     }
     return highestId;
-}
-
-export async function useGetTags() {
-    return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting Tags");
-        tags.length = 0
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
-        const parseObject = Parse.Object.extend("tags");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("user", Parse.User.current());
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value); // limit to at most 10 results
-
-        const results = await query.find();
-        if (results.length > 0) {
-            for (let i = 0; i < results.length; i++) {
-                let temp = {}
-                const object = results[i];
-                temp.tradeId = object.get('tradeId')
-                temp.tags = object.get('tags')
-                temp.dateUnix = object.get('dateUnix')
-                tags.push(temp)
-
-            }
-        }
-        console.log("  --> Tags " + JSON.stringify(tags))
-        resolve()
-
-    })
-}
-
-export async function useGetAvailableTags() {
-    return new Promise(async (resolve, reject) => {
-        console.log(" -> Getting Available Tags");
-        availableTags.splice(0);
-
-
-        const parseObject = Parse.Object.extend("_User");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", currentUser.value.objectId);
-        const results = await query.first();
-
-        if (results) {
-            let parsedResults = JSON.parse(JSON.stringify(results))
-            let currentTags = parsedResults.tags
-            //console.log(" current tags " + JSON.stringify(currentTags))
-            if (currentTags == undefined) {
-                console.log("  --> Available Tags " + JSON.stringify(availableTags))
-                resolve()
-            } else if (currentTags.length > 0) {
-                for (let index = 0; index < currentTags.length; index++) {
-                    const element = currentTags[index];
-                    availableTags.push(element)
-                    if ((index + 1) == currentTags.length) {
-                        console.log("  --> Available Tags " + JSON.stringify(availableTags))
-                        resolve()
-                    }
-                }
-            } else {
-                console.log("  --> Available Tags " + JSON.stringify(availableTags))
-                resolve()
-            }
-        } else {
-            alert("No user")
-        }
-
-        /*let currentTags = currentUser.value.tags
-        if (currentTags != undefined){
-            for (let index = 0; index < currentTags.length; index++) {
-                const element = currentTags[index];
-                availableTags.push(element)   
-            }
-        }  
-
-        console.log("  --> Available Tags " + JSON.stringify(availableTags))
-        resolve()*/
-
-    })
 }
 
 export const useUpdateTags = async () => {
