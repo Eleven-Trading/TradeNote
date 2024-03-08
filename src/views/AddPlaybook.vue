@@ -20,9 +20,9 @@ onBeforeMount(async () => {
 function playbookDateInput(param) {
     //console.log(" param "+param)
     playbookUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
-    playbookUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
-    playbookUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
-    console.log(" -> playbookDateUnix " + playbookUpdate.dateUnix + " and date " + playbookUpdate.date)
+    playbookUpdate.date = dayjs(playbookUpdate.dateUnix * 1000).format("YYYY-MM-DD")
+    playbookUpdate.dateDateFormat = new Date(playbookUpdate.date)
+    console.log(" -> playbookDateUnix " + playbookUpdate.dateUnix + " and date " + playbookUpdate.date + " and date formated "+playbookUpdate.dateDateFormat)
 }
 
 async function getPlaybookToEdit(param) {
