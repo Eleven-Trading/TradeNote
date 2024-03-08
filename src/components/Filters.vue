@@ -9,9 +9,9 @@ import { useRefreshScreenshot } from "../utils/screenshots"
     VARIABLES
 ============================================*/
 
-let filtersOpen = ref(false)
+let filtersOpen = ref(true)
 let filters = ref({
-    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio","tags"],
+    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "tags"],
     "calendar": ["month", "grossNet", "plSatisfaction"],
     "daily": ["accounts", "month", "grossNet", "positions", "tags"],
     "screenshots": ["accounts", "grossNet", "positions", "tags"],
@@ -229,9 +229,9 @@ async function saveFilter() {
         localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     }
 
-    localStorage.setItem('selectedPatterns', selectedPatterns.value)
+    //localStorage.setItem('selectedPatterns', selectedPatterns.value)
 
-    localStorage.setItem('selectedMistakes', selectedMistakes.value)
+    //localStorage.setItem('selectedMistakes', selectedMistakes.value)
 
     localStorage.setItem('selectedTags', selectedTags.value)
 
@@ -286,13 +286,13 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('grossNet')">{{ selectedGrossNet.charAt(0).toUpperCase() +
-                        selectedGrossNet.slice(1) }} data |
+                    selectedGrossNet.slice(1) }} data |
                     </span>
 
                     <span v-show="filters[pageId].includes('positions')">
                         <span v-if="positions.length == selectedPositions.length">All positions |</span>
                         <span v-else>{{ selectedPositions.toString().charAt(0).toUpperCase() +
-                            selectedPositions.toString().slice(1) }} |</span>
+                    selectedPositions.toString().slice(1) }} |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('timeFrame')">
@@ -328,7 +328,8 @@ async function saveFilter() {
 
                 </span>
 
-                <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
+                <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i
+                        class="uil uil-angle-down"></i>
                 </span>
             </div>
 
@@ -362,26 +363,51 @@ async function saveFilter() {
                 </div>
 
                 <!-- Accounts -->
-                <div class="col-6 col-lg-4 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                <div class="col-6 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">Accounts <span class="dashInfoTitle">({{ selectedAccounts.length
-                        }})</span></button>
+                            }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
                         <div v-for="item in currentUser.accounts" :key="item.value" class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedAccounts">
+                            <input class="form-check-input" type="checkbox" :value="item.value"
+                                v-model="selectedAccounts">
                             {{ item.label }}
                         </div>
                     </ul>
                 </div>
 
                 <!-- Month -->
-                <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'daily' || pageId == 'calendar'">
+                <div class="col-12 col-lg-6 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'daily' || pageId == 'calendar'">
                     <input type="month" class="form-control" :value="useDateCalFormatMonth(selectedMonth.start)"
                         :selected="selectedMonth.start" v-on:input="inputMonth($event.target.value)">
                 </div>
 
+                <!-- Tags -->
+                <div :class="[pageId == 'screenshots' ? 'col-12' : 'col-6', 'dropdown mt-1 mt-lg-1']"
+                    v-show="pageId != 'calendar'">
+
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Tags <span class="dashInfoTitle">({{ selectedTags.length
+                            }})</span></button>
+
+                    <ul class="dropdown-menu dropdownCheck">
+                        <input class="form-check-input" type="checkbox" value="t000t"
+                            v-model="selectedTags">&nbsp;&nbsp;No Tag
+                        <hr>
+                        <span v-for="group in availableTags">
+                            <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'">
+                                {{ group.name }}</h6>
+                            <div v-for="item in group.tags" class="form-check">
+                                <input class="form-check-input" type="checkbox" :value="item.id" v-model="selectedTags">
+                                {{ item.name }}
+                            </div>
+                        </span>
+                        
+                    </ul>
+                </div>
+
                 <!-- Gross/Net -->
-                <div class="col-6 col-lg-2" v-show="pageId != 'screenshots'">
+                <div class="col-6 col-lg-3" v-show="pageId != 'screenshots'">
                     <select v-on:input="selectedGrossNet = $event.target.value" class="form-select">
                         <option v-for="item in grossNet" :key="item.value" :value="item.value"
                             :selected="item.value == selectedGrossNet">{{ item.label }}</option>
@@ -389,20 +415,21 @@ async function saveFilter() {
                 </div>
 
                 <!-- Positions -->
-                <div class="col-6 col-lg-2 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                <div class="col-6 col-lg-3 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">Positions <span class="dashInfoTitle">({{ selectedPositions.length
-                        }})</span></button>
+                            }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
                         <div v-for="item in positions" :key="item.value" class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedPositions">
+                            <input class="form-check-input" type="checkbox" :value="item.value"
+                                v-model="selectedPositions">
                             {{ item.label }}
                         </div>
                     </ul>
                 </div>
 
                 <!-- Timeframe -->
-                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                <div class="col-6 col-lg-3 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
                     <select v-on:input="selectedTimeFrame = $event.target.value" class="form-select">
                         <option v-for="item in timeFrames" :key="item.value" :value="item.value"
                             :selected="item.value == selectedTimeFrame">{{ item.label }}</option>
@@ -410,7 +437,7 @@ async function saveFilter() {
                 </div>
 
                 <!-- Ratio -->
-                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                <div class="col-6 col-lg-3 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
                     <select v-on:input="selectedRatio = $event.target.value" class="form-select">
                         <option v-for="item in ratios" :key="item.value" :value="item.value"
                             :selected="item.value == selectedRatio">{{ item.label }}</option>
@@ -456,31 +483,12 @@ async function saveFilter() {
                 </div>-->
 
                 <!-- P&L / Satisfaction  -->
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6']" v-show="pageId == 'calendar'">
+                <div :class="[pageId == 'daily' ? 'col-4' : 'col-3']" v-show="pageId == 'calendar'">
                     <select v-on:input="tempSelectedPlSatisfaction = $event.target.value" class="form-select">
                         <option v-for="item in plSatisfaction" :key="item.value" :value="item.value"
                             :selected="item.value == selectedPlSatisfaction">{{ item.label }}</option>
                     </select>
                 </div>
-
-                <!-- Tags 
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
-                    v-show="pageId != 'calendar'">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">Tags <span class="dashInfoTitle">({{ selectedTags.length
-                        }})</span></button>
-                    <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="t000t"
-                            v-model="selectedTags">&nbsp;&nbsp;No Tag
-                        <hr>
-                        <div v-for="item in availableTags"
-                            class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item"
-                                v-model="selectedTags">
-                            {{ item }}
-                        </div>
-                    </ul>
-                </div>-->
 
                 <div class="col-12 text-center">
                     <button class="btn btn-success btn-sm mt-2" v-on:click="saveFilter">Filter</button>

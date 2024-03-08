@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy } from "../stores/globals"
+import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -172,7 +172,7 @@ export function useGetTimeZone() {
 }
 
 export async function useGetPeriods() {
-    console.log(" -> Getting periods")
+    //console.log(" -> Getting periods")
     return new Promise((resolve, reject) => {
         let temp = [{
             value: "all",
@@ -747,7 +747,7 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions()
+    useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()
     await useGetSetups()
     await Promise.all([useGetFilteredTrades()])
     await useTotalTrades()
@@ -817,7 +817,7 @@ export async function useMountScreenshots() {
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
     await useGetSelectedRange()
-    await Promise.all([useGetPatterns(), useGetMistakes()])
+    await Promise.all([useGetPatterns(), useGetMistakes(), useGetTags(), useGetAvailableTags()])
     await useGetSetups()
     await useGetScreenshots()
     await console.timeEnd("  --> Duration mount screenshots")
@@ -952,7 +952,8 @@ export async function useSetValues() {
             localStorage.setItem('selectedAccounts', selectedAccounts.value)
             selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
         }
-        let selectedPatternsNull = Object.is(localStorage.getItem('selectedPatterns'), null)
+
+        /*let selectedPatternsNull = Object.is(localStorage.getItem('selectedPatterns'), null)
         let selectedMistakesNull = Object.is(localStorage.getItem('selectedMistakes'), null)
         console.log("selectedPatternsNull " + selectedPatternsNull)
         console.log("selectedMistakesNull " + selectedMistakesNull)
@@ -988,6 +989,27 @@ export async function useSetValues() {
                 mistakes.length = 0
                 localStorage.setItem('selectedMistakes', selectedMistakes.value)
                 console.log("selectedMistakes " + JSON.stringify(selectedMistakes.value))
+            }
+
+        }*/
+
+        let selectedTagsNull = Object.is(localStorage.getItem('selectedTags'), null)
+        console.log("selectedTagsNull " + selectedTagsNull)
+        if (selectedTagsNull) {
+            await useGetTags()
+            if (selectedTagsNull) {
+                console.log("selected tags is null ")
+                selectedTags.value.push("t000t")
+                let activeTags = patterns.filter(obj => obj.active == true)
+                //console.log("active Tags " + JSON.stringify(activeTags))
+                if (activeTags) {
+                    activeTags.forEach(element => {
+                        selectedTags.value.push(element.id)
+                    });
+                }
+                tags.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
+                localStorage.setItem('selectedTags', selectedTags.value)
+                console.log("selectedTags " + JSON.stringify(selectedTags.value))
             }
 
         }

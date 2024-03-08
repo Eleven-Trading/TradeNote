@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions } from "../stores/globals"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPatterns, selectedMistakes, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, patterns, hasData, setups, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags } from "../stores/globals"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils";
 import { useCreateBlotter, useCreatePnL } from "./addTrades"
 
@@ -61,6 +61,7 @@ export async function useGetFilteredTrades(param) {
                     
                     //console.log("element "+JSON.stringify(element))
                     element.trades.forEach(element => {
+                        //console.log("element "+JSON.stringify(element))
                         if (element.side == "long") {
                             element.priceVar = element.entryPrice - element.exitPrice
                         } else {
@@ -75,18 +76,36 @@ export async function useGetFilteredTrades(param) {
                         //console.log("setups "+JSON.stringify(setups))
 
                         //Getting setup needed for filter and creating setup key needed for daily
-                        let setup
+                        /*let setup
                         for (let index = 0; index < setups.length; index++) {
                             const element2 = setups[index];
                             if (element2.tradeId == element.id) {
                                 setup = element2
                             }
 
+                        }*/
+
+                        let tradeTagsSelected = false
+                        let selectedTagsArray = Object.values(selectedTags.value)
+                        let index = tags.findIndex(obj => obj.tradeId == element.id)
+                        if (index != -1){
+                            console.log(" -> selected tags "+Object.values(selectedTags.value))
+                            console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
+                            console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
+                            if(selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))){
+                                tradeTagsSelected = true
+                            }
+                        }else{
+                            if (selectedTagsArray.includes("t000t")){
+                                tradeTagsSelected = true
+                            }
                         }
+                        
+                        console.log(" -> tradeTagsSelected "+tradeTagsSelected)
                         //let setup = setups.filter(obj => obj.tradeId == element.id)
                         //console.log("setup "+JSON.stringify(setup))
                         //if setup is present in setups, then whe check if has pattern. If yes, we check if is included in selected patterns (or mistakes) 
-                        if (setup) {
+                        /*if (setup) {
                             //console.log("setup has length")
                             if (setup.pattern) {
                                 let tempPattern = setup.pattern.objectId
@@ -98,7 +117,7 @@ export async function useGetFilteredTrades(param) {
                                 //else null and not void. However, if not present in setups table then we consider as void
                                 /*else {
                                     pattern = "p000p"
-                                }*/
+                                }
                             } else {
                                 pattern = "p000p"
                             }
@@ -112,7 +131,7 @@ export async function useGetFilteredTrades(param) {
                                 //else null and not void
                                 /*else {
                                     mistake = "m000m"
-                                }*/
+                                }
                             } else {
                                 mistake = "m000m"
                             }
@@ -120,7 +139,7 @@ export async function useGetFilteredTrades(param) {
                         } else {
                             pattern = "p000p"
                             mistake = "m000m"
-                        }
+                        }*/
 
                         let tradeSatisfaction = null
                         for (let index = 0; index < satisfactionTradeArray.length; index++) {
@@ -130,14 +149,13 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
 
-
                         //console.log(" selected patterns "+selectedPatterns.value)
                         //console.log(" pattern "+pattern)
                         //console.log(" Account "+element.account)
                         //if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.entryTime >= selectedRange.value.start : element.entryTime >= selectedRange.value.start && element.entryTime < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
                         
-                        if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && selectedPatterns.value.includes(pattern) && selectedMistakes.value.includes(mistake)) {
-                            if (patternName != undefined) {
+                        if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && tradeTagsSelected) {
+                            /*if (patternName != undefined) {
                                 element.pattern = pattern
                                 element.patternName = " | " + patternName
                                 element.patternNameShort = patternName.substr(0, 15) + "..."
@@ -150,7 +168,7 @@ export async function useGetFilteredTrades(param) {
                             if (setup && setup.hasOwnProperty("note") && setup.note != undefined && setup.note != '' && setup.note != null) {
                                 element.note = setup.note
                                 element.noteShort = setup.note.substr(0, 15) + "..."
-                            }
+                            }*/
 
                             element.satisfaction = tradeSatisfaction
 
