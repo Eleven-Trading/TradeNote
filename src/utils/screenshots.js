@@ -1,5 +1,5 @@
 import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, getMore } from '../stores/globals.js'
+import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags } from '../stores/globals.js'
 import { useInitTab, useLoadMore } from './utils';
 
 let screenshotsQueryLimit = 4
@@ -13,47 +13,14 @@ export function useGetScreenshotsPagination() {
 
 export async function useGetScreenshots(param) {
     console.log("\nGETTING SCREENSHOTS")
-    //console.log(" -> Selected patterns " + selectedPatterns.value)
-    //console.log("patterns "+JSON.stringify(patterns))
-    //console.log("patternsmistakes "+JSON.stringify(setups))
-
-    //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
-    //console.log("selectePatters "+selectedPatterns.value)
-    //console.log("active patterns "+JSON.stringify(activePatterns))
-    let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x.objectId));
-    //console.log(" -> Excluded patterns "+JSON.stringify(exclPatterns))
-    let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x.objectId));
-    //console.log(" -> Excluded mistakes "+JSON.stringify(exclMistakes))
-
-    let allSetupsIds = []
-    let excludedIds = []
-    setups.forEach(element => {
-        allSetupsIds.push(element.tradeId)
-        //console.log(" - element mistake "+element.mistake)
-        if ((element.pattern != null && exclPatterns.some(obj => obj.objectId == element.pattern.objectId)) || (element.mistake != null && exclMistakes.some(obj => obj.objectId == element.mistake.objectId))) {
-            //console.log("  --> Trade id to exclude " + element.tradeId)
-            excludedIds.push(element.tradeId)
-        }
-    });
 
     return new Promise(async (resolve, reject) => {
-        //console.log(" -> selectedPatterns " + selectedPatterns.value)
-        //console.log(" -> screenshotsPagination (start)" + screenshotsPagination);
-        //console.log(" selected start date " + selectedMonth.value.start)
         const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
-        /*if (pageId.value == "screenshots") {
-            query.exclude("originalBase64");
-        }*/
-        query.notContainedIn("name", excludedIds) // Query not including excluded ids
-
-        if (!selectedPatterns.value.includes("p000p") && !selectedMistakes.value.includes("m000m")) { // if void has been excluded, then only query screenshots that are in setups table
-            query.containedIn("name", allSetupsIds)
-        }
-
+        
         if (param) { // if param == true then we're not on screenshots page
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
@@ -67,37 +34,50 @@ export async function useGetScreenshots(param) {
             //console.log("results " + JSON.stringify(results))
             if (results.length > 0) {
                 let parsedResult = JSON.parse(JSON.stringify(results))
-                parsedResult.forEach(element => {
-                    screenshotsNames.push(element.name)
-                });
-
+                //console.log(" parsedResult "+JSON.stringify(parsedResult))
                 if (pageId.value == "daily") {
                     //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
                     screenshots.length = 0
                 }
-                parsedResult.forEach(element => {
-                    let setup
-                    for (let index = 0; index < setups.length; index++) {
-                        const element2 = setups[index];
-                        if (element2.tradeId == element.name) {
-                            setup = element2
-                        }
 
-                    }
-                    //let setup = setups.filter(obj => obj.tradeId == element.name )
-                    if (setup) {
-                        if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
-                            element.patternName = " | " + setup.pattern.name
+                parsedResult.forEach(element => {
+                    //console.log(" element "+JSON.stringify(element.objectId))
+                    let tradeTagsSelected = false
+                    let selectedTagsArray = Object.values(selectedTags.value)
+                    let index = tags.findIndex(obj => obj.tradeId == element.name)
+                    if (index != -1) {
+                        //console.log(" -> Screenshot id in tags...")
+                        //console.log(" -> selected tags "+Object.values(selectedTags.value))
+                        //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
+                        //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
+                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))) {
+                            //console.log(" and with selected tags")
+                            tradeTagsSelected = true
+                        } else {
+                            //console.log(" but with no selected tags")
                         }
-                        if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
-                            //console.log("setup mistake "+JSON.stringify(setup[0]))
-                            element.mistakeName = " | " + setup.mistake.name
+                    } else {
+                        //console.log(" -> Screenshot not in tags...")
+                        if (selectedTagsArray.includes("t000t")) {
+                            //console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                            tradeTagsSelected = true
                         }
-                        //console.log(" patternname " + element.patternName)
                     }
-                    screenshots.push(element)
-                });
+
+                    const pushScreenshots = () => {
+                        screenshotsNames.push(element.name)
+                        screenshots.push(element)
+                    }
+
+                    if (pageId.value == "daily") {
+                        pushScreenshots()
+                    } else {
+                        if (tradeTagsSelected) {
+                            pushScreenshots()
+                        }
+                    }
+                })
 
             } else {
                 if (pageId.value == "screenshots") {
@@ -113,6 +93,7 @@ export async function useGetScreenshots(param) {
             if (pageId.value != "daily") {
                 await (spinnerLoadingPage.value = false) // need await or else scroll to screenshot doesn't work
             }
+
 
         }).then(() => {
             if (sessionStorage.getItem('screenshotIdToEdit') && pageId.value == "screenshots") useScrollToScreenshot()
@@ -527,10 +508,10 @@ export async function useDeleteScreenshot(param1, param2) {
         await results.destroy()
         console.log('  --> Deleted screenshot with id ' + results.id)
         //document.location.reload()
-        if(pageId.value == 'screenshots'){
+        if (pageId.value == 'screenshots') {
             await useRefreshScreenshot()
         }
-        if(pageId.value == 'daily'){
+        if (pageId.value == 'daily') {
             let index = screenshots.findIndex(obj => obj.objectId == selectedItem.value)
             for (let key in screenshots[index]) delete screenshots[index][key]
             for (let key in screenshot) delete screenshot[key]
@@ -554,7 +535,7 @@ export async function useRefreshScreenshot() {
     })
 }
 
-export async function useSelectedScreenshotFunction (param1, param2, param3) {
+export async function useSelectedScreenshotFunction(param1, param2, param3) {
     //console.log("Index "+param1)
     selectedScreenshotIndex.value = param1
     selectedScreenshotSource.value = param2

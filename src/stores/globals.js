@@ -2836,6 +2836,8 @@ export const daily = reactive({})
 export const dailyPagination = ref(0)
 export const dailyQueryLimit = ref(3)
 
+export const tradesModal = ref(null)
+
 export const itemTradeIndex = ref()
 export const tradeIndex = ref()
 export const tradeIndexPrevious = ref()

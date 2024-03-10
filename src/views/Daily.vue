@@ -10,8 +10,10 @@ import { currentUser, spinnerLoadingPage, calendarData, filteredTrades, screensh
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
+
 import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes } from '../utils/daily';
+
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagColor } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -557,28 +559,6 @@ const toggleTagsDropdown = () => {
     showTagsList.value = !showTagsList.value
 }
 
-const getTagColor = (param) => {
-    const findGroupColor = (tagId) => {
-        for (let obj of availableTags) {
-            for (let tag of obj.tags) {
-                if (tag.id === tagId) {
-                    return obj.color;
-                }
-            }
-        }
-
-        let color = "#6c757d"
-        if (availableTags.length > 0) {
-            color = availableTags.filter(obj => obj.id == "group_0")[0].color
-        }
-        return color // Return ungroupcolor if no result
-    }
-
-    const tagIdToFind = param;
-    const groupColor = findGroupColor(tagIdToFind);
-
-    return "background-color: " + groupColor + ";"
-}
 
 const getTagGroup = (param) => {
     const findGroupName = (tagId) => {
@@ -624,6 +604,19 @@ const tradeNoteChange = (param) => {
 
 }
 
+const getScreenshotsLength = (param) => {
+    let screenshotsLength = 0
+    for (let index = 0; index < screenshots.length; index++) {
+        const element = screenshots[index];
+        for (let index = 0; index < param.trades.length; index++) {
+            const el = param.trades[index];
+            if (el.id == element.name) {
+                screenshotsLength += 1
+            }
+        }
+    }
+    return screenshotsLength
+}
 
 </script>
 
@@ -651,17 +644,19 @@ const tradeNoteChange = (param) => {
 
                                     <div class="col-12 cardFirstLine mb-2">
                                         <div class="row">
-                                            <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}
+                                            <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix)
+                                                }}
                                                 <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                                 <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                             </div>
-                                            <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0) }}):
+                                            <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
+                                                }}):
                                                 <span
                                                     v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
-                                                    }}</span>
+        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
+    }}</span>
                                             </div>
 
                                         </div>
@@ -721,7 +716,8 @@ const tradeNoteChange = (param) => {
                                                         </div>
                                                         <div>
                                                             <label>P&L(g)</label>
-                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds) }}
+                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds)
+                                                                }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -735,29 +731,30 @@ const tradeNoteChange = (param) => {
                                     <div class="col-12 table-responsive">
                                         <nav>
                                             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-                                                <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true">Trades
+                                                <button class="nav-link" v-bind:id="'trades-' + index"
+                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#tradesNav-' + index"
+                                                    type="button" role="tab" aria-controls="nav-overview"
+                                                    aria-selected="true">Trades
                                                 </button>
 
-                                                <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true">Blotter
+                                                <button class="nav-link" v-bind:id="'blotter-' + index"
+                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#blotterNav-' + index"
+                                                    type="button" role="tab" aria-controls="nav-overview"
+                                                    aria-selected="true">Blotter
                                                 </button>
 
                                                 <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
-                                                    v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
+                                                    v-bind:class="[getScreenshotsLength(itemTrade) > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="getScreenshotsLength(itemTrade) > 0"
                                                         class="txt-small">
-                                                        ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                            itemTrade.dateUnix).length }})</span>
+                                                        ({{ getScreenshotsLength(itemTrade) }})</span>
                                                 </button>
 
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:data-bs-target="'#diariesNav-' + index" type="button"
+                                                    role="tab" aria-controls="nav-overview" aria-selected="true"
                                                     v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
@@ -797,7 +794,7 @@ const tradeNoteChange = (param) => {
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
 
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
-                                                                trade.strategy.slice(1) }}</td>
+        trade.strategy.slice(1) }}</td>
 
                                                             <!--Entry-->
                                                             <td><span v-if="trade.tradesCount == 0"><span
@@ -819,16 +816,19 @@ const tradeNoteChange = (param) => {
                                                             <!--P&L/Vol-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span
-                                                                    v-else-if="trade.type == 'forex'">-</span><span v-else
+                                                                    v-else-if="trade.type == 'forex'">-</span><span
+                                                                    v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                                        useTwoDecCurrencyFormat(trade.grossSharePL) }}</span>
+        useTwoDecCurrencyFormat(trade.grossSharePL)
+    }}</span>
                                                             </td>
 
                                                             <!--P&L-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span v-else
                                                                     v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                                    {{ useTwoDecCurrencyFormat(trade.netProceeds) }}</span>
+                                                                    {{ useTwoDecCurrencyFormat(trade.netProceeds)
+                                                                    }}</span>
                                                             </td>
 
                                                             <!--TAGS-->
@@ -837,18 +837,19 @@ const tradeNoteChange = (param) => {
                                                                     v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
-                                                                        :style="getTagColor(tag.id)">{{ tag.name
+                                                                        :style="useGetTagColor(tag.id)">{{ tag.name
                                                                         }}
                                                                     </span>
-                                                                    <span v-show="tags.tags.length > 2">+{{ tags.tags.length
-                                                                        - 2 }}</span>
+                                                                    <span v-show="tags.tags.length > 2">+{{
+        tags.tags.length
+        - 2 }}</span>
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 <span
                                                                     v-for="note in notes.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-if="note.note.length > 12">{{
-                                                                        note.note.substring(0, 12) }}...</span><span
+        note.note.substring(0, 12) }}...</span><span
                                                                         v-else>{{ note.note }}</span>
                                                                 </span>
                                                             </td>
@@ -895,7 +896,7 @@ const tradeNoteChange = (param) => {
 
                                                             <td>{{ blot.symbol }}</td>
                                                             <td>{{ useDecimalsArithmetic(blot.buyQuantity,
-                                                                blot.sellQuantity) }}</td>
+        blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ useTwoDecCurrencyFormat(blot.grossProceeds) }}</td>
@@ -915,10 +916,13 @@ const tradeNoteChange = (param) => {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="itemScreenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
-                                                    class="mb-2">
-                                                    <Screenshot :screenshot-data="itemScreenshot" show-title
-                                                        source="dailyTab" />
+                                                <div v-for="(trade) in itemTrade.trades">
+                                                    <span
+                                                        v-for="itemScreenshot in screenshots.filter(obj => obj.name == trade.id)"
+                                                        class="mb-2">
+                                                        <Screenshot :screenshot-data="itemScreenshot" show-title
+                                                            source="dailyTab" />
+                                                    </span>
                                                 </div>
                                             </div>
 
@@ -953,7 +957,8 @@ const tradeNoteChange = (param) => {
                 </div>
                 <!-- end card-->
                 <!-- ============ CALENDAR ============ -->
-                <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+                <div v-show="calendarData && !spinnerLoadingPage"
+                    class="col-12 col-xl-4 text-center mt-2 align-self-start">
                     <div class="dailyCard calCard">
                         <div class="row">
                             <Calendar />
@@ -998,10 +1003,11 @@ const tradeNoteChange = (param) => {
                                 <tr>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].symbol }}</td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].buyQuantity +
-                                        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
+        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
                                     </td>
-                                    <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' : 'Short'
-                                    }}</td>
+                                    <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' :
+        'Short'
+                                        }}</td>
 
                                     <td>
                                         <span
@@ -1010,12 +1016,12 @@ const tradeNoteChange = (param) => {
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade opened on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span><span
-                                                v-else>Closed<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                                    data-bs-html="true"
+                                                v-else>Closed<i class="ps-1 uil uil-info-circle"
+                                                    data-bs-toggle="tooltip" data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade closed on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)"></i></span></span><span
                                             v-else>{{
-                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-                                            }}<span
+        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+    }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1026,10 +1032,10 @@ const tradeNoteChange = (param) => {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-                                            }}</span><span v-else>{{
-    useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
-}}<span
+        (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
+    }}</span><span v-else>{{
+            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
+        }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1040,31 +1046,32 @@ const tradeNoteChange = (param) => {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else>{{
-                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
-                                            }}</span></td>
+        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
+    }}</span></td>
 
 
                                     <!--Exit Price-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
-                                            }}</span><span v-else>{{
-    useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
-}}</span></td>
+        (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
+    }}</span><span v-else>{{
+            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
+        }}</span></td>
 
                                     <!--Duration-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else><span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{
-                                                    useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-                                                        -
-                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</span><span
-                                                v-else>{{
-                                                    useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
-                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-                                                }}</span></span>
+        useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+            -
+            filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+    }}</span><span v-else>{{
+            useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                -
+                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+        }}</span></span>
                                     </td>
 
                                     <!--P&L/Vol-->
@@ -1074,8 +1081,8 @@ const tradeNoteChange = (param) => {
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'"></span><span
                                             v-else
                                             v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
-                                            }}</span>
+        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
+    }}</span>
                                     </td>
 
                                     <!--P&L-->
@@ -1084,8 +1091,8 @@ const tradeNoteChange = (param) => {
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                             {{
-                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
-                                            }}</span>
+        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
+    }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1115,7 +1122,7 @@ const tradeNoteChange = (param) => {
                                             <div class="form-control dropdown form-select" style="height: auto;">
                                                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                                     <span v-for="(tag, index) in tradeTags" :key="index"
-                                                        class="tag txt-small" :style="getTagColor(tag.id)"
+                                                        class="tag txt-small" :style="useGetTagColor(tag.id)"
                                                         @click="tradeTagsChange('remove', index)">
                                                         {{ tag.name }}<span class="remove-tag">×</span>
                                                     </span>
@@ -1132,7 +1139,8 @@ const tradeNoteChange = (param) => {
                                             <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
                                                 :style="[!showTagsList ? 'border: none;' : '']">
                                                 <span v-show="showTagsList" v-for="group in availableTags">
-                                                    <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
+                                                    <h6 class="p-1 mb-0"
+                                                        :style="'background-color: ' + group.color + ';'"
                                                         v-show="filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
                                                         {{ group.name }}</h6>
                                                     <li v-for="(suggestion, index) in filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"

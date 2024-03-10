@@ -62,6 +62,28 @@ export async function useGetExcursions() {
  * 
  * TAGS 
  ****************************************/
+export const useGetTagColor = (param) => {
+    const findGroupColor = (tagId) => {
+        for (let obj of availableTags) {
+            for (let tag of obj.tags) {
+                if (tag.id === tagId) {
+                    return obj.color;
+                }
+            }
+        }
+
+        let color = "#6c757d"
+        if (availableTags.length > 0) {
+            color = availableTags.filter(obj => obj.id == "group_0")[0].color
+        }
+        return color // Return ungroupcolor if no result
+    }
+
+    const tagIdToFind = param;
+    const groupColor = findGroupColor(tagIdToFind);
+
+    return "background-color: " + groupColor + ";"
+}
 
 export async function useGetTags() {
     return new Promise(async (resolve, reject) => {
@@ -88,7 +110,7 @@ export async function useGetTags() {
 
             }
         }
-        //console.log("  --> Tags " + JSON.stringify(tags))
+        console.log("  --> Tags " + JSON.stringify(tags))
         resolve()
 
     })

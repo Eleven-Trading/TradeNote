@@ -817,7 +817,7 @@ export async function useMountScreenshots() {
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
     await useGetSelectedRange()
-    await Promise.all([useGetPatterns(), useGetMistakes(), useGetTags(), useGetAvailableTags()])
+    await Promise.all([useGetTags(), useGetAvailableTags()])
     await useGetSetups()
     await useGetScreenshots()
     await console.timeEnd("  --> Duration mount screenshots")
@@ -1000,13 +1000,7 @@ export async function useSetValues() {
             if (selectedTagsNull) {
                 console.log("selected tags is null ")
                 selectedTags.value.push("t000t")
-                let activeTags = patterns.filter(obj => obj.active == true)
-                //console.log("active Tags " + JSON.stringify(activeTags))
-                if (activeTags) {
-                    activeTags.forEach(element => {
-                        selectedTags.value.push(element.id)
-                    });
-                }
+
                 tags.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
                 localStorage.setItem('selectedTags', selectedTags.value)
                 console.log("selectedTags " + JSON.stringify(selectedTags.value))
