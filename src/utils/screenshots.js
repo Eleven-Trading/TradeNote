@@ -1,6 +1,5 @@
-import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags } from '../stores/globals.js'
-import { useInitTab, useLoadMore } from './utils';
+import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags } from '../stores/globals.js'
+import { useLoadMore } from './utils';
 
 let screenshotsQueryLimit = 4
 
@@ -371,21 +370,9 @@ export async function useSaveScreenshot() {
         screenshot.side ? screenshot.name = "t" + screenshot.dateUnix + "_" + screenshot.symbol + "_" + screenshot.side : screenshot.name = screenshot.dateUnix + "_" + screenshot.symbol
         //console.log("name " + screenshot.name)
 
-        /*
-        UPDATE setups
-        //updating variables used in dailyMixin
-        //Pattern and mistake are already updated on change/input
-        */
-        tradeSetupId.value = screenshot.name
-        tradeSetupDateUnix.value = screenshot.dateUnix
-        tradeSetupDateUnixDay.value = dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix()
-
-
 
         /* UPLOAD SCREENSHOT */
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups() //here no param true because we get patterns on next page, after add screenshot page
-        }
+
         await useUploadScreenshotToParse()
 
         resolve()
@@ -491,12 +478,6 @@ export async function useUploadScreenshotToParse() {
 export async function useDeleteScreenshot(param1, param2) {
     console.log(" -> Selected item " + selectedItem.value)
     //console.log("screenshot "+JSON.stringify(screenshots))
-
-    /* First, let's delete setups */
-    let setupToDelete = screenshots.filter(obj => obj.objectId == screenshots)[0]
-    //console.log("setupToDelete "+JSON.stringify(setupToDelete))
-    //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
-    if (setupToDelete) await useDeleteSetup(setupToDelete.dateUnixDay, setupToDelete.name)
 
     /* Now, let's delete screenshot */
     const parseObject = Parse.Object.extend("screenshots");

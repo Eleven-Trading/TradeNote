@@ -22,51 +22,6 @@ export const saveButton = ref(false)
 export const latestVersion = ref()
 export const windowIsScrolled = ref()
 
-/**************************************
-* PATTERNS, MISTAKES & SETUPS
-**************************************/
-export const patterns = reactive([])
-export const mistakes = reactive([])
-export const setups = reactive([])
-
-export const screenshot = reactive({
-    "side": null,
-    "type": null
-})
-export const tradeSetupChanged = ref(false)
-export const tradeSetupDateUnixDay = ref(null)
-export const tradeSetupDateUnix = ref(null)
-export const tradeSetupId = ref(null)
-
-//Used in settings
-export const patternUpdate = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const mistakeUpdate = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-
-export const patternNew = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const mistakeNew = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const activePatterns = reactive([])
-export const activeMistakes = reactive([])
-
 
 /**************************************
 * LOADING AND MOUNTING
@@ -2886,6 +2841,10 @@ export const tradeNoteId = ref(null)
 * SCREENSHOTS
 **************************************/
 export const screenshots = reactive([])
+export const screenshot = reactive({
+    "side": null,
+    "type": null
+})
 export const tradeScreenshotChanged = ref(false)
 export const markerAreaOpen = ref(false)
 export const screenshotsNames = reactive([])
@@ -3052,9 +3011,6 @@ export const plSatisfaction = ref([{
     label: "Satisfaction"
 }
 ])
-
-export const selectedPatterns = localStorage.getItem('selectedPatterns') ? ref(localStorage.getItem('selectedPatterns').split(",")) : ref([])
-export const selectedMistakes = localStorage.getItem('selectedMistakes') ? ref(localStorage.getItem('selectedMistakes').split(",")) : ref([])
 
 export const selectedTags = localStorage.getItem('selectedTags') ? ref(localStorage.getItem('selectedTags').split(",")) : ref([])
 

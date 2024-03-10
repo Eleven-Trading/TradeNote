@@ -184,7 +184,7 @@ const startIndex = async () => {
             //console.log("Class name " + getExistingSchema[i].className)
 
             //we check for classes/collections that need to be renamed
-            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals" || getExistingSchema[i].className == "patternsMistakes") {
+            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
                 let oldName = getExistingSchema[i].className
                 let newName
 

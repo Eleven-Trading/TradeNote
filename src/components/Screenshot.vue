@@ -12,7 +12,7 @@ const props = defineProps({
     index: Number
 })
 
-console.log(" -> Source " + props.source)
+//console.log(" -> Source " + props.source)
 
 </script>
 
@@ -57,8 +57,6 @@ console.log(" -> Source " + props.source)
                         <span v-show="tags.tags.length > 2">+{{
             tags.tags.length
             - 2 }}</span></span>
-
-                    <span>{{ props.screenshotData.mistakeName }}</span>
                 </div>
 
                 <!-- Right: tools -->

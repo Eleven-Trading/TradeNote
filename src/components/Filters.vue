@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onBeforeMount } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily, useCheckVisibleScreen } from "../utils/utils.js";
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, activeMistakes, activePatterns, hasData, selectedTags, tags, availableTags } from "../stores/globals"
+import { pageId, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, hasData, selectedTags, tags, availableTags } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
 
@@ -109,29 +109,6 @@ function filtersClick() {
         selectedMonth.value = JSON.parse(localStorage.getItem('selectedMonth'))
         //console.log(" Selected Month " + JSON.stringify(selectedMonth))
 
-        // Restore selected patterns
-        if (localStorage.getItem('selectedPatterns')) {
-            if (localStorage.getItem('selectedPatterns').includes(",")) {
-                selectedPatterns.value = localStorage.getItem('selectedPatterns').split(",")
-            } else {
-                selectedPatterns.value = []
-                selectedPatterns.value.push(localStorage.getItem('selectedPatterns'))
-            }
-        } else {
-            selectedPatterns.value = []
-        }
-
-        if (localStorage.getItem('selectedMistakes')) {
-            if (localStorage.getItem('selectedMistakes').includes(",")) {
-                selectedMistakes.value = localStorage.getItem('selectedMistakes').split(",")
-            } else {
-                selectedMistakes.value = []
-                selectedMistakes.value.push(localStorage.getItem('selectedMistakes'))
-            }
-        } else {
-            selectedMistakes.value = []
-        }
-
         if (localStorage.getItem('selectedTags')) {
             if (localStorage.getItem('selectedTags').includes(",")) {
                 selectedTags.value = localStorage.getItem('selectedTags').split(",")
@@ -229,10 +206,6 @@ async function saveFilter() {
         localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     }
 
-    //localStorage.setItem('selectedPatterns', selectedPatterns.value)
-
-    //localStorage.setItem('selectedMistakes', selectedMistakes.value)
-
     localStorage.setItem('selectedTags', selectedTags.value)
 
     if (tempSelectedPlSatisfaction.value != null) {
@@ -302,19 +275,6 @@ async function saveFilter() {
                     <span v-show="filters[pageId].includes('ratio')">
                         {{ selectedRatio.toUpperCase() }} |
                     </span>
-
-                    <!--<span v-show="filters[pageId].includes('patterns')">
-                        <span v-if="activePatterns.length + 1 == selectedPatterns.length">All
-                            patterns |</span>
-                        <span v-else>Selected patterns |</span>
-                    </span>
-
-                    <span v-show="filters[pageId].includes('mistakes')">
-                        <span v-if="activeMistakes.length + 1 == selectedMistakes.length">All
-                            mistakes |</span>
-                        <span v-else>Selected mistakes <span
-                                v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
-                    </span>-->
 
                     <span v-show="filters[pageId].includes('tags')">
                         <span v-if="tags.length == selectedTags.length">All
@@ -443,44 +403,6 @@ async function saveFilter() {
                             :selected="item.value == selectedRatio">{{ item.label }}</option>
                     </select>
                 </div>
-
-                <!-- Patterns
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
-                    v-show="pageId != 'calendar'">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">Patterns <span class="dashInfoTitle">({{ selectedPatterns.length
-                        }})</span></button>
-                    <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="p000p"
-                            v-model="selectedPatterns">&nbsp;&nbsp;No Tag
-                        <hr>
-                        <div v-for="item in patterns.filter(obj => obj.active == true)" :key="item.objectId"
-                            class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.objectId"
-                                v-model="selectedPatterns">
-                            {{ item.name }}
-                        </div>
-                    </ul>
-                </div>
-
-                Mistakes
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
-                    v-show="pageId != 'calendar'">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">Mistakes <span class="dashInfoTitle">({{ selectedMistakes.length
-                        }})</span></button>
-                    <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="m000m"
-                            v-model="selectedMistakes">&nbsp;&nbsp;No Tag
-                        <hr>
-                        <div v-for="item in mistakes.filter(obj => obj.active == true)" :key="item.objectId"
-                            class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.objectId"
-                                v-model="selectedMistakes">
-                            {{ item.name }}
-                        </div>
-                    </ul>
-                </div>-->
 
                 <!-- P&L / Satisfaction  -->
                 <div :class="[pageId == 'daily' ? 'col-4' : 'col-3']" v-show="pageId == 'calendar'">

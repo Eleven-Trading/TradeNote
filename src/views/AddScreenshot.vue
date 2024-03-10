@@ -2,15 +2,13 @@
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Screenshot from '../components/Screenshot.vue'
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade, pageId } from '../stores/globals';
-import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, screenshot, spinnerLoadingPage, timeZoneTrade, pageId } from '../stores/globals';
+import { useSaveScreenshot, useSetupImageUpload} from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
-import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
     await getScreenshotToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
@@ -75,22 +73,7 @@ async function getScreenshotToEdit(param) {
         } else {
             screenshot.type = "setup"
         }
-        for (let index = 0; index < setups.length; index++) {
-            const element = setups[index];
-            if (element.tradeId == screenshot.name) {
-                //console.log("element "+JSON.stringify(element))
-                //console.log("pattern "+element.pattern.objectId)
-                //console.log("mistake "+element.mistake.objectId)
-                if (element.pattern != null) {
-                    screenshot.pattern = element.pattern.objectId
-                }
-                if (element.mistake != null) {
-                    screenshot.mistake = element.mistake.objectId
-                }
-            }
 
-
-        }
 
     } else {
         console.log(' -> No screenshot to edit')
@@ -132,22 +115,9 @@ async function getScreenshotToEdit(param) {
                             <option v-for="item in entrySide" v-bind:value="item.value">{{ item.label }}</option>
                         </select>
                     </div>
-                    <!-- Patterns -->
-                    <div class="col">
-                        <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')" class="form-select">
-                            <option value='null' selected>Pattern</option>
-                            <option v-for="item in patterns.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == screenshot.pattern">{{ item.name }}</option>
-                        </select>
-                    </div>
-                    <!-- Mistakes -->
-                    <div class="col">
-                        <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')" class="form-select">
-                            <option value='null' selected>Mistake</option>
-                            <option v-for="item in mistakes.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == screenshot.mistake">{{ item.name }}</option>
-                        </select>
-                    </div>
+
+                    <!-- Tags -->
+                    
 
                 </div>
             </div>
