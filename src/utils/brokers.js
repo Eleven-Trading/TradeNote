@@ -13,7 +13,7 @@ export async function useBrokerTradeZero(param) {
             //we need to recreate the JSON with proper date format + we simplify
             tradesData.length = 0
             papaParse.data.forEach(element => {
-                if (element.Type == ""){
+                if (element.Type == "") {
                     element.Type = "stock"
                 }
                 tradesData.push(JSON.parse(JSON.stringify(element)))
@@ -617,13 +617,13 @@ export async function useBrokerInteractiveBrokers(param) {
                     if (element["Buy/Sell"] == "SELL" && (element["Code"].includes("O"))) {
                         temp.Side = "SS"
                     }
-                    
-                    if(temp.Type == "stock"){
-                        temp.Symbol = element["Symbol"]    
-                    }else{
+
+                    if (temp.Type == "stock") {
+                        temp.Symbol = element["Symbol"]
+                    } else {
                         temp.Symbol = element["UnderlyingSymbol"]
                     }
-                    
+
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
                     temp.Price = element.Price
 
@@ -841,7 +841,7 @@ export async function useBrokerHeldentrader(param) {
             let tempLines = lines.slice(lineNumber)
 
             // 2- Remove and store the header
-            let header = tempLines.shift(); 
+            let header = tempLines.shift();
 
             // 3- Reverse the order of lines (excluding the header)
             let reversedLines = tempLines.reverse();
@@ -856,15 +856,15 @@ export async function useBrokerHeldentrader(param) {
                     break;
                 }
             }
-           
+
             let tempReversedLines = reversedLines.slice(lineNumberTotal)
-            
+
             // 5- Re-add the header to the top
             tempReversedLines.unshift(header);
 
             // 6- Recreate the csv
             param = tempReversedLines.join('\n');
-            
+
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
@@ -1074,7 +1074,7 @@ export async function useRithmic(param) {
         try {
             tradesData.length = 0
             const lines = param.split('\n');
-            console.log(" lines " + lines)
+            //console.log(" lines " + lines)
 
             let found = false
             let lineNumber = 0
@@ -1101,7 +1101,16 @@ export async function useRithmic(param) {
                 if (tempExec.Status == "Filled") {
                     let temp = {}
                     temp.Account = tempExec.Account
-                    let dateTime = tempExec["Create Time"].split(" ")
+
+                    let tempCreateTime = tempExec["Create Time"]
+                    for (const key in tempExec) {
+                        if (Object.hasOwnProperty.call(tempExec, key) && key.includes("Create Time")) {
+                            tempCreateTime = tempExec[key]
+                        }
+                    }
+                    //console.log(" tempCreateTime " + tempCreateTime)
+
+                    let dateTime = tempCreateTime.split(" ")
                     let month = dateTime[0].split("-")[1]
                     let day = dateTime[0].split("-")[2]
                     let year = dateTime[0].split("-")[0]
@@ -1148,7 +1157,7 @@ export async function useRithmic(param) {
                     temp["Exec Time"] = dateTime[1]
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    //console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
                     if (contractSpecs.length == 0) {
                         reject("Missing information for future symbol " + temp.Symbol)
                     }
@@ -1186,7 +1195,7 @@ export async function useRithmic(param) {
 
 
             }
-            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
