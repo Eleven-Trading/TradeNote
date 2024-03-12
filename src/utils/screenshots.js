@@ -1,64 +1,31 @@
-import { useDeleteSetup, useUpdateSetups } from '../utils/setups'
-import { selectedPatterns, selectedMistakes, setups, selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, tradeSetupId, tradeSetupDateUnix, tradeSetupDateUnixDay, endOfList, screenshotsPagination, selectedItem, tradeSetupChanged, activePatterns, activeMistakes, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, getMore } from '../stores/globals.js'
-import { useInitTab, useLoadMore } from './utils';
+import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags } from '../stores/globals.js'
+import { useLoadMore } from './utils';
+import { useUpdateTags } from './daily.js';
 
-let screenshotsQueryLimit = 4
+screenshotsQueryLimit.value = 4
 
 export function useGetScreenshotsPagination() {
     if (sessionStorage.getItem('screenshotsPagination')) {
-        screenshotsQueryLimit = Number(sessionStorage.getItem('screenshotsPagination'))
+        screenshotsQueryLimit.value = Number(sessionStorage.getItem('screenshotsPagination'))
         sessionStorage.removeItem('screenshotsPagination');
     }
 }
 
 export async function useGetScreenshots(param) {
     console.log("\nGETTING SCREENSHOTS")
-    //console.log(" -> Selected patterns " + selectedPatterns.value)
-    //console.log("patterns "+JSON.stringify(patterns))
-    //console.log("patternsmistakes "+JSON.stringify(setups))
-
-    //we need to reverse the logic and exclude in the query the patterns and mistakes that are unselected
-    //console.log("selectePatters "+selectedPatterns.value)
-    //console.log("active patterns "+JSON.stringify(activePatterns))
-    let exclPatterns = activePatterns.filter(x => !selectedPatterns.value.includes(x.objectId));
-    //console.log(" -> Excluded patterns "+JSON.stringify(exclPatterns))
-    let exclMistakes = activeMistakes.filter(x => !selectedMistakes.value.includes(x.objectId));
-    //console.log(" -> Excluded mistakes "+JSON.stringify(exclMistakes))
-
-    let allSetupsIds = []
-    let excludedIds = []
-    setups.forEach(element => {
-        allSetupsIds.push(element.tradeId)
-        //console.log(" - element mistake "+element.mistake)
-        if ((element.pattern != null && exclPatterns.some(obj => obj.objectId == element.pattern.objectId)) || (element.mistake != null && exclMistakes.some(obj => obj.objectId == element.mistake.objectId))) {
-            //console.log("  --> Trade id to exclude " + element.tradeId)
-            excludedIds.push(element.tradeId)
-        }
-    });
 
     return new Promise(async (resolve, reject) => {
-        //console.log(" -> selectedPatterns " + selectedPatterns.value)
-        //console.log(" -> screenshotsPagination (start)" + screenshotsPagination);
-        //console.log(" selected start date " + selectedMonth.value.start)
         const parseObject = Parse.Object.extend("screenshots");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
-        /*if (pageId.value == "screenshots") {
-            query.exclude("originalBase64");
-        }*/
-        query.notContainedIn("name", excludedIds) // Query not including excluded ids
-
-        if (!selectedPatterns.value.includes("p000p") && !selectedMistakes.value.includes("m000m")) { // if void has been excluded, then only query screenshots that are in setups table
-            query.containedIn("name", allSetupsIds)
-        }
 
         if (param) { // if param == true then we're not on screenshots page
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
         } else {
-            query.limit(screenshotsQueryLimit);
+            query.limit(screenshotsQueryLimit.value);
             query.skip(screenshotsPagination.value)
         }
 
@@ -67,37 +34,56 @@ export async function useGetScreenshots(param) {
             //console.log("results " + JSON.stringify(results))
             if (results.length > 0) {
                 let parsedResult = JSON.parse(JSON.stringify(results))
-                parsedResult.forEach(element => {
-                    screenshotsNames.push(element.name)
-                });
-
+                //console.log(" parsedResult "+JSON.stringify(parsedResult))
                 if (pageId.value == "daily") {
                     //on daily page, when need to reset setups or else after new screenshot is added, it apreaeed double. 
                     //However, on screenshots page, we need to add to setups on new image / page load on scroll
                     screenshots.length = 0
                 }
-                parsedResult.forEach(element => {
-                    let setup
-                    for (let index = 0; index < setups.length; index++) {
-                        const element2 = setups[index];
-                        if (element2.tradeId == element.name) {
-                            setup = element2
-                        }
 
-                    }
-                    //let setup = setups.filter(obj => obj.tradeId == element.name )
-                    if (setup) {
-                        if (setup.hasOwnProperty("pattern") && setup.pattern != null) {
-                            element.patternName = " | " + setup.pattern.name
+                parsedResult.forEach(element => {
+                    console.log(" element " + JSON.stringify(element.objectId))
+                    let tradeTagsSelected = false
+                    let selectedTagsArray = Object.values(selectedTags.value)
+                    let index = tags.findIndex(obj => obj.tradeId == element.name)
+                    if (index != -1) {
+                        console.log(" -> Screenshot id in tags...")
+                        //console.log(" -> selected tags "+Object.values(selectedTags.value))
+                        //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
+                        //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
+                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))) {
+                            console.log(" and with selected tags")
+                            tradeTagsSelected = true
+                        } else {
+                            console.log(" but with tags array length 0")
+                            if (selectedTagsArray.includes("t000t")) {
+                                console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                                tradeTagsSelected = true
+                            } else {
+                                console.log(" but with no selected tags")
+                            }
                         }
-                        if (setup.hasOwnProperty("mistake") && setup.mistake != null) {
-                            //console.log("setup mistake "+JSON.stringify(setup[0]))
-                            element.mistakeName = " | " + setup.mistake.name
+                    } else {
+                        console.log(" -> Screenshot not in tags...")
+                        if (selectedTagsArray.includes("t000t")) {
+                            console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                            tradeTagsSelected = true
                         }
-                        //console.log(" patternname " + element.patternName)
                     }
-                    screenshots.push(element)
-                });
+
+                    const pushScreenshots = () => {
+                        screenshotsNames.push(element.name)
+                        screenshots.push(element)
+                    }
+
+                    if (pageId.value == "daily") {
+                        pushScreenshots()
+                    } else {
+                        if (tradeTagsSelected) {
+                            pushScreenshots()
+                        }
+                    }
+                })
 
             } else {
                 if (pageId.value == "screenshots") {
@@ -107,12 +93,14 @@ export async function useGetScreenshots(param) {
 
 
             //console.log(" -> Screenshots " + JSON.stringify(screenshots))
-            screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit
+            screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit.value
+            console.log(" screenshotsNames " + JSON.stringify(screenshotsNames))
             spinnerSetups.value = false //spinner for trades in daily
             //spinnerLoadMore.value = false
             if (pageId.value != "daily") {
                 await (spinnerLoadingPage.value = false) // need await or else scroll to screenshot doesn't work
             }
+
 
         }).then(() => {
             if (sessionStorage.getItem('screenshotIdToEdit') && pageId.value == "screenshots") useScrollToScreenshot()
@@ -148,8 +136,8 @@ async function imgFileReader(param) {
 }
 
 export async function useSetupImageUpload(event, param1, param2, param3) {
+    tradeScreenshotChanged.value = true
     if (pageId.value == "daily") {
-        tradeScreenshotChanged.value = true
         saveButton.value = true
         dateScreenshotEdited.value = true
 
@@ -349,24 +337,31 @@ export function useExpandScreenshot(param1, param2) {
         expandedId.value = null
     }
 }
-export function useScreenshotUpdateDate(event) {
-    if (editingScreenshot.value) {
-        dateScreenshotEdited.value = true
-    }
-    screenshot.date = event
-    //console.log("screenshot date (local time, i.e. New York time) " + screenshot.date)
-    screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
-    //console.log("unix " + dayjs.tz(screenshot.date, timeZoneTrade.value).unix()) // we SPECIFY that it's New york time
-}
 
 export async function useSaveScreenshot() {
     console.log("\nSAVING SCREENSHOT")
     //console.log(" -> Setup to save " + JSON.stringify(screenshot))
     return new Promise(async (resolve, reject) => {
+
+        /**
+         * CHECKS
+         * **/
         if (markerAreaOpen.value == true) {
             alert("Please save your screenshot annotation")
             return
         }
+
+        if (pageId.value == "addScreenshot") {
+            if (screenshot.symbol == undefined) {
+                alert("Please add symbol")
+                return
+            }
+            if (!editingScreenshot.value && tradeScreenshotChanged.value == false) {
+                alert("Please add a screenshot")
+                return
+            }
+        }
+
         if (pageId.value == "addScreenshot") {
             spinnerLoadingPage.value = true
             //spinnerLoadingPageText.value = "Uploading screenshot ..."
@@ -390,22 +385,17 @@ export async function useSaveScreenshot() {
         screenshot.side ? screenshot.name = "t" + screenshot.dateUnix + "_" + screenshot.symbol + "_" + screenshot.side : screenshot.name = screenshot.dateUnix + "_" + screenshot.symbol
         //console.log("name " + screenshot.name)
 
-        /*
-        UPDATE setups
-        //updating variables used in dailyMixin
-        //Pattern and mistake are already updated on change/input
-        */
-        tradeSetupId.value = screenshot.name
-        tradeSetupDateUnix.value = screenshot.dateUnix
-        tradeSetupDateUnixDay.value = dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix()
-
-
 
         /* UPLOAD SCREENSHOT */
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups() //here no param true because we get patterns on next page, after add screenshot page
+        //in case it's the first time and no tags, we do not save tags
+        if (!editingScreenshot.value && tradeTags.length == 0) {
+            //console.log(" first time no tags")
+            await useUploadScreenshotToParse()
+        } else {
+            //console.log("tags")
+            await useUpdateTags()
+            await useUploadScreenshotToParse()
         }
-        await useUploadScreenshotToParse()
 
         resolve()
     })
@@ -511,12 +501,6 @@ export async function useDeleteScreenshot(param1, param2) {
     console.log(" -> Selected item " + selectedItem.value)
     //console.log("screenshot "+JSON.stringify(screenshots))
 
-    /* First, let's delete setups */
-    let setupToDelete = screenshots.filter(obj => obj.objectId == screenshots)[0]
-    //console.log("setupToDelete "+JSON.stringify(setupToDelete))
-    //console.log("setupToDelete date unix day "+setupToDelete.dateUnixDay+" and name "+setupToDelete.name)
-    if (setupToDelete) await useDeleteSetup(setupToDelete.dateUnixDay, setupToDelete.name)
-
     /* Now, let's delete screenshot */
     const parseObject = Parse.Object.extend("screenshots");
     const query = new Parse.Query(parseObject);
@@ -527,10 +511,10 @@ export async function useDeleteScreenshot(param1, param2) {
         await results.destroy()
         console.log('  --> Deleted screenshot with id ' + results.id)
         //document.location.reload()
-        if(pageId.value == 'screenshots'){
+        if (pageId.value == 'screenshots') {
             await useRefreshScreenshot()
         }
-        if(pageId.value == 'daily'){
+        if (pageId.value == 'daily') {
             let index = screenshots.findIndex(obj => obj.objectId == selectedItem.value)
             for (let key in screenshots[index]) delete screenshots[index][key]
             for (let key in screenshot) delete screenshot[key]
@@ -544,7 +528,7 @@ export async function useDeleteScreenshot(param1, param2) {
 export async function useRefreshScreenshot() {
     return new Promise(async (resolve, reject) => {
         await (spinnerLoadingPage.value = true)
-        screenshotsQueryLimit = 4
+        screenshotsQueryLimit.value = 4
         screenshotsPagination.value = 0
         screenshots.length = 0
         await useGetScreenshots()
@@ -554,7 +538,7 @@ export async function useRefreshScreenshot() {
     })
 }
 
-export async function useSelectedScreenshotFunction (param1, param2, param3) {
+export async function useSelectedScreenshotFunction(param1, param2, param3) {
     //console.log("Index "+param1)
     selectedScreenshotIndex.value = param1
     selectedScreenshotSource.value = param2

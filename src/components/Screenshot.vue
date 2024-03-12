@@ -1,7 +1,8 @@
 <script setup>
-import { selectedItem, modalDailyTradeOpen, pageId } from '../stores/globals';
+import { selectedItem, modalDailyTradeOpen, pageId, tags } from '../stores/globals';
 import { useSetupMarkerArea, useSelectedScreenshotFunction } from '../utils/screenshots';
 import { useHourMinuteFormat, useTimeFormat, useEditItem, useCreatedDateFormat } from '../utils/utils';
+import { useGetTagColor } from '../utils/daily';
 
 
 const props = defineProps({
@@ -37,23 +38,31 @@ const props = defineProps({
             <div class="row">
 
                 <!-- Left: info -->
-                <div v-if="props.source != 'addScreenshot'" class="col-6">
-                    <span>{{ props.screenshotData.symbol }}</span><span v-if="props.screenshotData.side" class="col mt-1">
+                <div v-if="props.source != 'addScreenshot' && props.source != 'dailyModal'" class="col-6">
+                    <span>{{ props.screenshotData.symbol }}</span><span v-if="props.screenshotData.side"
+                        class="col mt-1">
                         | {{ props.screenshotData.side == 'SS' || props.screenshotData.side == 'BC' ? 'Short' :
-                            'Long' }}
+            'Long' }}
                         | {{ useTimeFormat(props.screenshotData.dateUnix) }}</span>
                     <span v-else class="col mb-2"> | {{
-                        useHourMinuteFormat(props.screenshotData.dateUnix)
-                    }}</span>
+            useHourMinuteFormat(props.screenshotData.dateUnix)
+        }}</span>
 
-                    <span>{{ props.screenshotData.patternName }}</span>
 
-                    <span>{{ props.screenshotData.mistakeName }}</span>
+                    <span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
+                            v-if="tags.tags.length > 0"> | <span v-for="tag in tags.tags.slice(0, 2)" class="tag txt-small"
+                                :style="useGetTagColor(tag.id)">{{
+            tag.name
+        }}
+                            </span>
+                            <span v-show="tags.tags.length > 2">+{{
+            tags.tags.length
+            - 2 }}</span></span></span>
                 </div>
 
                 <!-- Right: tools -->
                 <div v-if="props.source != 'fullScreen'"
-                    :class="[props.source == 'addScreenshot' ? 'offset-6' : '', 'col-6 text-end']">
+                    :class="[props.source == 'addScreenshot' || props.source == 'dailyModal' ? 'offset-6' : '', 'col-6 text-end']">
 
                     <!-- Expand / fullScreen screen -->
                     <i v-if="props.screenshotData.objectId && props.source != 'addScreenshot'"
@@ -83,8 +92,8 @@ const props = defineProps({
 
     <!-- SCREENSHOTS -->
     <div :class="[pageId === 'addScreenshot' ? 'imgContainerAddScreenshot' : 'imgContainer']">
-        <img
-        :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
+        <img :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix"
+            class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
         <img class="overlayImg screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.annotatedBase64" />
 
         <!--<img v-if="props.screenshotData.markersOnly" :id="props.screenshotData.objectId ? 'screenshotDiv-' + props.source + '-' + props.screenshotData.objectId : 'screenshotDiv-' + props.source + '-' + props.screenshotData.dateUnix" class="screenshotImg mt-3 img-fluid" v-bind:src="props.screenshotData.originalBase64" />
@@ -99,4 +108,3 @@ const props = defineProps({
             v-bind:src="props.screenshotData.annotatedBase64" />-->
     </div>
 </template>
-

@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, patterns, mistakes, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
@@ -77,7 +77,7 @@ export function useECharts(param) {
         }
     }
 
-    let indexes = [1, 2, 3, 4, 7, 13, 16, 10, 15, 17] // This way.value here because I took out some charts
+    let indexes = [1, 2, 3, 4, 7, 13, 16, 17] // This way.value here because I took out some charts
     indexes.forEach(index => {
         var chartId = 'barChartNegative' + index
         if (param == "clear") {
@@ -971,21 +971,6 @@ export function useBarChartNegative(param1) {
         if (param1 == "barChartNegative7") {
             var keyObject = groups.executions
         }
-        if (param1 == "barChartNegative10") {
-            const toRemove = ['null', 'undefined'];
-            var keyObject = _.omit(groups.patterns, toRemove)
-            //console.log("filtered "+JSON.stringify(keyObject))
-        }
-        if (param1 == "barChartNegative11") {
-            const toRemove = ['null', 'undefined'];
-            var keyObject = _.omit(groups.patternTypes, toRemove)
-            //console.log("filtered "+JSON.stringify(filteredObj))
-        }
-        if (param1 == "barChartNegative15") {
-            const toRemove = ['null', 'undefined'];
-            var keyObject = _.omit(groups.mistakes, toRemove)
-            //console.log("filtered "+JSON.stringify(filteredObj))
-        }
 
         if (param1 == "barChartNegative12") {
             var keyObject = groups.shareFloat
@@ -1016,35 +1001,9 @@ export function useBarChartNegative(param1) {
         //console.log("object " + JSON.stringify(keyObject))
         //console.log("keys " + JSON.stringify(keys))
         for (const key of keys) {
-            //console.log("key " + JSON.stringify(key))
-            let pushRatio = true
-            if (param1 == "barChartNegative10") {
-                let pattern = patterns.find(item => item.objectId === key)
-                //console.log("patterns " + JSON.stringify(patterns))
-                if (pattern) {
-                    yAxis.push(pattern.name) // unshift because I'm only able to sort timeframe ascending
-                } else {
-                    pushRatio = false //this because.value I manage to remove pattern name from list, but the ratio is still calculated. So I need to mark it here
-                }
-                //console.log("yaxis "+JSON.stringify(yAxis))
 
-            } else if (param1 == "barChartNegative11") {
-                let pattern = patterns.find(item => item.type === key)
-                //console.log("patteern "+pattern)
-                yAxis.push(pattern.type) // unshift because I'm only able to sort timeframe ascending
+            yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
 
-            } else if (param1 == "barChartNegative15") {
-                var mistake = mistakes.find(item => item.objectId === key)
-                //console.log("mistakes "+mistakes)
-                if (mistake) {
-                    yAxis.push(mistake.name) // unshift because I'm only able to sort timeframe ascending
-                } else {
-                    pushRatio = false //not sure this is.value needed for mistake
-                }
-
-            } else {
-                yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
-            }
             //console.log("yaxis "+JSON.stringify(yAxis))
 
             var sumWinsCount = 0
@@ -1117,14 +1076,12 @@ export function useBarChartNegative(param1) {
                     if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
                         series.unshift(ratio)
                     }
-                    if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15") {
-                        if (pushRatio) series.push(ratio)
-                    }
+
                 }
             })
         }
 
-        if (param1 == "barChartNegative10" || param1 == "barChartNegative11" || param1 == "barChartNegative15" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
+        if (param1 == "barChartNegative16" || param1 == "barChartNegative17") {
             //1) combine the arrays:
             var list = [];
             for (var j = 0; j < series.length; j++)
@@ -1623,7 +1580,7 @@ export function useCandlestickChart(param1, param2, param3) { //
                     end: 100,
                     preventDefaultMouseMove: false
                 },
-               
+
             ],
             xAxis: {
                 data: param1,

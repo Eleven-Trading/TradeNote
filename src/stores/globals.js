@@ -22,52 +22,6 @@ export const saveButton = ref(false)
 export const latestVersion = ref()
 export const windowIsScrolled = ref()
 
-/**************************************
-* PATTERNS, MISTAKES & SETUPS
-**************************************/
-export const patterns = reactive([])
-export const mistakes = reactive([])
-export const setups = reactive([])
-
-export const screenshot = reactive({
-    "side": null,
-    "type": null
-})
-export const tradeSetupChanged = ref(false)
-export const tradeSetupDateUnixDay = ref(null)
-export const tradeSetupDateUnix = ref(null)
-export const tradeSetupId = ref(null)
-
-//Used in settings
-export const patternUpdate = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const mistakeUpdate = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-
-export const patternNew = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const mistakeNew = reactive({
-    edit: null,
-    name: null,
-    description: null,
-    active: null
-})
-export const activePatterns = reactive([])
-export const activeMistakes = reactive([])
-
-
 
 /**************************************
 * LOADING AND MOUNTING
@@ -90,6 +44,8 @@ export const renderingCharts = ref(true) // this is for spinner
 export const spinnerSetups = ref(true)
 export const spinnerSetupsText = ref()
 
+//Legacy 
+export const legacy = reactive([])
 
 /**************************************
 * MODALS
@@ -2835,6 +2791,8 @@ export const daily = reactive({})
 export const dailyPagination = ref(0)
 export const dailyQueryLimit = ref(3)
 
+export const tradesModal = ref(null)
+
 export const itemTradeIndex = ref()
 export const tradeIndex = ref()
 export const tradeIndexPrevious = ref()
@@ -2849,22 +2807,51 @@ export const tradeSatisfactionChanged = ref(false)
 export const tradeSatisfactionDateUnix = ref()
 export const tradeSatisfactionId = ref()
 export const editingScreenshot = ref(false)
+
+export const excursions = reactive([])
 export const tradeExcursionChanged = ref(false)
 export const tradeExcursionId = ref()
 export const tradeExcursionDateUnix = ref()
 
 export const satisfactionTradeArray = reactive([])
 export const satisfactionArray = reactive([])
-export const excursions = reactive([])
+
+
+//TAGS
+export const tags = reactive([]) //all tags, from useGetTags
+export const tradeTags = reactive([]) // on daily page, tags of a specific trade (when push modal)
+export const newTradeTags = reactive([])
+export const availableTags = reactive([])
+export const tradeTagsChanged = ref(false)
+export const tagInput = ref('');
+export const selectedTagIndex = ref(-1)
+export const showTagsList = ref(false)
+export const tradeTagsId = ref()
+export const tradeTagsDateUnix = ref()
+export const availableTagsArray = reactive([])
+
+//NOTES
+export const notes = reactive([])
+export const tradeNote = ref(null)
+export const tradeNoteChanged = ref(false)
+export const tradeNoteDateUnixDay = ref(null)
+export const tradeNoteDateUnix = ref(null)
+export const tradeNoteId = ref(null)
+
 /**************************************
 * SCREENSHOTS
 **************************************/
 export const screenshots = reactive([])
+export const screenshot = reactive({
+    "side": null,
+    "type": null
+})
 export const tradeScreenshotChanged = ref(false)
 export const markerAreaOpen = ref(false)
 export const screenshotsNames = reactive([])
 export const dateScreenshotEdited = ref(false)
 export const screenshotsPagination = ref(0)
+export const screenshotsQueryLimit = ref(4)
 export const resizeCompressImg = ref(false)
 export const resizeCompressMaxWidth = ref(1000)
 export const resizeCompressMaxHeight = ref(1000)
@@ -3027,9 +3014,7 @@ export const plSatisfaction = ref([{
 }
 ])
 
-export const selectedPatterns = localStorage.getItem('selectedPatterns') ? ref(localStorage.getItem('selectedPatterns').split(",")) : ref([])
-export const selectedMistakes = localStorage.getItem('selectedMistakes') ? ref(localStorage.getItem('selectedMistakes').split(",")) : ref([])
-
+export const selectedTags = localStorage.getItem('selectedTags') ? ref(localStorage.getItem('selectedTags').split(",")) : ref([])
 
 export const selectedPositions = localStorage.getItem('selectedPositions') ? ref(localStorage.getItem('selectedPositions').split(",")) : ref([])
 export const selectedTimeFrame = ref(localStorage.getItem('selectedTimeFrame'))

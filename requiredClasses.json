@@ -44,6 +44,12 @@
             },
             "timeZone": {
                 "type": "String"
+            },
+            "tags": {
+                "type": "Array"
+            },
+            "legacy": {
+                "type": "Array"
             }
         },
         "classLevelPermissions": {
@@ -228,158 +234,6 @@
             "date": {
                 "type": "Date",
                 "required": false
-            }
-        },
-        "classLevelPermissions": {
-            "find": {
-                "*": true
-            },
-            "count": {
-                "*": true
-            },
-            "get": {
-                "*": true
-            },
-            "create": {
-                "*": true
-            },
-            "update": {
-                "*": true
-            },
-            "delete": {
-                "*": true
-            },
-            "addField": {
-                "*": true
-            },
-            "protectedFields": {
-                "*": []
-            }
-        },
-        "indexes": {
-            "_id_": {
-                "_id": 1
-            }
-        }
-    },
-    {
-        "className": "patterns",
-        "fields": {
-            "objectId": {
-                "type": "String"
-            },
-            "createdAt": {
-                "type": "Date"
-            },
-            "updatedAt": {
-                "type": "Date"
-            },
-            "ACL": {
-                "type": "ACL"
-            },
-            "user": {
-                "type": "Pointer",
-                "targetClass": "_User",
-                "required": false
-            },
-            "name": {
-                "type": "String",
-                "required": false
-            },
-            "dateUnix": {
-                "type": "Number",
-                "required": false
-            },
-            "date": {
-                "type": "Date",
-                "required": false
-            },
-            "side": {
-                "type": "String",
-                "required": false
-            },
-            "type": {
-                "type": "String",
-                "required": false
-            },
-            "note": {
-                "type": "String",
-                "required": false
-            },
-            "order": {
-                "type": "Number",
-                "required": false
-            },
-            "active": {
-                "type": "Boolean"
-            }
-        },
-        "classLevelPermissions": {
-            "find": {
-                "*": true
-            },
-            "count": {
-                "*": true
-            },
-            "get": {
-                "*": true
-            },
-            "create": {
-                "*": true
-            },
-            "update": {
-                "*": true
-            },
-            "delete": {
-                "*": true
-            },
-            "addField": {
-                "*": true
-            },
-            "protectedFields": {
-                "*": []
-            }
-        },
-        "indexes": {
-            "_id_": {
-                "_id": 1
-            }
-        }
-    },
-    {
-        "className": "mistakes",
-        "fields": {
-            "objectId": {
-                "type": "String"
-            },
-            "createdAt": {
-                "type": "Date"
-            },
-            "updatedAt": {
-                "type": "Date"
-            },
-            "ACL": {
-                "type": "ACL"
-            },
-            "user": {
-                "type": "Pointer",
-                "targetClass": "_User",
-                "required": false
-            },
-            "name": {
-                "type": "String",
-                "required": false
-            },
-            "description": {
-                "type": "String",
-                "required": false
-            },
-            "order": {
-                "type": "Number",
-                "required": false
-            },
-            "active": {
-                "type": "Boolean"
             }
         },
         "classLevelPermissions": {
@@ -779,7 +633,7 @@
         }
     },
     {
-        "className": "setups",
+        "className": "satisfactions",
         "fields": {
             "objectId": {
                 "type": "String"
@@ -798,28 +652,14 @@
                 "targetClass": "_User",
                 "required": false
             },
-            "pattern": {
-                "type": "Pointer",
-                "targetClass": "patterns",
-                "required": false
-            },
-            "mistake": {
-                "type": "Pointer",
-                "targetClass": "mistakes",
-                "required": false
+            "dateUnix": {
+                "type": "Number"
             },
             "tradeId": {
                 "type": "String"
             },
-            "note": {
-                "type": "String",
-                "required": false
-            },
-            "dateUnix": {
-                "type": "Number"
-            },
-            "dateUnixDay": {
-                "type": "Number"
+            "satisfaction": {
+                "type": "Boolean"
             }
         },
         "classLevelPermissions": {
@@ -855,7 +695,7 @@
         }
     },
     {
-        "className": "satisfactions",
+        "className": "tags",
         "fields": {
             "objectId": {
                 "type": "String"
@@ -880,8 +720,70 @@
             "tradeId": {
                 "type": "String"
             },
-            "satisfaction": {
-                "type": "Boolean"
+            "tags": {
+                "type": "Array"
+            }
+        },
+        "classLevelPermissions": {
+            "find": {
+                "*": true
+            },
+            "count": {
+                "*": true
+            },
+            "get": {
+                "*": true
+            },
+            "create": {
+                "*": true
+            },
+            "update": {
+                "*": true
+            },
+            "delete": {
+                "*": true
+            },
+            "addField": {
+                "*": true
+            },
+            "protectedFields": {
+                "*": []
+            }
+        },
+        "indexes": {
+            "_id_": {
+                "_id": 1
+            }
+        }
+    },
+    {
+        "className": "notes",
+        "fields": {
+            "objectId": {
+                "type": "String"
+            },
+            "createdAt": {
+                "type": "Date"
+            },
+            "updatedAt": {
+                "type": "Date"
+            },
+            "ACL": {
+                "type": "ACL"
+            },
+            "user": {
+                "type": "Pointer",
+                "targetClass": "_User",
+                "required": false
+            },
+            "dateUnix": {
+                "type": "Number"
+            },
+            "tradeId": {
+                "type": "String"
+            },
+            "note": {
+                "type": "string"
             }
         },
         "classLevelPermissions": {

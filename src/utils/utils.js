@@ -1,13 +1,12 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled } from "../stores/globals"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
 import { useDeletePlaybook } from "./playbooks";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades";
 import { useLoadCalendar } from "./calendar";
-import { useGetExcursions, useGetSatisfactions } from "./daily";
-import { useGetMistakes, useGetPatterns, useGetSetups } from "./setups";
+import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily";
 
 /**************************************
 * INITS
@@ -172,7 +171,7 @@ export function useGetTimeZone() {
 }
 
 export async function useGetPeriods() {
-    console.log(" -> Getting periods")
+    //console.log(" -> Getting periods")
     return new Promise((resolve, reject) => {
         let temp = [{
             value: "all",
@@ -336,7 +335,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step4',
-        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a 4 tabs for a given day:<ul><li>Trades: list of your trades</li><li>Blotter: your trades grouped by symbol</li><li>Screenshots: your annotated screenshots</li><li>Diary: your diary entries</li></ul></p><p>In the trades tab you can click on the table row to add additional information (note, pattern, mistake, etc.).</p>',
+        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a 4 tabs for a given day:<ul><li>Trades: list of your trades</li><li>Blotter: your trades grouped by symbol</li><li>Screenshots: your annotated screenshots</li><li>Diary: your diary entries</li></ul></p><p>In the trades tab you can click on the table row to add additional information (note, tags, etc.).</p>',
         attachTo: {
             element: '#step4',
             on: 'right'
@@ -493,7 +492,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step12',
-        text: "In the sub-menu you can navigate to your settings, where you can amongst other add a profile picture and edit your patterns and mistakes. You can also see the version you are using as well as come back to this tutorial at any time as well as logout of your account (recommended when you update TradeNote version).",
+        text: "In the sub-menu you can navigate to your settings, where you can amongst other add a profile picture, add API Keys and edit your tags. You can also see the version you are using as well as come back to this tutorial at any time as well as logout of your account (recommended when you update TradeNote version).",
         attachTo: {
             element: '#step12',
             on: 'bottom'
@@ -747,8 +746,7 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions()
-    await useGetSetups()
+    useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()
     await Promise.all([useGetFilteredTrades()])
     await useTotalTrades()
     await useGroupTrades()
@@ -774,12 +772,7 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetSatisfactions()])
-    useGetPatterns(), useGetMistakes()
-    /*useGetSetups()
-    useGetPatterns()
-    useGetMistakes()
-    useGetSatisfactions()*/
+    await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
     await useGetFilteredTrades()
     await useGetFilteredTradesForDaily()
     spinnerLoadingPage.value = false
@@ -817,8 +810,7 @@ export async function useMountScreenshots() {
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
     await useGetSelectedRange()
-    await Promise.all([useGetPatterns(), useGetMistakes()])
-    await useGetSetups()
+    await Promise.all([useGetTags(), useGetAvailableTags()])
     await useGetScreenshots()
     await console.timeEnd("  --> Duration mount screenshots")
     useInitPopover()
@@ -952,42 +944,18 @@ export async function useSetValues() {
             localStorage.setItem('selectedAccounts', selectedAccounts.value)
             selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
         }
-        let selectedPatternsNull = Object.is(localStorage.getItem('selectedPatterns'), null)
-        let selectedMistakesNull = Object.is(localStorage.getItem('selectedMistakes'), null)
-        console.log("selectedPatternsNull " + selectedPatternsNull)
-        console.log("selectedMistakesNull " + selectedMistakesNull)
-        if (selectedPatternsNull || selectedMistakesNull) {
-            await Promise.all([useGetPatterns(), useGetMistakes()])
-            if (selectedPatternsNull) {
-                console.log("selected patterns is null ")
-                selectedPatterns.value.push("p000p")
-                let activePatterns = patterns.filter(obj => obj.active == true)
-                //console.log("active Patterns " + JSON.stringify(activePatterns))
-                if (activePatterns) {
-                    activePatterns.forEach(element => {
-                        selectedPatterns.value.push(element.objectId)
-                    });
-                }
-                patterns.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
-                localStorage.setItem('selectedPatterns', selectedPatterns.value)
-                console.log("selectedPatterns " + JSON.stringify(selectedPatterns.value))
-            }
 
-            if (selectedMistakesNull) {
-                console.log("selected Mistakes is null ")
-                selectedMistakes.value.push("m000m")
-                await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
-                let activeMistakes = mistakes.filter(obj => obj.active == true)
-                //console.log("active Mistakes " + JSON.stringify(activeMistakes))
-                if (activeMistakes) {
-                    activeMistakes.forEach(element => {
-                        selectedMistakes.value.push(element.objectId)
-                    });
-                }
+        let selectedTagsNull = Object.is(localStorage.getItem('selectedTags'), null)
+        console.log("selectedTagsNull " + selectedTagsNull)
+        if (selectedTagsNull) {
+            await useGetTags()
+            if (selectedTagsNull) {
+                console.log("selected tags is null ")
+                selectedTags.value.push("t000t")
 
-                mistakes.length = 0
-                localStorage.setItem('selectedMistakes', selectedMistakes.value)
-                console.log("selectedMistakes " + JSON.stringify(selectedMistakes.value))
+                tags.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
+                localStorage.setItem('selectedTags', selectedTags.value)
+                console.log("selectedTags " + JSON.stringify(selectedTags.value))
             }
 
         }
@@ -1046,6 +1014,87 @@ export function returnToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+
+export const useGetLegacy = async () => {
+    console.log(" -> Getting legacy information")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            //console.log(" currentLegacy " + JSON.stringify(currentLegacy))
+            if (currentLegacy != undefined && currentLegacy.length > 0) {
+                for (let index = 0; index < currentLegacy.length; index++) {
+                    const element = currentLegacy[index];
+                    legacy.push(element)
+                }
+                
+            }
+            console.log("  --> Legacy "+JSON.stringify(legacy))
+            resolve()
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+export const useUpdateLegacy = async (param1) => {
+    console.log("\n -> Updating legacy information")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            const saveLegacy = () => {
+                console.log("  --> Saving legacy")
+                let temp = {}
+                temp.name = param1
+                temp.updated = true
+                currentLegacy.push(temp)
+            }
+
+            if (currentLegacy == undefined) {
+                currentLegacy = []
+                saveLegacy()
+
+            } else if (currentLegacy.length == 0) {
+                currentLegacy = []
+                saveLegacy()
+            }
+            else {
+                console.log("  --> Updating legacy")
+                let index = currentLegacy.findIndex(obj => obj.name == param1)
+                if (index == -1){
+                    saveLegacy()
+                }else{
+                    currentLegacy[index].updated = true
+                }
+                
+            }
+
+            results.set("legacy", currentLegacy)
+            results.save()
+                .then(async () => {
+                    console.log(' -> Saved/Updated legacy with id ' + results.id)
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to save/update legacy, with error code: ' + error.message);
+                    reject()
+                })
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
 /**************************************
 * DATE FORMATS
 **************************************/
@@ -1108,6 +1157,9 @@ export function useDatetimeLocalFormat(param) {
     return dayjs.tz(param * 1000, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
 }
 
+export function useStartOfDay(param) {
+    return dayjs(param * 1000).tz(timeZoneTrade.value).startOf("day").unix()
+}
 /**************************************
 * NUMBER FORMATS
 **************************************/

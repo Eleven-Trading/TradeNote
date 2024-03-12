@@ -1,16 +1,18 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount, onMounted, computed, reactive } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, patterns, mistakes, amountCase, markerAreaOpen, screenshot, tradeSetupChanged, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, activePatterns, activeMistakes, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet } from '../stores/globals';
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray } from '../stores/globals';
+
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay } from '../utils/utils';
+
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
-import { useTradeSetupChange, useUpdateSetups } from '../utils/setups'
-import { useGetExcursions } from '../utils/daily';
+
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagColor, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -40,12 +42,15 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
+
 onBeforeMount(async () => {
 
 })
 onMounted(async () => {
     await useMountDaily()
     await useInitTooltip()
+    useCreateAvailableTagsArray()
+
     tradesModal = new bootstrap.Modal("#tradesModal")
     window.addEventListener('scroll', async () => {
         let scrollFromTop = window.scrollY
@@ -57,9 +62,9 @@ onMounted(async () => {
         console.log("documentHeight "+documentHeight)
         //console.log("difference "+difference)*/
         if (difference <= 0) {
-            console.log("spinnerLoadMore " + spinnerLoadMore.value)
-            console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
-            console.log("endOfList " + endOfList.value)
+            //console.log("spinnerLoadMore " + spinnerLoadMore.value)
+            //console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
+            //console.log("endOfList " + endOfList.value)
             if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
                 useLoadMore()
             }
@@ -67,8 +72,121 @@ onMounted(async () => {
     })
     useCheckVisibleScreen()
 
-
 })
+
+
+/**************
+ * MODAL INTERACTION
+ ***************/
+
+async function clickTradesModal(param1, param2, param3) {
+    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
+    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
+    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
+    //console.log(" param 3 "+JSON.stringify(param3))
+    //console.log("param1 " + param1)
+    //console.log("param2 " + param2)
+    //console.log("param3 " + param3)
+
+    if (markerAreaOpen.value == true) {
+        alert("Please save your screenshot annotation")
+        return
+    } else {
+        await (spinnerSetups.value = true)
+
+        if (tradeNoteChanged.value) {
+            await useUpdateNote()
+            await useGetNotes()
+        }
+
+        if (tradeExcursionChanged.value) {
+            await updateExcursions()
+        }
+
+        if (tradeTagsChanged.value) {
+            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
+            await Promise.all([useGetTags(), useGetAvailableTags()])
+            useCreateAvailableTagsArray()
+        }
+
+        if (tradeScreenshotChanged.value) {
+            await useSaveScreenshot()
+        }
+
+
+        tradeNoteChanged.value = false
+        tradeExcursionChanged.value = false
+        tradeScreenshotChanged.value = false
+        tradeTagsChanged.value = false
+
+        showTagsList.value = false
+
+
+        if (param1 === undefined && param2 === undefined && param3 === undefined) {
+            //console.log(" -> Closing Modal")
+            await (spinnerSetups.value = false)
+            tradesModal.hide()
+            modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
+        }
+        else {
+            //console.log(" -> Opening Modal or clicking next/back")
+
+            itemTradeIndex.value = param1
+            tradeIndexPrevious.value = param2
+            tradeIndex.value = param3
+
+            let awaitClick = async () => {
+
+                modalDailyTradeOpen.value = true
+                let filteredTradeId = filteredTrades[itemTradeIndex.value].trades[param3].id
+                await Promise.all([resetExcursion(), useResetTags()])
+
+                //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
+                let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                if (findScreenshot) {
+                    for (let key in screenshot) delete screenshot[key]
+                    for (let key in findScreenshot) {
+                        screenshot[key] = findScreenshot[key]
+                    }
+                } else {
+                    for (let key in screenshot) delete screenshot[key]
+                    screenshot.side = null
+                    screenshot.type = null
+                }
+
+
+                let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
+                if (findTags) {
+                    findTags.tags.forEach(element => {
+                        tradeTags.push(element)
+                    });
+                }
+
+                let noteIndex = notes.findIndex(obj => obj.tradeId == filteredTradeId)
+                tradeNote.value = null
+                if (noteIndex != -1) {
+                    tradeNote.value = notes[noteIndex].note
+                }
+
+                let findExcursion = excursions.filter(obj => obj.tradeId == filteredTradeId)
+                if (findExcursion.length) {
+                    findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                    findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                    findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                    //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+                }
+
+            }
+            await awaitClick()
+            await (spinnerSetups.value = false)
+            saveButton.value = false
+            await useInitTooltip()
+        }
+
+    }
+
+}
+
 
 const checkDate = ((param1, param2) => {
     let check = dayjs(param1 * 1000).isSame(param2 * 1000, 'day')
@@ -78,14 +196,12 @@ const checkDate = ((param1, param2) => {
 /**************
  * SATISFACTION
  ***************/
-
-
 async function dailySatisfactionChange(param1, param2, param3) {
     console.log("\nDAILY SATISFACTION CHANGE")
-    console.time("  --> Duration daily satisfaction change")
+    //console.time("  --> Duration daily satisfaction change")
     param3.satisfaction = param2
     await updateDailySatisfaction(param1, param2)
-    await console.timeEnd("  --> Duration daily satisfaction change")
+    //await console.timeEnd("  --> Duration daily satisfaction change")
 }
 
 async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
@@ -181,17 +297,9 @@ async function updateTradeSatisfaction() { //param1 : daily unixDate ; param2 : 
     })
 }
 
-
-
 /**************
  * EXCURSIONS
  ***************/
-
-function noteClicked() {
-    //console.log("click")
-    tradeSetupChanged.value = true
-    saveButton.value = true
-}
 
 function tradeExcursionClicked() {
     //console.log("click")
@@ -279,106 +387,6 @@ async function updateExcursions() {
     })
 }
 
-/**************
- * MISC
- ***************/
-async function clickTradesModal(param1, param2, param3) {
-    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
-    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
-    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
-    //console.log(" param 3 "+JSON.stringify(param3))
-    //console.log("param1 "+param1)
-    //console.log("param2 "+param2)
-    //console.log("param3 "+param3)
-
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        //We first update because setups rely on tradeIndex, so before tradeIndex changes to new modal page or simply use tradeIndex if we close
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-        }
-
-        if (tradeExcursionChanged.value) {
-            await updateExcursions()
-        }
-
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-
-        //Then we change indexes
-        itemTradeIndex.value = param1
-        tradeIndexPrevious.value = param2
-        tradeIndex.value = param3
-
-
-        let awaitClick = async () => {
-            tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
-            tradeExcursionChanged.value = false
-            tradeScreenshotChanged.value = false
-            modalDailyTradeOpen.value = true
-
-            await resetExcursion()
-
-            //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
-            let findScreenshot = screenshots.find(obj => obj.name == filteredTrades[itemTradeIndex.value].trades[param3].id)
-            if (findScreenshot) {
-                for (let key in screenshot) delete screenshot[key]
-                for (let key in findScreenshot) {
-                    screenshot[key] = findScreenshot[key]
-                }
-            } else {
-                for (let key in screenshot) delete screenshot[key]
-                screenshot.side = null
-                screenshot.type = null
-            }
-
-
-            let findExcursion = excursions.filter(obj => obj.tradeId == filteredTrades[itemTradeIndex.value].trades[param3].id)
-            if (findExcursion.length) {
-                findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
-                findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
-                findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
-                //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
-            }
-
-        }
-        await awaitClick()
-        await (spinnerSetups.value = false)
-        saveButton.value = false
-        await useInitTooltip()
-    }
-
-}
-
-async function hideTradesModal() {
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-        }
-        if (tradeExcursionChanged.value) { //in the case excursion changed but did not click on next 
-            await updateExcursions()
-        }
-        tradeSetupChanged.value = false
-        tradeExcursionChanged.value = false
-        tradeScreenshotChanged.value = false
-
-        await (spinnerSetups.value = false)
-        tradesModal.hide()
-        modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
-    }
-}
-
 function resetExcursion() {
     //console.log(" -> Resetting excursion")
     //we need to reset the setup variable each time
@@ -387,6 +395,50 @@ function resetExcursion() {
     excursion.maePrice = null
     excursion.mfePrice = null
 
+}
+
+/**************
+ * TAGS
+ ***************/
+
+/**************
+ * NOTES
+ ***************/
+function noteClicked() {
+    //console.log("click")
+    tradeNoteChanged.value = true
+    saveButton.value = true
+}
+
+const tradeNoteChange = (param) => {
+    tradeNote.value = param
+    console.log(" -> New note " + tradeNote.value)
+    tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
+    tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+
+}
+
+
+/**************
+ * SCREENSHOTS
+ ***************/
+const filteredScreenshots = (param) => {
+    //console.log(" param dateUnix " + JSON.stringify(param.dateUnix))
+    let screenshotArray = []
+    for (let index = 0; index < param.trades.length; index++) {
+        const el1 = param.trades[index];
+        for (let index = 0; index < screenshots.length; index++) {
+            const el2 = screenshots[index];
+            if (el2.name == el1.id && (screenshotArray.findIndex(obj => obj == el2) == -1)) {
+                screenshotArray.push(el2)
+            } else if (useStartOfDay(el2.dateUnix) == param.dateUnix && (screenshotArray.findIndex(obj => obj == el2) == -1)) {
+                screenshotArray.push(el2)
+            }
+        }
+
+    }
+    //console.log(" screenshotArray " + JSON.stringify(screenshotArray))
+    return screenshotArray
 }
 
 </script>
@@ -412,19 +464,22 @@ function resetExcursion() {
                                     <!-- Line 1 : Date and P&L -->
                                     <!--<input id="providers" type="text" class="form-control" placeholder="Fournisseur*" autocomplete="off"/>-->
 
+
                                     <div class="col-12 cardFirstLine mb-2">
                                         <div class="row">
-                                            <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix) }}
+                                            <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix)
+                                                }}
                                                 <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                                 <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                             </div>
-                                            <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0) }}):
+                                            <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
+                                                }}):
                                                 <span
                                                     v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
-                                                    }}</span>
+        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
+    }}</span>
                                             </div>
 
                                         </div>
@@ -484,7 +539,8 @@ function resetExcursion() {
                                                         </div>
                                                         <div>
                                                             <label>P&L(g)</label>
-                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds) }}
+                                                            <p>{{ useTwoDecCurrencyFormat(itemTrade.pAndL.grossProceeds)
+                                                                }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -498,40 +554,29 @@ function resetExcursion() {
                                     <div class="col-12 table-responsive">
                                         <nav>
                                             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
-                                                <!--<button v-for="dashTab in dailyTabs" class="nav-link"
-                                                    v-bind:id="dashTab.id + '-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="dashTab.target + '-' + index" type="button"
-                                                    role="tab" aria-controls="nav-overview" aria-selected="true">{{
-                                                        dashTab.label }}
-                                                    <span
-                                                        v-if="dashTab.id == 'screenshots' && screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
-                                                        class="txt-small"> ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                            itemTrade.dateUnix).length }})</span>
-                                                </button>-->
-
-                                                <button class="nav-link" v-bind:id="'trades-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#tradesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true">Trades
+                                                <button class="nav-link" v-bind:id="'trades-' + index"
+                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#tradesNav-' + index"
+                                                    type="button" role="tab" aria-controls="nav-overview"
+                                                    aria-selected="true">Trades
                                                 </button>
 
-                                                <button class="nav-link" v-bind:id="'blotter-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#blotterNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true">Blotter
+                                                <button class="nav-link" v-bind:id="'blotter-' + index"
+                                                    data-bs-toggle="tab" v-bind:data-bs-target="'#blotterNav-' + index"
+                                                    type="button" role="tab" aria-controls="nav-overview"
+                                                    aria-selected="true">Blotter
                                                 </button>
 
                                                 <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
-                                                    v-bind:class="[screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix).length > 0"
-                                                        class="txt-small">
-                                                        ({{ screenshots.filter(obj => obj.dateUnixDay ==
-                                                            itemTrade.dateUnix).length }})</span>
+                                                    v-bind:class="[filteredScreenshots(itemTrade).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="filteredScreenshots(itemTrade).length > 0" class="txt-small">
+                                                        ({{ filteredScreenshots(itemTrade).length }})</span>
                                                 </button>
 
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
-                                                    v-bind:data-bs-target="'#diariesNav-' + index" type="button" role="tab"
-                                                    aria-controls="nav-overview" aria-selected="true"
+                                                    v-bind:data-bs-target="'#diariesNav-' + index" type="button"
+                                                    role="tab" aria-controls="nav-overview" aria-selected="true"
                                                     v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
@@ -548,12 +593,9 @@ function resetExcursion() {
                                                             <th scope="col">Vol</th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
-                                                            <!--<th scope="col">Price</th>-->
-                                                            <!--<th scope="col">Duration</th>-->
                                                             <th scope="col">P&L/Vol</th>
                                                             <th scope="col">P&L(n)</th>
-                                                            <th scope="col">Pattern</th>
-                                                            <th scope="col">Mistake</th>
+                                                            <th scope="col">Tags</th>
                                                             <th scope="col">Note</th>
                                                             <th scope="col"></th>
                                                             <th scope="col"></th>
@@ -568,14 +610,16 @@ function resetExcursion() {
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
                                                             v-on:click="clickTradesModal(index, index2, index2)"
                                                             class="pointerClass">
-                                                            
+
                                                             <td>{{ trade.symbol }}</td>
-                                                            
+
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
-                                                            
-                                                            <td>{{ trade.strategy.charAt(0).toUpperCase() +
-                                                                trade.strategy.slice(1) }}</td>
-                                                            
+
+                                                            <td>{{
+        trade.strategy.charAt(0).toUpperCase() +
+        trade.strategy.slice(1)
+    }}</td>
+
                                                             <!--Entry-->
                                                             <td><span v-if="trade.tradesCount == 0"><span
                                                                         v-if="trade.openPosition">Open<i
@@ -592,40 +636,46 @@ function resetExcursion() {
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
 
-                                                            <!--Price
-                                                            <td><span v-if="trade.tradesCount == 0"></span><span
-                                                                    v-else-if="trade.type == 'forex'">{{
-                                                                        (trade.entryPrice).toFixed(5) }}</span><span v-else>{{
-                                                                            useTwoDecCurrencyFormat(trade.entryPrice) }}<span
-                                                                        v-if="checkDate(trade.td, trade.entryTime) == false"><i
-                                                                            class="ps-1 uil uil-info-circle"
-                                                                            data-bs-toggle="tooltip" data-bs-html="true"
-                                                                            v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
-                                                            </td>-->
-                                                            <!--<td>{{useTimeDuration(trade.exitTime - trade.entryTime)}}</td>-->
 
                                                             <!--P&L/Vol-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span
-                                                                    v-else-if="trade.type == 'forex'">-</span><span v-else
+                                                                    v-else-if="trade.type == 'forex'">-</span><span
+                                                                    v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                                        useTwoDecCurrencyFormat(trade.grossSharePL) }}</span>
+        useTwoDecCurrencyFormat(trade.grossSharePL)
+    }}</span>
                                                             </td>
 
                                                             <!--P&L-->
                                                             <td>
                                                                 <span v-if="trade.tradesCount == 0"></span><span v-else
                                                                     v-bind:class="[trade.netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                                                    {{ useTwoDecCurrencyFormat(trade.netProceeds) }}</span>
+                                                                    {{ useTwoDecCurrencyFormat(trade.netProceeds)
+                                                                    }}</span>
+                                                            </td>
+
+                                                            <!--TAGS-->
+                                                            <td>
+                                                                <span
+                                                                    v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
+                                                                    <span v-for="tag in tags.tags.slice(0, 2)"
+                                                                        class="tag txt-small"
+                                                                        :style="useGetTagColor(tag.id)">{{ tag.name
+                                                                        }}
+                                                                    </span>
+                                                                    <span v-show="tags.tags.length > 2">+{{
+        tags.tags.length
+        - 2 }}</span>
+                                                                </span>
                                                             </td>
                                                             <td>
-                                                                {{ trade.patternNameShort }}
-                                                            </td>
-                                                            <td>
-                                                                {{ trade.mistakeNameShort }}
-                                                            </td>
-                                                            <td>
-                                                                {{ trade.noteShort }}
+                                                                <span
+                                                                    v-for="note in notes.filter(obj => obj.tradeId == trade.id)">
+                                                                    <span v-if="note.note.length > 12">{{
+        note.note.substring(0, 12) }}...</span><span
+                                                                        v-else>{{ note.note }}</span>
+                                                                </span>
                                                             </td>
                                                             <td>
                                                                 <span v-if="trade.satisfaction == true">
@@ -670,7 +720,7 @@ function resetExcursion() {
 
                                                             <td>{{ blot.symbol }}</td>
                                                             <td>{{ useDecimalsArithmetic(blot.buyQuantity,
-                                                                blot.sellQuantity) }}</td>
+        blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ useTwoDecCurrencyFormat(blot.grossProceeds) }}</td>
@@ -690,10 +740,11 @@ function resetExcursion() {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="itemScreenshot in screenshots.filter(obj => obj.dateUnixDay == itemTrade.dateUnix)"
-                                                    class="mb-2">
-                                                    <Screenshot :screenshot-data="itemScreenshot" show-title
-                                                        source="dailyTab" />
+                                                <div v-for="itemScreenshot in filteredScreenshots(itemTrade)">
+                                                    <span class="mb-2">
+                                                        <Screenshot :screenshot-data="itemScreenshot" show-title
+                                                            source="dailyTab" />
+                                                    </span>
                                                 </div>
                                             </div>
 
@@ -728,7 +779,8 @@ function resetExcursion() {
                 </div>
                 <!-- end card-->
                 <!-- ============ CALENDAR ============ -->
-                <div v-show="calendarData && !spinnerLoadingPage" class="col-12 col-xl-4 text-center mt-2 align-self-start">
+                <div v-show="calendarData && !spinnerLoadingPage"
+                    class="col-12 col-xl-4 text-center mt-2 align-self-start">
                     <div class="dailyCard calCard">
                         <div class="row">
                             <Calendar />
@@ -773,10 +825,11 @@ function resetExcursion() {
                                 <tr>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].symbol }}</td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].buyQuantity +
-                                        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
+        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
                                     </td>
-                                    <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' : 'Short'
-                                    }}</td>
+                                    <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' :
+        'Short'
+                                        }}</td>
 
                                     <td>
                                         <span
@@ -785,24 +838,26 @@ function resetExcursion() {
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade opened on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span><span
-                                                v-else>Closed<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                                    data-bs-html="true"
+                                                v-else>Closed<i class="ps-1 uil uil-info-circle"
+                                                    data-bs-toggle="tooltip" data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade closed on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)"></i></span></span><span
                                             v-else>{{
-                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-                                            }}<span
+        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+    }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)"></i></span></span>
                                     </td>
+
                                     <!--Entry Price-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-                                            }}</span><span
-                                            v-else>{{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice) }}<span
+        (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
+    }}</span><span v-else>{{
+            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
+        }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -813,33 +868,34 @@ function resetExcursion() {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else>{{
-                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
-                                            }}</span></td>
+        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
+    }}</span></td>
 
 
                                     <!--Exit Price-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
-                                            }}</span><span v-else>{{
-    useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
-}}</span></td>
+        (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
+    }}</span><span v-else>{{
+            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
+        }}</span></td>
 
                                     <!--Duration-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else><span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{
-                                                    useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-                                                        -
-                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) }}</span><span
-                                                v-else>{{
-                                                    useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime -
-                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-                                                }}</span></span>
+        useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+            -
+            filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+    }}</span><span v-else>{{
+            useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                -
+                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+        }}</span></span>
                                     </td>
-                                    
+
                                     <!--P&L/Vol-->
                                     <td>
                                         <span
@@ -847,8 +903,8 @@ function resetExcursion() {
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'"></span><span
                                             v-else
                                             v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
-                                            }}</span>
+        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
+    }}</span>
                                     </td>
 
                                     <!--P&L-->
@@ -856,8 +912,9 @@ function resetExcursion() {
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
-                                            {{ useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
-                                            }}</span>
+                                            {{
+        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
+    }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -870,7 +927,7 @@ function resetExcursion() {
                             <div class="row">
                                 <!-- First line -->
                                 <div class="col-12" v-show="!spinnerSetups">
-                                    <div class="row">
+                                    <div class="row align-items-center">
 
                                         <!-- Satisfaction -->
                                         <div class="col-1">
@@ -881,36 +938,43 @@ function resetExcursion() {
                                                 v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].satisfaction == false ? 'redTrade' : '', 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                         </div>
 
-                                        <!-- Patterns -->
-                                        <div class="col-4" v-if="patterns.length > 0">
-                                            <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')"
-                                                class="form-select">
-                                                <option value='null' selected>Pattern</option>
-                                                <option v-for="itemActivePattern in activePatterns"
-                                                    v-bind:value="itemActivePattern.objectId"
-                                                    v-bind:selected="itemActivePattern.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].pattern">
-                                                    {{ itemActivePattern.name }}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-4" v-else>
-                                            <span class="form-control">Add pattern tags in <a
-                                                    href="/settings">settings</a></span>
-                                        </div>
 
-                                        <!-- Mistakes -->
-                                        <div class="col-4" v-if="mistakes.length > 0">
-                                            <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')"
-                                                class="form-select">
-                                                <option value='null' selected>Mistake</option>
-                                                <option v-for="item in activeMistakes" v-bind:value="item.objectId"
-                                                    v-bind:selected="item.objectId == filteredTrades[itemTradeIndex].trades[tradeIndex].mistake">
-                                                    {{ item.name }}</option>
-                                            </select>
+                                        <!-- Tags -->
+                                        <div class="container-tags col-8">
+                                            <div class="form-control dropdown form-select" style="height: auto;">
+                                                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                                                    <span v-for="(tag, index) in tradeTags" :key="index"
+                                                        class="tag txt-small" :style="useGetTagColor(tag.id)"
+                                                        @click="useTradeTagsChange('remove', index)">
+                                                        {{ tag.name }}<span class="remove-tag">×</span>
+                                                    </span>
+
+                                                    <input type="text" v-model="tagInput" @input="useFilterTags"
+                                                        @keydown.enter.prevent="useTradeTagsChange('add', tagInput)"
+                                                        @keydown.tab.prevent="useTradeTagsChange('add', tagInput)"
+                                                        class="form-control tag-input" placeholder="Add a tag">
+                                                    <div class="clickable-area" v-on:click="useToggleTagsDropdown">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
+                                                :style="[!showTagsList ? 'border: none;' : '']">
+                                                <span v-show="showTagsList" v-for="group in availableTags">
+                                                    <h6 class="p-1 mb-0"
+                                                        :style="'background-color: ' + group.color + ';'"
+                                                        v-show="useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                                        {{ group.name }}</h6>
+                                                    <li v-for="(suggestion, index) in useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
+                                                        :key="index" :class="{ active: index === selectedTagIndex }"
+                                                        @click="useTradeTagsChange('addFromDropdownMenu', suggestion)"
+                                                        class="dropdown-item dropdown-item-tags">
+                                                        <span class="ms-2">{{ suggestion.name }}</span>
+                                                    </li>
+                                                </span>
+                                            </ul>
                                         </div>
-                                        <div class="col-4" v-else>
-                                            <span class="form-control">Add mistake tags in <a
-                                                    href="/settings">settings</a></span>
-                                        </div>
+                                        <!-- MFE -->
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price"
                                                 style="font-size: small;" v-bind:value="excursion.mfePrice"
@@ -928,8 +992,7 @@ function resetExcursion() {
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="filteredTrades[itemTradeIndex].trades[tradeIndex].note"
-                                        v-on:change="useTradeSetupChange($event.target.value, 'note')"
+                                        v-bind:value="tradeNote" v-on:change="tradeNoteChange($event.target.value)"
                                         v-on:click="noteClicked"></textarea>
                                 </div>
 
@@ -953,10 +1016,10 @@ function resetExcursion() {
                                         </div>
                                         <div class="col-4 text-center">
                                             <button v-if="saveButton" class="btn btn-outline-success btn-sm"
-                                                v-on:click="hideTradesModal()">Close
+                                                v-on:click="clickTradesModal()">Close
                                                 & Save</button>
                                             <button v-else class="btn btn-outline-primary btn-sm"
-                                                v-on:click="hideTradesModal()">Close</button>
+                                                v-on:click="clickTradesModal()">Close</button>
                                         </div>
                                         <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">
