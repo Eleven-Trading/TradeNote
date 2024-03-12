@@ -1157,6 +1157,9 @@ export function useDatetimeLocalFormat(param) {
     return dayjs.tz(param * 1000, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
 }
 
+export function useStartOfDay(param) {
+    return dayjs(param * 1000).tz(timeZoneTrade.value).startOf("day").unix()
+}
 /**************************************
 * NUMBER FORMATS
 **************************************/

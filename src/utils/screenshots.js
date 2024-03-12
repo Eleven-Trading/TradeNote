@@ -1,11 +1,12 @@
-import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags } from '../stores/globals.js'
+import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags } from '../stores/globals.js'
 import { useLoadMore } from './utils';
+import { useUpdateTags } from './daily.js';
 
-let screenshotsQueryLimit = 4
+screenshotsQueryLimit.value = 4
 
 export function useGetScreenshotsPagination() {
     if (sessionStorage.getItem('screenshotsPagination')) {
-        screenshotsQueryLimit = Number(sessionStorage.getItem('screenshotsPagination'))
+        screenshotsQueryLimit.value = Number(sessionStorage.getItem('screenshotsPagination'))
         sessionStorage.removeItem('screenshotsPagination');
     }
 }
@@ -19,12 +20,12 @@ export async function useGetScreenshots(param) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         query.exclude("original", "annotated");
-        
+
         if (param) { // if param == true then we're not on screenshots page
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
         } else {
-            query.limit(screenshotsQueryLimit);
+            query.limit(screenshotsQueryLimit.value);
             query.skip(screenshotsPagination.value)
         }
 
@@ -41,25 +42,31 @@ export async function useGetScreenshots(param) {
                 }
 
                 parsedResult.forEach(element => {
-                    //console.log(" element "+JSON.stringify(element.objectId))
+                    console.log(" element " + JSON.stringify(element.objectId))
                     let tradeTagsSelected = false
                     let selectedTagsArray = Object.values(selectedTags.value)
                     let index = tags.findIndex(obj => obj.tradeId == element.name)
                     if (index != -1) {
-                        //console.log(" -> Screenshot id in tags...")
+                        console.log(" -> Screenshot id in tags...")
                         //console.log(" -> selected tags "+Object.values(selectedTags.value))
                         //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
                         //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
                         if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))) {
-                            //console.log(" and with selected tags")
+                            console.log(" and with selected tags")
                             tradeTagsSelected = true
                         } else {
-                            //console.log(" but with no selected tags")
+                            console.log(" but with tags array length 0")
+                            if (selectedTagsArray.includes("t000t")) {
+                                console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                                tradeTagsSelected = true
+                            } else {
+                                console.log(" but with no selected tags")
+                            }
                         }
                     } else {
-                        //console.log(" -> Screenshot not in tags...")
+                        console.log(" -> Screenshot not in tags...")
                         if (selectedTagsArray.includes("t000t")) {
-                            //console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                            console.log(" but 'No Tags' is selected so we include the screenshot anyway")
                             tradeTagsSelected = true
                         }
                     }
@@ -86,7 +93,8 @@ export async function useGetScreenshots(param) {
 
 
             //console.log(" -> Screenshots " + JSON.stringify(screenshots))
-            screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit
+            screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit.value
+            console.log(" screenshotsNames " + JSON.stringify(screenshotsNames))
             spinnerSetups.value = false //spinner for trades in daily
             //spinnerLoadMore.value = false
             if (pageId.value != "daily") {
@@ -128,8 +136,8 @@ async function imgFileReader(param) {
 }
 
 export async function useSetupImageUpload(event, param1, param2, param3) {
+    tradeScreenshotChanged.value = true
     if (pageId.value == "daily") {
-        tradeScreenshotChanged.value = true
         saveButton.value = true
         dateScreenshotEdited.value = true
 
@@ -329,24 +337,31 @@ export function useExpandScreenshot(param1, param2) {
         expandedId.value = null
     }
 }
-export function useScreenshotUpdateDate(event) {
-    if (editingScreenshot.value) {
-        dateScreenshotEdited.value = true
-    }
-    screenshot.date = event
-    //console.log("screenshot date (local time, i.e. New York time) " + screenshot.date)
-    screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
-    //console.log("unix " + dayjs.tz(screenshot.date, timeZoneTrade.value).unix()) // we SPECIFY that it's New york time
-}
 
 export async function useSaveScreenshot() {
     console.log("\nSAVING SCREENSHOT")
     //console.log(" -> Setup to save " + JSON.stringify(screenshot))
     return new Promise(async (resolve, reject) => {
+
+        /**
+         * CHECKS
+         * **/
         if (markerAreaOpen.value == true) {
             alert("Please save your screenshot annotation")
             return
         }
+
+        if (pageId.value == "addScreenshot") {
+            if (screenshot.symbol == undefined) {
+                alert("Please add symbol")
+                return
+            }
+            if (!editingScreenshot.value && tradeScreenshotChanged.value == false) {
+                alert("Please add a screenshot")
+                return
+            }
+        }
+
         if (pageId.value == "addScreenshot") {
             spinnerLoadingPage.value = true
             //spinnerLoadingPageText.value = "Uploading screenshot ..."
@@ -372,8 +387,15 @@ export async function useSaveScreenshot() {
 
 
         /* UPLOAD SCREENSHOT */
-
-        await useUploadScreenshotToParse()
+        //in case it's the first time and no tags, we do not save tags
+        if (!editingScreenshot.value && tradeTags.length == 0) {
+            //console.log(" first time no tags")
+            await useUploadScreenshotToParse()
+        } else {
+            //console.log("tags")
+            await useUpdateTags()
+            await useUploadScreenshotToParse()
+        }
 
         resolve()
     })
@@ -506,7 +528,7 @@ export async function useDeleteScreenshot(param1, param2) {
 export async function useRefreshScreenshot() {
     return new Promise(async (resolve, reject) => {
         await (spinnerLoadingPage.value = true)
-        screenshotsQueryLimit = 4
+        screenshotsQueryLimit.value = 4
         screenshotsPagination.value = 0
         screenshots.length = 0
         await useGetScreenshots()

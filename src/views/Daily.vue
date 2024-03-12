@@ -6,12 +6,13 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray } from '../stores/globals';
 
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay } from '../utils/utils';
+
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagColor } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagColor, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -41,8 +42,6 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
-const availableTagsArray = reactive([])
-
 
 onBeforeMount(async () => {
 
@@ -50,7 +49,7 @@ onBeforeMount(async () => {
 onMounted(async () => {
     await useMountDaily()
     await useInitTooltip()
-    createAvailableTagsArray()
+    useCreateAvailableTagsArray()
 
     tradesModal = new bootstrap.Modal("#tradesModal")
     window.addEventListener('scroll', async () => {
@@ -107,7 +106,7 @@ async function clickTradesModal(param1, param2, param3) {
         if (tradeTagsChanged.value) {
             await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
             await Promise.all([useGetTags(), useGetAvailableTags()])
-            createAvailableTagsArray()
+            useCreateAvailableTagsArray()
         }
 
         if (tradeScreenshotChanged.value) {
@@ -140,7 +139,7 @@ async function clickTradesModal(param1, param2, param3) {
 
                 modalDailyTradeOpen.value = true
                 let filteredTradeId = filteredTrades[itemTradeIndex.value].trades[param3].id
-                await Promise.all([resetExcursion(), resetTags()])
+                await Promise.all([resetExcursion(), useResetTags()])
 
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
@@ -402,189 +401,6 @@ function resetExcursion() {
  * TAGS
  ***************/
 
-const createAvailableTagsArray = () => {
-    availableTagsArray.splice(0)
-    for (let index = 0; index < availableTags.length; index++) {
-        const element = availableTags[index];
-        for (let index = 0; index < element.tags.length; index++) {
-            const el = element.tags[index];
-            availableTagsArray.push(el)
-        }
-    }
-}
-let filteredSuggestions = []
-
-const filterSuggestions = (param) => {
-    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
-    //console.log(" filtered suggestion param " + param)
-    let index = availableTags.findIndex(obj => obj.id == param)
-    //console.log(" index " + index)
-    let temp = {}
-    temp.id = param
-    temp.tags = availableTags[index].tags.filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
-    let index2 = filteredSuggestions.findIndex(obj => obj.id == temp.id)
-    if (index2 == -1) {
-        filteredSuggestions.push(temp)
-    } else {
-        filteredSuggestions[index2].tags = temp.tags
-    }
-    //console.log(" filteredSuggestions " + JSON.stringify(filteredSuggestions))
-    return filteredSuggestions
-}
-
-const tradeTagsChange = async (param1, param2) => {
-    console.log(" param 1 " + param1)
-    console.log(" param 2 " + param2)
-    //console.log(" tags " + JSON.stringify(tags))
-
-    if (param1 == "add") {
-
-        //Case when arrow select and enter button
-        if (selectedTagIndex.value != -1) {
-            console.log(" -> Adding on arrow down and enter " + param2)
-
-            let tradeTagsIndex = tradeTags.findIndex(obj => obj.id == filteredSuggestions[selectedTagIndex.value].id)
-
-            //only add if does not exist in tradeTags already
-            if (tradeTagsIndex == -1) {
-                tradeTags.push(filteredSuggestions[selectedTagIndex.value]);
-                tagInput.value = ''; // Clear input after adding tag
-            }
-
-        } else if (param2) {
-
-            let inputTextIndex = tradeTags.findIndex(obj => obj.name.toLowerCase() == param2.toLowerCase())
-            console.log(" -> InputTextIndex " + inputTextIndex)
-            //First check if input text already exists in trades tags ( = current array of tags)
-            if (inputTextIndex != -1) {
-                console.log("  --> Input text already exists in trades tags")
-            }
-
-            else {
-                //Check if already in availableTags
-                let inAvailableTagsIndex = availableTagsArray.findIndex(tag =>
-                    tag.name.toLowerCase() == param2.toLowerCase())
-                console.log("  --> InAvailableTagsIndex " + JSON.stringify(inAvailableTagsIndex))
-
-                if (inAvailableTagsIndex != -1) {
-                    console.log("  --> Input text already exists in availableTags")
-                    tradeTags.push(availableTagsArray[inAvailableTagsIndex])
-                }
-                else {
-                    //Else new tag
-                    console.log("  --> Input is a new tag")
-                    let temp = {}
-
-
-
-                    // Get the highest id number
-                    const highestIdNumberAvailableTags = useFindHighestIdNumber(availableTags);
-                    const highestIdNumberTradeTags = useFindHighestIdNumberTradeTags(tradeTags);
-
-                    function chooseHighestNumber(num1, num2) {
-                        return Math.max(num1, num2);
-                    }
-
-                    // Example usage:
-                    const highestIdNumber = chooseHighestNumber(highestIdNumberAvailableTags, highestIdNumberTradeTags);
-
-                    //console.log(" -> Highest tag id number " + highestIdNumber);
-
-                    temp.id = "tag_" + (highestIdNumber + 1).toString()
-                    temp.name = param2
-                    tradeTags.push(temp)
-
-                    newTradeTags.push(temp)
-
-
-                    tagInput.value = ''; // Clear input after adding tag
-                }
-
-            }
-        }
-        selectedTagIndex.value = -1
-        showTagsList.value = false
-        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
-    }
-    if (param1 == "addFromDropdownMenu") {
-        let index = tradeTags.findIndex(obj => obj.id == param2.id)
-        //First check if input text already exists in trades tags ( = current array of tags)
-        if (index == -1) {
-            console.log(" -> Adding " + param2)
-            tradeTags.push(param2);
-            tagInput.value = ''; // Clear input after adding tag
-        }
-        selectedTagIndex.value = -1
-        showTagsList.value = false
-        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
-    }
-
-    if (param1 == "remove") {
-        //param2 is index of element to remove inside tradeTags
-        tradeTags.splice(param2, 1);
-    }
-
-    tradeTagsChanged.value = true
-    tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
-    tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
-    saveButton.value = true
-
-};
-
-const filterTags = () => {
-    if (tagInput.value == '') selectedTagIndex.value = -1
-    let showDropdownToReturn = tagInput.value !== '' && filteredSuggestions.length > 0
-    //console.log("Filtered tags showDropdownToReturn " + showDropdownToReturn)
-    showTagsList.value = showDropdownToReturn
-};
-
-const handleKeyDown = (event) => {
-    if (showTagsList.value) {
-        if (event.key === 'ArrowDown') {
-            event.preventDefault();
-            console.log("filteredSuggestions " + JSON.stringify(filteredSuggestions))
-            selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.length - 1);
-            //console.log(" arrow down and selectedTagIndex " + selectedTagIndex.value)
-        } else if (event.key === 'ArrowUp') {
-            event.preventDefault();
-            selectedTagIndex.value = Math.max(selectedTagIndex.value - 1, 0);
-        }
-    }
-};
-
-const toggleTagsDropdown = () => {
-    selectedTagIndex.value = -1
-    showTagsList.value = !showTagsList.value
-}
-
-
-const getTagGroup = (param) => {
-    const findGroupName = (tagId) => {
-        for (let obj of availableTags) {
-            for (let tag of obj.tags) {
-                if (tag.id === tagId) {
-                    return obj.name;
-                }
-            }
-        }
-
-        let name = null
-        if (availableTags.length > 0) {
-            name = availableTags.filter(obj => obj.id == "group_0")[0].name
-        }
-        return name // Return ungroupcolor if no result
-    }
-
-    const tagIdToFind = param;
-    const groupName = findGroupName(tagIdToFind);
-
-    return groupName
-}
-
-const resetTags = () => {
-    tradeTags.splice(0);
-}
-
 /**************
  * NOTES
  ***************/
@@ -602,18 +418,27 @@ const tradeNoteChange = (param) => {
 
 }
 
-const getScreenshotsLength = (param) => {
-    let screenshotsLength = 0
-    for (let index = 0; index < screenshots.length; index++) {
-        const element = screenshots[index];
-        for (let index = 0; index < param.trades.length; index++) {
-            const el = param.trades[index];
-            if (el.id == element.name) {
-                screenshotsLength += 1
+
+/**************
+ * SCREENSHOTS
+ ***************/
+const filteredScreenshots = (param) => {
+    //console.log(" param dateUnix " + JSON.stringify(param.dateUnix))
+    let screenshotArray = []
+    for (let index = 0; index < param.trades.length; index++) {
+        const el1 = param.trades[index];
+        for (let index = 0; index < screenshots.length; index++) {
+            const el2 = screenshots[index];
+            if (el2.name == el1.id && (screenshotArray.findIndex(obj => obj == el2) == -1)) {
+                screenshotArray.push(el2)
+            } else if (useStartOfDay(el2.dateUnix) == param.dateUnix && (screenshotArray.findIndex(obj => obj == el2) == -1)) {
+                screenshotArray.push(el2)
             }
         }
+
     }
-    return screenshotsLength
+    //console.log(" screenshotArray " + JSON.stringify(screenshotArray))
+    return screenshotArray
 }
 
 </script>
@@ -744,10 +569,9 @@ const getScreenshotsLength = (param) => {
                                                 <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
-                                                    v-bind:class="[getScreenshotsLength(itemTrade) > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="getScreenshotsLength(itemTrade) > 0"
-                                                        class="txt-small">
-                                                        ({{ getScreenshotsLength(itemTrade) }})</span>
+                                                    v-bind:class="[filteredScreenshots(itemTrade).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
+                                                        v-if="filteredScreenshots(itemTrade).length > 0" class="txt-small">
+                                                        ({{ filteredScreenshots(itemTrade).length }})</span>
                                                 </button>
 
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
@@ -791,8 +615,10 @@ const getScreenshotsLength = (param) => {
 
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
 
-                                                            <td>{{ trade.strategy.charAt(0).toUpperCase() +
-        trade.strategy.slice(1) }}</td>
+                                                            <td>{{
+        trade.strategy.charAt(0).toUpperCase() +
+        trade.strategy.slice(1)
+    }}</td>
 
                                                             <!--Entry-->
                                                             <td><span v-if="trade.tradesCount == 0"><span
@@ -914,10 +740,8 @@ const getScreenshotsLength = (param) => {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="(trade) in itemTrade.trades">
-                                                    <span
-                                                        v-for="itemScreenshot in screenshots.filter(obj => obj.name == trade.id)"
-                                                        class="mb-2">
+                                                <div v-for="itemScreenshot in filteredScreenshots(itemTrade)">
+                                                    <span class="mb-2">
                                                         <Screenshot :screenshot-data="itemScreenshot" show-title
                                                             source="dailyTab" />
                                                     </span>
@@ -1121,15 +945,15 @@ const getScreenshotsLength = (param) => {
                                                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                                     <span v-for="(tag, index) in tradeTags" :key="index"
                                                         class="tag txt-small" :style="useGetTagColor(tag.id)"
-                                                        @click="tradeTagsChange('remove', index)">
+                                                        @click="useTradeTagsChange('remove', index)">
                                                         {{ tag.name }}<span class="remove-tag">×</span>
                                                     </span>
 
-                                                    <input type="text" v-model="tagInput" @input="filterTags"
-                                                        @keydown.enter.prevent="tradeTagsChange('add', tagInput)"
-                                                        @keydown.tab.prevent="tradeTagsChange('add', tagInput)"
+                                                    <input type="text" v-model="tagInput" @input="useFilterTags"
+                                                        @keydown.enter.prevent="useTradeTagsChange('add', tagInput)"
+                                                        @keydown.tab.prevent="useTradeTagsChange('add', tagInput)"
                                                         class="form-control tag-input" placeholder="Add a tag">
-                                                    <div class="clickable-area" v-on:click="toggleTagsDropdown">
+                                                    <div class="clickable-area" v-on:click="useToggleTagsDropdown">
                                                     </div>
                                                 </div>
                                             </div>
@@ -1139,11 +963,11 @@ const getScreenshotsLength = (param) => {
                                                 <span v-show="showTagsList" v-for="group in availableTags">
                                                     <h6 class="p-1 mb-0"
                                                         :style="'background-color: ' + group.color + ';'"
-                                                        v-show="filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                                        v-show="useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
                                                         {{ group.name }}</h6>
-                                                    <li v-for="(suggestion, index) in filterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
+                                                    <li v-for="(suggestion, index) in useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
                                                         :key="index" :class="{ active: index === selectedTagIndex }"
-                                                        @click="tradeTagsChange('addFromDropdownMenu', suggestion)"
+                                                        @click="useTradeTagsChange('addFromDropdownMenu', suggestion)"
                                                         class="dropdown-item dropdown-item-tags">
                                                         <span class="ms-2">{{ suggestion.name }}</span>
                                                     </li>

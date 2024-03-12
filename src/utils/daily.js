@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText } from "../stores/globals";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit } from "../stores/globals";
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
@@ -94,8 +94,13 @@ export async function useGetTags() {
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
+        if (pageId.value == "daily"){
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+        }else {
+            query.limit(screenshotsQueryLimit.value);
+            query.skip(screenshotsPagination.value)
+        }
         query.limit(queryLimit.value); // limit to at most 10 results
 
         const results = await query.find();
@@ -165,6 +170,196 @@ export async function useGetAvailableTags() {
     })
 }
 
+/**************
+ * TAGS
+ ***************/
+
+export const useCreateAvailableTagsArray = () => {
+    availableTagsArray.splice(0)
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        for (let index = 0; index < element.tags.length; index++) {
+            const el = element.tags[index];
+            availableTagsArray.push(el)
+        }
+    }
+}
+
+let filteredSuggestions = []
+
+export const useFilterSuggestions = (param) => {
+    //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
+    //console.log(" filtered suggestion param " + param)
+    let index = availableTags.findIndex(obj => obj.id == param)
+    //console.log(" index " + index)
+    let temp = {}
+    temp.id = param
+    temp.tags = availableTags[index].tags.filter(tag => tag.name.toLowerCase().startsWith(tagInput.value.toLowerCase()));
+    let index2 = filteredSuggestions.findIndex(obj => obj.id == temp.id)
+    if (index2 == -1) {
+        filteredSuggestions.push(temp)
+    } else {
+        filteredSuggestions[index2].tags = temp.tags
+    }
+    //console.log(" filteredSuggestions " + JSON.stringify(filteredSuggestions))
+    return filteredSuggestions
+}
+
+export const useTradeTagsChange = async (param1, param2) => {
+    console.log(" param 1 " + param1)
+    console.log(" param 2 " + param2)
+    //console.log(" tags " + JSON.stringify(tags))
+
+    if (param1 == "add") {
+
+        //Case when arrow select and enter button
+        if (selectedTagIndex.value != -1) {
+            console.log(" -> Adding on arrow down and enter " + param2)
+
+            let tradeTagsIndex = tradeTags.findIndex(obj => obj.id == filteredSuggestions[selectedTagIndex.value].id)
+
+            //only add if does not exist in tradeTags already
+            if (tradeTagsIndex == -1) {
+                tradeTags.push(filteredSuggestions[selectedTagIndex.value]);
+                tagInput.value = ''; // Clear input after adding tag
+            }
+
+        } else if (param2) {
+
+            let inputTextIndex = tradeTags.findIndex(obj => obj.name.toLowerCase() == param2.toLowerCase())
+            console.log(" -> InputTextIndex " + inputTextIndex)
+            //First check if input text already exists in trades tags ( = current array of tags)
+            if (inputTextIndex != -1) {
+                console.log("  --> Input text already exists in trades tags")
+            }
+
+            else {
+                //Check if already in availableTags
+                let inAvailableTagsIndex = availableTagsArray.findIndex(tag =>
+                    tag.name.toLowerCase() == param2.toLowerCase())
+                console.log("  --> InAvailableTagsIndex " + JSON.stringify(inAvailableTagsIndex))
+
+                if (inAvailableTagsIndex != -1) {
+                    console.log("  --> Input text already exists in availableTags")
+                    tradeTags.push(availableTagsArray[inAvailableTagsIndex])
+                }
+                else {
+                    //Else new tag
+                    console.log("  --> Input is a new tag")
+                    let temp = {}
+
+
+
+                    // Get the highest id number
+                    const highestIdNumberAvailableTags = useFindHighestIdNumber(availableTags);
+                    const highestIdNumberTradeTags = useFindHighestIdNumberTradeTags(tradeTags);
+
+                    function chooseHighestNumber(num1, num2) {
+                        return Math.max(num1, num2);
+                    }
+
+                    // Example usage:
+                    const highestIdNumber = chooseHighestNumber(highestIdNumberAvailableTags, highestIdNumberTradeTags);
+
+                    //console.log(" -> Highest tag id number " + highestIdNumber);
+
+                    temp.id = "tag_" + (highestIdNumber + 1).toString()
+                    temp.name = param2
+                    tradeTags.push(temp)
+
+                    newTradeTags.push(temp)
+
+
+                    tagInput.value = ''; // Clear input after adding tag
+                }
+
+            }
+        }
+        selectedTagIndex.value = -1
+        showTagsList.value = false
+        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
+    }
+    if (param1 == "addFromDropdownMenu") {
+        let index = tradeTags.findIndex(obj => obj.id == param2.id)
+        //First check if input text already exists in trades tags ( = current array of tags)
+        if (index == -1) {
+            console.log(" -> Adding " + param2)
+            tradeTags.push(param2);
+            tagInput.value = ''; // Clear input after adding tag
+        }
+        selectedTagIndex.value = -1
+        showTagsList.value = false
+        console.log(" -> TradeTags " + JSON.stringify(tradeTags))
+    }
+
+    if (param1 == "remove") {
+        //param2 is index of element to remove inside tradeTags
+        tradeTags.splice(param2, 1);
+    }
+
+    tradeTagsChanged.value = true
+    if (pageId.value == "daily") {
+        tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
+        tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        saveButton.value = true
+    }
+
+};
+
+export const useFilterTags = () => {
+    if (tagInput.value == '') selectedTagIndex.value = -1
+    let showDropdownToReturn = tagInput.value !== '' && filteredSuggestions.length > 0
+    //console.log("Filtered tags showDropdownToReturn " + showDropdownToReturn)
+    showTagsList.value = showDropdownToReturn
+};
+
+export const useHandleKeyDown = (event) => {
+    if (showTagsList.value) {
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            console.log("filteredSuggestions " + JSON.stringify(filteredSuggestions))
+            selectedTagIndex.value = Math.min(selectedTagIndex.value + 1, filteredSuggestions.length - 1);
+            //console.log(" arrow down and selectedTagIndex " + selectedTagIndex.value)
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            selectedTagIndex.value = Math.max(selectedTagIndex.value - 1, 0);
+        }
+    }
+};
+
+export const useToggleTagsDropdown = () => {
+    selectedTagIndex.value = -1
+    showTagsList.value = !showTagsList.value
+}
+
+
+export const useGetTagGroup = (param) => {
+    const findGroupName = (tagId) => {
+        for (let obj of availableTags) {
+            for (let tag of obj.tags) {
+                if (tag.id === tagId) {
+                    return obj.name;
+                }
+            }
+        }
+
+        let name = null
+        if (availableTags.length > 0) {
+            name = availableTags.filter(obj => obj.id == "group_0")[0].name
+        }
+        return name // Return ungroupcolor if no result
+    }
+
+    const tagIdToFind = param;
+    const groupName = findGroupName(tagIdToFind);
+
+    return groupName
+}
+
+export const useResetTags = () => {
+    tradeTags.splice(0);
+}
+
 export const useFindHighestIdNumber = (param) => {
     let highestId = -Infinity;
     if (param.length == 0) {
@@ -200,10 +395,13 @@ export const useUpdateTags = async () => {
     return new Promise(async (resolve, reject) => {
         spinnerSetups.value = true
         //tradeSetupChanged.value = true
-
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
-        query.equalTo("tradeId", tradeTagsId.value)
+        if (pageId.value == "addScreenshot") {
+            query.equalTo("tradeId", screenshot.name)
+        }else{
+            query.equalTo("tradeId", tradeTagsId.value)
+        }
         const results = await query.first();
         if (results) {
             console.log(" -> Updating tags")
@@ -221,13 +419,19 @@ export const useUpdateTags = async () => {
                 })
         } else {
             console.log(" -> Saving tags")
+            //console.log("screenshot" + JSON.stringify(screenshot) )
             spinnerSetupsText.value = "Saving"
-            console.log(" -> Trade tags " + JSON.stringify(tradeTags))
+            //console.log(" -> Trade tags " + JSON.stringify(tradeTags))
             const object = new parseObject();
             object.set("user", Parse.User.current())
             object.set("tags", tradeTags)
-            object.set("dateUnix", tradeTagsDateUnix.value)
-            object.set("tradeId", tradeTagsId.value)
+            if (pageId.value == "addScreenshot") {
+                object.set("dateUnix", screenshot.dateUnix)
+                object.set("tradeId", screenshot.name)
+            }else{   
+                object.set("dateUnix", tradeTagsDateUnix.value)
+                object.set("tradeId", tradeTagsId.value)
+            }
             object.setACL(new Parse.ACL(Parse.User.current()));
             object.save()
                 .then(async (object) => {
@@ -280,9 +484,9 @@ export const useUpdateAvailableTags = async () => {
                 let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
 
                 let tempArray = []
-                if (pageId.value == "daily"){
+                if (pageId.value == "daily") {
                     tempArray = newTradeTags
-                }else{
+                } else {
                     tempArray = tradeTags
                 }
 

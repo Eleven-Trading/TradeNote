@@ -48,15 +48,16 @@ const props = defineProps({
             useHourMinuteFormat(props.screenshotData.dateUnix)
         }}</span>
 
-        
-                    <span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"> | <span
-                            v-for="tag in tags.tags.slice(0, 2)" class="tag txt-small" :style="useGetTagColor(tag.id)">{{
+
+                    <span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
+                            v-if="tags.tags.length > 0"> | <span v-for="tag in tags.tags.slice(0, 2)" class="tag txt-small"
+                                :style="useGetTagColor(tag.id)">{{
             tag.name
         }}
-                        </span>
-                        <span v-show="tags.tags.length > 2">+{{
+                            </span>
+                            <span v-show="tags.tags.length > 2">+{{
             tags.tags.length
-            - 2 }}</span></span>
+            - 2 }}</span></span></span>
                 </div>
 
                 <!-- Right: tools -->
