@@ -94,7 +94,7 @@ export async function useGetScreenshots(param) {
 
             //console.log(" -> Screenshots " + JSON.stringify(screenshots))
             screenshotsPagination.value = screenshotsPagination.value + screenshotsQueryLimit.value
-            console.log(" screenshotsNames " + JSON.stringify(screenshotsNames))
+
             spinnerSetups.value = false //spinner for trades in daily
             //spinnerLoadMore.value = false
             if (pageId.value != "daily") {
