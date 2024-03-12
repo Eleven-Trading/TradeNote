@@ -6,7 +6,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay } from '../utils/utils';
 
@@ -187,9 +187,12 @@ async function clickTradesModal(param1, param2, param3) {
 
 }
 
-
 const checkDate = ((param1, param2) => {
-    let check = dayjs(param1 * 1000).isSame(param2 * 1000, 'day')
+    //console.log("param 1 "+param1)
+    //console.log("param 2 "+param2)
+    let tdDateUnix = dayjs(param1 * 1000).tz(timeZoneTrade.value)
+    let tradeDateUnix = dayjs(param2 * 1000).tz(timeZoneTrade.value)
+    let check = tdDateUnix.isSame(tradeDateUnix, 'day')
     return check
 })
 
