@@ -755,10 +755,11 @@ export async function useTradovate(param) {
                     let priceNumber = Number(tempExec["Avg Fill Price"])
                     temp.Price = priceNumber.toString()
 
-                    temp["Exec Time"] = dayjs(tempExec["Fill Time"], "hh:mm:ss A").format("HH:mm:ss")
+                    //console.log(" Exec Time "+dayjs(tempExec["Fill Time"], "HH:mm:ss").unix())
+                    temp["Exec Time"] = dayjs(tempExec["Fill Time"], "HH:mm:ss")
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    //console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
                     if (contractSpecs.length == 0) {
                         reject("Missing information for future symbol " + temp.Symbol)
                     }
@@ -806,7 +807,7 @@ export async function useTradovate(param) {
                 }
             }
 
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
