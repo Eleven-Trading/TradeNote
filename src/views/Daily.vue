@@ -179,6 +179,7 @@ async function clickTradesModal(param1, param2, param3) {
             }
             await awaitClick()
             await (spinnerSetups.value = false)
+            tagInput.value = ''
             saveButton.value = false
             await useInitTooltip()
         }

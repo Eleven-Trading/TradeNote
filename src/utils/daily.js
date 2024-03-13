@@ -206,8 +206,8 @@ export const useFilterSuggestions = (param) => {
 }
 
 export const useTradeTagsChange = async (param1, param2) => {
-    console.log(" param 1 " + param1)
-    console.log(" param 2 " + param2)
+    console.log(" -> Type of trade tags change: " + param1)
+    console.log(" -> Input added: " + param2)
     //console.log(" tags " + JSON.stringify(tags))
 
     if (param1 == "add") {
@@ -221,6 +221,8 @@ export const useTradeTagsChange = async (param1, param2) => {
             //only add if does not exist in tradeTags already
             if (tradeTagsIndex == -1) {
                 tradeTags.push(filteredSuggestions[selectedTagIndex.value]);
+                tradeTagsChanged.value = true
+                saveButton.value = true
                 tagInput.value = ''; // Clear input after adding tag
             }
 
@@ -228,12 +230,11 @@ export const useTradeTagsChange = async (param1, param2) => {
 
             let inputTextIndex = tradeTags.findIndex(obj => obj.name.toLowerCase() == param2.toLowerCase())
             console.log(" -> InputTextIndex " + inputTextIndex)
+            
             //First check if input text already exists in trades tags ( = current array of tags)
             if (inputTextIndex != -1) {
                 console.log("  --> Input text already exists in trades tags")
-            }
-
-            else {
+            }else {
                 //Check if already in availableTags
                 let inAvailableTagsIndex = availableTagsArray.findIndex(tag =>
                     tag.name.toLowerCase() == param2.toLowerCase())
@@ -242,6 +243,8 @@ export const useTradeTagsChange = async (param1, param2) => {
                 if (inAvailableTagsIndex != -1) {
                     console.log("  --> Input text already exists in availableTags")
                     tradeTags.push(availableTagsArray[inAvailableTagsIndex])
+                    tradeTagsChanged.value = true
+                    saveButton.value = true
                 }
                 else {
                     //Else new tag
@@ -266,6 +269,8 @@ export const useTradeTagsChange = async (param1, param2) => {
                     temp.id = "tag_" + (highestIdNumber + 1).toString()
                     temp.name = param2
                     tradeTags.push(temp)
+                    tradeTagsChanged.value = true
+                    saveButton.value = true
 
                     newTradeTags.push(temp)
 
@@ -285,6 +290,8 @@ export const useTradeTagsChange = async (param1, param2) => {
         if (index == -1) {
             console.log(" -> Adding " + param2)
             tradeTags.push(param2);
+            tradeTagsChanged.value = true
+            saveButton.value = true
             tagInput.value = ''; // Clear input after adding tag
         }
         selectedTagIndex.value = -1
@@ -295,13 +302,14 @@ export const useTradeTagsChange = async (param1, param2) => {
     if (param1 == "remove") {
         //param2 is index of element to remove inside tradeTags
         tradeTags.splice(param2, 1);
+        tradeTagsChanged.value = true
+        saveButton.value = true
     }
 
-    tradeTagsChanged.value = true
+    
     if (pageId.value == "daily") {
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
         tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
-        saveButton.value = true
     }
 
 };
@@ -459,6 +467,7 @@ export const useUpdateAvailableTags = async () => {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
             //console.log(" currentTags " + JSON.stringify(currentTags))
+            
             const saveTags = () => {
                 console.log(" -> Saving available tags")
                 currentTags = []
@@ -473,12 +482,14 @@ export const useUpdateAvailableTags = async () => {
                 }
                 currentTags.push(temp)
             }
+
             if (currentTags == undefined) {
                 saveTags()
 
             } else if (currentTags.length == 0) {
                 saveTags()
             }
+
             else {
                 console.log(" -> Updating available tags")
                 let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
@@ -492,7 +503,17 @@ export const useUpdateAvailableTags = async () => {
 
                 for (let index = 0; index < tempArray.length; index++) {
                     const element = tempArray[index];
-                    currentTags[ungroupedIndex].tags.push(element)
+                    //console.log("  --> tags "+JSON.stringify(currentTags[ungroupedIndex].tags))
+                    //console.log("  --> element "+JSON.stringify(element))
+                    let index2 = currentTags[ungroupedIndex].tags.findIndex(obj => obj.id == element.id)
+                    //console.log("  --> index2 "+index2)
+                    //useUpdateAvailableTags is called whenever tradeTagsChanged.value = true. So either i differentiate or simply make a check here: only push if doesn't already exist. Else was showing multiple time in dropdown list.
+                    if (index2 == -1){
+                        console.log("  --> Adding new tag to available tags")
+                        currentTags[ungroupedIndex].tags.push(element)
+                    }else{
+                        console.log("  --> Tag already exists in available tags")
+                    }
                 }
             }
 
