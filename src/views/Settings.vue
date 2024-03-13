@@ -1,7 +1,7 @@
 <script setup>
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { onBeforeMount, onMounted, reactive, ref } from 'vue';
 import { useCheckCurrentUser, useInitTooltip } from '../utils/utils';
-import { currentUser, renderProfile,availableTags } from '../stores/globals';
+import { currentUser, renderProfile, availableTags } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
 let profileAvatar = null
@@ -9,12 +9,17 @@ let marketDataApiKey = null
 
 let selectedGroup = ref(null)
 
-let newAvailableTags = []
+const newAvailableTags = reactive([])
 
 onBeforeMount(async () => {
     await useGetAvailableTags()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
-    newAvailableTags = _.cloneDeep(availableTags)
+    //console.log(" available tags "+JSON.stringify(availableTags))
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        newAvailableTags.push(element)
+    }
+    //console.log(" newAvailableTags "+JSON.stringify(newAvailableTags))
     initSortable()
 })
 
@@ -163,19 +168,24 @@ const addNewTag = async () => {
         return new Promise(async (resolve, reject) => {
             const findHighestIdNumber = (param) => {
                 let highestId = -Infinity;
+                console.log("  -> Find highest number amongst " + JSON.stringify(param))
                 param.forEach(innerArray => {
-                    innerArray.tags.forEach(obj => {
-                        if (Number(obj.id.replace("tag_", "")) > highestId) {
-                            highestId = obj.id;
-                        }
-                    });
+                    if (innerArray.tags.length == 0) {
+                        highestId = 0
+                    } else {
+                        innerArray.tags.forEach(obj => {
+                            if (Number(obj.id.replace("tag_", "")) > highestId) {
+                                highestId = Number(obj.id.replace("tag_", ""))
+                            }
+                        });
+                    }
                 });
                 return highestId;
             }
 
             // Get the highest id number
             const highestIdNumber = findHighestIdNumber(newAvailableTags);
-            console.log(highestIdNumber); // Output: 6
+            console.log("  --> Highest number "+highestIdNumber);
 
             temp.id = "tag_" + (highestIdNumber + 1).toString()
             temp.name = "TagName"
@@ -259,8 +269,8 @@ const inputGroupColor = (param1, param2) => {
 
 let tagsToUpdate = []
 const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
-    console.log(" param 1 " + param1)
-    console.log(" param 2 " + param2)
+    //console.log(" param 1 " + param1)
+    //console.log(" param 2 " + param2)
     let groupIndex = -1;
 
     newAvailableTags.some((group, index) => {
@@ -351,11 +361,13 @@ const updateSortedTags = async () => {
                     }
                     resolve()
                 } else {
-                    alert("Updating trade tags did not return any results")
+                    console.log(" -> No existing trade tags to update")
+                    resolve()
                 }
             })
         }
 
+        // If name changed, we need to update existing tags/existing trade tags
         if (tagsToUpdate.length > 0) {
             for (let index = 0; index < tagsToUpdate.length; index++) {
                 const element = tagsToUpdate[index];
@@ -394,7 +406,8 @@ const updateSortedTags = async () => {
                 <!--=============== API KEY ===============-->
                 <div class="mt-3 row align-items-center">
                     <p class="fs-5 fw-bold">API Keys</p>
-                    <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                    <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                            data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
                     </div>
                     <div class="col-12 col-md-9">
                         <input type="text" class="form-control" :value="currentUser.marketDataApiKey"
