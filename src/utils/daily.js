@@ -207,7 +207,7 @@ export const useFilterSuggestions = (param) => {
 
 export const useTradeTagsChange = async (param1, param2) => {
     console.log(" -> Type of trade tags change: " + param1)
-    console.log(" -> Input added: " + param2)
+    console.log(" -> Input added: " + JSON.stringify(param2))
     //console.log(" tags " + JSON.stringify(tags))
 
     if (param1 == "add") {
@@ -288,7 +288,7 @@ export const useTradeTagsChange = async (param1, param2) => {
         let index = tradeTags.findIndex(obj => obj.id == param2.id)
         //First check if input text already exists in trades tags ( = current array of tags)
         if (index == -1) {
-            console.log(" -> Adding " + param2)
+            console.log(" -> Adding " + JSON.stringify(param2))
             tradeTags.push(param2);
             tradeTagsChanged.value = true
             saveButton.value = true
