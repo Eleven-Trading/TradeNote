@@ -89,15 +89,15 @@ export async function useGetTags() {
     return new Promise(async (resolve, reject) => {
         console.log(" -> Getting Tags");
         tags.length = 0
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
-        if (pageId.value == "daily"){
+        if (pageId.value == "daily") {
+            let startD = selectedRange.value.start
+            let endD = selectedRange.value.end
             query.greaterThanOrEqualTo("dateUnix", startD)
             query.lessThan("dateUnix", endD)
-        }else {
+        } else {
             query.limit(screenshotsQueryLimit.value);
             query.skip(screenshotsPagination.value)
         }
@@ -230,11 +230,11 @@ export const useTradeTagsChange = async (param1, param2) => {
 
             let inputTextIndex = tradeTags.findIndex(obj => obj.name.toLowerCase() == param2.toLowerCase())
             console.log(" -> InputTextIndex " + inputTextIndex)
-            
+
             //First check if input text already exists in trades tags ( = current array of tags)
             if (inputTextIndex != -1) {
                 console.log("  --> Input text already exists in trades tags")
-            }else {
+            } else {
                 //Check if already in availableTags
                 let inAvailableTagsIndex = availableTagsArray.findIndex(tag =>
                     tag.name.toLowerCase() == param2.toLowerCase())
@@ -306,7 +306,7 @@ export const useTradeTagsChange = async (param1, param2) => {
         saveButton.value = true
     }
 
-    
+
     if (pageId.value == "daily") {
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
         tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
@@ -407,7 +407,7 @@ export const useUpdateTags = async () => {
         const query = new Parse.Query(parseObject);
         if (pageId.value == "addScreenshot") {
             query.equalTo("tradeId", screenshot.name)
-        }else{
+        } else {
             query.equalTo("tradeId", tradeTagsId.value)
         }
         const results = await query.first();
@@ -436,7 +436,7 @@ export const useUpdateTags = async () => {
             if (pageId.value == "addScreenshot") {
                 object.set("dateUnix", screenshot.dateUnix)
                 object.set("tradeId", screenshot.name)
-            }else{   
+            } else {
                 object.set("dateUnix", tradeTagsDateUnix.value)
                 object.set("tradeId", tradeTagsId.value)
             }
@@ -467,7 +467,7 @@ export const useUpdateAvailableTags = async () => {
             let parsedResults = JSON.parse(JSON.stringify(results))
             let currentTags = parsedResults.tags
             //console.log(" currentTags " + JSON.stringify(currentTags))
-            
+
             const saveTags = () => {
                 console.log(" -> Saving available tags")
                 currentTags = []
@@ -508,10 +508,10 @@ export const useUpdateAvailableTags = async () => {
                     let index2 = currentTags[ungroupedIndex].tags.findIndex(obj => obj.id == element.id)
                     //console.log("  --> index2 "+index2)
                     //useUpdateAvailableTags is called whenever tradeTagsChanged.value = true. So either i differentiate or simply make a check here: only push if doesn't already exist. Else was showing multiple time in dropdown list.
-                    if (index2 == -1){
+                    if (index2 == -1) {
                         console.log("  --> Adding new tag to available tags")
                         currentTags[ungroupedIndex].tags.push(element)
-                    }else{
+                    } else {
                         console.log("  --> Tag already exists in available tags")
                     }
                 }

@@ -251,7 +251,7 @@ const startIndex = async () => {
             }
         }
 
-        res.sendStatus(200)
+        res.send({"existingSchema": existingSchema })
 
 
     })

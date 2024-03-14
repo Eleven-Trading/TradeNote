@@ -6,7 +6,7 @@ import { useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHigh
 
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)
-
+let existingSchema = []
 
 async function login() {
   console.log("\nLOGIN")
@@ -52,7 +52,7 @@ async function register() {
     return
   }
   let updateSchemaFunction = await updateSchema()
-  console.log("status " + updateSchemaFunction.status)
+  console.log(" -> Update Schema status " + updateSchemaFunction.status)
   if (updateSchemaFunction.status == 200) {
     const user = new Parse.User();
     user.set("username", loginForm.username);
@@ -82,7 +82,8 @@ async function updateSchema() {
   return new Promise((resolve, reject) => {
     console.log(" -> Updating schema")
     axios.post('/updateSchemas').then((response) => {
-      //console.log(response);
+      //console.log("  --> Schema response "+JSON.stringify(response))
+      existingSchema = response.data.existingSchema
       resolve(response)
     })
       .catch((error) => {
@@ -166,8 +167,8 @@ const checkLegacy = async (param) => {
     const updateAvailableTags = async () => {
       console.log("\n -> Handling available tags legacy")
       await useGetAvailableTags()
-      await updateAvailableTagsWithPatterns()
-      await updateAvailableTagsWithMistakes()
+      if (existingSchema.includes("patterns")) await updateAvailableTagsWithPatterns()
+      if (existingSchema.includes("mistakes")) await updateAvailableTagsWithMistakes()
       //console.log(" --> Trade Tags " + JSON.stringify(tradeTags))
       await useUpdateAvailableTags()
       await useUpdateLegacy("updateAvailableTagsWithPatterns")
@@ -175,7 +176,7 @@ const checkLegacy = async (param) => {
     const updateTags = async () => {
       console.log("\n -> Handling tags legacy")
       await useGetAvailableTags()
-      await copySetups()
+      if (existingSchema.includes("setups")) await copySetups()
       await useUpdateLegacy("updateSetupsToTags")
     }
 
@@ -286,7 +287,7 @@ const checkLegacy = async (param) => {
 
     const updateNotes = async () => {
       console.log("\n -> Handling notes legacy")
-      await copyNotes()
+      if (existingSchema.includes("setups")) await copyNotes()
       await useUpdateLegacy("updateNotes")
     }
 
