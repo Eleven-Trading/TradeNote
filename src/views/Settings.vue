@@ -170,7 +170,8 @@ const addNewTag = async () => {
                 let highestId = -Infinity;
                 console.log("  -> Find highest number amongst " + JSON.stringify(param))
                 param.forEach(innerArray => {
-                    if (innerArray.tags.length == 0) {
+                    console.log(" innerArray.tags "+JSON.stringify(innerArray.tags))
+                    if (innerArray.tags.length == 0 && highestId == -Infinity) {
                         highestId = 0
                     } else {
                         innerArray.tags.forEach(obj => {
