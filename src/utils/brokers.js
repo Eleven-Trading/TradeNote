@@ -1102,15 +1102,15 @@ export async function useRithmic(param) {
                     let temp = {}
                     temp.Account = tempExec.Account
 
-                    let tempCreateTime = tempExec["Create Time"]
+                    let tempUpdateTime = tempExec["Update Time"]
                     for (const key in tempExec) {
-                        if (Object.hasOwnProperty.call(tempExec, key) && key.includes("Create Time")) {
-                            tempCreateTime = tempExec[key]
+                        if (Object.hasOwnProperty.call(tempExec, key) && key.includes("Update Time")) {
+                            tempUpdateTime = tempExec[key]
                         }
                     }
-                    //console.log(" tempCreateTime " + tempCreateTime)
+                    //console.log(" tempUpdateTime " + tempUpdateTime)
 
-                    let dateTime = tempCreateTime.split(" ")
+                    let dateTime = tempUpdateTime.split(" ")
                     let month = dateTime[0].split("-")[1]
                     let day = dateTime[0].split("-")[2]
                     let year = dateTime[0].split("-")[0]
