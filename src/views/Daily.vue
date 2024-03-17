@@ -594,10 +594,10 @@ const filteredScreenshots = (param) => {
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
-                                                            <th scope="col">Vol</th>
+                                                            <th scope="col">Vol<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-title="Total number of securities during the trade (bought + sold or shorted + covered)"></i></th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
-                                                            <th scope="col">P&L/Vol</th>
+                                                            <th scope="col">P&L/Sec<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-title="Profit&Loss per unit of security traded (baught or shorted)"></i></th>
                                                             <th scope="col">P&L(n)</th>
                                                             <th scope="col">Tags</th>
                                                             <th scope="col">Note</th>

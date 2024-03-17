@@ -9,7 +9,7 @@ import { useRefreshScreenshot } from "../utils/screenshots"
     VARIABLES
 ============================================*/
 
-let filtersOpen = ref(false)
+let filtersOpen = ref(true)
 let filters = ref({
     "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "tags"],
     "calendar": ["month", "grossNet", "plSatisfaction"],

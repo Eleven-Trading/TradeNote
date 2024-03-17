@@ -1188,6 +1188,10 @@ export function useTwoDecFormat(param) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(param)
 }
 
+export function useXDecFormat(param, param2) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: param2 }).format(param)
+}
+
 export function useOneDecPercentFormat(param) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 1, style: 'percent' }).format(param)
 }

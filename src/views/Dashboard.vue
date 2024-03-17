@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray } from '../stores/globals';
-import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat } from '../utils/utils';
+import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat, useXDecFormat } from '../utils/utils';
 import NoData from '../components/NoData.vue';
 
 const dashTabs = [{
@@ -44,6 +44,18 @@ const appsCompute = computed(() => {
     //let temp = useXDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'SharePLWins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'SharePLLoss']), 4)
     let temp = useXDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / (totals.quantity / 2), 4)
     return temp
+})
+
+const profitFactorCompute = computed(() => {
+    let wins = parseFloat(totals[amountCase.value + 'Wins']).toFixed(2)
+    let loss = parseFloat(-totals[amountCase.value + 'Loss']).toFixed(2)
+    let profitFactor = 0
+    //console.log("wins " + wins + " and loss " + loss)
+    if (loss != 0) {
+        profitFactor = wins / loss
+        //console.log(" -> profitFactor "+profitFactor)
+    }
+    return useXDecFormat(profitFactor, 2)
 })
 
 useMountDashboard()
@@ -97,15 +109,29 @@ useMountDashboard()
                                             <div class="col-6 mb-2 mb-lg-0 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
+                                                        <span v-if="selectedRatio == 'appt'">{{ apptCompute }}</span>
                                                         <span v-if="selectedRatio == 'apps'">{{ appsCompute }}</span>
-                                                        <span v-else>{{ apptCompute }}</span>
+                                                        <span v-if="selectedRatio == 'profitFactor'">{{
+            profitFactorCompute }}</span>
                                                     </h4>
+                                                    <span v-if="selectedRatio == 'appt'" class="dashInfoTitle">APPT<i
+                                                            class="ps-1 uil uil-info-circle"
+                                                            data-bs-custom-class="tooltipLargeLeft"
+                                                            data-bs-toggle="tooltip" data-bs-html="true"
+                                                            :data-bs-title="'<div>Average Profit Per Trade</div><div> APPT = Proceeds &divide; Number of Trades</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase + 'Proceeds']) + '</div><div>Trades: ' + useThousandFormat(totals.trades) + '</div>'"></i></span>
+
+
                                                     <span v-if="selectedRatio == 'apps'" class="dashInfoTitle">APPS<i
-                                                            class="ps-1 uil uil-info-circle" data-bs-custom-class="tooltipLargeLeft" data-bs-toggle="tooltip"  data-bs-html="true"
-                                                            :data-bs-title="'<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: '+useThousandCurrencyFormat(totals[amountCase + 'Proceeds'])+'</div><div>Securities Traded: '+useThousandFormat(totals.quantity / 2)+'</div>'"></i></span>
-                                                    <span v-else class="dashInfoTitle">APPT<i
-                                                            class="ps-1 uil uil-info-circle" data-bs-custom-class="tooltipLargeLeft" data-bs-toggle="tooltip"  data-bs-html="true"
-                                                            :data-bs-title="'<div>Average Profit Per Trade</div><div> APPT = Proceeds &divide; Number of Trades</div><div>Proceeds: '+useThousandCurrencyFormat(totals[amountCase + 'Proceeds'])+'</div><div>Trades: '+useThousandFormat(totals.trades)+'</div>'"></i></span>
+                                                            class="ps-1 uil uil-info-circle"
+                                                            data-bs-custom-class="tooltipLargeLeft"
+                                                            data-bs-toggle="tooltip" data-bs-html="true"
+                                                            :data-bs-title="'<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'"></i></span>
+
+                                                            <span v-if="selectedRatio == 'profitFactor'" class="dashInfoTitle">Profit Factor<i
+                                                            class="ps-1 uil uil-info-circle"
+                                                            data-bs-custom-class="tooltipLargeLeft"
+                                                            data-bs-toggle="tooltip" data-bs-html="true"
+                                                            :data-bs-title="'<div> Profit Factor = Wins &divide; Losses</div><div>Wins: ' + useThousandCurrencyFormat(totals[amountCase + 'Wins']) + '</div><div>Losses: ' + useThousandCurrencyFormat(totals[amountCase + 'Loss']) + '</div>'"></i></span>
                                                 </div>
                                             </div>
                                             <div
@@ -193,7 +219,7 @@ useMountDashboard()
                                                                 <span
                                                                     v-if="profitAnalysis[amountCase + 'HighLossPerShare'] > 0">{{
             useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                'HighLossPerShare']) }}</span>
+                                                                    'HighLossPerShare']) }}</span>
                                                                 <span v-else>-</span>
                                                             </h5>
                                                             <span class="dashInfoTitle">Loss Per Share (high)</span>
@@ -249,7 +275,7 @@ useMountDashboard()
                         <div class="col-12">
                             <div class="row">
                                 <!-- CUMULATIVE P&L -->
-                                <div class="col-12 col-xl-6 mb-3">
+                                <div class="col-12 mb-3">
                                     <div class="dailyCard">
                                         <h6>Cumulated P&L</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
@@ -259,22 +285,12 @@ useMountDashboard()
                                     </div>
                                 </div>
 
-                                <!-- PROFIT FACTOR -->
-                                <div class="col-12 col-xl-6 mb-3">
-                                    <div class="dailyCard">
-                                        <h6>Profit Factor</h6>
-                                        <!--<div class="text-center" v-if="!dashboardChartsMounted">
-                                    <div class="spinner-border text-blue" role="status"></div>
-                                </div>-->
-                                        <div v-bind:key="renderData" id="lineChart1" class="chartClass"></div>
-                                    </div>
-                                </div>
-
-                                <!-- APPT CHART -->
+                                <!-- APPT/APPS/PROFIT FACTOR CHART -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
                                         <h6 v-if="selectedRatio == 'appt'">Average Profit Per Trade (APPT)</h6>
-                                        <h6 v-else>Average Profit Per Security (APPS)</h6>
+                                        <h6 v-if="selectedRatio == 'apps'">Average Profit Per Security (APPS)</h6>
+                                        <h6 v-if="selectedRatio == 'profitFactor'">Profit Factor</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
