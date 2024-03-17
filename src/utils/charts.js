@@ -1,5 +1,5 @@
 import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals"
-import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter } from "./utils"
+import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat } from "./utils"
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
 const cssColor60 = "rgba(255, 255, 255, 0.60)"
@@ -707,7 +707,7 @@ export function useBarChart(param1) {
         var avgSharePLWins
         var avgSharePLLoss
         var appt
-        var appspt
+        var apps
 
         var weekOfYear = null
         var monthOfYear = null
@@ -723,7 +723,7 @@ export function useBarChart(param1) {
                 if (selectedRatio.value == "appt") {
                     ratio = appt
                 } else {
-                    ratio = appspt
+                    ratio = apps
                 }
 
                 if (param1 == "barChart1") {
@@ -738,7 +738,14 @@ export function useBarChart(param1) {
                             temp.label.position = 'bottom'
                         }
                         temp.label.formatter = (params) => {
-                            return useTwoDecCurrencyFormat(params.value)
+                            let decimals = 0
+                            if (selectedRatio.value == "appt") {
+                                decimals = 2
+                            }
+                            if (selectedRatio.value == "apps") {
+                                decimals = 4
+                            }
+                            return useXDecCurrencyFormat(params.value, decimals)
                         }
                         chartData.push(temp)
                     } else {
@@ -762,8 +769,11 @@ export function useBarChart(param1) {
 
                 }
             }
+            appt = element[amountCase.value + 'Proceeds'] / element.trades
+            apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity
+            //console.log(" element.quantity "+element.buyQuantity)
 
-            var sumElements = () => {
+            /*var sumElements = () => {
                 sumWinsCount += element[amountCase.value + 'WinsCount']
                 sumTrades += element.trades
                 sumLossCount += element[amountCase.value + 'LossCount']
@@ -784,8 +794,8 @@ export function useBarChart(param1) {
                 avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
 
                 appt = (probWins * avgWins) - (probLoss * avgLoss)
-                appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
-            }
+                apps = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+            }*/
 
             if (selectedTimeFrame.value == "daily") {
                 var probWins = (element[amountCase.value + 'WinsCount'] / element.trades)
@@ -798,8 +808,8 @@ export function useBarChart(param1) {
                 var avgSharePLWins = element[amountCase.value + 'WinsCount'] == 0 ? 0 : (element[amountCase.value + 'SharePLWins'] / element[amountCase.value + 'WinsCount'])
                 var avgSharePLLoss = element[amountCase.value + 'LossCount'] == 0 ? 0 : -(element[amountCase.value + 'SharePLLoss'] / element[amountCase.value + 'LossCount'])
 
-                appt = (probWins * avgWins) - (probLoss * avgLoss)
-                appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+                appt = element[amountCase.value + 'Proceeds'] / element.trades
+                apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity
 
                 chartXAxis.push(useChartFormat(key))
                 pushingChartData()
@@ -909,7 +919,14 @@ export function useBarChart(param1) {
                             return useOneDecPercentFormat(params)
                         }
                         if (param1 == "barChart1") {
-                            return useThousandCurrencyFormat(params)
+                            let decimals = 0
+                            if (selectedRatio.value == "appt") {
+                                decimals = 2
+                            }
+                            if (selectedRatio.value == "apps") {
+                                decimals = 4
+                            }
+                            return useXDecCurrencyFormat(params, decimals)
                         }
                     }
                 },
@@ -941,7 +958,14 @@ export function useBarChart(param1) {
                         return params[0].name + ": " + useOneDecPercentFormat(params[0].value)
                     }
                     if (param1 == "barChart1") {
-                        return params[0].name + ": " + useTwoDecCurrencyFormat(params[0].value)
+                        let decimals = 0
+                        if (selectedRatio.value == "appt") {
+                            decimals = 2
+                        }
+                        if (selectedRatio.value == "apps") {
+                            decimals = 4
+                        }
+                        return params[0].name + ": " + useXDecCurrencyFormat(params[0].value, decimals)
                     }
                 }
             },
@@ -953,6 +977,8 @@ export function useBarChart(param1) {
 
 export function useBarChartNegative(param1) {
     //console.log("  --> " + param1)
+    var appt
+    var apps
     return new Promise((resolve, reject) => {
         var yAxis = []
         var series = []
@@ -1056,8 +1082,8 @@ export function useBarChartNegative(param1) {
                     var avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
                     var avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
 
-                    var appt = (probWins * avgWins) - (probLoss * avgLoss)
-                    var appspt = (probWins * avgSharePLWins) - (probLoss * avgSharePLLoss)
+                    appt = element[amountCase.value + 'Proceeds'] / element.trades
+                    apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity
 
                     sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
                     //sumLoss > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = "Infinity"
@@ -1066,8 +1092,8 @@ export function useBarChartNegative(param1) {
                     if (selectedRatio.value == "appt") {
                         ratio = appt
                     }
-                    if (selectedRatio.value == "appspt") {
-                        ratio = appspt
+                    if (selectedRatio.value == "apps") {
+                        ratio = apps
                     }
                     if (selectedRatio.value == "profitFactor") {
                         ratio = profitFactor
@@ -1263,7 +1289,14 @@ export function useBarChartNegative(param1) {
                         if (selectedRatio.value == "profitFactor") {
                             return params.value.toFixed(2)
                         } else {
-                            return useTwoDecCurrencyFormat(params.value)
+                            let decimals = 0
+                            if (selectedRatio.value == "appt") {
+                                decimals = 2
+                            }
+                            if (selectedRatio.value == "apps") {
+                                decimals = 4
+                            }
+                            return useXDecCurrencyFormat(params.value, decimals)
                         }
                     }
                 },

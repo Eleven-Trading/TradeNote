@@ -2985,8 +2985,8 @@ export const ratios = ref([{
     label: "APPT"
 },
 {
-    value: "appspt",
-    label: "APPSPT"
+    value: "apps",
+    label: "APPS"
 },
 {
     value: "profitFactor",

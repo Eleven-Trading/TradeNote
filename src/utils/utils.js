@@ -444,7 +444,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step10',
-        text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Share Per Trade (APPSPT) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
+        text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Security (APPS) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
         attachTo: {
             element: '#step10',
             on: 'bottom'
@@ -754,6 +754,7 @@ export async function useMountDashboard() {
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
+    useInitTooltip()
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
@@ -1173,6 +1174,14 @@ export function useThousandFormat(param) {
 
 export function useTwoDecCurrencyFormat(param) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, style: 'currency', currency: 'USD' }).format(param)
+}
+
+export function useThreeDecCurrencyFormat(param) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 3, style: 'currency', currency: 'USD' }).format(param)
+}
+
+export function useXDecCurrencyFormat(param, param2) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: param2, style: 'currency', currency: 'USD' }).format(param)
 }
 
 export function useTwoDecFormat(param) {

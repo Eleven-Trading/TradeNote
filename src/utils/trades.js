@@ -310,6 +310,8 @@ export async function useTotalTrades() {
                 totalGrossWins += el.grossWins
                 totalGrossLoss += el.grossLoss
                 totalGrossSharePL += el.grossSharePL
+                //console.log(" totalGrossProceeds "+totalGrossProceeds)
+
                 totalGrossSharePLWins += el.grossSharePLWins
                 totalGrossSharePLLoss += el.grossSharePLLoss
 

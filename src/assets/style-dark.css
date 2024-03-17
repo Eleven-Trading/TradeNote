@@ -191,11 +191,17 @@ input:checked+.slider:before {
     transform: translateX(30px);
 }
 
-.form-floating>.form-control-plaintext~label::after, .form-floating>.form-control:focus~label::after, .form-floating>.form-control:not(:placeholder-shown)~label::after, .form-floating>.form-select~label::after{
+.form-floating>.form-control-plaintext~label::after,
+.form-floating>.form-control:focus~label::after,
+.form-floating>.form-control:not(:placeholder-shown)~label::after,
+.form-floating>.form-select~label::after {
     background-color: transparent;
 }
 
-.form-floating>.form-control-plaintext~label, .form-floating>.form-control:focus~label, .form-floating>.form-control:not(:placeholder-shown)~label, .form-floating>.form-select~label{
+.form-floating>.form-control-plaintext~label,
+.form-floating>.form-control:focus~label,
+.form-floating>.form-control:not(:placeholder-shown)~label,
+.form-floating>.form-select~label {
     color: var(--white-38);
 }
 
@@ -561,7 +567,7 @@ img.logo {
     color: var(--white-87);
 }
 
-.row>.modal{
+.row>.modal {
     padding: 0;
 }
 
@@ -708,7 +714,13 @@ img.logo {
 
 
 /* DAILY / DASHBOARD */
+.tooltipLargeLeft {
+    --bs-tooltip-max-width: 500px !important;
+}
 
+.tooltipLargeLeft > .tooltip-inner {
+    text-align: left;
+}
 
 /*Must be inside .row or else too big but in that case height 100% (of the row div)*/
 
@@ -1109,9 +1121,9 @@ h4 {
 /* RETURN TO TOP BUTTON */
 
 #btn-return-to-top {
-    position: fixed; 
-    bottom: 2em; 
-    right: 2em; 
+    position: fixed;
+    bottom: 2em;
+    right: 2em;
     z-index: 999;
 }
 
@@ -1122,6 +1134,7 @@ h4 {
     align-items: center;
     justify-content: center;
 }
+
 .tags-input {
     display: flex;
     flex-wrap: wrap;
@@ -1134,16 +1147,19 @@ h4 {
     position: relative;
     background-color: var(--black-bg-7);
 }
+
 .tag {
     padding: 1px 10px;
     margin: 0px 3px;
     border-radius: 5px;
     cursor: pointer;
 }
+
 .remove-tag {
     cursor: pointer;
     margin-left: 5px;
 }
+
 .tag-input {
     border: none;
     outline: none;
@@ -1157,9 +1173,11 @@ h4 {
 }
 
 .dropdown-menu-tags {
-    display: list-item; /* Changed from display: none; */
+    display: list-item;
+    /* Changed from display: none; */
     position: absolute;
-    top: calc(100% + 1px); /* Position the dropdown below the input */
+    top: calc(100% + 1px);
+    /* Position the dropdown below the input */
     left: 2.5%;
     z-index: 1000;
     background-color: #2f2f2f;
@@ -1183,7 +1201,8 @@ h4 {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 40px; /* Adjust width as needed */
+    width: 40px;
+    /* Adjust width as needed */
     cursor: pointer;
     border-left: none;
 }
@@ -1211,25 +1230,30 @@ h4 {
 }
 
 #colorPicker {
-    width: 30px; /* Set the width */
-    height: 30px; /* Set the height */
-    border-radius: 50%; /* Make it round */
-    border: none; /* Remove default border */
-    padding: 0; /* Remove default padding */
-  }
-  
-  /* Hide the default color picker arrow */
-  #colorPicker::-webkit-color-swatch-wrapper {
+    width: 30px;
+    /* Set the width */
+    height: 30px;
+    /* Set the height */
+    border-radius: 50%;
+    /* Make it round */
+    border: none;
+    /* Remove default border */
     padding: 0;
-  }
-  
-  #colorPicker::-webkit-color-swatch {
+    /* Remove default padding */
+}
+
+/* Hide the default color picker arrow */
+#colorPicker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#colorPicker::-webkit-color-swatch {
     border: none;
     border-radius: 50%;
     padding: 0;
-  }
+}
 
-  .groupInput{
+.groupInput {
     background-color: var(--black-bg-7);
     color: var(--white-87);
     border: transparent;
