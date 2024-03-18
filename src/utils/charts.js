@@ -691,15 +691,8 @@ export function useBarChart(param1) {
         var chartData = []
         var chartXAxis = []
 
-        var sumLossCount = 0
         var sumTrades = 0
-        var sumWins = 0
-        var sumLoss = 0
-        var sumSharePLWins = 0
-        var sumSharePLLoss = 0
         var sumWinsCount = 0
-        var sumLossCount = 0
-
         var probWins
 
 
@@ -786,20 +779,6 @@ export function useBarChart(param1) {
                 }
             }
 
-            var sumElements = () => {
-                sumWinsCount += element[amountCase.value + 'WinsCount']
-                sumTrades += element.trades
-                sumLossCount += element[amountCase.value + 'LossCount']
-                sumWins += element[amountCase.value + 'Wins']
-                sumLoss += element[amountCase.value + 'Loss']
-                sumSharePLWins += element[amountCase.value + 'SharePLWins']
-                sumSharePLLoss += element[amountCase.value + 'SharePLLoss']
-            }
-
-            //appt = element[amountCase.value + 'Proceeds'] / element.trades
-            //apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity
-            //console.log(" element.quantity "+element.buyQuantity)
-
             if (selectedTimeFrame.value == "daily") {
                 if (selectedRatio.value == "profitFactor") {
                     wins = parseFloat(element[amountCase.value + 'Wins']).toFixed(2)
@@ -842,6 +821,9 @@ export function useBarChart(param1) {
                         loss += -element[amountCase.value + 'Loss']
                     }
 
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
+
                     chartXAxis.push(useChartFormat(key))
 
                 } else if (weekOfYear == dayjs.unix(key).isoWeek()) {
@@ -855,6 +837,9 @@ export function useBarChart(param1) {
                         wins += element[amountCase.value + 'Wins']
                         loss += -element[amountCase.value + 'Loss']
                     }
+
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
                 }
 
 
@@ -870,10 +855,7 @@ export function useBarChart(param1) {
                         appt = proceeds / trades
                         apps = proceeds / quantities
                     }
-
-                    //For win rate
-                    sumWinsCount += element[amountCase.value + 'WinsCount']
-                    sumTrades += element.trades
+                    
                     probWins = (sumWinsCount / sumTrades)
 
                     pushingChartData()
@@ -903,6 +885,8 @@ export function useBarChart(param1) {
                     
                     sumWinsCount = 0
                     sumTrades = 0
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
 
                     chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('isoWeek') / 1000))
                 }
@@ -920,9 +904,6 @@ export function useBarChart(param1) {
                         apps = proceeds / quantities
                     }
 
-                    //For win rate
-                    sumWinsCount += element[amountCase.value + 'WinsCount']
-                    sumTrades += element.trades
                     probWins = (sumWinsCount / sumTrades)
 
                     pushingChartData()
@@ -944,6 +925,9 @@ export function useBarChart(param1) {
                         wins += element[amountCase.value + 'Wins']
                         loss += -element[amountCase.value + 'Loss']
                     }
+                    
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
 
                     chartXAxis.push(useChartFormat(key))
 
@@ -961,6 +945,9 @@ export function useBarChart(param1) {
                         loss += -element[amountCase.value + 'Loss']
                     }
 
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
+
                 }
                 if (dayjs.unix(key).month() != monthOfYear) {
                     //When week changes, we create values proceeds and push both chart datas
@@ -975,9 +962,6 @@ export function useBarChart(param1) {
                         apps = proceeds / quantities
                     }
 
-                    //For win rate
-                    sumWinsCount += element[amountCase.value + 'WinsCount']
-                    sumTrades += element.trades
                     probWins = (sumWinsCount / sumTrades)
 
                     pushingChartData()
@@ -1004,6 +988,8 @@ export function useBarChart(param1) {
                     
                     sumWinsCount = 0
                     sumTrades = 0
+                    sumWinsCount += element[amountCase.value + 'WinsCount']
+                    sumTrades += element.trades
                    
                     chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('month') / 1000))
                 }
@@ -1019,9 +1005,6 @@ export function useBarChart(param1) {
                         profitFactor = wins / loss
                     }
 
-                    //For win rate
-                    sumWinsCount += element[amountCase.value + 'WinsCount']
-                    sumTrades += element.trades
                     probWins = (sumWinsCount / sumTrades)
 
                     pushingChartData()
@@ -1093,7 +1076,7 @@ export function useBarChart(param1) {
                 },
                 formatter: (params) => {
                     if (param1 == "barChart2") {
-                        return params[0].name + ": " + useOneDecPercentFormat(params[0].value)
+                        return params[0].name + "<br>" + useOneDecPercentFormat(params[0].value)
                     }
                     if (param1 == "barChart1") {
                         let decimals = 0
@@ -1104,10 +1087,10 @@ export function useBarChart(param1) {
                             decimals = 4
                         }
                         if (selectedRatio.value == "appt" || selectedRatio.value == "apps") {
-                            return params[0].name + ": " + useXDecCurrencyFormat(params[0].value, decimals)
+                            return params[0].name + "<br>" + useXDecCurrencyFormat(params[0].value, decimals)
                         }
                         if (selectedRatio.value == "profitFactor") {
-                            return params[0].name + ": " + useXDecFormat(params[0].value, decimals)
+                            return params[0].name + "<br>" + useXDecFormat(params[0].value, decimals)
                         }
                     }
                 }
@@ -1202,28 +1185,6 @@ export function useBarChartNegative(param1) {
                 }
                 //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                 if (numElements == (index + 1)) {
-                    if (trades > 0) {
-                        var probWins = (sumWinsCount / trades)
-                        var probLoss = (sumLossCount / trades)
-                    } else {
-                        var probWins = 0
-                        var probLoss = 0
-                    }
-
-                    if (sumWinsCount > 0) {
-                        var avgWins = (sumWins / sumWinsCount)
-                    } else {
-                        var avgWins = 0
-                    }
-
-                    if (sumLossCount > 0) {
-                        var avgLoss = -(sumLoss / sumLossCount)
-                    } else {
-                        var avgLoss = 0
-                    }
-
-                    var avgSharePLWins = sumWinsCount == 0 ? 0 : (sumSharePLWins / sumWinsCount)
-                    var avgSharePLLoss = sumLossCount == 0 ? 0 : -(sumSharePLLoss / sumLossCount)
 
                     appt = element[amountCase.value + 'Proceeds'] / element.trades
                     apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity

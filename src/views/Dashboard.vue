@@ -57,6 +57,19 @@ const profitFactorCompute = computed(() => {
     }
     return useXDecFormat(profitFactor, 2)
 })
+const selectedRatioNameCompute = computed(() => {
+    let name = "APPT"
+    if (selectedRatio.value == 'appt') {
+        name = "APPT"
+    }
+    if (selectedRatio.value == 'apps') {
+        name = "APPS"
+    }
+    if (selectedRatio.value == 'profitFactor') {
+        name = "Profit Factor"
+    }
+    return name
+})
 
 useMountDashboard()
 
@@ -127,7 +140,8 @@ useMountDashboard()
                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                             :data-bs-title="'<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'"></i></span>
 
-                                                            <span v-if="selectedRatio == 'profitFactor'" class="dashInfoTitle">Profit Factor<i
+                                                    <span v-if="selectedRatio == 'profitFactor'"
+                                                        class="dashInfoTitle">Profit Factor<i
                                                             class="ps-1 uil uil-info-circle"
                                                             data-bs-custom-class="tooltipLargeLeft"
                                                             data-bs-toggle="tooltip" data-bs-html="true"
@@ -333,8 +347,7 @@ useMountDashboard()
                                 <!-- GROUP BY DAY OF WEEK -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Day of Week (<span v-if="selectedRatio == 'appt'">APPT</span>
-                                            <span v-else>APPST</span>)
+                                        <h6>Group by Day of Week ({{ selectedRatioNameCompute }})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -346,8 +359,7 @@ useMountDashboard()
                                 <!-- GROUP BY TIMEFRAME -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Timeframe (<span v-if="selectedRatio == 'appt'">APPT</span>
-                                            <span v-else>APPST</span>)
+                                        <h6>Group by Timeframe ({{selectedRatioNameCompute}})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -359,8 +371,7 @@ useMountDashboard()
                                 <!-- GROUP BY DURATION -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Duration (<span v-if="selectedRatio == 'appt'">APPT</span>
-                                            <span v-else>APPST</span>)
+                                        <h6>Group by Duration ({{ selectedRatioNameCompute }})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -399,7 +410,7 @@ useMountDashboard()
                                 <!-- GROUP BY TRADES -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Trades</h6>
+                                        <h6>Group by Trades ({{ selectedRatioNameCompute }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -410,7 +421,7 @@ useMountDashboard()
                                 <!-- GROUP BY EXECUTIONS -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Executions</h6>
+                                        <h6>Group by Executions ({{ selectedRatioNameCompute }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -430,7 +441,7 @@ useMountDashboard()
                                 <!-- GROUP BY POSITION -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Position</h6>
+                                        <h6>Group by Position ({{ selectedRatioNameCompute }})</h6>
                                         <div class="text-center" v-if="!dashboardChartsMounted">
                                             <div class="spinner-border text-blue" role="status"></div>
                                         </div>
@@ -457,7 +468,7 @@ useMountDashboard()
                                 <!-- GROUP BY SYMBOL -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Symbol</h6>
+                                        <h6>Group by Symbol ({{ selectedRatioNameCompute }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -490,7 +501,7 @@ useMountDashboard()
                                 <!-- GROUP BY ENTRYPRICE -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Entry Price</h6>
+                                        <h6>Group by Entry Price ({{ selectedRatioNameCompute }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
