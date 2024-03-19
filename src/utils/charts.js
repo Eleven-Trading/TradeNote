@@ -1157,39 +1157,39 @@ export function useBarChartNegative(param1) {
             yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
 
             //console.log("yaxis "+JSON.stringify(yAxis))
-
-            var sumWinsCount = 0
-            var sumLossCount = 0
             var sumWins = 0
             var sumLoss = 0
-            var sumSharePLWins = 0
-            var sumSharePLLoss = 0
+            let sumProceeds = 0
             var trades = 0
+            let quantities = 0
             var profitFactor = 0
             var numElements = keyObject[key].length
             //console.log("num elemnets " + numElements)
             keyObject[key].forEach((element, index) => {
                 //console.log("index " + index)
                 //console.log("element " + JSON.stringify(element))
-                sumWinsCount += element[amountCase.value + 'WinsCount']
-                sumLossCount += element[amountCase.value + 'LossCount']
+
                 sumWins += element[amountCase.value + 'Wins']
                 sumLoss += element[amountCase.value + 'Loss']
-                sumSharePLWins += element[amountCase.value + 'SharePLWins']
-                sumSharePLLoss += element[amountCase.value + 'SharePLLoss']
-
+                
+                sumProceeds += element[amountCase.value + 'Proceeds']
+                
                 if (param1 == "barChartNegative4") {
                     trades += element.trades
                 } else {
                     trades += element.tradesCount
                 }
+                quantities += element.buyQuantity
+
                 //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                 if (numElements == (index + 1)) {
 
-                    appt = element[amountCase.value + 'Proceeds'] / element.trades
-                    apps = element[amountCase.value + 'Proceeds'] / element.buyQuantity
+                    appt = sumProceeds / trades
+
+                    apps = sumProceeds / quantities
 
                     sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
+
                     //sumLoss > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = "Infinity"
 
                     var ratio
