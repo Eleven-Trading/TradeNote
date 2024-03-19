@@ -756,7 +756,7 @@ export async function useTradovate(param) {
                     temp.Price = priceNumber.toString()
 
                     //console.log(" Exec Time "+dayjs(tempExec["Fill Time"], "HH:mm:ss").unix())
-                    temp["Exec Time"] = dayjs(tempExec["Fill Time"], "HH:mm:ss")
+                    temp["Exec Time"] = dayjs(tempExec["Fill Time"]).format("HH:mm:ss")
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
                     //console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
