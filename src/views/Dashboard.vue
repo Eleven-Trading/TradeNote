@@ -34,42 +34,37 @@ const dashTabs = [{
 ]
 amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
 
-const apptCompute = computed(() => {
-    //let temp = useTwoDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'Wins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'Loss']))
-    let temp = useTwoDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / totals.trades)
-    return temp
+const ratioCompute = computed(() => {
+    let ratio = {}
+    if (localStorage.getItem('selectedRatio') == 'appt') {
+        ratio.shortName = "APPT"
+        ratio.name = "Average Profit Factor per Trade"
+        ratio.value = useTwoDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / totals.trades)
+        ratio.tooltipTitle = '<div>Average Profit Per Trade</div><div> APPT = Proceeds &divide; Number of Trades</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Trades: ' + useThousandFormat(totals.trades) + '</div>'
+    }
+    if (localStorage.getItem('selectedRatio') == 'apps') {
+        ratio.name = "Average Profit Factor per Security"
+        ratio.shortName = "APPS"
+        ratio.value = useXDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / (totals.quantity / 2), 4)
+        ratio.tooltipTitle = '<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'
+    }
+    if (localStorage.getItem('selectedRatio') == 'profitFactor') {
+        ratio.shortName = "Profit Factor"
+        ratio.name = "Profit Factor"
+        let wins = parseFloat(totals[amountCase.value + 'Wins']).toFixed(2)
+        let loss = parseFloat(-totals[amountCase.value + 'Loss']).toFixed(2)
+        let profitFactor = 0
+        //console.log("wins " + wins + " and loss " + loss)
+        if (loss != 0) {
+            profitFactor = wins / loss
+            //console.log(" -> profitFactor "+profitFactor)
+        }
+        ratio.value = useXDecFormat(profitFactor, 2)
+        ratio.tooltipTitle = '<div> Profit Factor = Wins &divide; Losses</div><div>Wins: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Wins']) + '</div><div>Losses: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Loss']) + '</div>'
+    }
+    return ratio
 })
 
-const appsCompute = computed(() => {
-    //let temp = useXDecCurrencyFormat((totals['prob' + amountCapital.value + 'Wins'] * totals['avg' + amountCapital.value + 'SharePLWins']) - (totals['prob' + amountCapital.value + 'Loss'] * totals['avg' + amountCapital.value + 'SharePLLoss']), 4)
-    let temp = useXDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / (totals.quantity / 2), 4)
-    return temp
-})
-
-const profitFactorCompute = computed(() => {
-    let wins = parseFloat(totals[amountCase.value + 'Wins']).toFixed(2)
-    let loss = parseFloat(-totals[amountCase.value + 'Loss']).toFixed(2)
-    let profitFactor = 0
-    //console.log("wins " + wins + " and loss " + loss)
-    if (loss != 0) {
-        profitFactor = wins / loss
-        //console.log(" -> profitFactor "+profitFactor)
-    }
-    return useXDecFormat(profitFactor, 2)
-})
-const selectedRatioNameCompute = computed(() => {
-    let name = "APPT"
-    if (selectedRatio.value == 'appt') {
-        name = "APPT"
-    }
-    if (selectedRatio.value == 'apps') {
-        name = "APPS"
-    }
-    if (selectedRatio.value == 'profitFactor') {
-        name = "Profit Factor"
-    }
-    return name
-})
 
 useMountDashboard()
 
@@ -122,30 +117,13 @@ useMountDashboard()
                                             <div class="col-6 mb-2 mb-lg-0 col-lg-3">
                                                 <div class="dailyCard">
                                                     <h4 class="titleWithDesc">
-                                                        <span v-if="selectedRatio == 'appt'">{{ apptCompute }}</span>
-                                                        <span v-if="selectedRatio == 'apps'">{{ appsCompute }}</span>
-                                                        <span v-if="selectedRatio == 'profitFactor'">{{
-            profitFactorCompute }}</span>
+                                                        {{ ratioCompute.value }}
                                                     </h4>
-                                                    <span v-if="selectedRatio == 'appt'" class="dashInfoTitle">APPT<i
+                                                    <span class="dashInfoTitle">{{ ratioCompute.shortName }}<i
                                                             class="ps-1 uil uil-info-circle"
                                                             data-bs-custom-class="tooltipLargeLeft"
                                                             data-bs-toggle="tooltip" data-bs-html="true"
-                                                            :data-bs-title="'<div>Average Profit Per Trade</div><div> APPT = Proceeds &divide; Number of Trades</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase + 'Proceeds']) + '</div><div>Trades: ' + useThousandFormat(totals.trades) + '</div>'"></i></span>
-
-
-                                                    <span v-if="selectedRatio == 'apps'" class="dashInfoTitle">APPS<i
-                                                            class="ps-1 uil uil-info-circle"
-                                                            data-bs-custom-class="tooltipLargeLeft"
-                                                            data-bs-toggle="tooltip" data-bs-html="true"
-                                                            :data-bs-title="'<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'"></i></span>
-
-                                                    <span v-if="selectedRatio == 'profitFactor'"
-                                                        class="dashInfoTitle">Profit Factor<i
-                                                            class="ps-1 uil uil-info-circle"
-                                                            data-bs-custom-class="tooltipLargeLeft"
-                                                            data-bs-toggle="tooltip" data-bs-html="true"
-                                                            :data-bs-title="'<div> Profit Factor = Wins &divide; Losses</div><div>Wins: ' + useThousandCurrencyFormat(totals[amountCase + 'Wins']) + '</div><div>Losses: ' + useThousandCurrencyFormat(totals[amountCase + 'Loss']) + '</div>'"></i></span>
+                                                            :data-bs-title="ratioCompute.tooltipTitle"></i></span>
                                                 </div>
                                             </div>
                                             <div
@@ -233,7 +211,7 @@ useMountDashboard()
                                                                 <span
                                                                     v-if="profitAnalysis[amountCase + 'HighLossPerShare'] > 0">{{
             useTwoDecCurrencyFormat(profitAnalysis[amountCase +
-                                                                    'HighLossPerShare']) }}</span>
+                'HighLossPerShare']) }}</span>
                                                                 <span v-else>-</span>
                                                             </h5>
                                                             <span class="dashInfoTitle">Loss Per Share (high)</span>
@@ -302,12 +280,7 @@ useMountDashboard()
                                 <!-- APPT/APPS/PROFIT FACTOR CHART -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6 v-if="selectedRatio == 'appt'">Average Profit Per Trade (APPT)</h6>
-                                        <h6 v-if="selectedRatio == 'apps'">Average Profit Per Security (APPS)</h6>
-                                        <h6 v-if="selectedRatio == 'profitFactor'">Profit Factor</h6>
-                                        <!--<div class="text-center" v-if="!dashboardChartsMounted">
-                                    <div class="spinner-border text-blue" role="status"></div>
-                                </div>-->
+                                        <h6>{{ ratioCompute.name }} <span v-if="ratioCompute.name != 'Profit Factor'">({{ ratioCompute.shortName }})</span></h6>
                                         <div v-bind:key="renderData" id="barChart1" class="chartClass"></div>
                                     </div>
                                 </div>
@@ -347,7 +320,7 @@ useMountDashboard()
                                 <!-- GROUP BY DAY OF WEEK -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Day of Week ({{ selectedRatioNameCompute }})
+                                        <h6>Group by Day of Week ({{ ratioCompute.shortName }})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -359,7 +332,7 @@ useMountDashboard()
                                 <!-- GROUP BY TIMEFRAME -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Timeframe ({{selectedRatioNameCompute}})
+                                        <h6>Group by Timeframe ({{ratioCompute.shortName}})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -371,7 +344,7 @@ useMountDashboard()
                                 <!-- GROUP BY DURATION -->
                                 <div class="col-12 col-xl-4 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Duration ({{ selectedRatioNameCompute }})
+                                        <h6>Group by Duration ({{ ratioCompute.shortName }})
                                         </h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
@@ -410,7 +383,7 @@ useMountDashboard()
                                 <!-- GROUP BY TRADES -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Trades ({{ selectedRatioNameCompute }})</h6>
+                                        <h6>Group by Trades ({{ ratioCompute.shortName }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -421,7 +394,7 @@ useMountDashboard()
                                 <!-- GROUP BY EXECUTIONS -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Executions ({{ selectedRatioNameCompute }})</h6>
+                                        <h6>Group by Executions ({{ ratioCompute.shortName }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -441,7 +414,7 @@ useMountDashboard()
                                 <!-- GROUP BY POSITION -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Position ({{ selectedRatioNameCompute }})</h6>
+                                        <h6>Group by Position ({{ ratioCompute.shortName }})</h6>
                                         <div class="text-center" v-if="!dashboardChartsMounted">
                                             <div class="spinner-border text-blue" role="status"></div>
                                         </div>
@@ -468,7 +441,7 @@ useMountDashboard()
                                 <!-- GROUP BY SYMBOL -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Symbol ({{ selectedRatioNameCompute }})</h6>
+                                        <h6>Group by Symbol ({{ ratioCompute.shortName }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->
@@ -501,7 +474,7 @@ useMountDashboard()
                                 <!-- GROUP BY ENTRYPRICE -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>Group by Entry Price ({{ selectedRatioNameCompute }})</h6>
+                                        <h6>Group by Entry Price ({{ ratioCompute.shortName }})</h6>
                                         <!--<div class="text-center" v-if="!dashboardChartsMounted">
                                     <div class="spinner-border text-blue" role="status"></div>
                                 </div>-->

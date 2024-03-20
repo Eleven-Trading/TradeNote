@@ -251,7 +251,7 @@ async function saveFilter() {
 
                     <span v-show="filters[pageId].includes('periodRange')">
                         {{ selectedPeriodRange.label }} |
-                        <span v-show="selectedPeriodRange.value == 'custom'"> range |</span>
+                        <span v-show="selectedPeriodRange.value == 'custom'"> Range |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('month')">
@@ -273,7 +273,7 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('ratio')">
-                        {{ selectedRatio.toUpperCase() }} |
+                        <span v-if="selectedRatio != 'profitFactor'">{{ selectedRatio.toUpperCase() }}</span><span v-else>Profit Factor</span> |
                     </span>
 
                     <span v-show="filters[pageId].includes('tags')">
