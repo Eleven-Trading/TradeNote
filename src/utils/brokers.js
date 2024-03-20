@@ -1177,7 +1177,7 @@ export async function useRithmic(param) {
 
                     temp["Gross Proceeds"] = proceedsNumber.toString()
 
-                    let commNumber = Number(tempExec["Commission Fill Rate"])
+                    let commNumber = Number(tempExec["Commission Fill Rate"])*qtyNumber
                     temp.Comm = commNumber.toString()
                     temp.SEC = "0"
                     temp.TAF = "0"
@@ -1195,7 +1195,7 @@ export async function useRithmic(param) {
 
 
             }
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
