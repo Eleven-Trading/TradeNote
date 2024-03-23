@@ -507,8 +507,7 @@ const updateSortedTags = async () => {
                 <!-- Delete Tag -->
                 <div class="mt-5 row align-items-center">
                     <div class="col-12 col-md-3">
-                        Tag to delete<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                            data-bs-title="Tags will be moved to Ungrouped."></i>
+                        Tag to delete
                     </div>
                     <div class="col-12 col-md-9">
 
