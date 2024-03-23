@@ -1656,7 +1656,8 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                         },
                         data: [
                             {
-                                name: 'Mark',
+                                name: 'entryMark',
+                                symbol: 'triangle',
                                 coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
                                 value: trade.entryPrice,
                                 itemStyle: {
@@ -1664,7 +1665,8 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                                 }
                             },
                             {
-                                name: 'Mark',
+                                name: 'exitMark',
+                                symbol: 'triangle',
                                 coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
                                 value: trade.exitPrice,
                                 itemStyle: {
