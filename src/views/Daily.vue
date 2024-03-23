@@ -45,6 +45,8 @@ let ohlcDates = []
 let ohlcPrices = []
 let ohlcVolumes = []
 
+let candlestickChartFailureMessage
+
 onBeforeMount(async () => {
 
 })
@@ -341,8 +343,23 @@ async function clickTradesModal(param1, param2, param3) {
                 for (let key in screenshot) delete screenshot[key]
                 screenshot.side = null
                 screenshot.type = null
-                await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
-                await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, selectedTrade)
+                try {
+                    candlestickChartFailureMessage=null
+                    await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
+                    await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, selectedTrade)
+                } catch (error) {
+                    if (error.response && error.response.status === 429) {
+                        candlestickChartFailureMessage="Too many requests, try again later"
+                    }
+                    else if (error.response) {
+                        candlestickChartFailureMessage=error.response.statusText
+                    }
+                    else {
+                        candlestickChartFailureMessage=error
+                    }
+
+                    console.error(error)
+                }
             }
 
 
@@ -353,19 +370,16 @@ async function clickTradesModal(param1, param2, param3) {
                 findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
                 //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
             }
-
         }
+
         await awaitClick()
         await (spinnerSetups.value = false)
         saveButton.value = false
         await useInitTooltip()
         const myModalEl = document.getElementById('tradesModal')
         myModalEl.addEventListener('shown.bs.modal', async (event) => {
-
         })
-
     }
-
 }
 
 async function hideTradesModal() {
@@ -409,7 +423,6 @@ function getOHLC(date, symbol, entryTime, exitTime) {
         await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
             .then((response) => {
-                //console.log(" res "+JSON.stringify(response.data))
                 ohlcDates = []
                 ohlcPrices = []
                 ohlcVolumes = []
@@ -427,12 +440,10 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                     ohlcPrices.push(temp)
                     ohlcVolumes.push(element.v)
                 }
-                //console.log(" -> ohlc date " + JSON.stringify(ohlcDates))
-                //console.log(" -> ohlc array " + JSON.stringify(ohlcPrices))
-
 
             })
             .catch((error) => {
+                reject(error)
             })
             .finally(function () {
                 // always executed
@@ -796,7 +807,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
                     <div v-else>
-                        <div id="candlestickChart" class="candlestickClass"></div>
+                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass"></div>
+                        <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
                     </div>
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
