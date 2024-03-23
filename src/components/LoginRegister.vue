@@ -173,6 +173,7 @@ const checkLegacy = async (param) => {
       await useUpdateAvailableTags()
       await useUpdateLegacy("updateAvailableTagsWithPatterns")
     }
+
     const updateTags = async () => {
       console.log("\n -> Handling tags legacy")
       await useGetAvailableTags()
@@ -291,13 +292,62 @@ const checkLegacy = async (param) => {
       await useUpdateLegacy("updateNotes")
     }
 
+    const updateTagsArray = async () => {
+      return new Promise(async (resolve, reject) => {
+        console.log("\n -> Handling tags json legacy")
+
+        const copyTagsToArray = async () => {
+          return new Promise(async (resolve, reject) => {
+            const parseObject = Parse.Object.extend("tags");
+            const query = new Parse.Query(parseObject);
+            const results = await query.find();
+            if (results.length > 0) {
+              for (let i = 0; i < results.length; i++) {
+                const object = results[i];
+                console.log(" -> Object id " + object.id)
+
+                if (object.get('tags') != undefined && object.get('tags').length > 0) {
+                  let tagsArray = []
+                  for (let index = 0; index < object.get('tags').length; index++) {
+                    const element = object.get('tags')[index];
+                    tagsArray.push(element.id)
+                  }
+                  object.set("tags", tagsArray)
+                  object.save()
+                    .then(async (object) => {
+                      console.log(' -> Updated tags to array with id ' + object.id)
+                    }, (error) => {
+                      console.log(' -> Failed to update tags to array, with error code: ' + error.message);
+                    })
+                }
+              }
+              resolve()
+
+            } else {
+              console.log(" -> No tags to update")
+              resolve()
+            }
+          })
+        }
+
+        if (existingSchema.includes("tags")) {
+          await copyTagsToArray()
+        }
+        await useUpdateLegacy("updateTagsArray")
+        resolve()
+      })
+    }
+
+
     await useGetLegacy()
 
     if (legacy == undefined || legacy.length == 0) {
       await updateAvailableTags()
       await updateTags()
       await updateNotes()
+      await updateTagsArray()
     }
+
     else if (legacy.length > 0) {
       let index1 = legacy.findIndex(obj => obj.name == "updateAvailableTagsWithPatterns")
       if (index1 == -1) {
@@ -318,6 +368,13 @@ const checkLegacy = async (param) => {
         await updateNotes()
       } else {
         console.log("  --> Legacy 'updateNotes' done")
+      }
+
+      let index4 = legacy.findIndex(obj => obj.name == "updateTagsArray")
+      if (index4 == -1) {
+        await updateTagsArray()
+      } else {
+        console.log("  --> Legacy 'updateTagsArray' done")
       }
 
     } else {
@@ -346,7 +403,7 @@ const checkLegacy = async (param) => {
         </select>
       </div>
       <button class="mt-3 w-100 btn btn-lg btn-primary" type="submit" :disabled="signingUp">{{ pageId == 'login' ?
-        "Log&nbsp;in" : "Register" }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
+      "Log&nbsp;in" : "Register" }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
           aria-hidden="true"></span></button>
     </form>
     <div class="text-center mt-3"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :

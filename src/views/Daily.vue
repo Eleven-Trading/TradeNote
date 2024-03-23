@@ -12,7 +12,7 @@ import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDu
 
 import { useSetupImageUpload, useSaveScreenshot } from '../utils/screenshots';
 
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagColor, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
 
 const dailyTabs = [{
     id: "trades",
@@ -154,11 +154,22 @@ async function clickTradesModal(param1, param2, param3) {
                     screenshot.type = null
                 }
 
-
+                //We differentiate
+                //1- tags on daily page : they are a function of available tags
+                //2- tags in modal (here): they need to have id and name because if we add a new tag, we need the json with id and name
                 let findTags = tags.find(obj => obj.tradeId == filteredTradeId)
                 if (findTags) {
                     findTags.tags.forEach(element => {
-                        tradeTags.push(element)
+                        for (let obj of availableTags) {
+                            for (let tag of obj.tags) {
+                                if (tag.id === element) {
+                                    let temp = {}
+                                    temp.id = tag.id
+                                    temp.name = tag.name
+                                    tradeTags.push(temp)
+                                }
+                            }
+                        }
                     });
                 }
 
@@ -574,7 +585,8 @@ const filteredScreenshots = (param) => {
                                                     v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
                                                     v-bind:class="[filteredScreenshots(itemTrade).length > 0 ? '' : 'noDataTab', 'nav-link']">Screenshots<span
-                                                        v-if="filteredScreenshots(itemTrade).length > 0" class="txt-small">
+                                                        v-if="filteredScreenshots(itemTrade).length > 0"
+                                                        class="txt-small">
                                                         ({{ filteredScreenshots(itemTrade).length }})</span>
                                                 </button>
 
@@ -594,10 +606,16 @@ const filteredScreenshots = (param) => {
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">Symbol</th>
-                                                            <th scope="col">Vol<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-title="Total number of securities during the trade (bought + sold or shorted + covered)"></i></th>
+                                                            <th scope="col">Vol<i class="ps-1 uil uil-info-circle"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-title="Total number of securities during the trade (bought + sold or shorted + covered)"></i>
+                                                            </th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
-                                                            <th scope="col">P&L/Sec<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-title="Profit&Loss per unit of security traded (baught or shorted)"></i></th>
+                                                            <th scope="col">P&L/Sec<i class="ps-1 uil uil-info-circle"
+                                                                    data-bs-toggle="tooltip"
+                                                                    data-bs-title="Profit&Loss per unit of security traded (baught or shorted)"></i>
+                                                            </th>
                                                             <th scope="col">P&L(n)</th>
                                                             <th scope="col">Tags</th>
                                                             <th scope="col">Note</th>
@@ -615,17 +633,22 @@ const filteredScreenshots = (param) => {
                                                             v-on:click="clickTradesModal(index, index2, index2)"
                                                             class="pointerClass">
 
+                                                            <!--Symbol-->
                                                             <td>{{ trade.symbol }}</td>
 
+                                                            <!--Vol-->
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
 
-                                                            <td>{{
-        trade.strategy.charAt(0).toUpperCase() +
-        trade.strategy.slice(1)
-    }}</td>
+                                                            <!--Position-->
+                                                            <td>
+                                                                {{
+        trade.strategy.charAt(0).toUpperCase() + trade.strategy.slice(1)
+    }}
+                                                            </td>
 
                                                             <!--Entry-->
-                                                            <td><span v-if="trade.tradesCount == 0"><span
+                                                            <td>
+                                                                <span v-if="trade.tradesCount == 0"><span
                                                                         v-if="trade.openPosition">Open<i
                                                                             class="ps-1 uil uil-info-circle"
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
@@ -639,7 +662,6 @@ const filteredScreenshots = (param) => {
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
-
 
                                                             <!--P&L/Vol-->
                                                             <td>
@@ -665,8 +687,7 @@ const filteredScreenshots = (param) => {
                                                                     v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
-                                                                        :style="useGetTagColor(tag.id)">{{ tag.name
-                                                                        }}
+                                                                        :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{ useGetTagInfo(tag).tagName }}
                                                                     </span>
                                                                     <span v-show="tags.tags.length > 2">+{{
         tags.tags.length
@@ -948,7 +969,7 @@ const filteredScreenshots = (param) => {
                                             <div class="form-control dropdown form-select" style="height: auto;">
                                                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                                     <span v-for="(tag, index) in tradeTags" :key="index"
-                                                        class="tag txt-small" :style="useGetTagColor(tag.id)"
+                                                        class="tag txt-small" :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
                                                         @click="useTradeTagsChange('remove', index)">
                                                         {{ tag.name }}<span class="remove-tag">×</span>
                                                     </span>

@@ -7,20 +7,18 @@ import { useGetAvailableTags } from '../utils/daily';
 let profileAvatar = null
 let marketDataApiKey = null
 
-let selectedGroup = ref(null)
-
 const newAvailableTags = reactive([])
+const availableTagsTags = reactive([])
+
+let groupToDelete = ref(null)
+let tagToDelete = ref(null)
 
 onBeforeMount(async () => {
     await useGetAvailableTags()
-    //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
-    //console.log(" available tags "+JSON.stringify(availableTags))
-    for (let index = 0; index < availableTags.length; index++) {
-        const element = availableTags[index];
-        newAvailableTags.push(element)
-    }
-    //console.log(" newAvailableTags "+JSON.stringify(newAvailableTags))
+    useGetAvailableTagsTags()
+    useGetNewAvailableTags()
     initSortable()
+
 })
 
 onMounted(async () => {
@@ -67,6 +65,25 @@ async function updateProfile() {
  * TAGS
  *********************/
 
+const useGetAvailableTagsTags = () => {
+    availableTagsTags.splice(0)
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        for (let index = 0; index < element.tags.length; index++) {
+            const el = element.tags[index];
+            availableTagsTags.push(el)
+        }
+
+    }
+}
+
+const useGetNewAvailableTags = () => {
+    newAvailableTags.splice(0)
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        newAvailableTags.push(element)
+    }
+}
 const initSortable = (param1) => {
     let idDivElToCreate
 
@@ -168,9 +185,9 @@ const addNewTag = async () => {
         return new Promise(async (resolve, reject) => {
             const findHighestIdNumber = (param) => {
                 let highestId = -Infinity;
-                console.log("  -> Find highest number amongst " + JSON.stringify(param))
+                //console.log("  -> Find highest number amongst " + JSON.stringify(param))
                 param.forEach(innerArray => {
-                    console.log(" innerArray.tags "+JSON.stringify(innerArray.tags))
+                    //console.log(" innerArray.tags " + JSON.stringify(innerArray.tags))
                     if (innerArray.tags.length == 0 && highestId == -Infinity) {
                         highestId = 0
                     } else {
@@ -186,7 +203,7 @@ const addNewTag = async () => {
 
             // Get the highest id number
             const highestIdNumber = findHighestIdNumber(newAvailableTags);
-            console.log("  --> Highest number "+highestIdNumber);
+            console.log("  --> Highest number " + highestIdNumber);
 
             temp.id = "tag_" + (highestIdNumber + 1).toString()
             temp.name = "TagName"
@@ -203,64 +220,129 @@ const addNewTag = async () => {
 
 const deleteGroup = async () => {
     //first we move all the tags to the ungrouped group
-    let toDeleteIndex = newAvailableTags.findIndex(obj => obj.id == selectedGroup.value)
+    console.log(" -> Group to delete " + groupToDelete.value)
+    if (groupToDelete.value !== null) {
+        let toDeleteIndex = newAvailableTags.findIndex(obj => obj.id == groupToDelete.value)
 
-    const moveTags = async () => {
-        return new Promise(async (resolve, reject) => {
-            //console.log(" newAvailableTags[toDeleteIndex].tags "+JSON.stringify(newAvailableTags[toDeleteIndex]))
-            //console.log(" newAvailableTags[0].tags "+JSON.stringify(newAvailableTags[0]))
-            if (newAvailableTags[toDeleteIndex].tags.length == 0) {
-                resolve()
-            } else {
+        const moveTags = async () => {
+            return new Promise(async (resolve, reject) => {
+                //console.log(" newAvailableTags[toDeleteIndex].tags "+JSON.stringify(newAvailableTags[toDeleteIndex]))
+                //console.log(" newAvailableTags[0].tags "+JSON.stringify(newAvailableTags[0]))
 
-                for (let index = 0; index < newAvailableTags[toDeleteIndex].tags.length; index++) {
-                    const element = newAvailableTags[toDeleteIndex].tags[index];
-                    //console.log(" -> Element " + element)
-                    newAvailableTags[0].tags.push(element)
-                    availableTags[0].tags.push(element)
-                    if ((index + 1) == newAvailableTags[toDeleteIndex].tags.length) {
-                        resolve()
+                //Case where group has no tags
+                if (newAvailableTags[toDeleteIndex].tags.length == 0) {
+                    resolve()
+                }
+
+                else {
+                    for (let index = 0; index < newAvailableTags[toDeleteIndex].tags.length; index++) {
+                        const element = newAvailableTags[toDeleteIndex].tags[index];
+                        newAvailableTags[0].tags.push(element)
+                        if ((index + 1) == newAvailableTags[toDeleteIndex].tags.length) {
+                            resolve()
+                        }
                     }
                 }
-            }
-        })
+            })
+        }
+        const spliceArrays = async () => {
+            return new Promise(async (resolve, reject) => {
+                newAvailableTags.splice(toDeleteIndex, 1)
+                resolve()
+            })
+        }
+        await moveTags()
+        await spliceArrays()
+        groupToDelete.value = null
+        //console.log(" -> newAvailableTags " + JSON.stringify(newAvailableTags))
+        await updateSortedTags()
     }
-    const spliceArrays = async () => {
-        return new Promise(async (resolve, reject) => {
-            newAvailableTags.splice(toDeleteIndex, 1)
+}
 
-            //availableTags.splice(toDeleteIndex, 1) // but also the availableTags in order to remove visually the card
+const deleteTag = async () => {
+    console.log("\DELETING TAGS")
+    console.log(" -> Tag to delete " + tagToDelete.value)
 
-            //INFO : we need to keep availableTags or else, the div moves up a row, and inherits the tags that have been draged to the deleted div
+    if (tagToDelete.value !== null) {
 
-            //Remove de deleted divs
-            function removeAllChildNodes(parent) {
-                while (parent.firstChild) {
-                    parent.removeChild(parent.firstChild);
+        const deleteTagFromAvailableTags = async () => {
+            return new Promise(async (resolve, reject) => {
+                console.log("\DELETING FROM AVAILABLE TAGS")
+                const parseObject = Parse.Object.extend("_User");
+                const query = new Parse.Query(parseObject);
+                query.equalTo("objectId", currentUser.value.objectId);
+                const results = await query.first();
+                if (results) {
+                    //console.log(" results "+JSON.stringify(JSON.parse(JSON.stringify(results)).tags))
+                    const userTags = JSON.parse(JSON.stringify(results)).tags
+                    const findTagToDelete = () => {
+                        for (let index = 0; index < userTags.length; index++) {
+                            const element = userTags[index];
+                            //console.log(" element "+JSON.stringify(element))
+                            let tagIndex = element.tags.findIndex(obj => obj.id === tagToDelete.value)
+                            if (tagIndex != -1) {
+                                element.tags.splice(tagIndex, 1)
+                                return
+                            }
+
+                        }
+                    }
+
+                    findTagToDelete()
+                    //console.log(" -> userTags after deletion "+JSON.stringify(userTags))
+
+                    results.set("tags", userTags)
+                    await results.save().then(async () => {
+                        console.log(" -> Deleted tag from available tags")
+                        resolve()
+                    })
+                } else {
+                    alert("Update query did not return any results")
                 }
-            }
-            const deletedDiv = document.getElementById(selectedGroup.value);
-            removeAllChildNodes(deletedDiv);
-            deletedDiv.remove() // also remove parent div or, because we keep availableTags, it still can add tags 
+            })
+        }
 
-            //Remove delte Icon
-            const iconElement = document.getElementById("icon_" + selectedGroup.value);
-            if (iconElement) {
-                iconElement.remove();
-            }
-            //console.log(" available tags "+JSON.stringify(availableTags))
-            resolve()
-        })
+        const deleteTagFromTrades = async () => {
+            return new Promise(async (resolve, reject) => {
+                const parseObject = Parse.Object.extend("tags");
+                const query = new Parse.Query(parseObject);
+                const results = await query.find();
+                if (results.length > 0) {
+                    for (let i = 0; i < results.length; i++) {
+                        const object = results[i];
+                        const tradeTags = object.get('tags')
+                        let tagIndex = tradeTags.findIndex(obj => obj == tagToDelete.value)
+                        if (tagIndex != -1) {
+                            tradeTags.splice(tagIndex, 1)
+                            object.set("tags", tradeTags)
+                            await object.save().then(async () => {
+                                console.log("   ---> Deleted tag from trades")
+                            })
+                        }
+                        //console.log(" -> TradeTags " + JSON.stringify(tradeTags))
+                    }
+                    resolve()
+                } else {
+                    console.log(" -> No existing trade tags to update")
+                    resolve()
+                }
+            })
+        }
+
+        await deleteTagFromAvailableTags()
+        await deleteTagFromTrades()
+        await useGetAvailableTags()
+        useGetAvailableTagsTags()
+        useGetNewAvailableTags()
+        initSortable()
+
     }
-    await moveTags()
-    await spliceArrays()
-    //initSortable()
-    console.log(" -> newAvailableTags " + JSON.stringify(newAvailableTags))
+
 }
 
 const inputGroupName = (param1, param2) => {
     newAvailableTags[param1].name = param2
-    console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+    //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 }
 
 const inputGroupColor = (param1, param2) => {
@@ -268,7 +350,7 @@ const inputGroupColor = (param1, param2) => {
     console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 }
 
-let tagsToUpdate = []
+
 const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
     //console.log(" param 1 " + param1)
     //console.log(" param 2 " + param2)
@@ -281,7 +363,7 @@ const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
         }
     });
 
-    console.log(groupIndex);
+    //console.log(groupIndex);
 
     let tagIndex = newAvailableTags[groupIndex].tags.findIndex(obj => obj.id == param1)
 
@@ -293,91 +375,27 @@ const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
     temp.id = param1
     temp.name = param2
     newAvailableTags[groupIndex].tags.splice(tagIndex, 0, temp)
-
-    let index = tagsToUpdate.findIndex(obj => obj.id == param1)
-    if (index == -1) {
-        tagsToUpdate.push(temp)
-    } else {
-        tagsToUpdate[index] = temp
-    }
-
-    //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
-    console.log(" Tags to update " + JSON.stringify(tagsToUpdate))
 }
 
 const updateSortedTags = async () => {
     return new Promise(async (resolve, reject) => {
-
-        const updateAvailableTags = async () => {
-            return new Promise(async (resolve, reject) => {
-                console.log("\nUPDATING AVAILABLE TAGS")
-                const parseObject = Parse.Object.extend("_User");
-                const query = new Parse.Query(parseObject);
-                query.equalTo("objectId", currentUser.value.objectId);
-                const results = await query.first();
-                if (results) {
-                    results.set("tags", newAvailableTags)
-                    await results.save().then(async () => {
-                        console.log(" -> Updated sorted tags")
-                        await useGetAvailableTags()
-                        initSortable()
-                        resolve()
-                    })
-                } else {
-                    alert("Update query did not return any results")
-                }
+        console.log("\nUPDATING AVAILABLE TAGS")
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            results.set("tags", newAvailableTags)
+            await results.save().then(async () => {
+                console.log(" -> Updated sorted tags")
+                await useGetAvailableTags()
+                useGetAvailableTagsTags()
+                initSortable()
+                resolve()
             })
+        } else {
+            alert("Update query did not return any results")
         }
-
-        const updateTradeTags = async (param) => {
-            return new Promise(async (resolve, reject) => {
-                console.log("\nUPDATING TRADE TAGS")
-                const parseObject = Parse.Object.extend("tags");
-                const query = new Parse.Query(parseObject);
-                const results = await query.find();
-                if (results.length > 0) {
-                    for (let i = 0; i < results.length; i++) {
-                        const object = results[i];
-                        console.log(" -> Object id " + object.id)
-                        let temp = []
-                        let updated = false
-                        for (let index = 0; index < object.get('tags').length; index++) {
-                            const element = object.get('tags')[index];
-                            if (element.id == param.id) {
-                                updated = true
-                                temp.push(param)
-                            } else {
-                                temp.push(element)
-                            }
-
-                            if (((index + 1) == object.get('tags').length) && updated) {
-                                console.log("  --> Updating")
-                                object.set("tags", temp)
-                                await object.save().then(async () => {
-                                    console.log("   ---> Updated tags")
-                                })
-                            }
-
-                        }
-                    }
-                    resolve()
-                } else {
-                    console.log(" -> No existing trade tags to update")
-                    resolve()
-                }
-            })
-        }
-
-        // If name changed, we need to update existing tags/existing trade tags
-        if (tagsToUpdate.length > 0) {
-            for (let index = 0; index < tagsToUpdate.length; index++) {
-                const element = tagsToUpdate[index];
-                await updateTradeTags(element)
-            }
-        }
-
-        await updateAvailableTags()
-
     })
 }
 </script>
@@ -461,11 +479,50 @@ const updateSortedTags = async () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="mt-3 mb-3">
                     <button type="button" v-on:click="updateSortedTags" class="btn btn-success">Save</button>
+                </div>
+
+                <!-- Delete Group -->
+                <div class="mt-5 row align-items-center">
+                    <div class="col-12 col-md-3">
+                        Group to delete<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                            data-bs-title="Tags will be moved to Ungrouped."></i>
+                    </div>
+                    <div class="col-12 col-md-9">
+                        <select v-on:input="groupToDelete = $event.target.value" class="form-select">
+                            <option selected></option>
+                            <option v-for="item in availableTags.filter(obj => obj.id !== 'group_0')" :key="item.id"
+                                :value="item.id">{{ item.name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-3 mb-3">
+                    <button type="button" v-on:click="deleteGroup" class="btn btn-danger">Delete</button>
+                </div>
+
+                <!-- Delete Tag -->
+                <div class="mt-5 row align-items-center">
+                    <div class="col-12 col-md-3">
+                        Tag to delete<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                            data-bs-title="Tags will be moved to Ungrouped."></i>
+                    </div>
+                    <div class="col-12 col-md-9">
+
+                        <select v-on:input="tagToDelete = $event.target.value" class="form-select">
+                            <option selected></option>
+                            <option v-for="tag in availableTagsTags" :key="tag.id" :value="tag.id">
+                                {{ tag.name }}
+                            </option>
+                        </select>
+
+                    </div>
+                </div>
+                <div class="mt-3 mb-3">
+                    <button type="button" v-on:click="deleteTag" class="btn btn-danger">Delete</button>
                 </div>
 
             </div>

@@ -42,7 +42,7 @@ export async function useGetScreenshots(param) {
                 }
 
                 parsedResult.forEach(element => {
-                    console.log(" element " + JSON.stringify(element.objectId))
+                    //console.log(" element " + JSON.stringify(element.objectId))
                     let tradeTagsSelected = false
                     let selectedTagsArray = Object.values(selectedTags.value)
                     let index = tags.findIndex(obj => obj.tradeId == element.name)
@@ -51,7 +51,7 @@ export async function useGetScreenshots(param) {
                         //console.log(" -> selected tags "+Object.values(selectedTags.value))
                         //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
                         //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
-                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))) {
+                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj === value))) {
                             console.log(" and with selected tags")
                             tradeTagsSelected = true
                         } else {
@@ -388,6 +388,7 @@ export async function useSaveScreenshot() {
 
         /* UPLOAD SCREENSHOT */
         //in case it's the first time and no tags, we do not save tags
+        console.log(" tradeTags "+JSON.stringify(tradeTags))
         if (!editingScreenshot.value && tradeTags.length == 0) {
             //console.log(" first time no tags")
             await useUploadScreenshotToParse()

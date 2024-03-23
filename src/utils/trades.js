@@ -70,7 +70,7 @@ export async function useGetFilteredTrades(param) {
 
                         let tradeTagsSelected = false
                         let selectedTagsArray = Object.values(selectedTags.value)
-                        let index = tags.findIndex(obj => obj.tradeId == element.id)
+                        let index = tags.findIndex(obj => obj.tradeId == element)
                         if (index != -1){
                             //console.log(" -> selected tags "+Object.values(selectedTags.value))
                             //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
