@@ -89,7 +89,7 @@ export const useGetTagInfo = (param) => {
 
     const tagIdToFind = param;
     const tagInfo = findTagInfo(tagIdToFind);
-
+    console.log(" tagInfo "+JSON.stringify(tagInfo))
     return tagInfo
 }
 
@@ -193,7 +193,7 @@ let filteredSuggestions = []
 
 export const useFilterSuggestions = (param) => {
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
-    //console.log(" filtered suggestion param " + param)
+    console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
     //console.log(" index " + index)
     let temp = {}

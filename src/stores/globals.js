@@ -2842,6 +2842,7 @@ export const tradeNoteId = ref(null)
 * SCREENSHOTS
 **************************************/
 export const screenshots = reactive([])
+export const screenshotsInfos = reactive([])
 export const screenshot = reactive({
     "side": null,
     "type": null

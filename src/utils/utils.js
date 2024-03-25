@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags } from "../stores/globals"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -57,12 +57,12 @@ export function useInitTab(param) {
 
             //console.log(" -> triggerTabList Daily")
 
-            triggerEl.addEventListener('click', (event) => {
-                //console.log(" click")
+            triggerEl.addEventListener('click', async (event) => {
 
                 if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
 
                 idCurrent = event.target.getAttribute('id')
+
 
                 if (idPrevious == undefined) {
                     firstTimeClick = true
@@ -79,6 +79,12 @@ export function useInitTab(param) {
                 idPreviousNumber = idPrevious.split('-')[1]
                 htmlIdCurrent = "#" + idCurrentType + "Nav-" + idCurrentNumber
                 htmlIdPrevious = "#" + idPreviousType + "Nav-" + idPreviousNumber
+
+                console.log(" -> Daily tab click on "+idCurrentType + " - index "+idCurrentNumber)
+                //console.log(" -> filtered trades "+JSON.stringify(filteredTrades[idCurrentNumber]))
+                if (idCurrentType === "screenshots"){
+                    await useGetScreenshots(true, filteredTrades[idCurrentNumber].dateUnix)
+                }
 
                 if (idCurrent == idPrevious) {
 
@@ -812,7 +818,7 @@ export async function useMountScreenshots() {
     useGetScreenshotsPagination()
     await useGetSelectedRange()
     await Promise.all([useGetTags(), useGetAvailableTags()])
-    await useGetScreenshots()
+    await useGetScreenshots(false)
     await console.timeEnd("  --> Duration mount screenshots")
     useInitPopover()
 }
@@ -839,7 +845,7 @@ export async function useLoadMore() {
     }
 
     if (pageId.value == "screenshots") {
-        await useGetScreenshots()
+        await useGetScreenshots(false)
     }
 
     if (pageId.value == "diary") {
