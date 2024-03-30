@@ -1,4 +1,4 @@
-import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags } from '../stores/globals.js'
+import { selectedMonth, pageId, screenshots, screenshot, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags, screenshotsInfos } from '../stores/globals.js'
 import { useLoadMore } from './utils';
 import { useUpdateTags } from './daily.js';
 
@@ -11,7 +11,9 @@ export function useGetScreenshotsPagination() {
     }
 }
 
-export async function useGetScreenshots(param) {
+export async function useGetScreenshots(param1, param2) {
+    //param1 : true if page != screenshots and false if page == screenshots
+    //param2 : if exists, it's the the unixDate of the day on daily when either clicked on Screenshots Tab or to open modal
     console.log("\nGETTING SCREENSHOTS")
 
     return new Promise(async (resolve, reject) => {
@@ -21,10 +23,21 @@ export async function useGetScreenshots(param) {
         query.descending("dateUnix");
         query.exclude("original", "annotated");
 
-        if (param) { // if param == true then we're not on screenshots page
-            query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
-            query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
-        } else {
+        if (param1) { // if param1 == true then we're not on screenshots page
+            if(!param2){
+                console.log("  --> Getting Screenshots Infos")
+                screenshotsInfos.length = 0 //we reinitiate, but only here so that when later you click on Screenshot tab or module, this information stays in memory
+                query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
+                query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
+                query.exclude("originalBase64", "annotatedBase64", "maState");
+            }else{
+                console.log("  --> Getting full Screenshots data")
+                query.equalTo("dateUnixDay", param2)
+            }
+        }
+
+        // if param1 inexistant or = false then we're on screenshots page
+        else {
             query.limit(screenshotsQueryLimit.value);
             query.skip(screenshotsPagination.value)
         }
@@ -42,38 +55,51 @@ export async function useGetScreenshots(param) {
                 }
 
                 parsedResult.forEach(element => {
-                    console.log(" element " + JSON.stringify(element.objectId))
+                    //console.log(" element " + JSON.stringify(element.objectId))
                     let tradeTagsSelected = false
                     let selectedTagsArray = Object.values(selectedTags.value)
                     let index = tags.findIndex(obj => obj.tradeId == element.name)
                     if (index != -1) {
-                        console.log(" -> Screenshot id in tags...")
+                        //console.log(" -> Screenshot id in tags...")
                         //console.log(" -> selected tags "+Object.values(selectedTags.value))
                         //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
                         //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
-                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))) {
-                            console.log(" and with selected tags")
+                        if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj === value))) {
+                            //console.log(" and with selected tags")
                             tradeTagsSelected = true
                         } else {
-                            console.log(" but with tags array length 0")
+                            //console.log(" but with tags array length 0")
                             if (selectedTagsArray.includes("t000t")) {
-                                console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                                //console.log(" but 'No Tags' is selected so we include the screenshot anyway")
                                 tradeTagsSelected = true
                             } else {
-                                console.log(" but with no selected tags")
+                                //console.log(" but with no selected tags")
                             }
                         }
                     } else {
-                        console.log(" -> Screenshot not in tags...")
+                        //console.log(" -> Screenshot not in tags...")
                         if (selectedTagsArray.includes("t000t")) {
-                            console.log(" but 'No Tags' is selected so we include the screenshot anyway")
+                            //console.log(" but 'No Tags' is selected so we include the screenshot anyway")
                             tradeTagsSelected = true
                         }
                     }
 
                     const pushScreenshots = () => {
-                        screenshotsNames.push(element.name)
-                        screenshots.push(element)
+                        //console.log(" screenshot element " + JSON.stringify(element))
+                        if (param2) {
+                            screenshots.push(element)
+                            //console.log(" pushing screenshots")
+                            //console.log(" screenshots "+JSON.stringify(screenshots))
+                        }
+
+                        else{
+                            let temp = {}
+                            temp.objectId = element.objectId
+                            temp.dateUnix = element.dateUnix
+                            temp.name = element.name
+                            screenshotsInfos.push(temp)
+                            //console.log(" screenshotsInfos "+JSON.stringify(screenshotsInfos))
+                        }
                     }
 
                     if (pageId.value == "daily") {
@@ -388,6 +414,7 @@ export async function useSaveScreenshot() {
 
         /* UPLOAD SCREENSHOT */
         //in case it's the first time and no tags, we do not save tags
+        console.log(" tradeTags " + JSON.stringify(tradeTags))
         if (!editingScreenshot.value && tradeTags.length == 0) {
             //console.log(" first time no tags")
             await useUploadScreenshotToParse()
@@ -439,7 +466,8 @@ export async function useUploadScreenshotToParse() {
                 }
 
                 if (pageId.value == "daily") {
-                    await useGetScreenshots(true)
+                    await useGetScreenshots(true, dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix())
+                    await useGetScreenshots(true) // but also update screenshot infos
                     const file = document.querySelector('.screenshotFile');
                     if (file) file.value = '';
                 }
@@ -479,7 +507,8 @@ export async function useUploadScreenshotToParse() {
                         window.location.href = "/screenshots"
                     }
                     if (pageId.value == "daily") {
-                        await useGetScreenshots(true)
+                        await useGetScreenshots(true, dayjs(screenshot.dateUnix * 1000).tz(timeZoneTrade.value).startOf("day").unix()) //get full data (in daily modal)
+                        await useGetScreenshots(true) // but also update screenshot infos
                         const file =
                             document.querySelector('.screenshotFile');
                         file.value = '';
@@ -531,7 +560,7 @@ export async function useRefreshScreenshot() {
         screenshotsQueryLimit.value = 4
         screenshotsPagination.value = 0
         screenshots.length = 0
-        await useGetScreenshots()
+        await useGetScreenshots(false)
         selectedItem.value = null
         //await useInitPopover()
         resolve()

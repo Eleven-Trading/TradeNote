@@ -2,10 +2,10 @@
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Screenshot from '../components/Screenshot.vue'
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, screenshot, spinnerLoadingPage, timeZoneTrade, pageId, tradeTags, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, availableTags, tags } from '../stores/globals';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, screenshot, spinnerLoadingPage, timeZoneTrade, tradeTags, tagInput, selectedTagIndex, showTagsList, availableTags, tags } from '../stores/globals';
 import { useSaveScreenshot, useSetupImageUpload } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
-import { useGetTagColor, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags, useGetTags, useGetAvailableTags } from '../utils/daily';
+import { useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useGetTags, useGetAvailableTags, useGetTagInfo } from '../utils/daily';
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
@@ -82,7 +82,16 @@ async function getScreenshotToEdit(param) {
         let findTags = tags.find(obj => obj.tradeId == screenshot.name)
         if (findTags) {
             findTags.tags.forEach(element => {
-                tradeTags.push(element)
+                for (let obj of availableTags) {
+                    for (let tag of obj.tags) {
+                        if (tag.id === element) {
+                            let temp = {}
+                            temp.id = tag.id
+                            temp.name = tag.name
+                            tradeTags.push(temp)
+                        }
+                    }
+                }
             });
         }
 
@@ -133,7 +142,8 @@ async function getScreenshotToEdit(param) {
                         <div class="form-control dropdown form-select" style="height: auto;">
                             <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                 <span v-for="(tag, index) in tradeTags" :key="index" class="tag txt-small"
-                                    :style="useGetTagColor(tag.id)" @click="useTradeTagsChange('remove', index)">
+                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }"
+                                    @click="useTradeTagsChange('remove', index)">
                                     {{ tag.name }}<span class="remove-tag">×</span>
                                 </span>
 

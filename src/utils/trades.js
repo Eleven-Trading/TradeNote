@@ -47,7 +47,7 @@ export async function useGetFilteredTrades(param) {
                     temp.year = dayjs.unix(element.dateUnix).tz(timeZoneTrade.value).year()
 
                     if (pageId.value == "daily") {
-                        
+
                         //Adding satisfaction for daily page
                         temp.satisfaction = null
                         for (let index = 0; index < satisfactionArray.length; index++) {
@@ -58,7 +58,7 @@ export async function useGetFilteredTrades(param) {
                             }
                         }
                     }
-                    
+
                     //console.log("element "+JSON.stringify(element))
                     element.trades.forEach(element => {
                         //console.log("element "+JSON.stringify(element))
@@ -70,20 +70,34 @@ export async function useGetFilteredTrades(param) {
 
                         let tradeTagsSelected = false
                         let selectedTagsArray = Object.values(selectedTags.value)
+                        //console.log(" tags "+JSON.stringify(tags))
+                        //console.log(" element "+JSON.stringify(element))
+
+                        //Check if trade(Id) is present in tags list
                         let index = tags.findIndex(obj => obj.tradeId == element.id)
-                        if (index != -1){
+                        if (index != -1) {
                             //console.log(" -> selected tags "+Object.values(selectedTags.value))
-                            //console.log(" -> trade tags "+JSON.stringify(tags[index].tags))
+                            //console.log(" -> trade tags " + JSON.stringify(tags[index].tags))
                             //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
-                            if(selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value))){
+                            
+                            //Case/check if tag_id is present in selectedTagsArray
+                            if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj === value))) {
                                 tradeTagsSelected = true
                             }
-                        }else{
-                            if (selectedTagsArray.includes("t000t")){
+
+                            //If its not present, there may be the case where array is null, but 'No tags' is still selected
+                            if (tags[index].tags.length == 0 && selectedTagsArray.includes("t000t")) {
                                 tradeTagsSelected = true
                             }
                         }
-                        
+
+                        //If not, check if no tags is selected or not
+                        else {
+                            if (selectedTagsArray.includes("t000t")) {
+                                tradeTagsSelected = true
+                            }
+                        }
+
 
                         let tradeSatisfaction = null
                         for (let index = 0; index < satisfactionTradeArray.length; index++) {
@@ -92,9 +106,9 @@ export async function useGetFilteredTrades(param) {
                                 tradeSatisfaction = el.satisfaction
                             }
                         }
-                        
+
                         if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && tradeTagsSelected) {
-                            
+
                             element.satisfaction = tradeSatisfaction
 
 
@@ -809,12 +823,12 @@ export async function useGroupTrades() {
 
         //console.log("executions " + JSON.stringify(groups.executions))
 
-         /*******************
-         * GROUP BY POSITION
-         *******************/
-         groups.position = _(temp1)
-         .groupBy('strategy')
-         .value()
+        /*******************
+        * GROUP BY POSITION
+        *******************/
+        groups.position = _(temp1)
+            .groupBy('strategy')
+            .value()
         //console.log("group by position " + JSON.stringify(groups.position))
 
 

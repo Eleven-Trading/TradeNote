@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags } from "../stores/globals"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots } from "../stores/globals"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
 import { useDeleteDiary, useGetDiaries } from "./diary";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
@@ -13,22 +13,19 @@ import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags,
 **************************************/
 
 export function useInitTab(param) {
-    let idCurrent
-    let idPrevious
+    console.log("\nINIT TAB for " + param)
+    
     let hideCurrentTab = false
-    let idCurrentType
-    let idCurrentNumber
-    let idPreviousType
-    let idPreviousNumber
     let htmlIdCurrent
     let htmlIdPrevious
     let firstTimeClick
+    idCurrent.value = undefined // we set (back) to undefined because when click on modal on daily, we hide the tabs so we need to reinitiate them
+    idPrevious.value = undefined
 
     var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
     //console.log("trigger tab list "+triggerTabList)
     var self = // is.value needed or else could not call function inside eventlistener
 
-        console.log("\nINIT TAB for " + param)
 
     triggerTabList.forEach((triggerEl) => {
         //console.log("triggerEl "+triggerEl)
@@ -54,33 +51,48 @@ export function useInitTab(param) {
 
         if (param == "daily") {
             // GET TAB ID THAT IS CLICKED
-
+            
             //console.log(" -> triggerTabList Daily")
 
-            triggerEl.addEventListener('click', (event) => {
-                //console.log(" click")
+            triggerEl.addEventListener('click', async (event) => {
 
-                if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
+                if (idCurrent.value != undefined) idPrevious.value = idCurrent.value // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
 
-                idCurrent = event.target.getAttribute('id')
+                idCurrent.value = event.target.getAttribute('id')
 
-                if (idPrevious == undefined) {
+
+                if (idPrevious.value == undefined) {
                     firstTimeClick = true
-                    idPrevious = idCurrent //on page load, first time we click
+                    idPrevious.value = idCurrent.value //on page load, first time we click
                     hideCurrentTab = !hideCurrentTab // is.value counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
 
                 }
 
-                //console.log(" -> id Current: " + idCurrent + " and previous: " + idPrevious)
+                //console.log(" -> id Current: " + idCurrent.value + " and previous: " + idPrevious.value)
 
-                idCurrentType = idCurrent.split('-')[0]
-                idCurrentNumber = idCurrent.split('-')[1]
-                idPreviousType = idPrevious.split('-')[0]
-                idPreviousNumber = idPrevious.split('-')[1]
-                htmlIdCurrent = "#" + idCurrentType + "Nav-" + idCurrentNumber
-                htmlIdPrevious = "#" + idPreviousType + "Nav-" + idPreviousNumber
+                idCurrentType.value = idCurrent.value.split('-')[0]
+                idCurrentNumber.value = idCurrent.value.split('-')[1]
+                idPreviousType.value = idPrevious.value.split('-')[0]
+                idPreviousNumber.value = idPrevious.value.split('-')[1]
+                htmlIdCurrent = "#" + idCurrentType.value + "Nav-" + idCurrentNumber.value
+                htmlIdPrevious = "#" + idPreviousType.value + "Nav-" + idPreviousNumber.value
 
-                if (idCurrent == idPrevious) {
+                //console.log(" -> Daily tab click on "+idCurrentType.value + " - index "+idCurrentNumber.value)
+                //console.log(" -> filtered trades "+JSON.stringify(filteredTrades[idCurrentNumber.value]))
+                
+                if (idCurrentType.value === "screenshots"){
+                    let screenshotsDate = filteredTrades[idCurrentNumber.value].dateUnix
+                    //console.log(" -> Clicked on screenshots tab in Daily so getting screensots for "+screenshotsDate)
+                    if(screenshots.length == 0 || (screenshots.length>0 && screenshots[0].dateUnixDay != screenshotsDate)){
+                        console.log("  --> getting Screenshots")
+                        await useGetScreenshots(true, screenshotsDate)
+                    }else{
+                        console.log("  --> Screenshots already stored")
+                    }
+                    //console.log(" screenshots "+JSON.stringify(screenshots[0]))
+                }
+
+                if (idCurrent.value == idPrevious.value) {
 
                     hideCurrentTab = !hideCurrentTab
 
@@ -92,11 +104,11 @@ export function useInitTab(param) {
 
                         $(htmlIdCurrent).removeClass('show')
                         $(htmlIdCurrent).removeClass('active')
-                        $("#" + idCurrent).removeClass('active')
+                        $("#" + idCurrent.value).removeClass('active')
                     } else { //show content
                         $(htmlIdCurrent).addClass('show')
                         $(htmlIdCurrent).addClass('active')
-                        $("#" + idCurrent).addClass('active')
+                        $("#" + idCurrent.value).addClass('active')
                     }
 
 
@@ -106,7 +118,7 @@ export function useInitTab(param) {
                     // in case.value, we have click on another tab so we need to "reset" the previsous tab 
                     $(htmlIdPrevious).removeClass('show')
                     $(htmlIdPrevious).removeClass('active')
-                    $("#" + idPrevious).removeClass('active')
+                    $("#" + idPrevious.value).removeClass('active')
                 }
 
             })
@@ -779,7 +791,6 @@ export async function useMountDaily() {
     spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
-    //await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
     useRenderDoubleLineChart()
     useRenderPieChart()
     useLoadCalendar()
@@ -812,7 +823,7 @@ export async function useMountScreenshots() {
     useGetScreenshotsPagination()
     await useGetSelectedRange()
     await Promise.all([useGetTags(), useGetAvailableTags()])
-    await useGetScreenshots()
+    await useGetScreenshots(false)
     await console.timeEnd("  --> Duration mount screenshots")
     useInitPopover()
 }
@@ -835,15 +846,12 @@ export async function useLoadMore() {
         await useGetFilteredTradesForDaily()
         await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
         useInitTab("daily")
+        //await useGetDiaries(true)
         //await (renderingCharts.value = false)
     }
 
     if (pageId.value == "screenshots") {
-        await useGetScreenshots()
-    }
-
-    if (pageId.value == "diary") {
-        await useGetDiaries(true)
+        await useGetScreenshots(false)
     }
 
     spinnerLoadMore.value = false

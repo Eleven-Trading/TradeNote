@@ -62,27 +62,35 @@ export async function useGetExcursions() {
  * 
  * TAGS 
  ****************************************/
-export const useGetTagColor = (param) => {
-    const findGroupColor = (tagId) => {
+export const useGetTagInfo = (param) => {
+
+    const findTagInfo = (tagId) => {
+        let temp = {}
+        //check if tag id exists then return color
         for (let obj of availableTags) {
             for (let tag of obj.tags) {
                 if (tag.id === tagId) {
-                    return obj.color;
+                    temp.groupColor = obj.color
+                    temp.tagName = tag.name
+                    return temp
                 }
             }
         }
 
+        //Else return default color or new Ungrouped color
         let color = "#6c757d"
         if (availableTags.length > 0) {
             color = availableTags.filter(obj => obj.id == "group_0")[0].color
         }
-        return color // Return ungroupcolor if no result
+        temp.groupColor = color
+        temp.tagName = ''
+        return temp
     }
 
     const tagIdToFind = param;
-    const groupColor = findGroupColor(tagIdToFind);
-
-    return "background-color: " + groupColor + ";"
+    const tagInfo = findTagInfo(tagIdToFind);
+    console.log(" tagInfo "+JSON.stringify(tagInfo))
+    return tagInfo
 }
 
 export async function useGetTags() {
@@ -170,10 +178,6 @@ export async function useGetAvailableTags() {
     })
 }
 
-/**************
- * TAGS
- ***************/
-
 export const useCreateAvailableTagsArray = () => {
     availableTagsArray.splice(0)
     for (let index = 0; index < availableTags.length; index++) {
@@ -186,8 +190,8 @@ export const useCreateAvailableTagsArray = () => {
 }
 
 let filteredSuggestions = []
-
 export const useFilterSuggestions = (param) => {
+    
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
     //console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
@@ -403,6 +407,11 @@ export const useUpdateTags = async () => {
     return new Promise(async (resolve, reject) => {
         spinnerSetups.value = true
         //tradeSetupChanged.value = true
+        let tagsArray = []
+        for (let index = 0; index < tradeTags.length; index++) {
+            const element = tradeTags[index];
+            tagsArray.push(element.id)            
+        }
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
         if (pageId.value == "addScreenshot") {
@@ -415,7 +424,7 @@ export const useUpdateTags = async () => {
             console.log(" -> Updating tags")
 
             spinnerSetupsText.value = "Updating"
-            results.set("tags", tradeTags)
+            results.set("tags", tagsArray)
 
             results.save()
                 .then(async () => {
@@ -432,7 +441,7 @@ export const useUpdateTags = async () => {
             //console.log(" -> Trade tags " + JSON.stringify(tradeTags))
             const object = new parseObject();
             object.set("user", Parse.User.current())
-            object.set("tags", tradeTags)
+            object.set("tags", tagsArray)
             if (pageId.value == "addScreenshot") {
                 object.set("dateUnix", screenshot.dateUnix)
                 object.set("tradeId", screenshot.name)

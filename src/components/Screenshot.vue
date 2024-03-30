@@ -2,7 +2,7 @@
 import { selectedItem, modalDailyTradeOpen, pageId, tags } from '../stores/globals';
 import { useSetupMarkerArea, useSelectedScreenshotFunction } from '../utils/screenshots';
 import { useHourMinuteFormat, useTimeFormat, useEditItem, useCreatedDateFormat } from '../utils/utils';
-import { useGetTagColor } from '../utils/daily';
+import { useGetTagInfo } from '../utils/daily';
 
 
 const props = defineProps({
@@ -13,6 +13,7 @@ const props = defineProps({
 })
 
 //console.log(" -> Source " + props.source)
+//console.log(" props "+JSON.stringify(props))
 
 </script>
 
@@ -49,15 +50,14 @@ const props = defineProps({
         }}</span>
 
 
-                    <span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
+                    <!--<span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
                             v-if="tags.tags.length > 0"> | <span v-for="tag in tags.tags.slice(0, 2)" class="tag txt-small"
-                                :style="useGetTagColor(tag.id)">{{
-            tag.name
-        }}
+                                :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{ useGetTagInfo(tag).tagName }}
                             </span>
                             <span v-show="tags.tags.length > 2">+{{
             tags.tags.length
-            - 2 }}</span></span></span>
+            - 2 }}</span></span></span>-->
+
                 </div>
 
                 <!-- Right: tools -->
