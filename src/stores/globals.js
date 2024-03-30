@@ -22,6 +22,13 @@ export const saveButton = ref(false)
 export const latestVersion = ref()
 export const windowIsScrolled = ref()
 
+export const idCurrent = ref()
+export const idPrevious = ref()
+export const idCurrentType = ref()
+export const idCurrentNumber = ref()
+export const idPreviousType = ref()
+export const idPreviousNumber = ref()
+
 
 /**************************************
 * LOADING AND MOUNTING
@@ -2849,7 +2856,6 @@ export const screenshot = reactive({
 })
 export const tradeScreenshotChanged = ref(false)
 export const markerAreaOpen = ref(false)
-export const screenshotsNames = reactive([])
 export const dateScreenshotEdited = ref(false)
 export const screenshotsPagination = ref(0)
 export const screenshotsQueryLimit = ref(4)

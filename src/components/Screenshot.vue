@@ -13,6 +13,7 @@ const props = defineProps({
 })
 
 //console.log(" -> Source " + props.source)
+//console.log(" props "+JSON.stringify(props))
 
 </script>
 

@@ -190,10 +190,10 @@ export const useCreateAvailableTagsArray = () => {
 }
 
 let filteredSuggestions = []
-
 export const useFilterSuggestions = (param) => {
+    
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
-    console.log(" filtered suggestion param " + param)
+    //console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
     //console.log(" index " + index)
     let temp = {}

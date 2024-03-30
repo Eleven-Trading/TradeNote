@@ -6,9 +6,9 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber } from '../stores/globals';
 
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay } from '../utils/utils';
+import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
 import { useSetupImageUpload, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 
@@ -78,8 +78,8 @@ onMounted(async () => {
 /**************
  * MODAL INTERACTION
  ***************/
- let loadScreenshots = false
- 
+let loadScreenshots = false
+
 async function clickTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
     //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
@@ -88,7 +88,7 @@ async function clickTradesModal(param1, param2, param3) {
     //console.log("param1 " + param1)
     //console.log("param2 " + param2)
     //console.log("param3 " + param3)
-    console.log(" clicking ")
+    //console.log(" clicking ")
 
     if (markerAreaOpen.value == true) {
         alert("Please save your screenshot annotation")
@@ -128,7 +128,8 @@ async function clickTradesModal(param1, param2, param3) {
             //console.log(" -> Closing Modal")
             await (spinnerSetups.value = false)
             tradesModal.hide()
-            modalDailyTradeOpen.value = false //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
+            await (modalDailyTradeOpen.value = false) //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
+            await useInitTab("daily")
             loadScreenshots = false
         }
         else {
@@ -143,7 +144,14 @@ async function clickTradesModal(param1, param2, param3) {
                 modalDailyTradeOpen.value = true
 
                 if (loadScreenshots === false) {
-                    useGetScreenshots(true, filteredTrades[param1].dateUnix)
+                    let screenshotsDate = filteredTrades[param1].dateUnix
+
+                    if (screenshots.length == 0 || (screenshots.length > 0 && screenshots[0].dateUnixDay != screenshotsDate)) {
+                        console.log("  --> getting Screenshots")
+                        await useGetScreenshots(true, screenshotsDate)
+                    } else {
+                        console.log("  --> Screenshots already stored")
+                    }
                     loadScreenshots = true
                 }
 
@@ -448,14 +456,22 @@ const tradeNoteChange = (param) => {
  ***************/
 const filteredScreenshots = (param1, param2) => {
     //console.log(" param1 dateUnix " + JSON.stringify(param1.dateUnix))
+    //console.log(" filteredScreenshots")
+    /*if (param1) {
+
+        console.log(" param1 ")
+    }
+    if (param2) {
+        console.log(" param2 ")
+    }*/
     let screenshotArray = []
     //console.log(" screenshotsInfos "+JSON.stringify(screenshotsInfos))
     for (let index = 0; index < param1.trades.length; index++) {
         const el1 = param1.trades[index];
         let screenshotsArray = []
-        if (param2){
+        if (param2) {
             screenshotsArray = screenshots
-        }else{
+        } else {
             screenshotsArray = screenshotsInfos
         }
         for (let index2 = 0; index2 < screenshotsArray.length; index2++) {
@@ -472,6 +488,10 @@ const filteredScreenshots = (param1, param2) => {
     return screenshotArray
 }
 
+const filterDiary = (param) => {
+    //console.log(" filter diary ")
+    return diaries.filter(obj => obj.dateUnix == param)
+}
 </script>
 
 <template>
@@ -582,8 +602,13 @@ const filteredScreenshots = (param1, param2) => {
                                     <!-- end PART 1 -->
 
                                     <!-- ============ PART 2 ============ -->
-                                    <div class="col-12 table-responsive">
+                                    <div v-if="!modalDailyTradeOpen" class="col-12 table-responsive">
                                         <nav>
+                                            <!--------------------
+                                            TABS
+                                            --------------------->
+
+                                            <!--Trades-->
                                             <div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
                                                 <button class="nav-link" v-bind:id="'trades-' + index"
                                                     data-bs-toggle="tab" v-bind:data-bs-target="'#tradesNav-' + index"
@@ -591,12 +616,14 @@ const filteredScreenshots = (param1, param2) => {
                                                     aria-selected="true">Trades
                                                 </button>
 
+                                                <!--Blotter-->
                                                 <button class="nav-link" v-bind:id="'blotter-' + index"
                                                     data-bs-toggle="tab" v-bind:data-bs-target="'#blotterNav-' + index"
                                                     type="button" role="tab" aria-controls="nav-overview"
                                                     aria-selected="true">Blotter
                                                 </button>
 
+                                                <!--Screenshots-->
                                                 <button v-bind:id="'screenshots-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#screenshotsNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
@@ -606,10 +633,11 @@ const filteredScreenshots = (param1, param2) => {
                                                         ({{ filteredScreenshots(itemTrade).length }})</span>
                                                 </button>
 
+                                                <!--Diary-->
                                                 <button v-bind:id="'diaries-' + index" data-bs-toggle="tab"
                                                     v-bind:data-bs-target="'#diariesNav-' + index" type="button"
                                                     role="tab" aria-controls="nav-overview" aria-selected="true"
-                                                    v-bind:class="[diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
+                                                    v-bind:class="[filterDiary(itemTrade.dateUnix).length > 0 ? '' : 'noDataTab', 'nav-link']">Diary
                                                 </button>
                                             </div>
                                         </nav>
@@ -658,7 +686,8 @@ const filteredScreenshots = (param1, param2) => {
                                                             <!--Position-->
                                                             <td>
                                                                 {{
-        trade.strategy.charAt(0).toUpperCase() + trade.strategy.slice(1)
+        trade.strategy.charAt(0).toUpperCase() +
+        trade.strategy.slice(1)
     }}
                                                             </td>
 
@@ -697,13 +726,14 @@ const filteredScreenshots = (param1, param2) => {
                                                                     }}</span>
                                                             </td>
 
-                                                            <!--TAGS
+                                                            <!--TAGS -->
                                                             <td>
                                                                 <span
                                                                     v-for="tags in tags.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
-                                                                        :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{ useGetTagInfo(tag).tagName }}
+                                                                        :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{
+        useGetTagInfo(tag).tagName }}
                                                                     </span>
                                                                     <span v-show="tags.tags.length > 2">+{{
         tags.tags.length
@@ -732,7 +762,7 @@ const filteredScreenshots = (param1, param2) => {
                                                                     v-if="screenshotsInfos.findIndex(f => f.name == trade.id) != -1">
                                                                     <i class="uil uil-image-v"></i>
                                                                 </span>
-                                                            </td>-->
+                                                            </td>
 
                                                         </tr>
                                                     </tbody>
@@ -781,7 +811,12 @@ const filteredScreenshots = (param1, param2) => {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-for="itemScreenshot in filteredScreenshots(itemTrade, itemTrade.dateUnix)">
+                                                <div v-show="screenshots.length == 0 || (screenshots.length>0 && screenshots[0].dateUnixDay != itemTrade.dateUnix)" class="text-center">
+                                                    <div class="spinner-border text-blue" role="status">
+                                                    </div>
+                                                </div>
+                                                <div v-if="idCurrentType == 'screenshots' && idCurrentNumber == index"
+                                                    v-for="itemScreenshot in filteredScreenshots(itemTrade, itemTrade.dateUnix)">
                                                     <span class="mb-2">
                                                         <Screenshot :screenshot-data="itemScreenshot" show-title
                                                             source="dailyTab" />
@@ -980,12 +1015,13 @@ const filteredScreenshots = (param1, param2) => {
                                         </div>
 
 
-                                        <!-- Tags 
+                                        <!-- Tags -->
                                         <div class="container-tags col-8">
                                             <div class="form-control dropdown form-select" style="height: auto;">
                                                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                                                     <span v-for="(tag, index) in tradeTags" :key="index"
-                                                        class="tag txt-small" :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
+                                                        class="tag txt-small"
+                                                        :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
                                                         @click="useTradeTagsChange('remove', index)">
                                                         {{ tag.name }}<span class="remove-tag">×</span>
                                                     </span>
@@ -1014,7 +1050,7 @@ const filteredScreenshots = (param1, param2) => {
                                                     </li>
                                                 </span>
                                             </ul>
-                                        </div>-->
+                                        </div>
                                         <!-- MFE -->
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price"

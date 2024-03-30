@@ -1,4 +1,4 @@
-import { selectedMonth, pageId, screenshots, screenshot, screenshotsNames, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags, screenshotsInfos } from '../stores/globals.js'
+import { selectedMonth, pageId, screenshots, screenshot, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags, screenshotsInfos } from '../stores/globals.js'
 import { useLoadMore } from './utils';
 import { useUpdateTags } from './daily.js';
 
@@ -85,11 +85,11 @@ export async function useGetScreenshots(param1, param2) {
                     }
 
                     const pushScreenshots = () => {
-                        screenshotsNames.push(element.name)
                         //console.log(" screenshot element " + JSON.stringify(element))
                         if (param2) {
                             screenshots.push(element)
-                            //console.log(" screenshots "+JSON.stringify(screenshotsInfos))
+                            //console.log(" pushing screenshots")
+                            //console.log(" screenshots "+JSON.stringify(screenshots))
                         }
 
                         else{
