@@ -15,7 +15,6 @@ let tagToDelete = ref(null)
 
 onBeforeMount(async () => {
     await useGetAvailableTags()
-<<<<<<< HEAD
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
     //console.log(" available tags "+JSON.stringify(availableTags))
     for (let index = 0; index < availableTags.length; index++) {
@@ -23,10 +22,6 @@ onBeforeMount(async () => {
         newAvailableTags.push(element)
     }
     //console.log(" newAvailableTags "+JSON.stringify(newAvailableTags))
-=======
-    useGetAvailableTagsTags()
-    useGetNewAvailableTags()
->>>>>>> beta
     initSortable()
 
 })
