@@ -89,7 +89,7 @@ export const useGetTagInfo = (param) => {
 
     const tagIdToFind = param;
     const tagInfo = findTagInfo(tagIdToFind);
-    console.log(" tagInfo "+JSON.stringify(tagInfo))
+    //console.log(" tagInfo "+JSON.stringify(tagInfo))
     return tagInfo
 }
 
@@ -123,7 +123,7 @@ export async function useGetTags() {
 
             }
         }
-        //console.log("  --> Tags " + JSON.stringify(tags))
+        console.log("  --> Tags " + JSON.stringify(tags))
         resolve()
 
     })
