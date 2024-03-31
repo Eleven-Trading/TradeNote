@@ -79,7 +79,7 @@ export async function useGetFilteredTrades(param) {
                             //console.log(" -> selected tags "+Object.values(selectedTags.value))
                             //console.log(" -> trade tags " + JSON.stringify(tags[index].tags))
                             //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
-                            
+
                             //Case/check if tag_id is present in selectedTagsArray
                             if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj === value))) {
                                 tradeTagsSelected = true
@@ -119,12 +119,7 @@ export async function useGetFilteredTrades(param) {
                     });
                     /* Just use the once that have recreated trades (or else daily was showing last 3 months and only one month with trades data) */
                     if (temp.trades.length > 0) {
-                        if (pageId.value == "daily") {
-                            //console.log(" temp "+JSON.stringify(temp))
-                            filteredTradesDaily.push(temp)
-                        } else {
-                            filteredTrades.push(temp)
-                        }
+                        filteredTrades.push(temp)
                     }
                 }
             });
@@ -143,26 +138,17 @@ export async function useGetFilteredTrades(param) {
         //console.log(" keys "+keys)
         for (const key of keys) {
             let index
-            if (pageId.value == "daily") {
-                index = filteredTradesDaily.findIndex(obj => obj.dateUnix == key)
-                filteredTradesDaily[index].pAndL = pAndL[key]
-                filteredTradesDaily[index].blotter = blotter[key]
-            } else {
-                index = filteredTrades.findIndex(obj => obj.dateUnix == key)
-                filteredTrades[index].pAndL = pAndL[key]
-                filteredTrades[index].blotter = blotter[key]
-            }
+
+            index = filteredTrades.findIndex(obj => obj.dateUnix == key)
+            filteredTrades[index].pAndL = pAndL[key]
+            filteredTrades[index].blotter = blotter[key]
 
         }
-        if (pageId.value == "daily") {
-            filteredTradesDaily.sort((a, b) => {
-                return b.dateUnix - a.dateUnix
-            })
-        } else {
-            filteredTrades.sort((a, b) => {
-                return b.dateUnix - a.dateUnix
-            })
-        }
+
+        filteredTrades.sort((a, b) => {
+            return b.dateUnix - a.dateUnix
+        })
+
 
         //console.log(" -> Filtered trades " + JSON.stringify(filteredTrades))
         //console.log(" -> Filtered trades daily " + JSON.stringify(filteredTradesDaily))

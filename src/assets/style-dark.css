@@ -1258,3 +1258,7 @@ h4 {
     color: var(--white-87);
     border: transparent;
 }
+
+.spinnerHeigth{
+    height: 50px;
+}

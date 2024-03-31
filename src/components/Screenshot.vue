@@ -50,13 +50,14 @@ const props = defineProps({
         }}</span>
 
 
-                    <!--<span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
-                            v-if="tags.tags.length > 0"> | <span v-for="tag in tags.tags.slice(0, 2)" class="tag txt-small"
-                                :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{ useGetTagInfo(tag).tagName }}
+                    <span v-for="tags in tags.filter(obj => obj.tradeId == props.screenshotData.name)"><span
+                            v-if="tags.tags.length > 0"> | <span v-for="tag in tags.tags.slice(0, 2)"
+                                class="tag txt-small" :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{
+            useGetTagInfo(tag).tagName }}
                             </span>
                             <span v-show="tags.tags.length > 2">+{{
             tags.tags.length
-            - 2 }}</span></span></span>-->
+            - 2 }}</span></span></span>
 
                 </div>
 

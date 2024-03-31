@@ -40,6 +40,8 @@ export const renderData = ref(0) //this is for updating DOM
 
 export const spinnerLoadMore = ref(false) //infinite scroll
 
+export const tabGettingScreenshots = ref(false)
+
 //Dashboard
 export const dashboardChartsMounted = ref()
 export const dashboardIdMounted = ref(false)

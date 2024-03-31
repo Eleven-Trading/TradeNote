@@ -123,7 +123,7 @@ export async function useGetTags() {
 
             }
         }
-        console.log("  --> Tags " + JSON.stringify(tags))
+        //console.log("  --> Tags " + JSON.stringify(tags))
         resolve()
 
     })
