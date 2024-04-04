@@ -74,7 +74,14 @@ onMounted(async () => {
     })
     useCheckVisibleScreen()
 
-
+    document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
+            const caller = event.relatedTarget
+            const index = caller.dataset.index
+            const index2 = caller.dataset.indextwo
+            console.log(index)
+            console.log(index2)
+            updateTradesModal(index, index2, index2)
+        })
 })
 
 const checkDate = ((param1, param2) => {
@@ -289,7 +296,7 @@ async function updateExcursions() {
 /**************
  * MISC
  ***************/
-async function clickTradesModal(param1, param2, param3) {
+async function updateTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
     //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
     //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
@@ -317,14 +324,14 @@ async function clickTradesModal(param1, param2, param3) {
         }
 
         //Then we change indexes
-        itemTradeIndex.value = param1
-        tradeIndexPrevious.value = param2
-        tradeIndex.value = param3
-
+        itemTradeIndex.value = Number(param1)
+        tradeIndexPrevious.value = Number(param2)
+        tradeIndex.value = Number(param3)
+        
         let selectedTrade = filteredTrades[itemTradeIndex.value].trades[param3]
 
         let awaitClick = async () => {
-            tradeSetupChanged.value = false //we updated setups and trades so false cause not need to do it again when we hide modal
+            tradeSetupChanged.value = false // we updated setups and trades so false cause not need to do it again when we hide modal
             tradeExcursionChanged.value = false
             tradeScreenshotChanged.value = false
             modalDailyTradeOpen.value = true
@@ -376,9 +383,6 @@ async function clickTradesModal(param1, param2, param3) {
         await (spinnerSetups.value = false)
         saveButton.value = false
         await useInitTooltip()
-        const myModalEl = document.getElementById('tradesModal')
-        myModalEl.addEventListener('shown.bs.modal', async (event) => {
-        })
     }
 }
 
@@ -629,8 +633,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                                                         <tr v-for="(trade, index2) in itemTrade.trades"
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
-                                                            v-on:click="clickTradesModal(index, index2, index2)"
-                                                            class="pointerClass">
+                                                            class="pointerClass" :data-index="index" :data-indextwo="index2">
                                                             <td>{{ trade.symbol }}</td>
                                                             <td>{{ trade.buyQuantity + trade.sellQuantity }}</td>
                                                             <td>{{ trade.strategy.charAt(0).toUpperCase() +
@@ -997,9 +1000,9 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                     <div class="row">
                                         <div class="col-4 text-start">
                                             <button
-                                                v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
+                                                v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
+                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
                                                 v-bind:disabled="spinnerSetups == true">
                                                 <i class="fa fa-chevron-left me-2"></i></button>
                                         </div>
@@ -1010,13 +1013,12 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                             <button v-else class="btn btn-outline-primary btn-sm"
                                                 v-on:click="hideTradesModal()">Close</button>
                                         </div>
-                                        <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
+                                        <div v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
-                                                v-bind:disabled="spinnerSetups == true"><i
-                                                    class="fa fa-chevron-right ms-2"></i>
-                                            </button>
+                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
+                                                v-bind:disabled="spinnerSetups == true">
+                                                <i class="fa fa-chevron-right ms-2"></i></button>
                                         </div>
                                     </div>
                                 </div>
