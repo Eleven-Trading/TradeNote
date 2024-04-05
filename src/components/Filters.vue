@@ -9,7 +9,7 @@ import { useRefreshScreenshot } from "../utils/screenshots"
     VARIABLES
 ============================================*/
 
-let filtersOpen = ref(false)
+let filtersOpen = ref(true)
 let filters = ref({
     "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "tags"],
     "calendar": ["month", "grossNet", "plSatisfaction"],
@@ -124,7 +124,7 @@ function filtersClick() {
 
 //Date : periode
 function inputDateRange(param) {
-    //console.log(" -> Input Date Range - Param: "+param)
+    console.log(" -> Input Date Range - Param: "+param)
     //Filter to find the value of date range
     var filterJson = periodRange.filter(element => element.value == param)[0]
     selectedPeriodRange.value = filterJson
@@ -140,7 +140,7 @@ function inputDateRange(param) {
 }
 //Date : calendar
 function inputDateRangeCal(param1, param2) {
-    //console.log("param1 " + param1 + ", param2 " + param2)
+    console.log(" -> Input Date Range Cal - type '" + param1 + "' and date " + param2)
     //console.log(" -> Initial selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     if (param1 == "start") {
@@ -154,6 +154,9 @@ function inputDateRangeCal(param1, param2) {
     //console.log("selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     /* Update selectedPeriodRange */
+    //console.log(" periodRange "+JSON.stringify(periodRange))
+    //console.log(" selectedDateRange.value.start "+selectedDateRange.value.start)
+    //console.log(" selectedDateRange.value.end "+selectedDateRange.value.end)
     let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
     if (tempFilter.length > 0) {
         selectedPeriodRange.value = tempFilter[0]
@@ -173,7 +176,8 @@ function inputMonth(param1) {
 }
 
 async function saveFilter() {
-    //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+    console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+    console.log(" -> Save filters: Selected Period Range " + JSON.stringify(selectedPeriodRange.value))
     //console.log(" -> Selected accounts "+selectedAccounts.value)
     // Check if start date before end date and vice versa
     if (selectedDateRange.value.end < selectedDateRange.value.start) {
