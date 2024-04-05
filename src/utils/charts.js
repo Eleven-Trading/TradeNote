@@ -1631,8 +1631,8 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
             dataZoom: [
                 {
                     type: 'inside',
-                    startValue: useHourMinuteFormat(zoomUnixStartValue),
-                    endValue: useHourMinuteFormat(zoomUnixEndValue),
+                    startValue: '',
+                    endValue: '',
                     preventDefaultMouseMove: false
                 },
             ],
@@ -1654,26 +1654,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                                 return param != null ? Math.round(param.value) + '' : '';
                             }
                         },
-                        data: [
-                            {
-                                name: 'entryMark',
-                                symbol: 'triangle',
-                                coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
-                                value: trade.entryPrice,
-                                itemStyle: {
-                                    color: entryColor
-                                }
-                            },
-                            {
-                                name: 'exitMark',
-                                symbol: 'triangle',
-                                coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
-                                value: trade.exitPrice,
-                                itemStyle: {
-                                    color: exitColor
-                                }
-                            }
-                        ],
+                        data: [ ],
                         tooltip: {
                             formatter: function (param) {
                                 return param.name + '<br>' + (param.data.coord || '');
@@ -1683,6 +1664,36 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                 },
             ]
         };
+
+        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day') ||
+            trade.tradesCount == 0) {
+            option.series[0].markPoint.data.push({
+                name: 'entryMark',
+                symbol: 'triangle',
+                coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
+                value: trade.entryPrice,
+                itemStyle: {
+                    color: entryColor
+                }
+            })
+
+            option.dataZoom[0].startValue = useHourMinuteFormat(zoomUnixStartValue)
+        }
+
+        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day') ||
+            trade.tradesCount > 0) {
+            option.series[0].markPoint.data.push({
+                name: 'exitMark',
+                symbol: 'triangle',
+                coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
+                value: trade.exitPrice,
+                itemStyle: {
+                    color: exitColor
+                }
+            })
+
+            option.dataZoom[0].endValue = useHourMinuteFormat(zoomUnixEndValue)
+        }
 
         myChart.setOption(option);
         resolve()
