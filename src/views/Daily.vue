@@ -78,8 +78,6 @@ onMounted(async () => {
             const caller = event.relatedTarget
             const index = caller.dataset.index
             const index2 = caller.dataset.indextwo
-            console.log(index)
-            console.log(index2)
             updateTradesModal(index, index2, index2)
         })
 })
