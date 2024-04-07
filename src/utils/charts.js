@@ -1610,23 +1610,51 @@ export function useScatterChart(param1) { //chart ID, green, red, page
     })
 }
 
-export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
+export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
+    const entryMarkerColor = 'rgb(60,85,41)'
+    const exitMarkerColor = 'rgb(85,41,60)'
+    const initialDataZoomPadding = dayjs(0).minute(5).unix()
+    const minimumDataZoomLevel = dayjs(0).minute(30).unix()
+
+    const timeZone = timeZoneTrade.value;
+    const tradeEntryTime = trade.entryTime
+    const tradeExitTime = trade.exitTime
+    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs.unix(trade.exitTime).tz(timeZone), 'day')
+    const spreadTime = tradeIsIntraday ? Math.abs(tradeExitTime - tradeEntryTime) : 0
+    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + 2 * initialDataZoomPadding)
+
+    const findDataZoomStartUnix = () => {
+        const tradeEntryTimeUnix = trade.entryTime
+        let dataZoomStartUnix = tradeEntryTimeUnix - dataZoomLevel / 2 - spreadTime / 2
+
+        for (let i = ohlcTimestamps.length - 1; i >= 0; i--) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix <= dataZoomStartUnix) {
+                dataZoomStartUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomStartUnix
+    }
+
+    const findDataZoomEndUnix = () => {
+        const tradeExitTimeUnix = trade.exitTime
+        let dataZoomEndUnix = tradeExitTimeUnix + dataZoomLevel / 2 + spreadTime / 2
+
+        for (let i = 0; i < ohlcTimestamps.length; i++) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix >= dataZoomEndUnix) {
+                dataZoomEndUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomEndUnix
+    }
+
+
     return new Promise((resolve, reject) => {
-        const zoomPadding = dayjs(0).minute(5).unix()
-        const minZoom = dayjs(0).minute(30).unix()
-        const entryColor = 'rgb(60,85,41)'
-        const exitColor = 'rgb(85,41,60)'
-        const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day')
-
-        const entryTime = trade.entryTime
-        const exitTime = trade.exitTime
-        const spreadTime = tradeIsIntraday ? Math.abs(exitTime - entryTime) : 0
-    
-        const zoomLevel = Math.max(minZoom, spreadTime + 2 * zoomPadding)
-    
-        var zoomUnixStartValue = entryTime - zoomLevel / 2 - spreadTime / 2
-        var zoomUnixEndValue = exitTime + zoomLevel / 2 + spreadTime / 2
-
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
             dataZoom: [
@@ -1638,7 +1666,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                 },
             ],
             xAxis: {
-                data: ohlcDates.map((dateInMilliseconds) => {
+                data: ohlcTimestamps.map((dateInMilliseconds) => {
                     return useHourMinuteFormat(dateInMilliseconds / 1000)
                 }),
                 min: 'dataMin',
@@ -1668,54 +1696,32 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
             ]
         };
 
-        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcDates[0]), 'day')) {
+        if (dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'entryMark',
                 symbol: 'triangle',
                 coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
                 value: trade.entryPrice,
                 itemStyle: {
-                    color: entryColor
+                    color: entryMarkerColor
                 }
             })
 
-            if (!option.xAxis.data.includes(useHourMinuteFormat(zoomUnixStartValue))) {
-                for (var i = ohlcDates.length; i >= 0; i--) {
-                    const ohlcUnixTime = ohlcDates[i] / 1000
-
-                    if (dayjs.unix(ohlcUnixTime).isBefore(dayjs.unix(zoomUnixStartValue))) {
-                        zoomUnixStartValue = ohlcUnixTime
-                        break
-                    }
-                }
-            }
-
-            option.dataZoom[0].startValue = useHourMinuteFormat(zoomUnixStartValue)
+            option.dataZoom[0].startValue = useHourMinuteFormat(findDataZoomStartUnix())
         }
 
-        if (dayjs.unix(trade.exitTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcDates[0]), 'day')) {
+        if (dayjs.unix(trade.exitTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'exitMark',
                 symbol: 'triangle',
                 coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
                 value: trade.exitPrice,
                 itemStyle: {
-                    color: exitColor
+                    color: exitMarkerColor
                 }
             })
 
-            if (!option.xAxis.data.includes(useHourMinuteFormat(zoomUnixEndValue))) {
-                for (var i = 0; i < ohlcDates.length; i++) {
-                    const ohlcUnixTime = ohlcDates[i] / 1000
-
-                    if (dayjs.unix(ohlcUnixTime).isAfter(dayjs.unix(zoomUnixEndValue))) {
-                        zoomUnixEndValue = ohlcUnixTime
-                        break
-                    }
-                }
-            }
-
-            option.dataZoom[0].endValue = useHourMinuteFormat(zoomUnixEndValue)
+            option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
         }
 
         myChart.setOption(option);

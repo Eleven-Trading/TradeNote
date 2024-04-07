@@ -41,7 +41,7 @@ let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
-let ohlcDates = []
+let ohlcTimestamps = []
 let ohlcPrices = []
 let ohlcVolumes = []
 
@@ -351,7 +351,7 @@ async function updateTradesModal(param1, param2, param3) {
                 try {
                     candlestickChartFailureMessage=null
                     await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
-                    await useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, selectedTrade)
+                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, selectedTrade)
                 } catch (error) {
                     if (error.response && error.response.status === 429) {
                         candlestickChartFailureMessage="Too many requests, try again later"
@@ -425,7 +425,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
         await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
             .then((response) => {
-                ohlcDates = []
+                ohlcTimestamps = []
                 ohlcPrices = []
                 ohlcVolumes = []
 
@@ -434,7 +434,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                     let temp = []
 
-                    ohlcDates.push(element.t)
+                    ohlcTimestamps.push(element.t)
                     temp.push(element.c)
                     temp.push(element.o)
                     temp.push(element.l)
