@@ -1620,12 +1620,12 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
 
         const entryTime = trade.entryTime
         const exitTime = trade.exitTime
-        const spreadTime = Math.abs(exitTime - entryTime)
+        const spreadTime = tradeIsIntraday ? Math.abs(exitTime - entryTime) : 0
     
         const zoomLevel = Math.max(minZoom, spreadTime + 2 * zoomPadding)
     
-        const zoomUnixStartValue = entryTime - zoomLevel / 2 - spreadTime / 2
-        const zoomUnixEndValue = exitTime + zoomLevel / 2 + spreadTime / 2
+        var zoomUnixStartValue = entryTime - zoomLevel / 2 - spreadTime / 2
+        var zoomUnixEndValue = exitTime + zoomLevel / 2 + spreadTime / 2
 
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
@@ -1679,6 +1679,17 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                 }
             })
 
+            if (!option.xAxis.data.includes(useHourMinuteFormat(zoomUnixStartValue))) {
+                for (var i = ohlcDates.length; i >= 0; i--) {
+                    const ohlcUnixTime = ohlcDates[i] / 1000
+
+                    if (dayjs.unix(ohlcUnixTime).isBefore(dayjs.unix(zoomUnixStartValue))) {
+                        zoomUnixStartValue = ohlcUnixTime
+                        break
+                    }
+                }
+            }
+
             option.dataZoom[0].startValue = useHourMinuteFormat(zoomUnixStartValue)
         }
 
@@ -1692,6 +1703,17 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                     color: exitColor
                 }
             })
+
+            if (!option.xAxis.data.includes(useHourMinuteFormat(zoomUnixEndValue))) {
+                for (var i = 0; i < ohlcDates.length; i++) {
+                    const ohlcUnixTime = ohlcDates[i] / 1000
+
+                    if (dayjs.unix(ohlcUnixTime).isAfter(dayjs.unix(zoomUnixEndValue))) {
+                        zoomUnixEndValue = ohlcUnixTime
+                        break
+                    }
+                }
+            }
 
             option.dataZoom[0].endValue = useHourMinuteFormat(zoomUnixEndValue)
         }
