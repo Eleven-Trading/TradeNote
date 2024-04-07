@@ -1616,6 +1616,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
         const minZoom = dayjs(0).minute(30).unix()
         const entryColor = 'rgb(60,85,41)'
         const exitColor = 'rgb(85,41,60)'
+        const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day')
 
         const entryTime = trade.entryTime
         const exitTime = trade.exitTime
@@ -1637,7 +1638,9 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
                 },
             ],
             xAxis: {
-                data: ohlcDates,
+                data: ohlcDates.map((dateInMilliseconds) => {
+                    return useHourMinuteFormat(dateInMilliseconds / 1000)
+                }),
                 min: 'dataMin',
                 max: 'dataMax'
             },
@@ -1665,8 +1668,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
             ]
         };
 
-        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day') ||
-            trade.tradesCount == 0) {
+        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcDates[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'entryMark',
                 symbol: 'triangle',
@@ -1680,8 +1682,7 @@ export function useCandlestickChart(ohlcDates, ohlcPrices, ohlcVolumes, trade) {
             option.dataZoom[0].startValue = useHourMinuteFormat(zoomUnixStartValue)
         }
 
-        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day') ||
-            trade.tradesCount > 0) {
+        if (dayjs.unix(trade.exitTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcDates[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'exitMark',
                 symbol: 'triangle',

@@ -436,7 +436,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                     let temp = []
 
-                    ohlcDates.push(useHourMinuteFormat(element.t / 1000))
+                    ohlcDates.push(element.t)
                     temp.push(element.c)
                     temp.push(element.o)
                     temp.push(element.l)
