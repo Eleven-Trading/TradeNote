@@ -13,7 +13,7 @@ export const endOfList = ref(false) //infinite scroll
 export const noData = ref(false)
 export const stepper = ref()
 export const hasData = ref(false)
-export const itemToEditId = ref(sessionStorage.getItem('editItemId'))
+export const itemToEditId = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('editItemId'): "")
 export const currentDate = ref()
 export const quill = ref()
 export const sideMenuMobileOut = ref(false)
@@ -3021,20 +3021,20 @@ export const plSatisfaction = ref([{
 }
 ])
 
-export const selectedTags = localStorage.getItem('selectedTags') ? ref(localStorage.getItem('selectedTags').split(",")) : ref([])
+export const selectedTags = typeof localStorage !== 'undefined' ? localStorage.getItem('selectedTags') ? ref(localStorage.getItem('selectedTags').split(",")) : ref([]) : ""
 
-export const selectedPositions = localStorage.getItem('selectedPositions') ? ref(localStorage.getItem('selectedPositions').split(",")) : ref([])
-export const selectedTimeFrame = ref(localStorage.getItem('selectedTimeFrame'))
-export const selectedRatio = ref(localStorage.getItem('selectedRatio'))
-export const selectedAccount = ref(localStorage.getItem('selectedAccount'))
-export const selectedAccounts = localStorage.getItem('selectedAccounts') ? ref(localStorage.getItem('selectedAccounts').split(",")) : ref([])
-export const selectedGrossNet = ref(localStorage.getItem('selectedGrossNet'))
-export const selectedPlSatisfaction = ref(localStorage.getItem('selectedPlSatisfaction'))
-export const selectedBroker = ref(localStorage.getItem('selectedBroker'))
-export const selectedDateRange = ref(JSON.parse(localStorage.getItem('selectedDateRange')))
-export const selectedMonth = ref(JSON.parse(localStorage.getItem('selectedMonth')))
-export const selectedPeriodRange = ref(JSON.parse(localStorage.getItem('selectedPeriodRange')))
-export const selectedDashTab = ref(localStorage.getItem('selectedDashTab'))
+export const selectedPositions = typeof localStorage !== 'undefined' ? localStorage.getItem('selectedPositions') ? ref(localStorage.getItem('selectedPositions').split(",")) : ref([]) : ""
+export const selectedTimeFrame = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedTimeFrame')) : ""
+export const selectedRatio = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedRatio')) : ""
+export const selectedAccount = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedAccount')) : ""
+export const selectedAccounts = typeof localStorage !== 'undefined' ? localStorage.getItem('selectedAccounts') ? ref(localStorage.getItem('selectedAccounts').split(",")) : ref([]) : ""
+export const selectedGrossNet = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedGrossNet')) : ""
+export const selectedPlSatisfaction = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedPlSatisfaction')) : ""
+export const selectedBroker = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedBroker')) : ""
+export const selectedDateRange = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedDateRange'))) : ""
+export const selectedMonth = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedMonth'))) : ""
+export const selectedPeriodRange = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedPeriodRange'))) : ""
+export const selectedDashTab = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedDashTab')) : ""
 
-export const amountCase = ref(localStorage.getItem('selectedGrossNet'))
+export const amountCase = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedGrossNet')) : ""
 export const amountCapital = ref()

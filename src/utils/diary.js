@@ -1,5 +1,5 @@
-import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals"
-import { usePageRedirect } from "./utils";
+import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals.js"
+import { usePageRedirect } from "./utils.js";
 let diaryQueryLimit = 10
 let diaryPagination = 0
 

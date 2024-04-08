@@ -1,6 +1,6 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags } from "../stores/globals"
-import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils";
-import { useCreateBlotter, useCreatePnL } from "./addTrades"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags } from "../stores/globals.js"
+import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils.js";
+import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
 let trades = []
 

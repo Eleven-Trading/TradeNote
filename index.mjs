@@ -1,11 +1,13 @@
-const express = require('express');
-const ParseServer = require('parse-server').ParseServer;
+import express from 'express';
+import { ParseServer } from 'parse-server'
 //var ParseDashboard = require('parse-dashboard');
-const Parse = require('parse/node');
-const path = require('path');
-const fs = require('fs');
-const Vite = require('vite');
-const MongoClient = require("mongodb").MongoClient;
+import Parse from 'parse/node.js'
+import path from 'path'
+import fs from 'fs'
+import * as Vite from 'vite'
+import { MongoClient } from "mongodb"
+import Proxy from 'http-proxy'
+import { testPost } from './src/utils/addTrades.js';
 
 let databaseURI
 
@@ -49,7 +51,7 @@ const startIndex = async () => {
         return new Promise(async (resolve, reject) => {
             if (process.env.NODE_ENV == 'dev') {
 
-                const Proxy = require('http-proxy');
+
 
                 var proxy = new Proxy.createProxyServer({
                     target: { host: 'localhost', port: PROXY_PORT }
@@ -251,10 +253,21 @@ const startIndex = async () => {
             }
         }
 
-        res.send({"existingSchema": existingSchema })
+        res.send({ "existingSchema": existingSchema })
 
 
     })
+
+    app.post('/test', async (req, res) => {
+        try {
+          // Call the function from addTrades.js
+          let test = await testPost();
+          res.status(200).send(test);
+        } catch (error) {
+          console.error(error);
+          res.status(500).send('Error creating executions');
+        }
+      });
 
 }
 

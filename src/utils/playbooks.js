@@ -1,5 +1,5 @@
-import { playbookIdToEdit, playbookUpdate, playbooks, queryLimit, renderData, selectedItem, spinnerLoadingPage } from "../stores/globals";
-import { useInitPopover, usePageRedirect } from "./utils";
+import { playbookIdToEdit, playbookUpdate, playbooks, queryLimit, renderData, selectedItem, spinnerLoadingPage } from "../stores/globals.js";
+import { useInitPopover, usePageRedirect } from "./utils.js";
 
 export async function useGetPlaybooks(param) {
     return new Promise(async(resolve, reject) => {

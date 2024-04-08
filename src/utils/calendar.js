@@ -1,5 +1,5 @@
-import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade, filteredTradesDaily } from "../stores/globals"
-import { useMonthFormat } from "./utils"
+import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade, filteredTradesDaily } from "../stores/globals.js"
+import { useMonthFormat } from "./utils.js"
 
 
 export async function useLoadCalendar() {
