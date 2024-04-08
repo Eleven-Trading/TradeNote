@@ -1014,11 +1014,12 @@ export async function useNinjaTrader(param) {
                     let priceNumber = Number(element.Price)
                     temp.Price = priceNumber.toString()
 
-
-                    temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
+                    temp["Exec Time"] = dayjs(element.Time).format("HH:mm:ss") // we do not use tz because at start you should precise that you're in NY timezone + in settings set the NY time format before export
+                    //console.log(" exect time "+temp["Exec Time"])
+                    //temp["Exec Time"] = dayjs(element.Time, "hh:mm:ss A").format("HH:mm:ss")
 
                     let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
-                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    //console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
                     if (contractSpecs.length == 0) {
                         reject("Missing information for future symbol " + temp.Symbol)
                     }
@@ -1052,7 +1053,7 @@ export async function useNinjaTrader(param) {
                     temp.Liq = ""
                     temp.Note = ""
 
-                    console.log("temp " + JSON.stringify(temp))
+                    //console.log("temp " + JSON.stringify(temp))
                     tradesData.push(temp)
                 }
             });

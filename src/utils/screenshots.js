@@ -86,7 +86,7 @@ export async function useGetScreenshots(param1, param2) {
 
                     const pushScreenshots = () => {
                         //console.log(" screenshot element " + JSON.stringify(element))
-                        if (param2) {
+                        if (!param1 || param2) {
                             screenshots.push(element)
                             //console.log(" pushing screenshots")
                             //console.log(" screenshots "+JSON.stringify(screenshots))
@@ -96,6 +96,7 @@ export async function useGetScreenshots(param1, param2) {
                             let temp = {}
                             temp.objectId = element.objectId
                             temp.dateUnix = element.dateUnix
+                            temp.dateUnixDay = element.dateUnixDay
                             temp.name = element.name
                             screenshotsInfos.push(temp)
                             //console.log(" screenshotsInfos "+JSON.stringify(screenshotsInfos))

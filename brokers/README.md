@@ -142,11 +142,23 @@ Please use the standalone MT5 windows application and follow the steps below.
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader2.png" width="200"></div>
 
 # Rithmic
-1. Open your Rithmic Trader application.
-2. Navigate to the <b>Order History</b> window.
-3. In the top nav bar find <b>Account</b> drop down and select which account you would like to track.
-4. In the top nav bar find <b>Date</b> drop down and select the trading session you would like to upload.
-5. Select <b>Export as CSV</b> in the top nav bar.
+1. Login to RTrader Pro
+2. Open Order History (step1.webp)
+3. Reset Order History to original template (step1.1.webp)
+4. Select your Account and the date you want to export (step2.webp)
+5. Adjust the reporting by adding the columns "Qty filled" and "Commission Fill Rate"   (DO NO CHANGE SORTING OF THE COLUMNS) (step3.webp ; step4.1.webp ; step4.2.webp )
+6. Sort the Orders ascending (first order on top) (step5.webp)
+7. Export As CSV (step6.webp)
+
+**optional Steps**
+
+You can create a separate template so that the steps do not have to be carried out for every export.
+
+1. Save the report via **"Save with a name..."**  (step7.webp)
+2. Then you can open the template with a simple click on the Sidebar (step8.webp)
+
+<div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step1.webp" width="200">
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step1.1.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step2.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step3.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step4.1.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step4.2.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step5.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step6.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step7.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step8.webp" width="200"></div>
 
 Please note that trades need to be ordered in ascending order 
 

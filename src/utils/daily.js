@@ -89,7 +89,7 @@ export const useGetTagInfo = (param) => {
 
     const tagIdToFind = param;
     const tagInfo = findTagInfo(tagIdToFind);
-    console.log(" tagInfo "+JSON.stringify(tagInfo))
+    //console.log(" tagInfo "+JSON.stringify(tagInfo))
     return tagInfo
 }
 

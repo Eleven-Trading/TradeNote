@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
 import { useDeleteDiary, useGetDiaries } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
@@ -14,7 +14,7 @@ import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags,
 
 export function useInitTab(param) {
     console.log("\nINIT TAB for " + param)
-    
+
     let hideCurrentTab = false
     let htmlIdCurrent
     let htmlIdPrevious
@@ -27,103 +27,120 @@ export function useInitTab(param) {
     var self = // is.value needed or else could not call function inside eventlistener
 
 
-    triggerTabList.forEach((triggerEl) => {
-        //console.log("triggerEl "+triggerEl)
-        /*var tabTrigger = new bootstrap.Tab(triggerEl)
-        triggerEl.addEventListener('click', function(event) {
-            console.log("clicking")
-            //event.preventDefault()
-            //tabTrigger.show()
-        })*/
-        if (param == "dashboard") {
-            // GET TAB ID THAT IS CLICKED
-            //console.log(" -> triggerTabList Dashboard")
-            triggerEl.addEventListener('shown.bs.tab', async (event) => {
-                //console.log("target " + event.target.getAttribute('id')) // newly activated tab
-                selectedDashTab.value = event.target.getAttribute('id')
-                //console.log("selected tab " + selectedDashTab.value)
-                localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                await (renderData.value += 1)
-                await useECharts("init")
-                //console.log("related" + event.relatedTarget) // previous active tab
-            })
-        }
+        triggerTabList.forEach((triggerEl) => {
+            //console.log("triggerEl "+triggerEl.getAttribute('id'))
+            /*var tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function(event) {
+                console.log("clicking")
+                //event.preventDefault()
+                //tabTrigger.show()
+            })*/
+            if (param == "dashboard") {
+                // GET TAB ID THAT IS CLICKED
+                //console.log(" -> triggerTabList Dashboard")
+                triggerEl.addEventListener('shown.bs.tab', async (event) => {
+                    //console.log("target " + event.target.getAttribute('id')) // newly activated tab
+                    selectedDashTab.value = event.target.getAttribute('id')
+                    //console.log("selected tab " + selectedDashTab.value)
+                    localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
+                    await (renderData.value += 1)
+                    await useECharts("init")
+                    //console.log("related" + event.relatedTarget) // previous active tab
+                })
+            }
 
-        if (param == "daily") {
-            // GET TAB ID THAT IS CLICKED
-            
-            //console.log(" -> triggerTabList Daily")
+            if (param == "daily") {
+                // GET TAB ID THAT IS CLICKED
 
-            triggerEl.addEventListener('click', async (event) => {
-
-                if (idCurrent.value != undefined) idPrevious.value = idCurrent.value // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
-
-                idCurrent.value = event.target.getAttribute('id')
-
-
-                if (idPrevious.value == undefined) {
-                    firstTimeClick = true
-                    idPrevious.value = idCurrent.value //on page load, first time we click
-                    hideCurrentTab = !hideCurrentTab // is.value counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
-
-                }
-
-                //console.log(" -> id Current: " + idCurrent.value + " and previous: " + idPrevious.value)
-
-                idCurrentType.value = idCurrent.value.split('-')[0]
-                idCurrentNumber.value = idCurrent.value.split('-')[1]
-                idPreviousType.value = idPrevious.value.split('-')[0]
-                idPreviousNumber.value = idPrevious.value.split('-')[1]
-                htmlIdCurrent = "#" + idCurrentType.value + "Nav-" + idCurrentNumber.value
-                htmlIdPrevious = "#" + idPreviousType.value + "Nav-" + idPreviousNumber.value
-
-                //console.log(" -> Daily tab click on "+idCurrentType.value + " - index "+idCurrentNumber.value)
-                //console.log(" -> filtered trades "+JSON.stringify(filteredTrades[idCurrentNumber.value]))
-                
-                if (idCurrentType.value === "screenshots"){
-                    let screenshotsDate = filteredTrades[idCurrentNumber.value].dateUnix
-                    //console.log(" -> Clicked on screenshots tab in Daily so getting screensots for "+screenshotsDate)
-                    if(screenshots.length == 0 || (screenshots.length>0 && screenshots[0].dateUnixDay != screenshotsDate)){
-                        console.log("  --> getting Screenshots")
-                        await useGetScreenshots(true, screenshotsDate)
-                    }else{
-                        console.log("  --> Screenshots already stored")
+                //console.log(" -> triggerTabList Daily")
+                let idClicked
+                triggerEl.addEventListener('click', async (event) => {
+                    /*if (idClicked == event.target.getAttribute('id')) {
+                        console.log(" already clicked")
+                    } else {
+                        console.log(" first time clicked")
+                        idClicked = event.target.getAttribute('id')
                     }
-                    //console.log(" screenshots "+JSON.stringify(screenshots[0]))
-                }
+                    console.log(" -> Click on " + event.target.getAttribute('id'))
+                    */
+                    if (idCurrent.value != undefined) idPrevious.value = idCurrent.value // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
 
-                if (idCurrent.value == idPrevious.value) {
-
-                    hideCurrentTab = !hideCurrentTab
-
-                    //console.log(" hide tab ? " + hideCurrentTab)
+                    idCurrent.value = event.target.getAttribute('id')
 
 
+                    if (idPrevious.value == undefined) {
+                        firstTimeClick = true
+                        idPrevious.value = idCurrent.value //on page load, first time we click
+                        hideCurrentTab = !hideCurrentTab // is.value counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
 
-                    if (hideCurrentTab) { //hide content
-
-                        $(htmlIdCurrent).removeClass('show')
-                        $(htmlIdCurrent).removeClass('active')
-                        $("#" + idCurrent.value).removeClass('active')
-                    } else { //show content
-                        $(htmlIdCurrent).addClass('show')
-                        $(htmlIdCurrent).addClass('active')
-                        $("#" + idCurrent.value).addClass('active')
                     }
 
+                    //console.log(" -> id Current: " + idCurrent.value + " and previous: " + idPrevious.value)
+
+                    idCurrentType.value = idCurrent.value.split('-')[0]
+                    idCurrentNumber.value = idCurrent.value.split('-')[1]
+                    idPreviousType.value = idPrevious.value.split('-')[0]
+                    idPreviousNumber.value = idPrevious.value.split('-')[1]
+                    htmlIdCurrent = "#" + idCurrentType.value + "Nav-" + idCurrentNumber.value
+                    htmlIdPrevious = "#" + idPreviousType.value + "Nav-" + idPreviousNumber.value
+
+                    //console.log(" -> Daily tab click on "+idCurrentType.value + " - index "+idCurrentNumber.value)
+                    //console.log(" -> filtered trades "+JSON.stringify(filteredTrades[idCurrentNumber.value]))
+
+                    if (idCurrentType.value === "screenshots") {
+                        let screenshotsDate = filteredTrades[idCurrentNumber.value].dateUnix
+                        //console.log(" -> Clicked on screenshots tab in Daily so getting screensots for "+screenshotsDate)
+                        //console.log(" screenshots infos " + JSON.stringify(screenshotsInfos))
+                        let index = screenshotsInfos.findIndex(obj => obj.dateUnixDay == screenshotsDate)
+                        //console.log(" index " + index)
+                        if (index != -1) {
+
+                            if (screenshots.length == 0 || (screenshots.length > 0 && screenshots[0].dateUnixDay != screenshotsDate)) {
+                                console.log("  --> getting Screenshots")
+                                await (tabGettingScreenshots.value = true)
+                                await useGetScreenshots(true, screenshotsDate)
+                                await (tabGettingScreenshots.value = false)
+                            } else {
+                                console.log("  --> Screenshots already stored")
+                            }
+                        } else {
+                            console.log("  --> No screenshots")
+                        }
+                        //console.log(" screenshots "+JSON.stringify(screenshots[0]))
+                    }
+
+                    if (idCurrent.value == idPrevious.value) {
+
+                        hideCurrentTab = !hideCurrentTab
+
+                        //console.log(" hide tab ? " + hideCurrentTab)
 
 
-                } else {
-                    hideCurrentTab = false
-                    // in case.value, we have click on another tab so we need to "reset" the previsous tab 
-                    $(htmlIdPrevious).removeClass('show')
-                    $(htmlIdPrevious).removeClass('active')
-                    $("#" + idPrevious.value).removeClass('active')
-                }
 
-            })
-        }
-    })
+                        if (hideCurrentTab) { //hide content
+
+                            $(htmlIdCurrent).removeClass('show')
+                            $(htmlIdCurrent).removeClass('active')
+                            $("#" + idCurrent.value).removeClass('active')
+                        } else { //show content
+                            $(htmlIdCurrent).addClass('show')
+                            $(htmlIdCurrent).addClass('active')
+                            $("#" + idCurrent.value).addClass('active')
+                        }
+
+
+
+                    } else {
+                        hideCurrentTab = false
+                        // in case.value, we have click on another tab so we need to "reset" the previsous tab 
+                        $(htmlIdPrevious).removeClass('show')
+                        $(htmlIdPrevious).removeClass('active')
+                        $("#" + idPrevious.value).removeClass('active')
+                    }
+
+                })
+            }
+        })
 
 
 }
@@ -284,7 +301,7 @@ export function useInitShepherd() {
             useModalOverlay: true,
         }
     });
-    if (pageId.value != "dashboard"){
+    if (pageId.value != "dashboard") {
         alert("Please go to the dashboard page and launch the tutorial.")
         return
     }
@@ -387,7 +404,7 @@ export function useInitShepherd() {
         }
         ]
     },
-   
+
     {
         id: 'step6',
         text: 'Diary is where you can see and edit your diary entries.',
@@ -787,7 +804,6 @@ export async function useMountDaily() {
     await useGetSelectedRange()
     await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
     await useGetFilteredTrades()
-    await useGetFilteredTradesForDaily()
     spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
@@ -845,7 +861,7 @@ export async function useLoadMore() {
     if (pageId.value == "daily") {
         await useGetFilteredTradesForDaily()
         await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        useInitTab("daily")
+        await useInitTab("daily")
         //await useGetDiaries(true)
         //await (renderingCharts.value = false)
     }
@@ -1040,9 +1056,9 @@ export const useGetLegacy = async () => {
                     const element = currentLegacy[index];
                     legacy.push(element)
                 }
-                
+
             }
-            console.log("  --> Legacy "+JSON.stringify(legacy))
+            console.log("  --> Legacy " + JSON.stringify(legacy))
             resolve()
         } else {
             console.log(" -> NO USER !!!")
@@ -1080,12 +1096,12 @@ export const useUpdateLegacy = async (param1) => {
             else {
                 console.log("  --> Updating legacy")
                 let index = currentLegacy.findIndex(obj => obj.name == param1)
-                if (index == -1){
+                if (index == -1) {
                     saveLegacy()
-                }else{
+                } else {
                     currentLegacy[index].updated = true
                 }
-                
+
             }
 
             results.set("legacy", currentLegacy)

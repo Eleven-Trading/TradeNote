@@ -6,7 +6,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
@@ -52,26 +52,6 @@ onMounted(async () => {
     useCreateAvailableTagsArray()
 
     tradesModal = new bootstrap.Modal("#tradesModal")
-    window.addEventListener('scroll', async () => {
-        let scrollFromTop = window.scrollY
-        let visibleScreen = (window.innerHeight + 200) // adding 200 so that loads before getting to bottom
-        let documentHeight = document.documentElement.scrollHeight
-        let difference = documentHeight - (scrollFromTop + visibleScreen)
-        /*console.log("scroll top "+scrollFromTop)
-        console.log("visible screen "+visibleScreen)
-        console.log("documentHeight "+documentHeight)
-        //console.log("difference "+difference)*/
-        if (difference <= 0) {
-            //console.log("spinnerLoadMore " + spinnerLoadMore.value)
-            //console.log("spinnerLoadingPage " + spinnerLoadingPage.value)
-            //console.log("endOfList " + endOfList.value)
-            if (!spinnerLoadMore.value && !spinnerLoadingPage.value && !endOfList.value) { //To avoid firing multiple times, make sure it's not loadin for the first time and that there is not already a loading more (spinner)
-                useLoadMore()
-            }
-        }
-    })
-    useCheckVisibleScreen()
-
 })
 
 
@@ -444,7 +424,7 @@ function noteClicked() {
 
 const tradeNoteChange = (param) => {
     tradeNote.value = param
-    console.log(" -> New note " + tradeNote.value)
+    //console.log(" -> New note " + tradeNote.value)
     tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
     tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
 
@@ -461,9 +441,9 @@ const filteredScreenshots = (param1, param2) => {
 
         console.log(" param1 ")
     }
-    if (param2) {
+    */if (param2) {
         console.log(" param2 ")
-    }*/
+    }
     let screenshotArray = []
     //console.log(" screenshotsInfos "+JSON.stringify(screenshotsInfos))
     for (let index = 0; index < param1.trades.length; index++) {
@@ -811,11 +791,11 @@ const filterDiary = (param) => {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-show="screenshots.length == 0 || (screenshots.length>0 && screenshots[0].dateUnixDay != itemTrade.dateUnix)" class="text-center">
-                                                    <div class="spinner-border text-blue" role="status">
-                                                    </div>
+                                                <div v-show="idCurrentType == 'screenshots' && idCurrentNumber == index && tabGettingScreenshots" class="text-center spinnerHeigth">
+                                                    <div class="spinner-border text-blue"
+                                                        role="status"></div>
                                                 </div>
-                                                <div v-if="idCurrentType == 'screenshots' && idCurrentNumber == index"
+                                                <div v-if="filteredScreenshots(itemTrade).length > 0 && idCurrentType == 'screenshots' && idCurrentNumber == index"
                                                     v-for="itemScreenshot in filteredScreenshots(itemTrade, itemTrade.dateUnix)">
                                                     <span class="mb-2">
                                                         <Screenshot :screenshot-data="itemScreenshot" show-title
