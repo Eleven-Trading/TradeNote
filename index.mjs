@@ -7,7 +7,8 @@ import fs from 'fs'
 import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
-import { testPost } from './src/utils/addTrades.js';
+import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
+import { currentUser, queryLimit, existingTradesArray, gotExistingTradesArray } from './src/stores/globals.js';
 
 let databaseURI
 
@@ -258,16 +259,49 @@ const startIndex = async () => {
 
     })
 
-    app.post('/test', async (req, res) => {
+    app.use(express.json());
+    function getExistingTradesArray() {
+        console.log(" -> Getting existing trades for filter")
+        console.log(" tpe of current user " + typeof currentUser.value)
+        console.log(" and current user " + currentUser.value)
+        console.log(" and current user " + JSON.stringify(currentUser.value))
+        console.log(" and current user ACL " + JSON.stringify(currentUser.value.ACL))
+        return new Promise(async (resolve, reject) => {
+            const parseObject = Parse.Object.extend("trades");
+            const query = new Parse.Query(parseObject);
+            query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId})
+            //query.limit(queryLimit.value); // limit to at most 1M results
+            const results = await query.find({ useMasterKey: true })
+            //const results = await query.find();
+            for (let i = 0; i < results.length; i++) {
+                const object = results[i];
+                //console.log("unix time "+ object.get('dateUnix'));
+                existingTradesArray.push(object.get('dateUnix'))
+            }
+            gotExistingTradesArray.value = true
+            console.log(" -> Finished getting existing trades for filter")
+            console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+            resolve()
+        })
+    }
+
+    app.post('/api/trades', async (req, res) => {
+        const data = req.body;
+        //console.log(" data "+JSON.stringify(data))
         try {
-          // Call the function from addTrades.js
-          let test = await testPost();
-          res.status(200).send(test);
+            // Call the function from addTrades.js
+            const user = await Parse.User.logIn(data.usernameTradeNote, data.passwordTradeNote)
+            currentUser.value = JSON.parse(JSON.stringify(user))
+            
+            await useGetExistingTradesArray("api")
+            await useImportTrades(data.data, "api", data.selectedBroker, data.uploadMfePrices);
+            await useUploadTrades("api")
+            res.status(200).send(" -> Saved Trades to Parse DB");
         } catch (error) {
-          console.error(error);
-          res.status(500).send('Error creating executions');
+            console.error(error);
+            res.status(500).send('Error creating executions');
         }
-      });
+    });
 
 }
 

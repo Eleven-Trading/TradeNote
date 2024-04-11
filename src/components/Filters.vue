@@ -4,6 +4,21 @@ import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalend
 import { pageId, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, hasData, selectedTags, tags, availableTags } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 /*============================================
     VARIABLES

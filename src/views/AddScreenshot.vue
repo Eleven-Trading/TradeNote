@@ -6,6 +6,21 @@ import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, scr
 import { useSaveScreenshot, useSetupImageUpload } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
 import { useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useGetTags, useGetAvailableTags, useGetTagInfo } from '../utils/daily';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)

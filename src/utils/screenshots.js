@@ -1,6 +1,21 @@
 import { selectedMonth, pageId, screenshots, screenshot, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags, screenshotsInfos } from '../stores/globals.js'
 import { useLoadMore } from './utils.js';
 import { useUpdateTags } from './daily.js';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 screenshotsQueryLimit.value = 4
 

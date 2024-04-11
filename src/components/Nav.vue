@@ -5,6 +5,8 @@ import { useInitShepherd, useInitTooltip } from "../utils/utils.js";
 import { pageId, currentUser, renderProfile, screenType, latestVersion } from "../stores/globals"
 import { version } from '../../package.json';
 
+import axios from 'axios'
+
 const pages = [{
     id: "registerSignup",
     name: "Login",

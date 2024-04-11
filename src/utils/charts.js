@@ -1,5 +1,20 @@
 import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals.js"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat, useXDecFormat } from "./utils.js"
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
 const cssColor60 = "rgba(255, 255, 255, 0.60)"

@@ -2,14 +2,14 @@
 import { onMounted } from 'vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData, tradovateTiers, selectedTradovateTier } from '../stores/globals';
 import { useDecimalsArithmetic } from '../utils/utils';
-import { useImportTrades, useUploadTrades } from '../utils/addTrades'
+import { useImportTrades, useUploadTrades, useGetExistingTradesArray } from '../utils/addTrades'
 import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 
 spinnerLoadingPage.value = false
 
 onMounted(async () => {
-    await Promise.all([getExistingTradesArray()])
+    await useGetExistingTradesArray()
 })
 
 function inputChooseBroker(param) {
@@ -26,25 +26,7 @@ function stepperPrevious() {
     existingImports.length = 0
 }
 
-async function getExistingTradesArray() {
-    console.log(" -> Getting existing trades for filter")
-    return new Promise(async (resolve, reject) => {
-        const parseObject = Parse.Object.extend("trades");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("user", Parse.User.current());
-        query.limit(queryLimit.value); // limit to at most 1M results
-        const results = await query.find();
-        for (let i = 0; i < results.length; i++) {
-            const object = results[i];
-            //console.log("unix time "+ object.get('dateUnix'));
-            existingTradesArray.push(object.get('dateUnix'))
-        }
-        gotExistingTradesArray.value = true
-        console.log(" -> Finished getting existing trades for filter")
-        //console.log(" -> ExistingTradesArray "+JSON.stringify(existingTradesArray))
-        resolve()
-    })
-}
+
 </script>
 <template>
     <SpinnerLoadingPage />

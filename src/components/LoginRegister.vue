@@ -3,6 +3,7 @@ import { ref, reactive } from 'vue'
 import { pageId, timeZones, availableTags, tradeTags, legacy } from '../stores/globals';
 import { getCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
 import { useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
+import axios from 'axios'
 
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)

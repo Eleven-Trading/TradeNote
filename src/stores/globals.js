@@ -3032,7 +3032,7 @@ export const selectedAccount = typeof localStorage !== 'undefined' ? ref(localSt
 export const selectedAccounts = typeof localStorage !== 'undefined' ? localStorage.getItem('selectedAccounts') ? ref(localStorage.getItem('selectedAccounts').split(",")) : ref([]) : ""
 export const selectedGrossNet = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedGrossNet')) : ""
 export const selectedPlSatisfaction = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedPlSatisfaction')) : ""
-export const selectedBroker = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedBroker')) : ""
+export const selectedBroker = typeof localStorage !== 'undefined' ? ref(localStorage.getItem('selectedBroker')) : ref()
 export const selectedDateRange = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedDateRange'))) : ""
 export const selectedMonth = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedMonth'))) : ""
 export const selectedPeriodRange = typeof localStorage !== 'undefined' ? ref(JSON.parse(localStorage.getItem('selectedPeriodRange'))) : ""

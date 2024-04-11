@@ -4,6 +4,21 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { currentDate, itemToEditId, spinnerLoadingPage, timeZoneTrade, playbookUpdate, playbookButton, playbookIdToEdit } from '../stores/globals';
 import { useDateCalFormat, useInitQuill } from '../utils/utils';
 import { useUploadPlaybook } from '../utils/playbooks';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 let playbook = {} //this is first time or when load
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")

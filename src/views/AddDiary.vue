@@ -4,6 +4,21 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTrade, diaryIdToEdit, diaryButton } from '../stores/globals';
 import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 let diary = {}
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD")

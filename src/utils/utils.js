@@ -8,6 +8,24 @@ import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesF
 import { useLoadCalendar } from "./calendar.js";
 import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
 
+/* MODULES */
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+import axios from 'axios'
+
 /**************************************
 * INITS
 **************************************/
@@ -190,7 +208,7 @@ export function useCheckCurrentUser() {
 
 export function getCurrentUser() {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
-    //console.log("currentUser " + JSON.stringify(currentUser))
+    //console.log("currentUser " + JSON.stringify(currentUser.value))
 }
 
 export function useGetTimeZone() {

@@ -1,6 +1,25 @@
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier } from '../stores/globals.js'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit } from '../stores/globals.js'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils.js'
+
+/* MODULES */
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+import _ from 'lodash'
+import axios from 'axios'
 
 let openPosition = false
 let tradeAccounts = []
@@ -16,241 +35,285 @@ let openPositionsParse = []
 
 let currentTradeId
 
-export const testPost = async() => {
+export const testPost = async () => {
     return "test successful !!!!"
 }
 /****************************
  * TRADES
  ****************************/
-export async function useImportTrades(e, param2) {
-    console.log("IMPORTING FILE")
-    // Using Papa Parse : https://www.papaparse.com/docs
-    spinnerLoadingPage.value = true
-    //spinnerLoadingPageText.value = "Importing file ..."
-    //console.log(" got existing " + gotExistingTradesArray.value)
-    let files
-    let importFileError = false
-    if (param2 == "file") {
-        files = e.target.files || e.dataTransfer.files;
-        if (!files.length) {
-            spinnerLoadingPage.value = false
-            return;
+export async function useGetExistingTradesArray(param99) {
+    console.log(" -> Getting existing trades for filter")
+
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("trades");
+        const query = new Parse.Query(parseObject);
+        if (param99 === "api") {
+            query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
         }
-    }
-
-
-    const readAsText = async (param) => {
-        return new Promise(async (resolve, reject) => {
-            var reader = new FileReader();
-            var vm = this;
-            reader.onload = e => {
-                resolve(reader.result)
-            };
-            reader.readAsText(param[0]);
-        })
-    }
-
-    const readAsArrayBuffer = async (param) => {
-        return new Promise(async (resolve, reject) => {
-            let reader = new FileReader();
-            reader.onload = e => {
-                resolve(reader.result);
-            };
-            reader.readAsArrayBuffer(param[0]);
-        })
-    }
-
-    const create = async () => {
-        await createTempExecutions().catch((error) => {
-            alert("Error in upload file (" + error + ")")
-        })
-
-        await createExecutions()
-        if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && uploadMfePrices.value) {
-            await getOHLCV()
+        query.limit(queryLimit.value); // limit to at most 1M results
+        const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
+        for (let i = 0; i < results.length; i++) {
+            const object = results[i];
+            //console.log("unix time "+ object.get('dateUnix'));
+            existingTradesArray.push(object.get('dateUnix'))
         }
-        /*await createTrades().then(async () => {
-            //console.log(" -> Open posisitions: " + openPosition)
-            if (openPosition) {
-                //console.log("You have one or more open positions. Please close all your positions before import.")
-                alert("You have one or more open positions. Please close all your positions before import.")
-                return
-            } else {
+        gotExistingTradesArray.value = true
+        console.log(" -> Finished getting existing trades for filter")
+        //console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+        resolve()
+    })
+}
 
-                await filterExisting("trades")
-                await useCreateBlotter()
-                await useCreatePnL()
-            }
-
-        })*/
-        await getOpenPositionsParse()
-        await createTrades()
-        await filterExisting("trades")
-        await useCreateBlotter()
-        await useCreatePnL()
-
-
-        await (spinnerLoadingPage.value = false)
-    }
-
-    const importFileErrorFunction = (param) => {
-        importFileError = true
-        spinnerLoadingPage.value = false
-        const file = document.querySelector('#tradesInput');
-        file.value = '';
-        alert("ERROR IN UPLOAD FILE\n" + param)
-    }
-    /****************************
-     * TRADEZERO
-     ****************************/
-    if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template") {
-        console.log(" -> TradeZero / Template")
-        let fileInput = await readAsText(files)
-        await useBrokerTradeZero(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * METATRADER 5
-     ****************************/
-    if (selectedBroker.value == "metaTrader5") {
-        console.log(" -> MetaTrader 5")
-        let fileInput = await readAsArrayBuffer(files)
-        await useBrokerMetaTrader5(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * TD AMERITRADE
-     ****************************/
-    if (selectedBroker.value == "tdAmeritrade") {
-        console.log(" -> TD Ameritrade")
-        let fileInput = await readAsText(files)
-        await useBrokerTdAmeritrade(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * TRADESTATION
-     ****************************/
-    if (selectedBroker.value == "tradeStation") {
-        console.log(" -> Trade Station")
-        let fileInput = brokerData.value
-        //console.log("file input "+fileInput)
-        await useBrokerTradeStation(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * INTERACTIVE BROKERS
-     ****************************/
-    if (selectedBroker.value == "interactiveBrokers") {
-        console.log(" -> Interactive Brokers")
-        let fileInput = await readAsText(files)
-        await useBrokerInteractiveBrokers(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * TRADOVATE
-     ****************************/
-    if (selectedBroker.value == "tradovate") {
-        console.log(" -> Tradovate")
-        console.log(' -> Selected tier ' + selectedTradovateTier.value)
-        if (!selectedTradovateTier.value) {
-            alert("Select commision plan")
-            spinnerLoadingPage.value = false
-            return
-        }
-        let fileInput = await readAsText(files)
-        await useTradovate(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * NINJATRADER
-     ****************************/
-    if (selectedBroker.value == "ninjaTrader") {
-        console.log(" -> NinjaTrader")
-        let fileInput = await readAsText(files)
-        await useNinjaTrader(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * HELDENTRADER
-     ****************************/
-    if (selectedBroker.value == "heldentrader") {
-        console.log(" -> Heldentrader")
-        let fileInput = await readAsText(files)
-        await useBrokerHeldentrader(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-     /****************************
-     * RITHMIC
-     ****************************/
-     if (selectedBroker.value == "rithmic") {
-        console.log(" -> Rithmic")
-        let fileInput = await readAsText(files)
-        await useRithmic(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    /****************************
-     * FUNDTRADERS
-     ****************************/
-    if (selectedBroker.value == "fundTraders") {
-        console.log(" -> FundTraders")
-        let fileInput = await readAsText(files)
-        await useFundTraders(fileInput).catch(error => {
-            importFileErrorFunction(error)
-        })
-    }
-
-    const retryFunction = (callback, delay, tries) => {
-
-        if (tries && callback() !== true) {
-            setTimeout(retryFunction.bind(this, callback, delay, tries - 1), delay);
-        } else {
-            //if still false, send alert else create
-            if (!gotExistingTradesArray.value) {
+export async function useImportTrades(param1, param2, param3, param4) {
+    return new Promise(async (resolve, reject) => {
+        //console.log("param1 " + param1)
+        //console.log("param2 " + param2)
+        //console.log("param3 " + param3)
+        //console.log(" param4 "+param4)
+        console.log("IMPORTING FILE")
+        // Using Papa Parse : https://www.papaparse.com/docs
+        spinnerLoadingPage.value = true
+        //spinnerLoadingPageText.value = "Importing file ..."
+        //console.log(" got existing " + gotExistingTradesArray.value)
+        let files
+        let importFileError = false
+        if (param2 == "file") {
+            files = param1.target.files || param1.dataTransfer.files;
+            if (!files.length) {
                 spinnerLoadingPage.value = false
-                alert("TradeNote didn't have enough time to fetch existing trades from database before parsing your file. Please refresh the page and wait a little bit longer before adding your file and thus giving TradeNote some more time to run this background job.")
                 return;
             }
+        }
+
+
+        const readAsText = async (param) => {
+            return new Promise(async (resolve, reject) => {
+                var reader = new FileReader();
+                var vm = this;
+                reader.onload = e => {
+                    resolve(reader.result)
+                };
+                reader.readAsText(param[0]);
+            })
+        }
+
+        const readAsArrayBuffer = async (param) => {
+            return new Promise(async (resolve, reject) => {
+                let reader = new FileReader();
+                reader.onload = e => {
+                    resolve(reader.result);
+                };
+                reader.readAsArrayBuffer(param[0]);
+            })
+        }
+
+        const importFileErrorFunction = (param) => {
+            importFileError = true
+            spinnerLoadingPage.value = false
+            const file = document.querySelector('#tradesInput');
+            file.value = '';
+            alert("ERROR IN UPLOAD FILE\n" + param)
+        }
+        let fileInput
+        /****************************
+         * TRADEZERO
+         ****************************/
+        if (param3) {
+            selectedBroker.value = param3
+
+        }
+        if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template" || selectedBroker.value == "tdAmeritrade" || selectedBroker.value == "interactiveBrokers" || selectedBroker.value == "tradovate" || selectedBroker.value == "ninjaTrader" || selectedBroker.value == "heldentrader" || selectedBroker.value == "rithmic" || selectedBroker.value == "fundTraders") {
+            if (param2 == "api") {
+                fileInput = param1
+            } else {
+                fileInput = await readAsText(files)
+            }
+        }
+
+        if (selectedBroker.value == "metaTrader5") {
+            if (param2 == "api") {
+                fileInput = param1
+            } else {
+                fileInput = await readAsArrayBuffer(files)
+            }
+        }
+
+        if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template") {
+            console.log(" -> TradeZero / Template")
+            await useBrokerTradeZero(fileInput).catch(error => {
+                console.log(" errror " + error)
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * METATRADER 5
+         ****************************/
+        if (selectedBroker.value == "metaTrader5") {
+            console.log(" -> MetaTrader 5")
+            await useBrokerMetaTrader5(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TD AMERITRADE
+         ****************************/
+        if (selectedBroker.value == "tdAmeritrade") {
+            console.log(" -> TD Ameritrade")
+            await useBrokerTdAmeritrade(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TRADESTATION
+         ****************************/
+        if (selectedBroker.value == "tradeStation") {
+            console.log(" -> Trade Station")
+            fileInput = brokerData.value
+            //console.log("file input "+fileInput)
+            await useBrokerTradeStation(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * INTERACTIVE BROKERS
+         ****************************/
+        if (selectedBroker.value == "interactiveBrokers") {
+            console.log(" -> Interactive Brokers")
+            await useBrokerInteractiveBrokers(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TRADOVATE
+         ****************************/
+        if (selectedBroker.value == "tradovate") {
+            console.log(" -> Tradovate")
+            console.log(' -> Selected tier ' + selectedTradovateTier.value)
+            if (!selectedTradovateTier.value) {
+                alert("Select commision plan")
+                spinnerLoadingPage.value = false
+                return
+            }
+            await useTradovate(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * NINJATRADER
+         ****************************/
+        if (selectedBroker.value == "ninjaTrader") {
+            console.log(" -> NinjaTrader")
+            await useNinjaTrader(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * HELDENTRADER
+         ****************************/
+        if (selectedBroker.value == "heldentrader") {
+            console.log(" -> Heldentrader")
+            await useBrokerHeldentrader(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+        * RITHMIC
+        ****************************/
+        if (selectedBroker.value == "rithmic") {
+            console.log(" -> Rithmic")
+            await useRithmic(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * FUNDTRADERS
+         ****************************/
+        if (selectedBroker.value == "fundTraders") {
+            console.log(" -> FundTraders")
+            await useFundTraders(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        const create = async () => {
+            await createTempExecutions().catch((error) => {
+                alert("Error in upload file (" + error + ")")
+            })
+
+            await createExecutions()
+
+            if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && (param2 == "api" ? param4 : uploadMfePrices.value)) {
+                await getOHLCV()
+            }
+            /*await createTrades().then(async () => {
+                //console.log(" -> Open posisitions: " + openPosition)
+                if (openPosition) {
+                    //console.log("You have one or more open positions. Please close all your positions before import.")
+                    alert("You have one or more open positions. Please close all your positions before import.")
+                    return
+                } else {
+    
+                    await filterExisting("trades")
+                    await useCreateBlotter()
+                    await useCreatePnL()
+                }
+    
+            })*/
+            await getOpenPositionsParse(param2)
+            await createTrades()
+            await filterExisting("trades")
+            await useCreateBlotter()
+            await useCreatePnL()
+
+
+            await (spinnerLoadingPage.value = false)
+            resolve()
+        }
+
+        const retryFunction = (callback, delay, tries) => {
+
+            if (tries && callback() !== true) {
+                setTimeout(retryFunction.bind(this, callback, delay, tries - 1), delay);
+            } else {
+                //if still false, send alert else create
+                if (!gotExistingTradesArray.value) {
+                    spinnerLoadingPage.value = false
+                    alert("TradeNote didn't have enough time to fetch existing trades from database before parsing your file. Please refresh the page and wait a little bit longer before adding your file and thus giving TradeNote some more time to run this background job.")
+                    return;
+                }
+                if (!importFileError) {
+                    create()
+                } else {
+                    return
+                }
+            }
+        }
+
+        const callbackFunction = () => {
+            console.log(" -> Waiting for existing trades");
+            return gotExistingTradesArray.value
+        }
+
+        if (gotExistingTradesArray.value) {
             if (!importFileError) {
                 create()
             } else {
                 return
             }
-        }
-    }
-
-    const callbackFunction = () => {
-        console.log(" -> Waiting for existing trades");
-        return gotExistingTradesArray.value
-    }
-
-    if (gotExistingTradesArray.value) {
-        if (!importFileError) {
-            create()
         } else {
-            return
+            retryFunction(callbackFunction, 1000, 10);
         }
-    } else {
-        retryFunction(callbackFunction, 1000, 10);
-    }
 
+    })
 }
 
 async function createTempExecutions() {
@@ -453,14 +516,17 @@ async function getOHLCV() {
 }
 
 
-async function getOpenPositionsParse() {
+async function getOpenPositionsParse(param99) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
         const parseObject = Parse.Object.extend("trades");
         const query = new Parse.Query(parseObject);
+        if (param99 === "api") {
+            query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+        }
         query.descending("dateUnix");
         query.equalTo("openPositions", true);
-        const results = await query.find();
+        const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
         for (let i = 0; i < results.length; i++) {
             const object = results[i];
             //console.log("unix time "+ object.get('dateUnix'));
@@ -514,7 +580,7 @@ async function createTrades() {
             console.log("\n ------ ITERATING SYMBOL " + key2 + " on " + useChartFormat(tempExecs[0].td) + " ------")
             for (i = 0; i < tempExecs.length; i++) {
                 let tempExec = tempExecs[i];
-                
+
                 //console.log("tempExec " + JSON.stringify(tempExec));
                 //console.log("doing key "+key2)
 
@@ -586,7 +652,7 @@ async function createTrades() {
                         //console.log(" Open positions "+JSON.stringify(openPositionsFile))
                         //console.log(" Open positions length "+openPositionsFile.length)
                         //console.log(" temp 2 "+JSON.stringify(temp2))
-                    } else{
+                    } else {
                         console.log("  --> No existing open position (in Parse nor in current file)")
                         existingOpenPosition = undefined
                     }
@@ -1142,7 +1208,7 @@ async function createTrades() {
     })
 }
 
-async function updateMfePrices(param) {
+async function updateMfePrices(param99) {
     return new Promise(async (resolve, reject) => {
         console.log("  --> Updating excursion DB with MFE price")
         //spinnerLoadingPageText.value = "Updating MFE prices in excursions"
@@ -1151,16 +1217,28 @@ async function updateMfePrices(param) {
             const element = mfePrices[index];
             const parseObject = Parse.Object.extend("excursions");
             const object = new parseObject();
-            object.set("user", Parse.User.current())
+            if (param99 === "api") {
+                object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+            } else {
+                object.set("user", Parse.User.current())
+            }
             object.set("mfePrice", element.mfePrice)
             object.set("dateUnix", element.dateUnix)
             object.set("tradeId", element.tradeId)
-            object.setACL(new Parse.ACL(Parse.User.current()));
-            object.save()
+            if (param99 === "api") {
+                const ACL = new Parse.ACL();
+                ACL.setReadAccess(currentUser.value.objectId, true);
+                ACL.setWriteAccess(currentUser.value.objectId, true);
+                object.setACL(ACL);
+            } else {
+                object.setACL(new Parse.ACL(Parse.User.current()));
+            }
+            object.save(param99 === "api" ? { useMasterKey: true } : "")
                 .then(async (object) => {
                     console.log(' -> Added new excursion with id ' + object.id)
                     //spinnerSetupsText.value = "Added new setup"
                     tradeId.value = tradeExcursionId.value // we need to do this if.value I want to manipulate the current modal straight away, like for example delete after saving. WHen You push next or back, tradeId is set back to null
+
                     if (index == (mfePrices.length - 1)) {
                         resolve()
                     }
@@ -1646,7 +1724,7 @@ export async function useCreatePnL() {
 }
 
 /* ---- 4: UPLOAD TO PARSE TRADES  ---- */
-export async function useUploadTrades() {
+export async function useUploadTrades(param99) {
 
     console.log("\nUPLOADING TRADES")
     spinnerLoadingPage.value = true
@@ -1661,8 +1739,11 @@ export async function useUploadTrades() {
             //spinnerLoadingPageText.value = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
             const parseObject = Parse.Object.extend(param2);
             const object = new parseObject();
-
-            object.set("user", Parse.User.current())
+            if (param99 === "api") {
+                object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+            } else {
+                object.set("user", Parse.User.current())
+            }
             object.set("date", new Date(dayjs.unix(param1).format("YYYY-MM-DD")))
             object.set("dateUnix", Number(param1))
             object.set("openPositions", param3)
@@ -1675,10 +1756,16 @@ export async function useUploadTrades() {
             if (param2 == "cashJournals") {
                 object.set("cashJournal", cashJournals.value[param1])
             }
+            if (param99 === "api") {
+                const ACL = new Parse.ACL();
+                ACL.setReadAccess(currentUser.value.objectId, true);
+                ACL.setWriteAccess(currentUser.value.objectId, true);
+                object.setACL(ACL);
+            } else {
+                object.setACL(new Parse.ACL(Parse.User.current()));
+            }
 
-            object.setACL(new Parse.ACL(Parse.User.current()));
-
-            object.save()
+            object.save(param99 === "api" ? { useMasterKey: true } : "")
                 .then((object) => {
 
                     console.log(" -> Added new " + param2 + " with id " + object.id)
@@ -1730,37 +1817,40 @@ export async function useUploadTrades() {
 
     const checkTradeAccounts = async () => {
         return new Promise(async (resolve, reject) => {
-            //console.log("trade Accounts " + tradeAccounts)
-            //console.log("current accounts " + JSON.stringify(currentUser.value.accounts))
-
             const updateTradeAccounts = async (param, param2) => {
                 const parseObject = Parse.Object.extend("_User");
                 const query = new Parse.Query(parseObject);
                 query.equalTo("objectId", currentUser.value.objectId);
-                const results = await query.first();
+                const results = await query.first(param99 === "api" ? { useMasterKey: true } : "");
+                //console.log(" results "+JSON.stringify(results))
                 if (results) {
                     results.set("accounts", param)
                     //console.log("param 2" + JSON.stringify(param2))
-                    await results.save() //very important to have await or else too quick to update
-                    //console.log("current accounts " + JSON.stringify(currentUser.value.accounts))
-                    let selectedItems = "selectedAccounts"
+                    if (param99 === "api") {
+                        await results.save(null, { useMasterKey: true }) //very important to have await or else too quick to update
+                    } else {
+                        await results.save()
 
-                    let selectedItemsArray = []
-                    if (localStorage.getItem(selectedItems)) {
-                        if (localStorage.getItem(selectedItems).includes(",")) {
-                            selectedItemsArray = localStorage.getItem(selectedItems).split(",")
+                        //console.log("current accounts " + JSON.stringify(currentUser.value.accounts))
+
+                        let selectedItems = "selectedAccounts"
+
+                        let selectedItemsArray = []
+                        if (localStorage.getItem(selectedItems)) {
+                            if (localStorage.getItem(selectedItems).includes(",")) {
+                                selectedItemsArray = localStorage.getItem(selectedItems).split(",")
+                            } else {
+                                selectedItemsArray = []
+                                selectedItemsArray.push(localStorage.getItem(selectedItems))
+                            }
                         } else {
                             selectedItemsArray = []
-                            selectedItemsArray.push(localStorage.getItem(selectedItems))
                         }
-                    } else {
-                        selectedItemsArray = []
+                        //console.log(" selected items value " + JSON.stringify(selectedItemsArray))
+                        selectedItemsArray.push(param2)
+                        localStorage.setItem(selectedItems, selectedItemsArray)
+                        //console.log(" -> Updated selectedItems / localstorage " + selectedItemsArray)
                     }
-                    //console.log(" selected items value " + JSON.stringify(selectedItemsArray))
-                    selectedItemsArray.push(param2)
-                    localStorage.setItem(selectedItems, selectedItemsArray)
-                    //console.log(" -> Updated selectedItems / localstorage " + selectedItemsArray)
-
                 } else {
                     alert("Update query did not return any results")
                 }
@@ -1799,7 +1889,10 @@ export async function useUploadTrades() {
             const parseObject = Parse.Object.extend("trades");
             const query = new Parse.Query(parseObject);
             query.equalTo("dateUnix", param2);
-            const results = await query.first();
+            if (param99 === "api") {
+                query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+            }
+            const results = await query.first(param99 === "api" ? { useMasterKey: true } : "");
             //console.log(' results '+JSON.stringify(results))
             if (results) {
                 let parsedRes = JSON.parse(JSON.stringify(results))
@@ -1824,8 +1917,11 @@ export async function useUploadTrades() {
                 //console.log(" openPositions "+JSON.stringify(openPositions))
                 results.set("openPositions", openPositions)
                 results.set("trades", tempTrades)
-
-                await results.save().then(resolve()) //very important to have await or else too quick to update
+                if (param99 === "api") {
+                    await results.save(null, { useMasterKey: true }).then(resolve()) //very important to have await or else too quick to update
+                } else {
+                    await results.save().then(resolve()) //very important to have await or else too quick to update
+                }
 
             } else {
                 alert("Update query did not return any results")
@@ -1854,11 +1950,12 @@ export async function useUploadTrades() {
     }
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
-    if (Object.keys(mfePrices).length > 0) await updateMfePrices()
+    if (Object.keys(executions).length > 0 && Object.keys(mfePrices).length > 0) await updateMfePrices(param99)
     if (openPositionsParse.length > 0) {
         await loopOpenPositionsParse()
     }
-
-    window.location.href = "/dashboard"
+    if (param99 != "api") {
+        window.location.href = "/dashboard"
+    }
 
 }
