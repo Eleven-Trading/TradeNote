@@ -1700,6 +1700,9 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             option.series[0].markPoint.data.push({
                 name: 'entryMark',
                 symbol: 'triangle',
+                symbolSize: '40',
+                symbolRotate: '90',
+                symbolOffset: ['50%', 0],
                 coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
                 value: trade.entryPrice,
                 itemStyle: {
@@ -1714,6 +1717,9 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             option.series[0].markPoint.data.push({
                 name: 'exitMark',
                 symbol: 'triangle',
+                symbolSize: '40',
+                symbolRotate: '90',
+                symbolOffset: ['50%', 0],
                 coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
                 value: trade.exitPrice,
                 itemStyle: {
