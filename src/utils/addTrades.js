@@ -59,7 +59,7 @@ export async function useGetExistingTradesArray(param99) {
         }
         gotExistingTradesArray.value = true
         console.log(" -> Finished getting existing trades for filter")
-        console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+        //console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
         resolve()
     })
 }
