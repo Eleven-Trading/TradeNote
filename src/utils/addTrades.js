@@ -59,17 +59,16 @@ export async function useGetExistingTradesArray(param99) {
         }
         gotExistingTradesArray.value = true
         console.log(" -> Finished getting existing trades for filter")
-        //console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+        console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
         resolve()
     })
 }
 
-export async function useImportTrades(param1, param2, param3, param4) {
+export async function useImportTrades(param1, param2, param3) {
     return new Promise(async (resolve, reject) => {
         //console.log("param1 " + param1)
         //console.log("param2 " + param2)
         //console.log("param3 " + param3)
-        //console.log(" param4 "+param4)
         console.log("IMPORTING FILE")
         // Using Papa Parse : https://www.papaparse.com/docs
         spinnerLoadingPage.value = true
@@ -251,7 +250,7 @@ export async function useImportTrades(param1, param2, param3, param4) {
 
             await createExecutions()
 
-            if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && (param2 == "api" ? param4 : uploadMfePrices.value)) {
+            if ((currentUser.value.apis && currentUser.value.apis.length>0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value) {
                 await getOHLCV()
             }
             /*await createTrades().then(async () => {
@@ -339,6 +338,7 @@ async function createTempExecutions() {
                 //console.log("dateArrayTD " + dateArrayTD)
                 const formatedDateTD = dateArrayTD[2] + "-" + dateArrayTD[0] + "-" + dateArrayTD[1]
                 //console.log("formatedDateTD " + formatedDateTD)
+
                 temp2.td = dayjs.tz(formatedDateTD, timeZoneTrade.value).unix()
 
                 const dateArraySD = tradesData[key]['S/D'].split('/');
@@ -490,8 +490,8 @@ async function getOHLCV() {
                 });
 
                 // when request, can set retry times and retry delay time
-
-                await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey, { retry: 5, retryDelay: 60000 })
+                let index = currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')
+                await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.apis[index].key, { retry: 5, retryDelay: 60000 })
                     .then((response) => {
                         //console.log(" -> data " + JSON.stringify(response))
                         //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
@@ -560,6 +560,7 @@ async function createTrades() {
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
+        mfePrices = [] // we need to reset for rest api
         for (const key2 of keys2) {
             var tempExecs = objectB[key2]
             //Count number of wins and losses for later total number of wins and losses
@@ -987,7 +988,7 @@ async function createTrades() {
                          * GETTING MFE PRICE
                          *****/
 
-                        if ((currentUser.value.marketDataApiKey && currentUser.value.marketDataApiKey != null && currentUser.value.marketDataApiKey != '') && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                        if ((currentUser.value.apis && currentUser.value.apis.length>0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                             console.log("  --> Getting MFE Price")
                             let ohlcvSymbol = ohlcv[ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                             //todo exclude if trade in same minute timeframe
@@ -1233,7 +1234,7 @@ async function updateMfePrices(param99) {
             } else {
                 object.setACL(new Parse.ACL(Parse.User.current()));
             }
-            object.save(param99 === "api" ? { useMasterKey: true } : "")
+            object.save(param99 === "api" ? { useMasterKey: true } : undefined)
                 .then(async (object) => {
                     console.log(' -> Added new excursion with id ' + object.id)
                     //spinnerSetupsText.value = "Added new setup"
@@ -1765,7 +1766,7 @@ export async function useUploadTrades(param99) {
                 object.setACL(new Parse.ACL(Parse.User.current()));
             }
 
-            object.save(param99 === "api" ? { useMasterKey: true } : "")
+            object.save(param99 === "api" ? { useMasterKey: true } : undefined)
                 .then((object) => {
 
                     console.log(" -> Added new " + param2 + " with id " + object.id)
@@ -1950,7 +1951,7 @@ export async function useUploadTrades(param99) {
     }
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
-    if (Object.keys(executions).length > 0 && Object.keys(mfePrices).length > 0) await updateMfePrices(param99)
+    if (Object.keys(executions).length > 0 && mfePrices.length > 0) await updateMfePrices(param99)
     if (openPositionsParse.length > 0) {
         await loopOpenPositionsParse()
     }

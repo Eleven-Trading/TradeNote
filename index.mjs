@@ -8,7 +8,8 @@ import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
 import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
-import { currentUser, queryLimit, existingTradesArray, gotExistingTradesArray } from './src/stores/globals.js';
+import { currentUser, uploadMfePrices, existingTradesArray, tradesData } from './src/stores/globals.js';
+import { useGetTimeZone } from './src/utils/utils.js';
 
 let databaseURI
 
@@ -259,42 +260,64 @@ const startIndex = async () => {
 
     })
 
+    /******************************************
+     * REST API
+     ******************************************/
     app.use(express.json());
-    function getExistingTradesArray() {
-        console.log(" -> Getting existing trades for filter")
-        console.log(" tpe of current user " + typeof currentUser.value)
-        console.log(" and current user " + currentUser.value)
-        console.log(" and current user " + JSON.stringify(currentUser.value))
-        console.log(" and current user ACL " + JSON.stringify(currentUser.value.ACL))
+
+    let allUsers
+    const getAllUsers = async () => {
+        console.log(" -> Getting all users")
         return new Promise(async (resolve, reject) => {
-            const parseObject = Parse.Object.extend("trades");
+            const parseObject = Parse.Object.extend("_User");
             const query = new Parse.Query(parseObject);
-            query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId})
-            //query.limit(queryLimit.value); // limit to at most 1M results
-            const results = await query.find({ useMasterKey: true })
-            //const results = await query.find();
-            for (let i = 0; i < results.length; i++) {
-                const object = results[i];
-                //console.log("unix time "+ object.get('dateUnix'));
-                existingTradesArray.push(object.get('dateUnix'))
-            }
-            gotExistingTradesArray.value = true
-            console.log(" -> Finished getting existing trades for filter")
-            console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+            const results = await query.find({ useMasterKey: true });
+            allUsers = JSON.parse(JSON.stringify(results))
             resolve()
         })
     }
 
-    app.post('/api/trades', async (req, res) => {
+    const validateApiKey = async (req, res, next) => {
+        await getAllUsers()
+        const targetKey = req.headers['api-key'] || req.query['api-key'];
+        //console.log(" -> target Key " + targetKey)
+        const findIndexByKey = (allUsers, targetKey) => {
+            for (const user of Object.values(allUsers)) {
+                if (user.hasOwnProperty("apis")) {
+                    const index = user.apis.findIndex(obj => obj.key === targetKey);
+                    if (index !== -1) {
+                        return index;
+                    }
+                }
+
+            }
+            return -1; // Return -1 if not found
+        }
+
+        // Usage example
+        const index = findIndexByKey(allUsers, targetKey);
+        if (index != -1) {
+            console.log(" -> Valid api key found")
+            currentUser.value = allUsers[index]
+            next();
+        } else {
+            console.log(" -> Invalid api key")
+            return res.status(401).json({ error: 'Invalid API key' });
+        }
+    }
+
+    app.post('/api/trades', validateApiKey, async (req, res) => {
         const data = req.body;
-        //console.log(" data "+JSON.stringify(data))
         try {
+            uploadMfePrices.value = data.uploadMfePrices
+            tradesData.length = 0
+            existingTradesArray.length = 0
+            //console.log(" uploadMfePrices "+uploadMfePrices.value)
             // Call the function from addTrades.js
-            const user = await Parse.User.logIn(data.usernameTradeNote, data.passwordTradeNote)
-            currentUser.value = JSON.parse(JSON.stringify(user))
-            
+            //console.log(" -> current user " + JSON.stringify(currentUser.value))
+            await useGetTimeZone()
             await useGetExistingTradesArray("api")
-            await useImportTrades(data.data, "api", data.selectedBroker, data.uploadMfePrices);
+            await useImportTrades(data.data, "api", data.selectedBroker);
             await useUploadTrades("api")
             res.status(200).send(" -> Saved Trades to Parse DB");
         } catch (error) {

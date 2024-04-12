@@ -1,11 +1,11 @@
 <script setup>
 import { onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { useCheckCurrentUser, useInitTooltip } from '../utils/utils';
-import { currentUser, renderProfile, availableTags } from '../stores/globals';
+import { useCheckCurrentUser, useInitTooltip, useGetAPIS } from '../utils/utils';
+import { currentUser, renderProfile, availableTags, apis } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
 let profileAvatar = null
-let marketDataApiKey = null
+let polygonKey = null
 
 const newAvailableTags = reactive([])
 const availableTagsTags = reactive([])
@@ -15,6 +15,7 @@ let tagToDelete = ref(null)
 
 onBeforeMount(async () => {
     await useGetAvailableTags()
+    await useGetAPIS()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
     //console.log(" available tags "+JSON.stringify(availableTags))
     for (let index = 0; index < availableTags.length; index++) {
@@ -23,6 +24,7 @@ onBeforeMount(async () => {
     }
     //console.log(" newAvailableTags "+JSON.stringify(newAvailableTags))
     initSortable()
+
 
 })
 
@@ -38,6 +40,7 @@ async function uploadProfileAvatar(event) {
 
 
 async function updateProfile() {
+    console.log(" update profile")
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING PROFILE")
 
@@ -50,8 +53,6 @@ async function updateProfile() {
                 const parseFile = new Parse.File("avatar", profileAvatar);
                 results.set("avatar", parseFile)
             }
-            if (marketDataApiKey != null) results.set("marketDataApiKey", marketDataApiKey)
-
             await results.save().then(async () => { //very important to have await or else too quick to update
                 await useCheckCurrentUser()
                 await (renderProfile.value += 1)
@@ -381,13 +382,11 @@ const inputGroupTag = (param1, param2) => { //groupIndex, tag.id, value
     temp.name = param2
     newAvailableTags[groupIndex].tags.splice(tagIndex, 0, temp)
 }
-
 const updateSortedTags = async () => {
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING AVAILABLE TAGS")
         const parseObject = Parse.Object.extend("_User");
         const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", currentUser.value.objectId);
         const results = await query.first();
         if (results) {
             results.set("tags", newAvailableTags)
@@ -403,6 +402,63 @@ const updateSortedTags = async () => {
         }
     })
 }
+
+/*********************
+ * APIS
+ *********************/
+const generateAPIKey = () => {
+    console.log(" generating ")
+    //create a base-36 string that contains 30 chars in a-z,0-9
+    let apiKey = [...Array(30)]
+        .map((e) => ((Math.random() * 36) | 0).toString(36))
+        .join('');
+
+    let index = apis.findIndex(obj => obj.provider === "tradeNote")
+    if (index != -1) {
+        apis[index].key = apiKey
+    } else {
+        let temp = {}
+        temp.provider = "tradeNote"
+        temp.label = "TradeNote"
+        temp.key = apiKey
+        apis.push(temp)
+    }
+    //console.log(" APIS " + JSON.stringify(apis))
+}
+
+const updateAPIS = async () => {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nUPDATING APIS")
+        console.log(" apis " + JSON.stringify(apis))
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        const results = await query.first();
+        if (results) {
+            if (polygonKey != null) {
+                let index = apis.findIndex(obj => obj.provider === "polygon")
+                if (index != -1) {
+                    apis[index].key = polygonKey
+                } else {
+                    let temp = {}
+                    temp.provider = "polygon"
+                    temp.label = "Polygon"
+                    temp.key = polygonKey
+                    apis.push(temp)
+                }
+            }
+            results.set("apis", apis)
+            console.log(" apis " + JSON.stringify(apis))
+            await results.save().then(async () => {
+                console.log(" -> Updated apis")
+                await useGetAPIS()
+                resolve()
+            })
+        } else {
+            alert("Update query did not return any results")
+        }
+    })
+}
+
 </script>
 
 <template>
@@ -430,18 +486,41 @@ const updateSortedTags = async () => {
                 <!--=============== API KEY ===============-->
                 <div class="mt-3 row align-items-center">
                     <p class="fs-5 fw-bold">API Keys</p>
-                    <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                            data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                    <div class="row">
+                        <div class="col-12 col-md-3">TradeNote<i class="ps-1 uil uil-info-circle"
+                                data-bs-toggle="tooltip"
+                                data-bs-title="Your TradeNote API Key for using the TradeNote APIs."></i>
+                        </div>
+                        <div class="col-12 col-md-9">
+                            <div class="row">
+                                <div class="col-10">
+                                    <input type="text" class="form-control"
+                                        :value="apis.filter(obj => obj.provider === 'tradeNote').length > 0 && apis.filter(obj => obj.provider === 'tradeNote')[0].key ? apis.filter(obj => obj.provider === 'tradeNote')[0].key : ''"
+                                        disabled />
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" v-on:click="generateAPIKey" class="btn btn-outline-light"><i
+                                            class="uil uil-redo"></i></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-12 col-md-9">
-                        <input type="text" class="form-control" :value="currentUser.marketDataApiKey"
-                            @input="marketDataApiKey = $event.target.value" />
+
+                    <div class="row mt-2">
+                        <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                                data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                        </div>
+                        <div class="col-12 col-md-9">
+                            <input type="text" class="form-control"
+                                :value="apis.filter(obj => obj.provider === 'polygon').length > 0 && apis.filter(obj => obj.provider === 'polygon')[0].key ? apis.filter(obj => obj.provider === 'polygon')[0].key : ''"
+                                @input="polygonKey = $event.target.value" />
+                        </div>
                     </div>
 
                 </div>
 
                 <div class="mt-3 mb-3">
-                    <button type="button" v-on:click="updateProfile" class="btn btn-success">Save</button>
+                    <button type="button" v-on:click="updateAPIS" class="btn btn-success">Save</button>
                 </div>
 
 

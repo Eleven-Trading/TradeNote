@@ -24,70 +24,32 @@ dayjs.extend(customParseFormat)
 export async function useBrokerTradeZero(param) {
     return new Promise(async (resolve, reject) => {
         //File import
-        if (typeof param === "string") {
-            try {
-                let papaParse = Papa.parse(param, { header: true })
-                //we need to recreate the JSON with proper date format + we simplify
-                tradesData.length = 0
-                papaParse.data.forEach(element => {
-                    if (element.Type == "") {
-                        element.Type = "stock"
-                    }
-                    tradesData.push(JSON.parse(JSON.stringify(element)))
-                });
-                //console.log("tradesData " + JSON.stringify(tradesData))
-            } catch (error) {
-                //console.log("  --> ERROR " + error)
-                reject(error)
-            }
-        }
-        //API
-        else {
-            try {
-                //console.log("param " + JSON.stringify(param))
-                tradesData.length = 0
-                param.forEach(element => {
-                    let temp = {}
-                    temp.Account = element.account
-                    let tempTradeDate = dayjs(element.tradeDate, "YYYY-MM-DD").format("MM/DD/YYYY")
-                    let tempSettleDate = dayjs(element.tradeDate, "YYYY-MM-DD").format("MM/DD/YYYY")
-                    //console.log(" tempTradeDate "+tempTradeDate)
-                    //console.log(" tempSettleDate "+tempSettleDate)
-                    temp["T/D"] = tempTradeDate
-                    temp["S/D"] = tempSettleDate
-                    temp.Currency = element.currency
-                    if (element.accountType == "") {
-                        temp.Type = "stock"
-                    } else {
-                        temp.Type = element.accountType
-                    }
-                    temp.Side = element.side
-                    temp.Symbol = element.symbol
-                    temp.Qty = element.qty.toString()
-                    temp.Price = element.price.toString()
-                    temp["Exec Time"] = element.execTime
-                    temp.Comm = element.commission.toString()
-                    temp.SEC = element.secFee.toString()
-                    temp.TAF = element.fee1.toString()
-                    temp.NSCC = element.fee4.toString()
-                    temp.Nasdaq = element.fee5.toString()
-                    temp["ECN Remove"] = element.fee2.toString()
-                    temp["ECN Add"] = element.fee3.toString()
-                    temp["Gross Proceeds"] = element.grossProceeds.toString()
-                    temp["Net Proceeds"] = element.netProceeds.toString()
-                    temp["Clr Broker"] = element.clearingBroker
-                    temp.Liq = element.mpid
-                    temp.Note = element.notes
 
-                    tradesData.push(temp)
-                });
-                //console.log(" tradesData "+JSON.stringify(tradesData))
+        try {
+            //we need to recreate the JSON with proper date format + we simplify
+            tradesData.length = 0
+            let tempArray = []
+
+            if (typeof param === "string") {
+                let papaParse = Papa.parse(param, { header: true })
+                tempArray = papaParse.data
+            } else {
+                tempArray = param
             }
-            catch (error) {
-                //console.log("  --> ERROR " + error)
-                reject(error)
-            }
+
+            tempArray.forEach(element => {
+                if (element.Type == "") {
+                    element.Type = "stock"
+                }
+                tradesData.push(JSON.parse(JSON.stringify(element)))
+            });
+            //console.log("tradesData " + JSON.stringify(tradesData))
+        } catch (error) {
+            //console.log("  --> ERROR " + error)
+            reject(error)
         }
+
+
         resolve()
     })
 }

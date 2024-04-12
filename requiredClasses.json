@@ -39,8 +39,8 @@
             "guidedTour": {
                 "type": "Boolean"
             },
-            "marketDataApiKey": {
-                "type": "String"
+            "apis": {
+                "type": "Array"
             },
             "timeZone": {
                 "type": "String"

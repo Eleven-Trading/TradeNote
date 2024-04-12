@@ -30,8 +30,9 @@ function stepperPrevious() {
 </script>
 <template>
     <SpinnerLoadingPage />
+    {{ currentUser.value }}
     <p class="txt-small">See export instructions for your broker on <a
-            href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub</a>. <span v-if="!currentUser.marketDataApiKey">To add MFE prices automatically (stocks only), insert your API key in <a href="/settings">settings</a>.</span>
+            href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub</a>. <span v-if="!(currentUser.hasOwnProperty('apis')&& currentUser.apis.length>0 && currentUser.apis.findIndex(obj => obj.provider === 'polygon') !=-1)">To add MFE prices automatically (stocks only), insert your API key in <a href="/settings">settings</a>.</span>
     </p>
     <!--DROPDOWN LIST-->
     <div class="form-floating">
