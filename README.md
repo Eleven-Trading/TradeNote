@@ -200,6 +200,23 @@ When you have an open trade you will see "Open" in the time column on the daily 
 
 P&L as well as partial close is calculated on the closing day.
 
+## TradeNote API (Experimental)
+TradeNote provides an API so that you can setup an auto import of your trades. Please note that this a very experimental feature AND unfortunately, I will  not be able to provide support on how to make a POST request. 
+
+**POST /api/trades**
+
+Base url: < your tradenote url >
+
+The trades endpoint allows you to import trade executions directly to the database.
+
+### Headers
+- "api-key" (string): your TradeNote API key from your settings page.
+
+### Request Body
+- "data" (array): contains all the executions, with same attributes and value format as the export file.
+- "selectedBroker" (string): your broker name (example: "tradeZero").
+- "uploadMfePrices" (bool): true or false if you want to upload MFE prices automatically. Requires you have added the Polygon API key.
+
 ## Side note
 ### Parse
 This project uses [Parse](https://github.com/parse-community "Parse") as its backend framework, for the following reasons: 
