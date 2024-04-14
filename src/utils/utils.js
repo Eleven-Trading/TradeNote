@@ -9,6 +9,7 @@ import { useLoadCalendar } from "./calendar.js";
 import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
 
 /* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)
@@ -25,6 +26,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import axios from 'axios'
+import Quill from 'quill';
 
 /**************************************
 * INITS

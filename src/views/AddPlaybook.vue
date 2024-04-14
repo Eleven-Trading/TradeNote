@@ -4,6 +4,9 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import { currentDate, itemToEditId, spinnerLoadingPage, timeZoneTrade, playbookUpdate, playbookButton, playbookIdToEdit } from '../stores/globals';
 import { useDateCalFormat, useInitQuill } from '../utils/utils';
 import { useUploadPlaybook } from '../utils/playbooks';
+
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)

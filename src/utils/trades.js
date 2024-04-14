@@ -3,6 +3,7 @@ import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat }
 import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
 /* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)

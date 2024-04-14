@@ -4,6 +4,10 @@ import { useCheckCurrentUser, useInitTooltip, useGetAPIS } from '../utils/utils'
 import { currentUser, renderProfile, availableTags, apis } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+import Sortable from 'sortablejs';
+
 let profileAvatar = null
 let polygonKey = null
 

@@ -2,6 +2,9 @@
 //"T/D": "month/day/2022",
 
 import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier } from "../stores/globals.js"
+
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)
@@ -17,6 +20,8 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
+import Papa from 'papaparse';
+
 
 tradesData.length = 0
 

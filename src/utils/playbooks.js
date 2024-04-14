@@ -1,6 +1,9 @@
 import { playbookIdToEdit, playbookUpdate, playbooks, queryLimit, renderData, selectedItem, spinnerLoadingPage } from "../stores/globals.js";
 import { useInitPopover, usePageRedirect } from "./utils.js";
 
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+
 export async function useGetPlaybooks(param) {
     return new Promise(async(resolve, reject) => {
         console.log(" -> Getting playbooks");

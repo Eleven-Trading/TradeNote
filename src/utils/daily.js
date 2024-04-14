@@ -1,5 +1,8 @@
 import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit } from "../stores/globals.js";
 
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING SATISFACTIONS");

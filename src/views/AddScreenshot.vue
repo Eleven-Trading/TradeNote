@@ -6,6 +6,9 @@ import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, scr
 import { useSaveScreenshot, useSetupImageUpload } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
 import { useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useGetTags, useGetAvailableTags, useGetTagInfo } from '../utils/daily';
+
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)

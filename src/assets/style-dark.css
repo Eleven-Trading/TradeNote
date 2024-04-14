@@ -637,19 +637,6 @@ img.logo {
 }
 
 
-/* TAGS */
-
-.bootstrap-tagsinput .tag {
-    color: var(--black);
-    background-color: lightgray;
-    padding: 4px;
-}
-
-.bootstrap-tagsinput {
-    width: 100%;
-}
-
-
 /* STEPPER */
 
 .active .bs-stepper-circle {

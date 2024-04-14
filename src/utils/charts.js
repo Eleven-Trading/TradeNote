@@ -15,6 +15,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
+import * as echarts from 'echarts';
 
 const cssColor87 = "rgba(255, 255, 255, 0.87)"
 const cssColor60 = "rgba(255, 255, 255, 0.60)"

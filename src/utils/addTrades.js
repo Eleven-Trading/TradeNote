@@ -3,6 +3,7 @@ import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils.js'
 
 /* MODULES */
+import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)

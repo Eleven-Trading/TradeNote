@@ -15,6 +15,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
+import calendarize from 'calendarize';
 
 export async function useLoadCalendar() {
     console.log("\nLOADING CALENDAR")
