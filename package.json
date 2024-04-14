@@ -27,6 +27,7 @@
     "pinia": "^2.0.32",
     "posthog-js": "^1.63.3",
     "quill": "^2.0.0-rc.5",
+    "shepherd.js": "^11.2.0",
     "sortablejs": "^1.15.2",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6"

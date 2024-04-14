@@ -144,8 +144,8 @@ export function useRenderDoubleLineChart() {
                 }
                 chartCategories.push(useHourMinuteFormat(element.exitTime))
                 //console.log("chartId "+chartId+", chartDataGross "+chartDataGross+", chartDataNet "+chartDataNet+", chartCategories "+chartCategories)
-                useDoubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
             });
+            useDoubleLineChart(chartId, chartDataGross, chartDataNet, chartCategories)
         })
         resolve()
     })

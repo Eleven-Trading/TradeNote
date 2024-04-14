@@ -26,7 +26,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import axios from 'axios'
-import Quill from 'quill';
+import Shepherd from 'shepherd.js'
 
 /**************************************
 * INITS
@@ -130,32 +130,24 @@ export function useInitTab(param) {
                     }
 
                     if (idCurrent.value == idPrevious.value) {
+                        hideCurrentTab = !hideCurrentTab;
 
-                        hideCurrentTab = !hideCurrentTab
-
-                        //console.log(" hide tab ? " + hideCurrentTab)
-
-
-
-                        if (hideCurrentTab) { //hide content
-
-                            $(htmlIdCurrent).removeClass('show')
-                            $(htmlIdCurrent).removeClass('active')
-                            $("#" + idCurrent.value).removeClass('active')
-                        } else { //show content
-                            $(htmlIdCurrent).addClass('show')
-                            $(htmlIdCurrent).addClass('active')
-                            $("#" + idCurrent.value).addClass('active')
+                        if (hideCurrentTab) { // hide content
+                            document.querySelector(htmlIdCurrent).classList.remove('show');
+                            document.querySelector(htmlIdCurrent).classList.remove('active');
+                            document.getElementById(idCurrent.value).classList.remove('active');
+                        } else { // show content
+                            document.querySelector(htmlIdCurrent).classList.add('show');
+                            document.querySelector(htmlIdCurrent).classList.add('active');
+                            document.getElementById(idCurrent.value).classList.add('active');
                         }
-
-
-
                     } else {
-                        hideCurrentTab = false
-                        // in case.value, we have click on another tab so we need to "reset" the previsous tab 
-                        $(htmlIdPrevious).removeClass('show')
-                        $(htmlIdPrevious).removeClass('active')
-                        $("#" + idPrevious.value).removeClass('active')
+                        hideCurrentTab = false;
+
+                        // In case of a different tab click, reset the previous tab
+                        document.querySelector(htmlIdPrevious).classList.remove('show');
+                        document.querySelector(htmlIdPrevious).classList.remove('active');
+                        document.getElementById(idPrevious.value).classList.remove('active');
                     }
 
                 })
@@ -676,13 +668,14 @@ export function useInitWheelEvent() {
         }, false)
 }
 
-export function useInitPopover() {
+/*export function useInitPopover() {
     console.log(" -> Init Popover")
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
     popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl)
     })
     var popDel
+    
     $(document).on('click', '.popoverDelete', (e) => {
         popDel = $(e.currentTarget);
         $('.popoverDelete').not(popDel.popover('hide'));
@@ -714,6 +707,65 @@ export function useInitPopover() {
         selectedItem.value = null
     });
 
+}*/
+
+export function useInitPopover() {
+    console.log(" -> Init Popover");
+
+    var popoverTriggerList
+
+    const getTriggerList = () => {
+        popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            new bootstrap.Popover(popoverTriggerEl);
+        });
+    }
+
+    getTriggerList()
+
+    var popDel;
+
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('popoverDelete')) {
+            popDel = e.target;
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete !== popDel) {
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+        }
+
+        if (e.target.classList.contains('popoverYes')) {
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete === popDel) {
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+            if (pageId.value == "notes") {
+                deleteNote.value();
+            }
+            if (pageId.value == "screenshots" || pageId.value == "daily") {
+                useDeleteScreenshot();
+            }
+            if (pageId.value == "diary") {
+                useDeleteDiary(true);
+            }
+            if (pageId.value == "playbook") {
+                useDeletePlaybook();
+            }
+        }
+
+        if (e.target.classList.contains('popoverNo')) {
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete === popDel) {
+                    //console.log(" popDelete " + popDelete.classList)
+                    //console.log(" popDel " + popDel.classList)
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+            selectedItem.value = null;
+        }
+    });
 }
 
 export function useInitTooltip() {
@@ -807,9 +859,9 @@ export async function useMountDashboard() {
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
+        await (dashboardChartsMounted.value = true)
         await (renderData.value += 1)
         await useECharts("init")
-        await (dashboardChartsMounted.value = true)
     }
 
 }
@@ -1151,13 +1203,13 @@ export const useGetAPIS = async () => {
         if (results) {
             let parsedResults = JSON.parse(JSON.stringify(results))
 
-            if (parsedResults.apis != undefined){
+            if (parsedResults.apis != undefined) {
                 for (let index = 0; index < parsedResults.apis.length; index++) {
                     const element = parsedResults.apis[index];
-                    apis.push(element)   
+                    apis.push(element)
                 }
             }
-            
+
             resolve()
 
         } else {
