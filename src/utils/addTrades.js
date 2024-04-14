@@ -43,7 +43,9 @@ export const testPost = async () => {
  ****************************/
 export async function useGetExistingTradesArray(param99) {
     console.log(" -> Getting existing trades for filter")
-
+    
+    existingTradesArray.length = 0 // reinitialize, for API
+    
     return new Promise(async (resolve, reject) => {
         const parseObject = Parse.Object.extend("trades");
         const query = new Parse.Query(parseObject);
@@ -113,10 +115,8 @@ export async function useImportTrades(param1, param2, param3) {
             file.value = '';
             alert("ERROR IN UPLOAD FILE\n" + param)
         }
+
         let fileInput
-        /****************************
-         * TRADEZERO
-         ****************************/
         if (param3) {
             selectedBroker.value = param3
 
@@ -136,6 +136,10 @@ export async function useImportTrades(param1, param2, param3) {
                 fileInput = await readAsArrayBuffer(files)
             }
         }
+
+        /****************************
+         * TRADEZERO
+         ****************************/
 
         if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template") {
             console.log(" -> TradeZero / Template")
@@ -325,6 +329,10 @@ async function createTempExecutions() {
 
         var lastId
         var x
+
+        tempExecutions.length = 0 // reinitialize, for API
+        tradedSymbols.length = 0 // reinitialize, for API
+
         for (const key of keys) {
             try {
                 let temp2 = {};
@@ -450,6 +458,8 @@ async function getOHLCV() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OHLCV")
         //spinnerLoadingPageText.value = "Getting OHLCV"
+
+        ohlcv.length = 0 // reinitialize, for API
         const asyncLoop = async () => {
             for (let i = 0; i < tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
                 let temp = {}
@@ -519,6 +529,8 @@ async function getOHLCV() {
 async function getOpenPositionsParse(param99) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
+        openPositionsParse.length = 0 // reinitialize, for API
+        
         const parseObject = Parse.Object.extend("trades");
         const query = new Parse.Query(parseObject);
         if (param99 === "api") {
@@ -560,7 +572,10 @@ async function createTrades() {
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
-        mfePrices = [] // we need to reset for rest api
+        
+        mfePrices.length = 0 // reinitialize, for API
+        openPositionsFile.length = 0 // reinitialize, for API
+
         for (const key2 of keys2) {
             var tempExecs = objectB[key2]
             //Count number of wins and losses for later total number of wins and losses
@@ -1955,7 +1970,25 @@ export async function useUploadTrades(param99) {
     if (openPositionsParse.length > 0) {
         await loopOpenPositionsParse()
     }
-    if (param99 != "api") {
+    if (param99 == "api") {
+        for (let key in executions) delete executions[key]
+        for (let key in executions) delete executions[key]
+        for (let key in trades) delete trades[key]
+        for (let key in blotter) delete blotter[key]
+        for (let key in pAndL) delete pAndL[key]
+        
+        tradesData.length = 0
+
+        existingTradesArray.length = 0 // reinitialize, for API
+        tempExecutions.length = 0 // reinitialize, for API
+        tradedSymbols.length = 0 // reinitialize, for API
+        ohlcv.length = 0 // reinitialize, for API
+        openPositionsParse.length = 0 // reinitialize, for API
+        mfePrices.length = 0 // reinitialize, for API
+        openPositionsFile.length = 0 // reinitialize, for API
+
+    }
+    else {
         window.location.href = "/dashboard"
     }
 

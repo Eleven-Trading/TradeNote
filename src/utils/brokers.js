@@ -18,6 +18,8 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 
+tradesData.length = 0
+
 /****************************
  * TRADEZERO
  ****************************/
@@ -27,7 +29,7 @@ export async function useBrokerTradeZero(param) {
 
         try {
             //we need to recreate the JSON with proper date format + we simplify
-            tradesData.length = 0
+            
             let tempArray = []
 
             if (typeof param === "string") {
@@ -79,7 +81,7 @@ export async function useBrokerMetaTrader5(param) {
             //console.log("Account "+JSON.stringify(account))
 
             let dealIterate = true
-            tradesData.length = 0
+            
             for (let i = dealsKey + 2; dealIterate; i++) {
                 let temp = {}
                 let row = result[Object.keys(result)[0]][i]
@@ -201,7 +203,7 @@ export async function useBrokerTdAmeritrade(param) {
             //console.log("cashBalanceCsv \n" + cashBalanceCsv)
             //console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
 
-            tradesData.length = 0
+            
 
             let papaParseCashBalance = Papa.parse(cashBalanceCsv, { header: true })
             let papaParseAccountTradeHistory = Papa.parse(accountTradeHistoryCsv, { header: true })
@@ -441,7 +443,7 @@ export async function useBrokerTradeStation(param) {
             newCsv = newCsv.join("\n");
             //console.log(newCsv);
 
-            tradesData.length = 0
+            
             let papaParse = Papa.parse(newCsv, { header: true })
 
             papaParse.data.forEach(element => {
@@ -604,7 +606,7 @@ export async function useBrokerTradeStation(param) {
 export async function useBrokerInteractiveBrokers(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            tradesData.length = 0
+            
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
@@ -691,7 +693,7 @@ export async function useBrokerInteractiveBrokers(param) {
 export async function useTradovate(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            tradesData.length = 0
+            
             let papaParse = Papa.parse(param, { header: true })
             let papaParseNew = []
             //we need to recreate the JSON with proper date format + we simplify
@@ -853,7 +855,7 @@ export async function useBrokerHeldentrader(param) {
             //console.log(" param " + param)
 
             // 1- remove Trades Report line
-            tradesData.length = 0
+            
             const lines = param.split('\n');
 
             let found = false
@@ -1000,7 +1002,7 @@ export async function useBrokerHeldentrader(param) {
 export async function useNinjaTrader(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            tradesData.length = 0
+            
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
@@ -1100,7 +1102,7 @@ export async function useNinjaTrader(param) {
 export async function useRithmic(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            tradesData.length = 0
+            
             const lines = param.split('\n');
             //console.log(" lines " + lines)
 
@@ -1238,7 +1240,7 @@ export async function useRithmic(param) {
 export async function useFundTraders(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            tradesData.length = 0
+            
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))

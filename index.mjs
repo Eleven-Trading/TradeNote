@@ -8,7 +8,7 @@ import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
 import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
-import { currentUser, uploadMfePrices, existingTradesArray, tradesData } from './src/stores/globals.js';
+import { currentUser, uploadMfePrices, existingTradesArray, tradesData, existingImports } from './src/stores/globals.js';
 import { useGetTimeZone } from './src/utils/utils.js';
 
 let databaseURI
@@ -302,27 +302,33 @@ const startIndex = async () => {
             next();
         } else {
             console.log(" -> Invalid api key")
-            return res.status(401).json({ error: 'Invalid API key' });
+            return res.status(401).send({ error: 'Invalid API key' });
         }
     }
 
     app.post('/api/trades', validateApiKey, async (req, res) => {
         const data = req.body;
         try {
-            uploadMfePrices.value = data.uploadMfePrices
-            tradesData.length = 0
-            existingTradesArray.length = 0
-            //console.log(" uploadMfePrices "+uploadMfePrices.value)
-            // Call the function from addTrades.js
-            //console.log(" -> current user " + JSON.stringify(currentUser.value))
-            await useGetTimeZone()
-            await useGetExistingTradesArray("api")
-            await useImportTrades(data.data, "api", data.selectedBroker);
-            await useUploadTrades("api")
-            res.status(200).send(" -> Saved Trades to Parse DB");
+            if (data && !data.data.length > 0) {
+                res.status(200).send(" -> No trades to import");
+            }
+            else {
+
+                uploadMfePrices.value = data.uploadMfePrices
+
+                //console.log(" uploadMfePrices "+uploadMfePrices.value)
+                // Call the function from addTrades.js
+                //console.log(" -> current user " + JSON.stringify(currentUser.value))
+                await useGetTimeZone()
+                await useGetExistingTradesArray("api")
+                await useImportTrades(data.data, "api", data.selectedBroker);
+                await useUploadTrades("api")
+
+                res.status(200).send(" -> Saved Trades to Parse DB");
+            }
         } catch (error) {
             console.error(error);
-            res.status(500).send('Error creating executions');
+            res.status(500).send({ error: 'Error creating executions'});
         }
     });
 
