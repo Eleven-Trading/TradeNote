@@ -1,7 +1,7 @@
 import express from 'express';
 import { ParseServer } from 'parse-server'
 //var ParseDashboard = require('parse-dashboard');
-import Parse from 'parse/node.js'
+import ParseNode from 'parse/node.js'
 import path from 'path'
 import fs from 'fs'
 import * as Vite from 'vite'
@@ -100,7 +100,7 @@ const startIndex = async () => {
             // EXPRESS USE
             await serv.start().then(() => {
                 app.use('/parse', serv.app);
-                console.log(" -> Parse server started")
+                console.log(" -> ParseNode server started")
                 resolve()
             })
         })
@@ -125,10 +125,10 @@ const startIndex = async () => {
     if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
 
     //INIT
-    //console.log("\nInitializing Parse")
-    Parse.initialize(process.env.APP_ID)
-    Parse.serverURL = "http://localhost:" + port + "/parse"
-    Parse.masterKey = process.env.MASTER_KEY
+    //console.log("\nInitializing ParseNode")
+    ParseNode.initialize(process.env.APP_ID)
+    ParseNode.serverURL = "http://localhost:" + port + "/parse"
+    ParseNode.masterKey = process.env.MASTER_KEY
 
     //API
 
@@ -154,7 +154,7 @@ const startIndex = async () => {
         //console.log("schemasJson "+JSON.stringify(schemasJson))
 
         let existingSchema = []
-        const getExistingSchema = await Parse.Schema.all()
+        const getExistingSchema = await ParseNode.Schema.all()
         //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
 
         const renameMongoDb = (param1, param2) => {
@@ -205,7 +205,7 @@ const startIndex = async () => {
 
         const updateSaveSchema = (param1, param2, param3) => {
             return new Promise((resolve, reject) => {
-                const mySchema = new Parse.Schema(param1);
+                const mySchema = new ParseNode.Schema(param1);
                 if (param2[param3].type === "String") mySchema.addString(param3)
                 if (param2[param3].type === "Number") mySchema.addNumber(param3)
                 if (param2[param3].type === "Boolean") mySchema.addBoolean(param3)
@@ -221,7 +221,7 @@ const startIndex = async () => {
                 //console.log("existing schema "+existingSchema)
                 //console.log("includes ? "+existingSchema.includes(className))
 
-                //If Parse (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
+                //If ParseNode (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
                 if (existingSchema.includes(param1)) {
                     mySchema.update().then((result) => {
                         console.log("  --> Updating field " + param3)
@@ -243,7 +243,7 @@ const startIndex = async () => {
         for (let i = 0; i < schemasJson.length; i++) {
             //console.log("el " + schemasJson[i].className)
             let className = schemasJson[i].className
-            console.log(" -> Upsert class/collection " + className + " in Parse Schema")
+            console.log(" -> Upsert class/collection " + className + " in ParseNode Schema")
             let obj = schemasJson[i].fields
             for (const key of Object.keys(obj)) {
                 //console.log(key, obj[key]);
@@ -269,8 +269,8 @@ const startIndex = async () => {
     const getAllUsers = async () => {
         console.log(" -> Getting all users")
         return new Promise(async (resolve, reject) => {
-            const parseObject = Parse.Object.extend("_User");
-            const query = new Parse.Query(parseObject);
+            const parseObject = ParseNode.Object.extend("_User");
+            const query = new ParseNode.Query(parseObject);
             const results = await query.find({ useMasterKey: true });
             allUsers = JSON.parse(JSON.stringify(results))
             resolve()
@@ -321,14 +321,14 @@ const startIndex = async () => {
                 //console.log(" -> current user " + JSON.stringify(currentUser.value))
                 await useGetTimeZone()
                 await useGetExistingTradesArray("api")
-                await useImportTrades(data.data, "api", data.selectedBroker);
+                await useImportTrades(data.data, "api", data.selectedBroker)
                 await useUploadTrades("api")
 
-                res.status(200).send(" -> Saved Trades to Parse DB");
+                res.status(200).send(" -> Saved Trades to ParseNode DB");
             }
         } catch (error) {
             console.error(error);
-            res.status(500).send({ error: 'Error creating executions'});
+            res.status(500).send({ error: 'Error creating executions' });
         }
     });
 

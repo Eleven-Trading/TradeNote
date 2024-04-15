@@ -1,9 +1,10 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit } from '../stores/globals.js'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders } from './brokers.js'
-import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useTimeFormat } from './utils.js'
+import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
+import ParseNode from 'parse/node.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)
@@ -44,26 +45,36 @@ export const testPost = async () => {
  ****************************/
 export async function useGetExistingTradesArray(param99) {
     console.log(" -> Getting existing trades for filter")
-    
+
     existingTradesArray.length = 0 // reinitialize, for API
-    
+
     return new Promise(async (resolve, reject) => {
-        const parseObject = Parse.Object.extend("trades");
-        const query = new Parse.Query(parseObject);
-        if (param99 === "api") {
-            query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+        try {
+            let parseObject
+            let query
+            if (param99 === "api") {
+                parseObject = ParseNode.Object.extend("trades");
+                query = new ParseNode.Query(parseObject);
+                query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+            } else {
+                parseObject = Parse.Object.extend("trades");
+                query = new Parse.Query(parseObject);
+            }
+
+            query.limit(queryLimit.value); // limit to at most 1M results
+            const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
+            for (let i = 0; i < results.length; i++) {
+                const object = results[i];
+                //console.log("unix time "+ object.get('dateUnix'));
+                existingTradesArray.push(object.get('dateUnix'))
+            }
+            gotExistingTradesArray.value = true
+            console.log(" -> Finished getting existing trades for filter")
+            //console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
+            resolve()
+        } catch (error) {
+            throw new Error('Error useGetExistingTradesArray ' + error);
         }
-        query.limit(queryLimit.value); // limit to at most 1M results
-        const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
-        for (let i = 0; i < results.length; i++) {
-            const object = results[i];
-            //console.log("unix time "+ object.get('dateUnix'));
-            existingTradesArray.push(object.get('dateUnix'))
-        }
-        gotExistingTradesArray.value = true
-        console.log(" -> Finished getting existing trades for filter")
-        //console.log(" -> ExistingTradesArray " + JSON.stringify(existingTradesArray))
-        resolve()
     })
 }
 
@@ -255,7 +266,7 @@ export async function useImportTrades(param1, param2, param3) {
 
             await createExecutions()
 
-            if ((currentUser.value.apis && currentUser.value.apis.length>0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value) {
+            if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value) {
                 await getOHLCV()
             }
             /*await createTrades().then(async () => {
@@ -530,16 +541,22 @@ async function getOHLCV() {
 async function getOpenPositionsParse(param99) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
+        console.log(" param 99 "+param99)
         openPositionsParse.length = 0 // reinitialize, for API
-        
-        const parseObject = Parse.Object.extend("trades");
-        const query = new Parse.Query(parseObject);
+        let parseObject
+        let query
         if (param99 === "api") {
+            parseObject = ParseNode.Object.extend("trades");
+            query = new ParseNode.Query(parseObject);
             query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+        } else {
+            parseObject = Parse.Object.extend("trades");
+            query = new Parse.Query(parseObject);
         }
+
         query.descending("dateUnix");
         query.equalTo("openPositions", true);
-        const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
+        const results = await query.find(param99 === "api" ? { useMasterKey: true } : undefined);
         for (let i = 0; i < results.length; i++) {
             const object = results[i];
             //console.log("unix time "+ object.get('dateUnix'));
@@ -573,7 +590,7 @@ async function createTrades() {
         //console.log("keys 2 (symbols) " + JSON.stringify(keys2));
         var newIds = [] //array used for finding swing trades. Keep aside for later
         var temp2 = []
-        
+
         mfePrices.length = 0 // reinitialize, for API
         openPositionsFile.length = 0 // reinitialize, for API
 
@@ -1004,7 +1021,7 @@ async function createTrades() {
                          * GETTING MFE PRICE
                          *****/
 
-                        if ((currentUser.value.apis && currentUser.value.apis.length>0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                        if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                             console.log("  --> Getting MFE Price")
                             let ohlcvSymbol = ohlcv[ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                             //todo exclude if trade in same minute timeframe
@@ -1232,18 +1249,23 @@ async function updateMfePrices(param99) {
         //console.log(" MFE Prices " + JSON.stringify(mfePrices))
         for (let index = 0; index < mfePrices.length; index++) {
             const element = mfePrices[index];
-            const parseObject = Parse.Object.extend("excursions");
-            const object = new parseObject();
+            let parseObject
+            let object
             if (param99 === "api") {
+                parseObject = ParseNode.Object.extend("excursions");
+                object = new parseObject();
                 object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
             } else {
+                parseObject = Parse.Object.extend("excursions");
+                object = new parseObject();
                 object.set("user", Parse.User.current())
+
             }
             object.set("mfePrice", element.mfePrice)
             object.set("dateUnix", element.dateUnix)
             object.set("tradeId", element.tradeId)
             if (param99 === "api") {
-                const ACL = new Parse.ACL();
+                const ACL = new ParseNode.ACL();
                 ACL.setReadAccess(currentUser.value.objectId, true);
                 ACL.setWriteAccess(currentUser.value.objectId, true);
                 object.setACL(ACL);
@@ -1754,13 +1776,18 @@ export async function useUploadTrades(param99) {
         return new Promise(async (resolve, reject) => {
             //console.log(" -> Parse param2 is " + param2)
             //spinnerLoadingPageText.value = "Uploading data from " + dayjs.unix(param1).format("DD MMMM YYYY") + "  to database ..."
-            const parseObject = Parse.Object.extend(param2);
-            const object = new parseObject();
+            let parseObject
+            let object
             if (param99 === "api") {
+                parseObject = ParseNode.Object.extend(param2);
+                object = new parseObject();
                 object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
             } else {
+                parseObject = Parse.Object.extend(param2);
+                object = new parseObject();
                 object.set("user", Parse.User.current())
             }
+
             object.set("date", new Date(dayjs.unix(param1).format("YYYY-MM-DD")))
             object.set("dateUnix", Number(param1))
             object.set("openPositions", param3)
@@ -1774,7 +1801,7 @@ export async function useUploadTrades(param99) {
                 object.set("cashJournal", cashJournals.value[param1])
             }
             if (param99 === "api") {
-                const ACL = new Parse.ACL();
+                const ACL = new ParseNode.ACL();
                 ACL.setReadAccess(currentUser.value.objectId, true);
                 ACL.setWriteAccess(currentUser.value.objectId, true);
                 object.setACL(ACL);
@@ -1835,10 +1862,18 @@ export async function useUploadTrades(param99) {
     const checkTradeAccounts = async () => {
         return new Promise(async (resolve, reject) => {
             const updateTradeAccounts = async (param, param2) => {
-                const parseObject = Parse.Object.extend("_User");
-                const query = new Parse.Query(parseObject);
+                let parseObject
+                let query
+                if (param99 === "api") {
+                    parseObject = ParseNode.Object.extend("_User");
+                    query = new ParseNode.Query(parseObject);
+                } else {
+                    parseObject = Parse.Object.extend("_User");
+                    query = new Parse.Query(parseObject);
+                }
+
                 query.equalTo("objectId", currentUser.value.objectId);
-                const results = await query.first(param99 === "api" ? { useMasterKey: true } : "");
+                const results = await query.first(param99 === "api" ? { useMasterKey: true } : undefined);
                 //console.log(" results "+JSON.stringify(results))
                 if (results) {
                     results.set("accounts", param)
@@ -1903,13 +1938,20 @@ export async function useUploadTrades(param99) {
         //console.log(" -> Upload function for "+param)
         return new Promise(async (resolve, reject) => {
             console.log(" -> Updating open position " + param1 + " from " + param2)
-            const parseObject = Parse.Object.extend("trades");
-            const query = new Parse.Query(parseObject);
-            query.equalTo("dateUnix", param2);
+            let parseObject
+            let query
             if (param99 === "api") {
+                parseObject = ParseNode.Object.extend("trades");
+                query = new ParseNode.Query(parseObject);
                 query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
+            } else {
+                parseObject = Parse.Object.extend("trades");
+                query = new Parse.Query(parseObject);
             }
-            const results = await query.first(param99 === "api" ? { useMasterKey: true } : "");
+
+            query.equalTo("dateUnix", param2);
+
+            const results = await query.first(param99 === "api" ? { useMasterKey: true } : undefined);
             //console.log(' results '+JSON.stringify(results))
             if (results) {
                 let parsedRes = JSON.parse(JSON.stringify(results))
@@ -1977,7 +2019,7 @@ export async function useUploadTrades(param99) {
         for (let key in trades) delete trades[key]
         for (let key in blotter) delete blotter[key]
         for (let key in pAndL) delete pAndL[key]
-        
+
         tradesData.length = 0
 
         existingTradesArray.length = 0 // reinitialize, for API
