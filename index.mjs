@@ -320,9 +320,9 @@ const startIndex = async () => {
                 // Call the function from addTrades.js
                 //console.log(" -> current user " + JSON.stringify(currentUser.value))
                 await useGetTimeZone()
-                await useGetExistingTradesArray("api")
-                await useImportTrades(data.data, "api", data.selectedBroker)
-                await useUploadTrades("api")
+                await useGetExistingTradesArray("api", ParseNode)
+                await useImportTrades(data.data, "api", data.selectedBroker, ParseNode)
+                await useUploadTrades("api", ParseNode)
 
                 res.status(200).send(" -> Saved Trades to ParseNode DB");
             }

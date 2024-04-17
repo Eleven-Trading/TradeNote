@@ -4,7 +4,6 @@ import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse,
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
-import ParseNode from 'parse/node.js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
 dayjs.extend(utc)
@@ -43,7 +42,7 @@ export const testPost = async () => {
 /****************************
  * TRADES
  ****************************/
-export async function useGetExistingTradesArray(param99) {
+export async function useGetExistingTradesArray(param99, param0) {
     console.log(" -> Getting existing trades for filter")
 
     existingTradesArray.length = 0 // reinitialize, for API
@@ -53,6 +52,7 @@ export async function useGetExistingTradesArray(param99) {
             let parseObject
             let query
             if (param99 === "api") {
+                let ParseNode = param0
                 parseObject = ParseNode.Object.extend("trades");
                 query = new ParseNode.Query(parseObject);
                 query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
@@ -78,7 +78,7 @@ export async function useGetExistingTradesArray(param99) {
     })
 }
 
-export async function useImportTrades(param1, param2, param3) {
+export async function useImportTrades(param1, param2, param3, param0) {
     return new Promise(async (resolve, reject) => {
         //console.log("param1 " + param1)
         //console.log("param2 " + param2)
@@ -283,7 +283,7 @@ export async function useImportTrades(param1, param2, param3) {
                 }
     
             })*/
-            await getOpenPositionsParse(param2)
+            await getOpenPositionsParse(param2, param0)
             await createTrades()
             await filterExisting("trades")
             await useCreateBlotter()
@@ -538,7 +538,7 @@ async function getOHLCV() {
 }
 
 
-async function getOpenPositionsParse(param99) {
+async function getOpenPositionsParse(param99, param0) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
         console.log(" param 99 "+param99)
@@ -546,6 +546,7 @@ async function getOpenPositionsParse(param99) {
         let parseObject
         let query
         if (param99 === "api") {
+            let ParseNode = param0
             parseObject = ParseNode.Object.extend("trades");
             query = new ParseNode.Query(parseObject);
             query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
@@ -1242,7 +1243,7 @@ async function createTrades() {
     })
 }
 
-async function updateMfePrices(param99) {
+async function updateMfePrices(param99, param0) {
     return new Promise(async (resolve, reject) => {
         console.log("  --> Updating excursion DB with MFE price")
         //spinnerLoadingPageText.value = "Updating MFE prices in excursions"
@@ -1252,6 +1253,7 @@ async function updateMfePrices(param99) {
             let parseObject
             let object
             if (param99 === "api") {
+                let ParseNode = param0
                 parseObject = ParseNode.Object.extend("excursions");
                 object = new parseObject();
                 object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
@@ -1265,6 +1267,7 @@ async function updateMfePrices(param99) {
             object.set("dateUnix", element.dateUnix)
             object.set("tradeId", element.tradeId)
             if (param99 === "api") {
+                let ParseNode = param0
                 const ACL = new ParseNode.ACL();
                 ACL.setReadAccess(currentUser.value.objectId, true);
                 ACL.setWriteAccess(currentUser.value.objectId, true);
@@ -1763,7 +1766,7 @@ export async function useCreatePnL() {
 }
 
 /* ---- 4: UPLOAD TO PARSE TRADES  ---- */
-export async function useUploadTrades(param99) {
+export async function useUploadTrades(param99, param0) {
 
     console.log("\nUPLOADING TRADES")
     spinnerLoadingPage.value = true
@@ -1779,6 +1782,7 @@ export async function useUploadTrades(param99) {
             let parseObject
             let object
             if (param99 === "api") {
+                let ParseNode = param0
                 parseObject = ParseNode.Object.extend(param2);
                 object = new parseObject();
                 object.set("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
@@ -1801,6 +1805,7 @@ export async function useUploadTrades(param99) {
                 object.set("cashJournal", cashJournals.value[param1])
             }
             if (param99 === "api") {
+                let ParseNode = param0
                 const ACL = new ParseNode.ACL();
                 ACL.setReadAccess(currentUser.value.objectId, true);
                 ACL.setWriteAccess(currentUser.value.objectId, true);
@@ -1865,6 +1870,7 @@ export async function useUploadTrades(param99) {
                 let parseObject
                 let query
                 if (param99 === "api") {
+                    let ParseNode = param0
                     parseObject = ParseNode.Object.extend("_User");
                     query = new ParseNode.Query(parseObject);
                 } else {
@@ -1941,6 +1947,7 @@ export async function useUploadTrades(param99) {
             let parseObject
             let query
             if (param99 === "api") {
+                let ParseNode = param0
                 parseObject = ParseNode.Object.extend("trades");
                 query = new ParseNode.Query(parseObject);
                 query.equalTo("user", { "__type": "Pointer", "className": "_User", "objectId": currentUser.value.objectId })
@@ -2009,7 +2016,7 @@ export async function useUploadTrades(param99) {
     }
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
-    if (Object.keys(executions).length > 0 && mfePrices.length > 0) await updateMfePrices(param99)
+    if (Object.keys(executions).length > 0 && mfePrices.length > 0) await updateMfePrices(param99, param0)
     if (openPositionsParse.length > 0) {
         await loopOpenPositionsParse()
     }
