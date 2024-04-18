@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily, useCheckVisibleScreen } from "../utils/utils.js";
 import { pageId, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, hasData, selectedTags, tags, availableTags } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
@@ -54,13 +54,14 @@ let filters = ref({
     LIFECYCLE
 ============================================*/
 onBeforeMount(async () => {
-
 })
+
 /*============================================
     FUNCTIONS
 ============================================*/
 function filtersClick() {
     filtersOpen.value = !filtersOpen.value
+    checkAllTagsSelected()
     //console.log(" -> Filters click: Selected Period Range " + JSON.stringify(selectedPeriodRange))
     //console.log(" -> Filters click: Selected Date Range Cal " + JSON.stringify(selectedDateRange))
 
@@ -139,7 +140,7 @@ function filtersClick() {
 
 //Date : periode
 function inputDateRange(param) {
-    console.log(" -> Input Date Range - Param: "+param)
+    console.log(" -> Input Date Range - Param: " + param)
     //Filter to find the value of date range
     var filterJson = periodRange.filter(element => element.value == param)[0]
     selectedPeriodRange.value = filterJson
@@ -226,6 +227,7 @@ async function saveFilter() {
     }
 
     localStorage.setItem('selectedTags', selectedTags.value)
+    checkAllTagsSelected()
 
     if (tempSelectedPlSatisfaction.value != null) {
         selectedPlSatisfaction.value = tempSelectedPlSatisfaction.value
@@ -249,6 +251,44 @@ async function saveFilter() {
     if (pageId.value == "calendar") {
         useMountCalendar(true)
     }
+}
+
+let allTagsSelected = ref(false)
+
+const checkAllTagsSelected = () => {
+    let temp = []
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        for (let index = 0; index < element.tags.length; index++) {
+            const el = element.tags[index];
+            temp.push(el.id)
+        }
+    }
+    
+    if ((temp.length + 1) == selectedTags.value.length){
+        allTagsSelected.value = true
+    }else {
+        allTagsSelected.value = false
+    }
+    
+}
+const selectAllTags = () => {
+
+    selectedTags.value = []
+    if (allTagsSelected.value) {
+        allTagsSelected.value = !allTagsSelected.value
+    } else {
+        selectedTags.value.push("t000t")
+        for (let index = 0; index < availableTags.length; index++) {
+            const element = availableTags[index];
+            for (let index = 0; index < element.tags.length; index++) {
+                const el = element.tags[index];
+                selectedTags.value.push(el.id)
+            }
+        }
+        allTagsSelected.value = !allTagsSelected.value
+    }
+
 }
 </script>
 
@@ -292,7 +332,8 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('ratio')">
-                        <span v-if="selectedRatio != 'profitFactor'">{{ selectedRatio.toUpperCase() }}</span><span v-else>Profit Factor</span> |
+                        <span v-if="selectedRatio != 'profitFactor'">{{ selectedRatio.toUpperCase() }}</span><span
+                            v-else>Profit Factor</span> |
                     </span>
 
                     <span v-show="filters[pageId].includes('tags')">
@@ -370,7 +411,12 @@ async function saveFilter() {
                             }})</span></button>
 
                     <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="t000t"
+                        <div>
+                            <a class="pointerClass nav-link" v-on:click="selectAllTags"><span
+                                    v-if="!allTagsSelected">Select All</span><span v-else>Unselect All</span></a>
+                        </div>
+                        <hr>
+                        <input class="form-check-input mt-1" type="checkbox" value="t000t"
                             v-model="selectedTags">&nbsp;&nbsp;No Tag
                         <hr>
                         <span v-for="group in availableTags">
@@ -381,7 +427,7 @@ async function saveFilter() {
                                 {{ item.name }}
                             </div>
                         </span>
-                        
+
                     </ul>
                 </div>
 

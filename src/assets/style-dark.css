@@ -367,10 +367,6 @@ input:checked+.slider:before {
     color: var(--blue-active-color) !important;
 }
 
-.nav-link:hover {
-    color: var(--blue-color) !important;
-}
-
 .sideMenu {
     background-color: var(--black-bg-7);
     border-right: 1px solid var(--white-38);
@@ -461,7 +457,7 @@ img.logo {
 }
 
 .nav-link:hover {
-    color: var(--blue-color);
+    color: var(--blue-color) !important;
 }
 
 .nav-link:active {
