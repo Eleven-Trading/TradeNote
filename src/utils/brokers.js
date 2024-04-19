@@ -21,6 +21,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import Papa from 'papaparse';
+import _ from 'lodash'
 
 
 tradesData.length = 0
@@ -34,7 +35,7 @@ export async function useBrokerTradeZero(param) {
 
         try {
             //we need to recreate the JSON with proper date format + we simplify
-            
+
             let tempArray = []
 
             if (typeof param === "string") {
@@ -86,7 +87,7 @@ export async function useBrokerMetaTrader5(param) {
             //console.log("Account "+JSON.stringify(account))
 
             let dealIterate = true
-            
+
             for (let i = dealsKey + 2; dealIterate; i++) {
                 let temp = {}
                 let row = result[Object.keys(result)[0]][i]
@@ -208,7 +209,7 @@ export async function useBrokerTdAmeritrade(param) {
             //console.log("cashBalanceCsv \n" + cashBalanceCsv)
             //console.log("accountTradeHistoryCsv \n" + accountTradeHistoryCsv)
 
-            
+
 
             let papaParseCashBalance = Papa.parse(cashBalanceCsv, { header: true })
             let papaParseAccountTradeHistory = Papa.parse(accountTradeHistoryCsv, { header: true })
@@ -448,7 +449,7 @@ export async function useBrokerTradeStation(param) {
             newCsv = newCsv.join("\n");
             //console.log(newCsv);
 
-            
+
             let papaParse = Papa.parse(newCsv, { header: true })
 
             papaParse.data.forEach(element => {
@@ -611,7 +612,7 @@ export async function useBrokerTradeStation(param) {
 export async function useBrokerInteractiveBrokers(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            
+
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
@@ -698,7 +699,7 @@ export async function useBrokerInteractiveBrokers(param) {
 export async function useTradovate(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            
+
             let papaParse = Papa.parse(param, { header: true })
             let papaParseNew = []
             //we need to recreate the JSON with proper date format + we simplify
@@ -860,7 +861,7 @@ export async function useBrokerHeldentrader(param) {
             //console.log(" param " + param)
 
             // 1- remove Trades Report line
-            
+
             const lines = param.split('\n');
 
             let found = false
@@ -1007,7 +1008,7 @@ export async function useBrokerHeldentrader(param) {
 export async function useNinjaTrader(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            
+
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
@@ -1107,7 +1108,7 @@ export async function useNinjaTrader(param) {
 export async function useRithmic(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            
+
             const lines = param.split('\n');
             //console.log(" lines " + lines)
 
@@ -1245,88 +1246,103 @@ export async function useRithmic(param) {
 export async function useFundTraders(param) {
     return new Promise(async (resolve, reject) => {
         try {
-            
+
             let papaParse = Papa.parse(param, { header: true })
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
+
+            var a = _(papaParse.data)
+                .groupBy('Symbol')
+                .value()
+
+            let objectA = JSON.parse(JSON.stringify(a))
+            const keys = Object.keys(a);
+
             let newTrade = true
             let strategy
             let totalQty = 0
-            for (let i = 0; i < papaParse.data.length; i++) {
-                let tempExec = papaParse.data[i];
-                if (tempExec.Account != "") {
-                    let temp = {}
-                    temp.Account = tempExec.Account
 
-                    temp["T/D"] = tempExec.Date
-                    temp["S/D"] = tempExec.Date
+            for (const key of keys) {
 
-                    temp.Currency = "USD"
-                    temp.Type = "stock"
+                var tempExecs = objectA[key]
+                               
+                for (let index = 0; index < tempExecs.length; index++) {
+                    let tempExec = tempExecs[index];
 
-                    let qtyNumber = Number(tempExec.Size)
-                    temp.Qty = qtyNumber.toString()
+                    if (tempExec.Account != "") {
+                        let temp = {}
+                        temp.Account = tempExec.Account
 
-                    if (newTrade == true && tempExec.Action == "BOT") { //= new trade
-                        newTrade = false
-                        strategy = "long"
-                        temp.Side = "B"
-                        totalQty += qtyNumber
+                        temp["T/D"] = tempExec.Date
+                        temp["S/D"] = tempExec.Date
 
-                    } else if (newTrade == true && tempExec.Action == "SLD") {
-                        newTrade = false
-                        strategy = "short"
-                        temp.Side = "SS"
-                        totalQty += -qtyNumber
+                        temp.Currency = "USD"
+                        temp.Type = "stock"
+
+                        let qtyNumber = Number(tempExec.Size)
+                        temp.Qty = qtyNumber.toString()
+
+                        if (newTrade == true && tempExec.Action == "BOT") { //= new trade
+                            newTrade = false
+                            strategy = "long"
+                            temp.Side = "B"
+                            totalQty += qtyNumber
+
+                        } else if (newTrade == true && tempExec.Action == "SLD") {
+                            newTrade = false
+                            strategy = "short"
+                            temp.Side = "SS"
+                            totalQty += -qtyNumber
+                        }
+                        else if (newTrade == false && tempExec.Action == "BOT") {
+                            strategy == "long" ? temp.Side = "B" : temp.Side = "BC"
+                            totalQty += +qtyNumber
+                        }
+                        else if (newTrade == false && tempExec.Action == "SLD") {
+                            strategy == "long" ? temp.Side = "S" : temp.Side = "SS"
+                            totalQty += -qtyNumber
+                        }
+
+                        totalQty == 0 ? newTrade = true : newTrade = false
+
+                        temp.Symbol = tempExec.Symbol
+
+
+                        let priceNumber = Number(tempExec.Price)
+                        temp.Price = priceNumber.toString()
+                        temp["Exec Time"] = dayjs(tempExec["Exec Time"], "hh:mm:ss A").format("HH:mm:ss")
+
+                        let qtyNumberSide
+
+                        if (temp.Side == "B" || temp.Side == "BC") {
+                            qtyNumberSide = -qtyNumber
+                        } else {
+                            qtyNumberSide = qtyNumber
+                        }
+
+                        let proceedsNumber = (qtyNumberSide * priceNumber)
+
+                        temp["Gross Proceeds"] = proceedsNumber.toString()
+
+                        let commNumber = Number(tempExec["Total Fee"]) + Number(tempExec["Sales Fee"])
+                        temp.Comm = commNumber.toString()
+                        temp.SEC = "0"
+                        temp.TAF = "0"
+                        temp.NSCC = "0"
+                        temp.Nasdaq = "0"
+                        temp["ECN Remove"] = "0"
+                        temp["ECN Add"] = "0"
+                        temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                        temp["Clr Broker"] = ""
+                        temp.Liq = ""
+                        temp.Note = ""
+                        //console.log("temp "+JSON.stringify(temp))
+                        tradesData.push(temp)
                     }
-                    else if (newTrade == false && tempExec.Action == "BOT") {
-                        strategy == "long" ? temp.Side = "B" : temp.Side = "BC"
-                        totalQty += +qtyNumber
-                    }
-                    else if (newTrade == false && tempExec.Action == "SLD") {
-                        strategy == "long" ? temp.Side = "S" : temp.Side = "SS"
-                        totalQty += -qtyNumber
-                    }
-
-                    totalQty == 0 ? newTrade = true : newTrade = false
-
-                    temp.Symbol = tempExec.Symbol
-
-
-                    let priceNumber = Number(tempExec.Price)
-                    temp.Price = priceNumber.toString()
-                    temp["Exec Time"] = dayjs(tempExec["Exec Time"], "hh:mm:ss A").format("HH:mm:ss")
-
-                    let qtyNumberSide
-
-                    if (temp.Side == "B" || temp.Side == "BC") {
-                        qtyNumberSide = -qtyNumber
-                    } else {
-                        qtyNumberSide = qtyNumber
-                    }
-
-                    let proceedsNumber = (qtyNumberSide * priceNumber)
-
-                    temp["Gross Proceeds"] = proceedsNumber.toString()
-
-                    let commNumber = Number(tempExec["Total Fee"]) + Number(tempExec["Sales Fee"])
-                    temp.Comm = commNumber.toString()
-                    temp.SEC = "0"
-                    temp.TAF = "0"
-                    temp.NSCC = "0"
-                    temp.Nasdaq = "0"
-                    temp["ECN Remove"] = "0"
-                    temp["ECN Add"] = "0"
-                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
-                    temp["Clr Broker"] = ""
-                    temp.Liq = ""
-                    temp.Note = ""
-                    //console.log("temp "+JSON.stringify(temp))
-                    tradesData.push(temp)
                 }
             }
 
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
