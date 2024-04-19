@@ -613,7 +613,7 @@ async function createTrades() {
             let i
             let existingOpenPosition // common name given to existing open position found in Parse or locally
             console.log("\n ------ ITERATING SYMBOL " + key2 + " on " + useChartFormat(tempExecs[0].td) + " ------")
-            for (i = 0; i < tempExecs.length; i++) {
+            for (let i = 0; i < tempExecs.length; i++) {
                 let tempExec = tempExecs[i];
 
                 //console.log("tempExec " + JSON.stringify(tempExec));
