@@ -133,10 +133,48 @@ Please use the standalone MT5 windows application and follow the steps below.
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/MT51.png" width="200">
 
 # HeldenTrader Pro
-1. In the upper section of the application select the "Account" button
-2. In the dropdown menu select "Reports" and a new window "Reports" will appear
-3. Select in the "Report type" dropdown menu - "Trades report"
+1. In the upper section of the application select the "Account" button.
+2. In the dropdown menu select "Reports" and a new window "Reports" will appear.
+3. Select in the "Report type" dropdown menu - "Trades report".
 4. Select the timeframe you want to export in the "From" - "To" dropdown menu. One export file can contain one or more trading days/weeks.
-5. Select "Export to CSV"
+5. Select "Export to CSV".
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader1.png" width="200">
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/HeldenTrader2.png" width="200"></div>
+
+# Rithmic
+1. Login to RTrader Pro
+2. Open Order History (step1.webp)
+3. Reset Order History to original template (step1.1.webp)
+4. Select your Account and the date you want to export (step2.webp)
+5. Adjust the reporting by adding the columns "Qty filled" and "Commission Fill Rate"   (DO NO CHANGE SORTING OF THE COLUMNS) (step3.webp ; step4.1.webp ; step4.2.webp )
+6. Sort the Orders ascending (first order on top) (step5.webp)
+7. Export As CSV (step6.webp)
+
+**optional Steps**
+
+You can create a separate template so that the steps do not have to be carried out for every export.
+
+1. Save the report via **"Save with a name..."**  (step7.webp)
+2. Then you can open the template with a simple click on the Sidebar (step8.webp)
+
+<div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step1.webp" width="200">
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step1.1.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step2.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step3.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step4.1.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step4.2.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step5.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step6.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step7.webp" width="200"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/step8.webp" width="200"></div>
+
+Please note that trades need to be ordered in ascending order 
+
+# FundTraders
+1. Login to your account
+2. Click Reports on the left pane
+3. Click Trade History
+4. Click View Report
+5. Click download as csv
+
+# NinjaTrader
+1. In the NinjaTrader 8 Control Panel Window, select New, and choose Trade Performance.
+2. In the top right corner of the Trade Performance window, choose the date(s) you would like to export.  To export a single day, please ensure both fields reflect the same day you wish to export.
+3. Click the 'funnel' icon in the top left of the Trade Performace window, and ensure only the account you wish to export is selected.
+4. Next, change the "Display" dropdown menu to "Executions".
+5. In the Trade Performance window, click the "Generate" button in the top right corner.
+6. Right-click anywhere in the output window, and choose "Export".
+7. Next, change the "Save as type" field to "CSV (*.csv).
+8. Finally, click "Save".  Your exported file will save to the location specified

@@ -5,6 +5,24 @@ import { currentDate, itemToEditId, spinnerLoadingPage, timeZoneTrade, playbookU
 import { useDateCalFormat, useInitQuill } from '../utils/utils';
 import { useUploadPlaybook } from '../utils/playbooks';
 
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+
 let playbook = {} //this is first time or when load
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
 
@@ -20,9 +38,9 @@ onBeforeMount(async () => {
 function playbookDateInput(param) {
     //console.log(" param "+param)
     playbookUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
-    playbookUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
-    playbookUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
-    console.log(" -> playbookDateUnix " + playbookUpdate.dateUnix + " and date " + playbookUpdate.date)
+    playbookUpdate.date = dayjs(playbookUpdate.dateUnix * 1000).format("YYYY-MM-DD")
+    playbookUpdate.dateDateFormat = new Date(playbookUpdate.date)
+    console.log(" -> playbookDateUnix " + playbookUpdate.dateUnix + " and date " + playbookUpdate.date + " and date formated "+playbookUpdate.dateDateFormat)
 }
 
 async function getPlaybookToEdit(param) {

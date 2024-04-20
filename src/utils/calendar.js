@@ -1,6 +1,21 @@
-import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade, filteredTradesDaily } from "../stores/globals"
-import { useMonthFormat } from "./utils"
-
+import { renderingCharts, pageId, filteredTrades, selectedMonth, calendarData, miniCalendarsData, timeZoneTrade, filteredTradesDaily } from "../stores/globals.js"
+import { useMonthFormat } from "./utils.js"
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+import calendarize from 'calendarize';
 
 export async function useLoadCalendar() {
     console.log("\nLOADING CALENDAR")
@@ -9,22 +24,19 @@ export async function useLoadCalendar() {
         miniCalendarsData.length = 0
         let currentMonthNumber = dayjs(selectedMonth.value.start * 1000).tz(timeZoneTrade.value).month()
         let tradesArray = []
-        if(pageId.value == "daily"){
-            tradesArray = filteredTradesDaily
-        }else{
-            tradesArray = filteredTrades
-        }
+
+        tradesArray = filteredTrades
 
         const createCalendar = async (param1, param2) => {
             //console.log(" -> Creating calendar for "+useMonthFormat(param1))
             //console.log("param 1 " + param1)
 
-             /* https://github.com/lukeed/calendarize/
-             * calendarize / calendarizeData is where you get the date number for a given month (so 31 days for May for example and if May starts on monday that given year then 1 or if starts on tuesday then 0, 1). the month must be in date format.It does not work with just convert in to timezonetrade. I need a date. And if the local computer is in another timezone it did not work. So i convert with format
-             */
+            /* https://github.com/lukeed/calendarize/
+            * calendarize / calendarizeData is where you get the date number for a given month (so 31 days for May for example and if May starts on monday that given year then 1 or if starts on tuesday then 0, 1). the month must be in date format.It does not work with just convert in to timezonetrade. I need a date. And if the local computer is in another timezone it did not work. So i convert with format
+            */
             //console.log("  --> Getting days and position of day for given month")
             //console.log("date "+dayJsDate)
-            let dateForCalendarize = new Date(dayjs.unix(param1)).toLocaleString("en-US", {timeZone: timeZoneTrade.value})
+            let dateForCalendarize = new Date(dayjs.unix(param1)).toLocaleString("en-US", { timeZone: timeZoneTrade.value })
             //console.log(" date for calendarize "+dateForCalendarize)
             let calendarizeData = calendarize(dateForCalendarize, 1) // this creates.value calendar date numbers needed for a table calendar
             //console.log("calendarizeData "+calendarizeData)
@@ -55,7 +67,7 @@ export async function useLoadCalendar() {
                     //Getting trade that is from the same day
                     //console.log("filtering")
                     //console.log("length "+tradesArray.length)
-                    //console.log("filteredTrade "+JSON.stringify(tradesArray))
+                    //console.log("filteredTrade " + JSON.stringify(tradesArray))
                     let trade
                     for (let i = 0; i < tradesArray.length; i++) {
                         let element = tradesArray[i]
@@ -63,7 +75,7 @@ export async function useLoadCalendar() {
                             trade = element
                         }
                     }
-                    //console.log("trade "+JSON.stringify(trade))
+                    //console.log("trade " + JSON.stringify(trade))
 
                     if (trade != undefined && Object.keys(trade).length != 0 && element2 != 0) { //Check also if not null because day in date cannot be 0
                         //console.log("pAndL "+JSON.stringify(trade.pAndL))
@@ -72,7 +84,7 @@ export async function useLoadCalendar() {
                     } else {
                         tempData.pAndL = []
                     }
-                    //console.log("tempData "+JSON.stringify(tempData))
+                    //console.log("tempData " + JSON.stringify(tempData))
                     calendarJson[index1].push(tempData)
 
                 }
@@ -111,7 +123,7 @@ export async function useLoadCalendar() {
         }
         //console.log(" -> Mini Cal data "+JSON.stringify(miniCalendarsData.value))
 
-        //console.log("calendarData "+JSON.stringify(calendarData))
+        //console.log("calendarData " + JSON.stringify(calendarData))
         //console.log("miniCalData " + JSON.stringify(miniCalendarsData))
         //console.log("resolve")
         resolve()

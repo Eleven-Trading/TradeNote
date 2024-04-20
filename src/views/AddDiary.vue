@@ -5,6 +5,24 @@ import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTra
 import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
 
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+
 let diary = {}
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD")
 
@@ -20,9 +38,9 @@ onBeforeMount(async () => {
 function diaryDateInput(param) {
     //console.log(" -> diaryDateInput param: " + param)
     diaryUpdate.dateUnix = dayjs.tz(param, timeZoneTrade.value).unix()
-    diaryUpdate.date = dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD")
-    diaryUpdate.dateDateFormat = new Date(dayjs(param, timeZoneTrade.value).format("YYYY-MM-DD"))
-    //console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
+    diaryUpdate.date = dayjs(diaryUpdate.dateUnix * 1000).format("YYYY-MM-DD")
+    diaryUpdate.dateDateFormat = new Date(diaryUpdate.date)
+    console.log(" -> diaryDateUnix " + diaryUpdate.dateUnix + " and date " + diaryUpdate.date)
     //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
 }
 
@@ -42,8 +60,8 @@ async function getDiaryToEdit(param) {
         //console.log("diary.dateUnix "+diary.dateUnix)
         diaryUpdate.dateUnix = diary.dateUnix
         diaryUpdate.date = dayjs.unix(diary.dateUnix).format("YYYY-MM-DD")
-        diaryUpdate.dateDateFormat = new Date(dayjs(diaryUpdate.date, timeZoneTrade.value).format("YYYY-MM-DD"))
-        console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+        diaryUpdate.dateDateFormat = new Date(diaryUpdate.date)
+        //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
         document.querySelector("#quillEditor0 .ql-editor").innerHTML = diary.journal.positive
         document.querySelector("#quillEditor1 .ql-editor").innerHTML = diary.journal.negative
         document.querySelector("#quillEditor2 .ql-editor").innerHTML = diary.journal.other
