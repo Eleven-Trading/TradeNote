@@ -1720,53 +1720,82 @@ export function useScatterChart(param1) { //chart ID, green, red, page
     })
 }
 
-export function useCandlestickChart(param1, param2, param3) { //
+export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
+    const entryMarkerColor = 'rgb(60,85,41)'
+    const exitMarkerColor = 'rgb(85,41,60)'
+    const initialDataZoomPadding = dayjs(0).minute(5).unix()
+    const minimumDataZoomLevel = dayjs(0).minute(30).unix()
+
+    const timeZone = timeZoneTrade.value;
+    const tradeEntryTime = trade.entryTime
+    const tradeExitTime = trade.exitTime
+    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs.unix(trade.exitTime).tz(timeZone), 'day')
+    const spreadTime = tradeIsIntraday ? Math.abs(tradeExitTime - tradeEntryTime) : 0
+    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + 2 * initialDataZoomPadding)
+
+    const findDataZoomStartUnix = () => {
+        const tradeEntryTimeUnix = trade.entryTime
+        let dataZoomStartUnix = tradeEntryTimeUnix - dataZoomLevel / 2 - spreadTime / 2
+
+        for (let i = ohlcTimestamps.length - 1; i >= 0; i--) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix <= dataZoomStartUnix) {
+                dataZoomStartUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomStartUnix
+    }
+
+    const findDataZoomEndUnix = () => {
+        const tradeExitTimeUnix = trade.exitTime
+        let dataZoomEndUnix = tradeExitTimeUnix + dataZoomLevel / 2 + spreadTime / 2
+
+        for (let i = 0; i < ohlcTimestamps.length; i++) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix >= dataZoomEndUnix) {
+                dataZoomEndUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomEndUnix
+    }
+
+
     return new Promise((resolve, reject) => {
-        //console.log("  --> " + param1)
-        //console.log("para 2 " + param2 + " and 3 " + param3)
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
             dataZoom: [
                 {
                     type: 'inside',
-                    startValue: "12:08",
-                    endValue: "13:04",
-                    //rangeMode:["12:08", "13:04"],
+                    startValue: '',
+                    endValue: '',
                     preventDefaultMouseMove: false
                 },
-
             ],
             xAxis: {
-                data: param1,
+                data: ohlcTimestamps.map((dateInMilliseconds) => {
+                    return useHourMinuteFormat(dateInMilliseconds / 1000)
+                }),
                 min: 'dataMin',
                 max: 'dataMax'
             },
             yAxis: {
-                scale: true,
-                //min: 132,
-                //max: 139
+                scale: true
             },
             series: [
-
                 {
                     type: 'candlestick',
-                    data: param2,
+                    data: ohlcPrices,
                     markPoint: {
                         label: {
                             formatter: function (param) {
                                 return param != null ? Math.round(param.value) + '' : '';
                             }
                         },
-                        data: [
-                            {
-                                name: 'Mark',
-                                coord: ['12:17', 49.35],
-                                value: 49.35,
-                                itemStyle: {
-                                    color: 'rgb(41,60,85)'
-                                }
-                            }
-                        ],
+                        data: [ ],
                         tooltip: {
                             formatter: function (param) {
                                 return param.name + '<br>' + (param.data.coord || '');
@@ -1774,9 +1803,43 @@ export function useCandlestickChart(param1, param2, param3) { //
                         }
                     }
                 },
-
             ]
         };
+
+        if (dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            option.series[0].markPoint.data.push({
+                name: 'entryMark',
+                symbol: 'triangle',
+                symbolSize: '40',
+                symbolRotate: '90',
+                symbolOffset: ['50%', 0],
+                coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
+                value: trade.entryPrice,
+                itemStyle: {
+                    color: entryMarkerColor
+                }
+            })
+
+            option.dataZoom[0].startValue = useHourMinuteFormat(findDataZoomStartUnix())
+        }
+
+        if (dayjs.unix(trade.exitTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            option.series[0].markPoint.data.push({
+                name: 'exitMark',
+                symbol: 'triangle',
+                symbolSize: '40',
+                symbolRotate: '90',
+                symbolOffset: ['50%', 0],
+                coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
+                value: trade.exitPrice,
+                itemStyle: {
+                    color: exitMarkerColor
+                }
+            })
+
+            option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
+        }
+
         myChart.setOption(option);
         resolve()
     })

@@ -62,6 +62,13 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 
+let ohlcTimestamps = []
+let ohlcPrices = []
+let ohlcVolumes = []
+
+
+let candlestickChartFailureMessage
+
 onBeforeMount(async () => {
 
 })
@@ -211,9 +218,19 @@ async function clickTradesModal(param1, param2, param3) {
             await useInitTooltip()
         }
 
+
+    document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
+            const caller = event.relatedTarget
+            const index = caller.dataset.index
+            const index2 = caller.dataset.indextwo
+            updateTradesModal(index, index2, index2)
+        })
+})
+
     }
 
 }
+
 
 const checkDate = ((param1, param2) => {
     //console.log("param 1 "+param1)
@@ -418,6 +435,52 @@ async function updateExcursions() {
     })
 }
 
+
+/**************
+ * MISC
+ ***************/
+async function updateTradesModal(param1, param2, param3) {
+    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
+    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
+    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
+    //console.log(" param 3 "+JSON.stringify(param3))
+    //console.log("param1 "+param1)
+    //console.log("param2 "+param2)
+    //console.log("param3 "+param3)
+
+    if (markerAreaOpen.value == true) {
+        alert("Please save your screenshot annotation")
+        return
+    } else {
+        await (spinnerSetups.value = true)
+        //We first update because setups rely on tradeIndex, so before tradeIndex changes to new modal page or simply use tradeIndex if we close
+        if (tradeSetupChanged.value) {
+            await useUpdateSetups()
+        }
+
+        if (tradeExcursionChanged.value) {
+            await updateExcursions()
+        }
+
+        if (tradeScreenshotChanged.value) {
+            await useSaveScreenshot()
+        }
+
+        //Then we change indexes
+        itemTradeIndex.value = Number(param1)
+        tradeIndexPrevious.value = Number(param2)
+        tradeIndex.value = Number(param3)
+        
+        let selectedTrade = filteredTrades[itemTradeIndex.value].trades[param3]
+
+        let awaitClick = async () => {
+            tradeSetupChanged.value = false // we updated setups and trades so false cause not need to do it again when we hide modal
+            tradeExcursionChanged.value = false
+            tradeScreenshotChanged.value = false
+            modalDailyTradeOpen.value = true
+
+            await resetExcursion()
+=======
 function resetExcursion() {
     //console.log(" -> Resetting excursion")
     //we need to reset the setup variable each time
@@ -426,11 +489,44 @@ function resetExcursion() {
     excursion.maePrice = null
     excursion.mfePrice = null
 
+
 }
+
+
+            //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
+            let findScreenshot = screenshots.find(obj => obj.name == selectedTrade.id)
+            if (findScreenshot) {
+                for (let key in screenshot) delete screenshot[key]
+                for (let key in findScreenshot) {
+                    screenshot[key] = findScreenshot[key]
+                }
+            } else {
+                for (let key in screenshot) delete screenshot[key]
+                screenshot.side = null
+                screenshot.type = null
+                try {
+                    candlestickChartFailureMessage=null
+                    await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
+                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, selectedTrade)
+                } catch (error) {
+                    if (error.response && error.response.status === 429) {
+                        candlestickChartFailureMessage="Too many requests, try again later"
+                    }
+                    else if (error.response) {
+                        candlestickChartFailureMessage=error.response.statusText
+                    }
+                    else {
+                        candlestickChartFailureMessage=error
+                    }
+
+                    console.error(error)
+                }
+            }
 
 /**************
  * TAGS
  ***************/
+
 
 /**************
  * NOTES
@@ -441,6 +537,35 @@ function resetExcursion() {
     saveButton.value = true
 }
 
+
+            let findExcursion = excursions.filter(obj => obj.tradeId == selectedTrade.id)
+            if (findExcursion.length) {
+                findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+            }
+        }
+
+        await awaitClick()
+        await (spinnerSetups.value = false)
+        saveButton.value = false
+        await useInitTooltip()
+    }
+}
+
+async function hideTradesModal() {
+    if (markerAreaOpen.value == true) {
+        alert("Please save your screenshot annotation")
+        return
+    } else {
+        await (spinnerSetups.value = true)
+        if (tradeScreenshotChanged.value) {
+            await useSaveScreenshot()
+        }
+        if (tradeSetupChanged.value) {
+            await useUpdateSetups()
+=======
 const tradeNoteChange = (param) => {
     tradeNote.value = param
     //console.log(" -> New note " + tradeNote.value)
@@ -471,6 +596,7 @@ const filteredScreenshots = (param1, param2) => {
             screenshotsArray = screenshots
         } else {
             screenshotsArray = screenshotsInfos
+
         }
         for (let index2 = 0; index2 < screenshotsArray.length; index2++) {
             const el2 = screenshotsArray[index2]
@@ -491,15 +617,13 @@ const filterDiary = (param) => {
     return diaries.filter(obj => obj.dateUnix == param)
 }
 
-function getOHLC(param1, param2, param3, param4) {
-    //date, symbol, entryTime, exitTime
+function getOHLC(date, symbol, entryTime, exitTime) {
     console.log(" get ohlc")
     return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + param2 + "/range/1/minute/" + useDateCalFormat(param1) + "/" + useDateCalFormat(param1) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
             .then((response) => {
-                //console.log(" res "+JSON.stringify(response.data))
-                ohlcDates = []
+                ohlcTimestamps = []
                 ohlcPrices = []
                 ohlcVolumes = []
 
@@ -508,7 +632,7 @@ function getOHLC(param1, param2, param3, param4) {
 
                     let temp = []
 
-                    ohlcDates.push(useHourMinuteFormat(element.t / 1000))
+                    ohlcTimestamps.push(element.t)
                     temp.push(element.c)
                     temp.push(element.o)
                     temp.push(element.l)
@@ -516,12 +640,10 @@ function getOHLC(param1, param2, param3, param4) {
                     ohlcPrices.push(temp)
                     ohlcVolumes.push(element.v)
                 }
-                //console.log(" -> ohlc date " + JSON.stringify(ohlcDates))
-                //console.log(" -> ohlc array " + JSON.stringify(ohlcPrices))
-
 
             })
             .catch((error) => {
+                reject(error)
             })
             .finally(function () {
                 // always executed
@@ -712,10 +834,17 @@ function getOHLC(param1, param2, param3, param4) {
 
                                                         <tr v-for="(trade, index2) in itemTrade.trades"
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
+
+
+                                                            class="pointerClass" :data-index="index" :data-indextwo="index2">
+
+
                                                             v-on:click="clickTradesModal(index, index2, index2)"
                                                             class="pointerClass">
 
                                                             <!--Symbol-->
+
+
                                                             <td>{{ trade.symbol }}</td>
 
                                                             <!--Vol-->
@@ -921,7 +1050,8 @@ function getOHLC(param1, param2, param3, param4) {
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
                     <div v-else>
-                        <div id="candlestickChart" class="candlestickClass"></div>
+                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass"></div>
+                        <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
                     </div>
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
@@ -1129,9 +1259,9 @@ function getOHLC(param1, param2, param3, param4) {
                                     <div class="row">
                                         <div class="col-4 text-start">
                                             <button
-                                                v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
+                                                v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
+                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
                                                 v-bind:disabled="spinnerSetups == true">
                                                 <i class="fa fa-chevron-left me-2"></i></button>
                                         </div>
@@ -1142,13 +1272,12 @@ function getOHLC(param1, param2, param3, param4) {
                                             <button v-else class="btn btn-outline-primary btn-sm"
                                                 v-on:click="clickTradesModal()">Close</button>
                                         </div>
-                                        <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
+                                        <div v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
-                                                v-bind:disabled="spinnerSetups == true"><i
-                                                    class="fa fa-chevron-right ms-2"></i>
-                                            </button>
+                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
+                                                v-bind:disabled="spinnerSetups == true">
+                                                <i class="fa fa-chevron-right ms-2"></i></button>
                                         </div>
                                     </div>
                                 </div>
