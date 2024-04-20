@@ -1,9 +1,24 @@
 <script setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, onMounted } from "vue";
 import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily, useCheckVisibleScreen } from "../utils/utils.js";
-import { pageId, patterns, mistakes, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedPatterns, selectedMistakes, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, activeMistakes, activePatterns, hasData } from "../stores/globals"
+import { pageId, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, hasData, selectedTags, tags, availableTags } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 /*============================================
     VARIABLES
@@ -11,10 +26,10 @@ import { useRefreshScreenshot } from "../utils/screenshots"
 
 let filtersOpen = ref(false)
 let filters = ref({
-    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "patterns", "mistakes"],
+    "dashboard": ["accounts", "periodRange", "grossNet", "positions", "timeFrame", "ratio", "tags"],
     "calendar": ["month", "grossNet", "plSatisfaction"],
-    "daily": ["accounts", "month", "grossNet", "positions", "patterns", "mistakes", "plSatisfaction"],
-    "screenshots": ["accounts", "grossNet", "positions", "patterns", "mistakes"],
+    "daily": ["accounts", "month", "grossNet", "positions", "tags"],
+    "screenshots": ["accounts", "grossNet", "positions", "tags"],
 })
 
 
@@ -39,13 +54,14 @@ let filters = ref({
     LIFECYCLE
 ============================================*/
 onBeforeMount(async () => {
-
 })
+
 /*============================================
     FUNCTIONS
 ============================================*/
 function filtersClick() {
     filtersOpen.value = !filtersOpen.value
+    checkAllTagsSelected()
     //console.log(" -> Filters click: Selected Period Range " + JSON.stringify(selectedPeriodRange))
     //console.log(" -> Filters click: Selected Date Range Cal " + JSON.stringify(selectedDateRange))
 
@@ -109,34 +125,22 @@ function filtersClick() {
         selectedMonth.value = JSON.parse(localStorage.getItem('selectedMonth'))
         //console.log(" Selected Month " + JSON.stringify(selectedMonth))
 
-        // Restore selected patterns
-        if (localStorage.getItem('selectedPatterns')) {
-            if (localStorage.getItem('selectedPatterns').includes(",")) {
-                selectedPatterns.value = localStorage.getItem('selectedPatterns').split(",")
+        if (localStorage.getItem('selectedTags')) {
+            if (localStorage.getItem('selectedTags').includes(",")) {
+                selectedTags.value = localStorage.getItem('selectedTags').split(",")
             } else {
-                selectedPatterns.value = []
-                selectedPatterns.value.push(localStorage.getItem('selectedPatterns'))
+                selectedTags.value = []
+                selectedTags.value.push(localStorage.getItem('selectedTags'))
             }
         } else {
-            selectedPatterns.value = []
-        }
-
-        if (localStorage.getItem('selectedMistakes')) {
-            if (localStorage.getItem('selectedMistakes').includes(",")) {
-                selectedMistakes.value = localStorage.getItem('selectedMistakes').split(",")
-            } else {
-                selectedMistakes.value = []
-                selectedMistakes.value.push(localStorage.getItem('selectedMistakes'))
-            }
-        } else {
-            selectedMistakes.value = []
+            selectedTags.value = []
         }
     }
 }
 
 //Date : periode
 function inputDateRange(param) {
-    //console.log(" -> Input Date Range - Param: "+param)
+    console.log(" -> Input Date Range - Param: " + param)
     //Filter to find the value of date range
     var filterJson = periodRange.filter(element => element.value == param)[0]
     selectedPeriodRange.value = filterJson
@@ -152,7 +156,7 @@ function inputDateRange(param) {
 }
 //Date : calendar
 function inputDateRangeCal(param1, param2) {
-    //console.log("param1 " + param1 + ", param2 " + param2)
+    console.log(" -> Input Date Range Cal - type '" + param1 + "' and date " + param2)
     //console.log(" -> Initial selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     if (param1 == "start") {
@@ -166,6 +170,9 @@ function inputDateRangeCal(param1, param2) {
     //console.log("selectedDateRange " + JSON.stringify(selectedDateRange.value))
 
     /* Update selectedPeriodRange */
+    //console.log(" periodRange "+JSON.stringify(periodRange))
+    //console.log(" selectedDateRange.value.start "+selectedDateRange.value.start)
+    //console.log(" selectedDateRange.value.end "+selectedDateRange.value.end)
     let tempFilter = periodRange.filter(element => element.start == selectedDateRange.value.start && element.end == selectedDateRange.value.end)
     if (tempFilter.length > 0) {
         selectedPeriodRange.value = tempFilter[0]
@@ -185,7 +192,8 @@ function inputMonth(param1) {
 }
 
 async function saveFilter() {
-    //console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+    console.log(" -> Save filters: Selected Date Range Cal " + JSON.stringify(selectedDateRange.value))
+    console.log(" -> Save filters: Selected Period Range " + JSON.stringify(selectedPeriodRange.value))
     //console.log(" -> Selected accounts "+selectedAccounts.value)
     // Check if start date before end date and vice versa
     if (selectedDateRange.value.end < selectedDateRange.value.start) {
@@ -218,9 +226,8 @@ async function saveFilter() {
         localStorage.setItem('selectedMonth', JSON.stringify(selectedMonth.value))
     }
 
-    localStorage.setItem('selectedPatterns', selectedPatterns.value)
-
-    localStorage.setItem('selectedMistakes', selectedMistakes.value)
+    localStorage.setItem('selectedTags', selectedTags.value)
+    checkAllTagsSelected()
 
     if (tempSelectedPlSatisfaction.value != null) {
         selectedPlSatisfaction.value = tempSelectedPlSatisfaction.value
@@ -245,6 +252,44 @@ async function saveFilter() {
         useMountCalendar(true)
     }
 }
+
+let allTagsSelected = ref(false)
+
+const checkAllTagsSelected = () => {
+    let temp = []
+    for (let index = 0; index < availableTags.length; index++) {
+        const element = availableTags[index];
+        for (let index = 0; index < element.tags.length; index++) {
+            const el = element.tags[index];
+            temp.push(el.id)
+        }
+    }
+    
+    if ((temp.length + 1) == selectedTags.value.length){
+        allTagsSelected.value = true
+    }else {
+        allTagsSelected.value = false
+    }
+    
+}
+const selectAllTags = () => {
+
+    selectedTags.value = []
+    if (allTagsSelected.value) {
+        allTagsSelected.value = !allTagsSelected.value
+    } else {
+        selectedTags.value.push("t000t")
+        for (let index = 0; index < availableTags.length; index++) {
+            const element = availableTags[index];
+            for (let index = 0; index < element.tags.length; index++) {
+                const el = element.tags[index];
+                selectedTags.value.push(el.id)
+            }
+        }
+        allTagsSelected.value = !allTagsSelected.value
+    }
+
+}
 </script>
 
 <template>
@@ -265,7 +310,7 @@ async function saveFilter() {
 
                     <span v-show="filters[pageId].includes('periodRange')">
                         {{ selectedPeriodRange.label }} |
-                        <span v-show="selectedPeriodRange.value == 'custom'"> range |</span>
+                        <span v-show="selectedPeriodRange.value == 'custom'"> Range |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('month')">
@@ -273,13 +318,13 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('grossNet')">{{ selectedGrossNet.charAt(0).toUpperCase() +
-                        selectedGrossNet.slice(1) }} data |
+                    selectedGrossNet.slice(1) }} data |
                     </span>
 
                     <span v-show="filters[pageId].includes('positions')">
                         <span v-if="positions.length == selectedPositions.length">All positions |</span>
                         <span v-else>{{ selectedPositions.toString().charAt(0).toUpperCase() +
-                            selectedPositions.toString().slice(1) }} |</span>
+                    selectedPositions.toString().slice(1) }} |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('timeFrame')">
@@ -287,20 +332,14 @@ async function saveFilter() {
                     </span>
 
                     <span v-show="filters[pageId].includes('ratio')">
-                        {{ selectedRatio.toUpperCase() }} |
+                        <span v-if="selectedRatio != 'profitFactor'">{{ selectedRatio.toUpperCase() }}</span><span
+                            v-else>Profit Factor</span> |
                     </span>
 
-                    <span v-show="filters[pageId].includes('patterns')">
-                        <span v-if="activePatterns.length + 1 == selectedPatterns.length">All
-                            patterns |</span>
-                        <span v-else>Selected patterns |</span>
-                    </span>
-
-                    <span v-show="filters[pageId].includes('mistakes')">
-                        <span v-if="activeMistakes.length + 1 == selectedMistakes.length">All
-                            mistakes <span v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
-                        <span v-else>Selected mistakes <span
-                                v-show="filters[pageId].includes('plSatisfaction')">|</span></span>
+                    <span v-show="filters[pageId].includes('tags')">
+                        <span v-if="tags.length == selectedTags.length">All
+                            tags</span>
+                        <span v-else>Selected tags</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('plSatisfaction')">
@@ -309,7 +348,8 @@ async function saveFilter() {
 
                 </span>
 
-                <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i class="uil uil-angle-down"></i>
+                <span v-else v-on:click="filtersClick" class="pointerClass mb-3">Filters<i
+                        class="uil uil-angle-down"></i>
                 </span>
             </div>
 
@@ -343,26 +383,56 @@ async function saveFilter() {
                 </div>
 
                 <!-- Accounts -->
-                <div class="col-6 col-lg-4 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                <div class="col-6 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">Accounts <span class="dashInfoTitle">({{ selectedAccounts.length
-                        }})</span></button>
+                            }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
                         <div v-for="item in currentUser.accounts" :key="item.value" class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedAccounts">
+                            <input class="form-check-input" type="checkbox" :value="item.value"
+                                v-model="selectedAccounts">
                             {{ item.label }}
                         </div>
                     </ul>
                 </div>
 
                 <!-- Month -->
-                <div class="col-12 col-lg-4 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'daily' || pageId == 'calendar'">
+                <div class="col-12 col-lg-6 mt-1 mt-lg-0 mb-lg-1" v-show="pageId == 'daily' || pageId == 'calendar'">
                     <input type="month" class="form-control" :value="useDateCalFormatMonth(selectedMonth.start)"
                         :selected="selectedMonth.start" v-on:input="inputMonth($event.target.value)">
                 </div>
 
+                <!-- Tags -->
+                <div :class="[pageId == 'screenshots' ? 'col-12' : 'col-6', 'dropdown mt-1 mt-lg-1']"
+                    v-show="pageId != 'calendar'">
+
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">Tags <span class="dashInfoTitle">({{ selectedTags.length
+                            }})</span></button>
+
+                    <ul class="dropdown-menu dropdownCheck">
+                        <div>
+                            <a class="pointerClass nav-link" v-on:click="selectAllTags"><span
+                                    v-if="!allTagsSelected">Select All</span><span v-else>Unselect All</span></a>
+                        </div>
+                        <hr>
+                        <input class="form-check-input mt-1" type="checkbox" value="t000t"
+                            v-model="selectedTags">&nbsp;&nbsp;No Tag
+                        <hr>
+                        <span v-for="group in availableTags">
+                            <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'">
+                                {{ group.name }}</h6>
+                            <div v-for="item in group.tags" class="form-check">
+                                <input class="form-check-input" type="checkbox" :value="item.id" v-model="selectedTags">
+                                {{ item.name }}
+                            </div>
+                        </span>
+
+                    </ul>
+                </div>
+
                 <!-- Gross/Net -->
-                <div class="col-6 col-lg-2" v-show="pageId != 'screenshots'">
+                <div class="col-6 col-lg-3" v-show="pageId != 'screenshots'">
                     <select v-on:input="selectedGrossNet = $event.target.value" class="form-select">
                         <option v-for="item in grossNet" :key="item.value" :value="item.value"
                             :selected="item.value == selectedGrossNet">{{ item.label }}</option>
@@ -370,20 +440,21 @@ async function saveFilter() {
                 </div>
 
                 <!-- Positions -->
-                <div class="col-6 col-lg-2 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
+                <div class="col-6 col-lg-3 dropdown" v-show="pageId != 'screenshots' && pageId != 'calendar'">
                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">Positions <span class="dashInfoTitle">({{ selectedPositions.length
-                        }})</span></button>
+                            }})</span></button>
                     <ul class="dropdown-menu dropdownCheck">
                         <div v-for="item in positions" :key="item.value" class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.value" v-model="selectedPositions">
+                            <input class="form-check-input" type="checkbox" :value="item.value"
+                                v-model="selectedPositions">
                             {{ item.label }}
                         </div>
                     </ul>
                 </div>
 
                 <!-- Timeframe -->
-                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                <div class="col-6 col-lg-3 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
                     <select v-on:input="selectedTimeFrame = $event.target.value" class="form-select">
                         <option v-for="item in timeFrames" :key="item.value" :value="item.value"
                             :selected="item.value == selectedTimeFrame">{{ item.label }}</option>
@@ -391,53 +462,15 @@ async function saveFilter() {
                 </div>
 
                 <!-- Ratio -->
-                <div class="col-6 col-lg-2 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
+                <div class="col-6 col-lg-3 mt-1 mt-lg-1" v-show="pageId == 'dashboard'">
                     <select v-on:input="selectedRatio = $event.target.value" class="form-select">
                         <option v-for="item in ratios" :key="item.value" :value="item.value"
                             :selected="item.value == selectedRatio">{{ item.label }}</option>
                     </select>
                 </div>
 
-                <!-- Patterns -->
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
-                    v-show="pageId != 'calendar'">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">Patterns <span class="dashInfoTitle">({{ selectedPatterns.length
-                        }})</span></button>
-                    <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="p000p"
-                            v-model="selectedPatterns">&nbsp;&nbsp;No Tag
-                        <hr>
-                        <div v-for="item in patterns.filter(obj => obj.active == true)" :key="item.objectId"
-                            class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.objectId"
-                                v-model="selectedPatterns">
-                            {{ item.name }}
-                        </div>
-                    </ul>
-                </div>
-
-                <!-- Mistakes -->
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6', 'dropdown', 'mt-1', 'mt-lg-1']"
-                    v-show="pageId != 'calendar'">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">Mistakes <span class="dashInfoTitle">({{ selectedMistakes.length
-                        }})</span></button>
-                    <ul class="dropdown-menu dropdownCheck">
-                        <input class="form-check-input" type="checkbox" value="m000m"
-                            v-model="selectedMistakes">&nbsp;&nbsp;No Tag
-                        <hr>
-                        <div v-for="item in mistakes.filter(obj => obj.active == true)" :key="item.objectId"
-                            class="form-check">
-                            <input class="form-check-input" type="checkbox" :value="item.objectId"
-                                v-model="selectedMistakes">
-                            {{ item.name }}
-                        </div>
-                    </ul>
-                </div>
-
                 <!-- P&L / Satisfaction  -->
-                <div :class="[pageId == 'daily' ? 'col-4' : 'col-6']" v-show="pageId == 'calendar' || pageId == 'daily'">
+                <div :class="[pageId == 'daily' ? 'col-4' : 'col-3']" v-show="pageId == 'calendar'">
                     <select v-on:input="tempSelectedPlSatisfaction = $event.target.value" class="form-select">
                         <option v-for="item in plSatisfaction" :key="item.value" :value="item.value"
                             :selected="item.value == selectedPlSatisfaction">{{ item.label }}</option>

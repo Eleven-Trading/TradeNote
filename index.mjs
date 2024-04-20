@@ -1,25 +1,29 @@
-const express = require('express');
-const ParseServer = require('parse-server').ParseServer;
+import express from 'express';
+import { ParseServer } from 'parse-server'
 //var ParseDashboard = require('parse-dashboard');
-const Parse = require('parse/node');
-const path = require('path');
-const fs = require('fs');
-const Vite = require('vite');
-const MongoClient = require("mongodb").MongoClient;
+import ParseNode from 'parse/node.js'
+import path from 'path'
+import fs from 'fs'
+import * as Vite from 'vite'
+import { MongoClient } from "mongodb"
+import Proxy from 'http-proxy'
+import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
+import { currentUser, uploadMfePrices, existingTradesArray, tradesData, existingImports } from './src/stores/globals.js';
+import { useGetTimeZone } from './src/utils/utils.js';
 
 let databaseURI
 
 if (process.env.MONGO_URI) {
     databaseURI = process.env.MONGO_URI
-} else if (process.env.MONGO_ATLAS){
-    databaseURI = "mongodb+srv://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
-}else{
-    databaseURI = "mongodb://"+process.env.MONGO_USER+":"+process.env.MONGO_PASSWORD+"@"+process.env.MONGO_URL+":"+process.env.MONGO_PORT+"/"+process.env.TRADENOTE_DATABASE+"?authSource=admin"
+} else if (process.env.MONGO_ATLAS) {
+    databaseURI = "mongodb+srv://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_URL + "/" + process.env.TRADENOTE_DATABASE + "?authSource=admin"
+} else {
+    databaseURI = "mongodb://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_URL + ":" + process.env.MONGO_PORT + "/" + process.env.TRADENOTE_DATABASE + "?authSource=admin"
 }
 
 console.log("\nCONNECTING TO MONGODB")
 let hiddenDatabaseURI = databaseURI.replace(/:\/\/[^@]*@/, "://***@")
-console.log(' -> Database URI '+hiddenDatabaseURI)
+console.log(' -> Database URI ' + hiddenDatabaseURI)
 
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
@@ -49,7 +53,7 @@ const startIndex = async () => {
         return new Promise(async (resolve, reject) => {
             if (process.env.NODE_ENV == 'dev') {
 
-                const Proxy = require('http-proxy');
+
 
                 var proxy = new Proxy.createProxyServer({
                     target: { host: 'localhost', port: PROXY_PORT }
@@ -96,7 +100,7 @@ const startIndex = async () => {
             // EXPRESS USE
             await serv.start().then(() => {
                 app.use('/parse', serv.app);
-                console.log(" -> Parse server started")
+                console.log(" -> ParseNode server started")
                 resolve()
             })
         })
@@ -121,10 +125,10 @@ const startIndex = async () => {
     if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
 
     //INIT
-    //console.log("\nInitializing Parse")
-    Parse.initialize(process.env.APP_ID)
-    Parse.serverURL = "http://localhost:" + port + "/parse"
-    Parse.masterKey = process.env.MASTER_KEY
+    //console.log("\nInitializing ParseNode")
+    ParseNode.initialize(process.env.APP_ID)
+    ParseNode.serverURL = "http://localhost:" + port + "/parse"
+    ParseNode.masterKey = process.env.MASTER_KEY
 
     //API
 
@@ -150,7 +154,7 @@ const startIndex = async () => {
         //console.log("schemasJson "+JSON.stringify(schemasJson))
 
         let existingSchema = []
-        const getExistingSchema = await Parse.Schema.all()
+        const getExistingSchema = await ParseNode.Schema.all()
         //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
 
         const renameMongoDb = (param1, param2) => {
@@ -184,7 +188,7 @@ const startIndex = async () => {
             //console.log("Class name " + getExistingSchema[i].className)
 
             //we check for classes/collections that need to be renamed
-            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals" || getExistingSchema[i].className == "patternsMistakes") {
+            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
                 let oldName = getExistingSchema[i].className
                 let newName
 
@@ -201,7 +205,7 @@ const startIndex = async () => {
 
         const updateSaveSchema = (param1, param2, param3) => {
             return new Promise((resolve, reject) => {
-                const mySchema = new Parse.Schema(param1);
+                const mySchema = new ParseNode.Schema(param1);
                 if (param2[param3].type === "String") mySchema.addString(param3)
                 if (param2[param3].type === "Number") mySchema.addNumber(param3)
                 if (param2[param3].type === "Boolean") mySchema.addBoolean(param3)
@@ -217,17 +221,17 @@ const startIndex = async () => {
                 //console.log("existing schema "+existingSchema)
                 //console.log("includes ? "+existingSchema.includes(className))
 
-                //If Parse (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
+                //If ParseNode (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
                 if (existingSchema.includes(param1)) {
                     mySchema.update().then((result) => {
-                        console.log("  --> Updating field "+param3)
+                        console.log("  --> Updating field " + param3)
                         //console.log(" -> Updated schema " + JSON.stringify(result))
                         resolve()
                     })
                 } else {
                     mySchema.save().then((result) => {
                         //console.log(" -> Save new schema " + JSON.stringify(result))
-                        console.log("  --> Saving field "+param3)
+                        console.log("  --> Saving field " + param3)
                         existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
                         //console.log(" -> Existing Schema " + existingSchema)
                         resolve()
@@ -239,7 +243,7 @@ const startIndex = async () => {
         for (let i = 0; i < schemasJson.length; i++) {
             //console.log("el " + schemasJson[i].className)
             let className = schemasJson[i].className
-            console.log(" -> Upsert class/collection "+className+" in Parse Schema")
+            console.log(" -> Upsert class/collection " + className + " in ParseNode Schema")
             let obj = schemasJson[i].fields
             for (const key of Object.keys(obj)) {
                 //console.log(key, obj[key]);
@@ -250,10 +254,83 @@ const startIndex = async () => {
 
             }
         }
-        res.sendStatus(200)
+
+        res.send({ "existingSchema": existingSchema })
 
 
     })
+
+    /******************************************
+     * REST API
+     ******************************************/
+    app.use(express.json());
+
+    let allUsers
+    const getAllUsers = async () => {
+        console.log(" -> Getting all users")
+        return new Promise(async (resolve, reject) => {
+            const parseObject = ParseNode.Object.extend("_User");
+            const query = new ParseNode.Query(parseObject);
+            const results = await query.find({ useMasterKey: true });
+            allUsers = JSON.parse(JSON.stringify(results))
+            resolve()
+        })
+    }
+
+    const validateApiKey = async (req, res, next) => {
+        await getAllUsers()
+        const targetKey = req.headers['api-key'] || req.query['api-key'];
+        //console.log(" -> target Key " + targetKey)
+        const findIndexByKey = (allUsers, targetKey) => {
+            for (const user of Object.values(allUsers)) {
+                if (user.hasOwnProperty("apis")) {
+                    const index = user.apis.findIndex(obj => obj.key === targetKey);
+                    if (index !== -1) {
+                        return index;
+                    }
+                }
+
+            }
+            return -1; // Return -1 if not found
+        }
+
+        // Usage example
+        const index = findIndexByKey(allUsers, targetKey);
+        if (index != -1) {
+            console.log(" -> Valid api key found")
+            currentUser.value = allUsers[index]
+            next();
+        } else {
+            console.log(" -> Invalid api key")
+            return res.status(401).send({ error: 'Invalid API key' });
+        }
+    }
+
+    app.post('/api/trades', validateApiKey, async (req, res) => {
+        const data = req.body;
+        try {
+            if (data && !data.data.length > 0) {
+                res.status(200).send(" -> No trades to import");
+            }
+            else {
+
+                uploadMfePrices.value = data.uploadMfePrices
+
+                //console.log(" uploadMfePrices "+uploadMfePrices.value)
+                // Call the function from addTrades.js
+                //console.log(" -> current user " + JSON.stringify(currentUser.value))
+                await useGetTimeZone()
+                await useGetExistingTradesArray("api", ParseNode)
+                await useImportTrades(data.data, "api", data.selectedBroker, ParseNode)
+                await useUploadTrades("api", ParseNode)
+
+                res.status(200).send(" -> Saved Trades to ParseNode DB");
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).send({ error: 'Error creating executions' });
+        }
+    });
 
 }
 

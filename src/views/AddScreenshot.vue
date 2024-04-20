@@ -2,21 +2,40 @@
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Screenshot from '../components/Screenshot.vue'
-import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, mistakes, patterns, setups, screenshot, spinnerLoadingPage, timeZoneTrade } from '../stores/globals';
-import { useSaveScreenshot, useSetupImageUpload, useSetupMarkerArea } from '../utils/screenshots';
+import { currentDate, dateScreenshotEdited, editingScreenshot, itemToEditId, screenshot, spinnerLoadingPage, timeZoneTrade, tradeTags, tagInput, selectedTagIndex, showTagsList, availableTags, tags } from '../stores/globals';
+import { useSaveScreenshot, useSetupImageUpload } from '../utils/screenshots';
 import { useDatetimeLocalFormat, useGetSelectedRange } from '../utils/utils';
-import { useGetMistakes, useGetPatterns, useGetSetups, useTradeSetupChange } from '../utils/setups'
+import { useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useGetTags, useGetAvailableTags, useGetTagInfo } from '../utils/daily';
+
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetPatterns(), useGetMistakes()])
+    await Promise.all([useGetTags(), useGetAvailableTags()])
     await getScreenshotToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
     await (spinnerLoadingPage.value = false)
 })
 currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD HH:mm")
-
+//console.log(" current page id " + pageId.value)
+//console.log(" screenshot "+JSON.stringify(screenshot))
 let setupType = [{
     value: null,
     label: "Type"
@@ -30,6 +49,7 @@ let setupType = [{
     label: "Trade Entry"
 }
 ]
+
 let entrySide = [{
     value: null,
     label: "Side"
@@ -51,6 +71,7 @@ function screenshotUpdateDate(event) {
     screenshot.date = event
     //console.log("screenshot date (local time, i.e. New York time) " + this.screenshot.date)
     screenshot.dateUnix = dayjs.tz(screenshot.date, timeZoneTrade.value).unix()
+    //console.log(" screenshot "+JSON.stringify(screenshot))
     //console.log("unix " + dayjs.tz(this.screenshot.date, this.timeZoneTrade).unix()) // we SPECIFY that it's New york time
 }
 
@@ -75,21 +96,21 @@ async function getScreenshotToEdit(param) {
         } else {
             screenshot.type = "setup"
         }
-        for (let index = 0; index < setups.length; index++) {
-            const element = setups[index];
-            if (element.tradeId == screenshot.name) {
-                //console.log("element "+JSON.stringify(element))
-                //console.log("pattern "+element.pattern.objectId)
-                //console.log("mistake "+element.mistake.objectId)
-                if (element.pattern != null) {
-                    screenshot.pattern = element.pattern.objectId
-                }
-                if (element.mistake != null) {
-                    screenshot.mistake = element.mistake.objectId
-                }
-            }
 
-
+        let findTags = tags.find(obj => obj.tradeId == screenshot.name)
+        if (findTags) {
+            findTags.tags.forEach(element => {
+                for (let obj of availableTags) {
+                    for (let tag of obj.tags) {
+                        if (tag.id === element) {
+                            let temp = {}
+                            temp.id = tag.id
+                            temp.name = tag.name
+                            tradeTags.push(temp)
+                        }
+                    }
+                }
+            });
         }
 
     } else {
@@ -116,6 +137,7 @@ async function getScreenshotToEdit(param) {
                             v-bind:value="screenshot.hasOwnProperty('dateUnix') ? useDatetimeLocalFormat(screenshot.dateUnix) : currentDate"
                             v-on:input="screenshotUpdateDate($event.target.value)" />
                     </div>
+
                     <div class="col">
                         <input type="text" class="form-control"
                             v-bind:value="screenshot.hasOwnProperty('symbol') ? screenshot.symbol : ''"
@@ -132,22 +154,43 @@ async function getScreenshotToEdit(param) {
                             <option v-for="item in entrySide" v-bind:value="item.value">{{ item.label }}</option>
                         </select>
                     </div>
-                    <!-- Patterns -->
-                    <div class="col">
-                        <select v-on:change="useTradeSetupChange($event.target.value, 'pattern')" class="form-select">
-                            <option value='null' selected>Pattern</option>
-                            <option v-for="item in patterns.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == screenshot.pattern">{{ item.name }}</option>
-                        </select>
+
+                    <!-- Tags -->
+                    <div class="container-tags col">
+                        <div class="form-control dropdown form-select" style="height: auto;">
+                            <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                                <span v-for="(tag, index) in tradeTags" :key="index" class="tag txt-small"
+                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }"
+                                    @click="useTradeTagsChange('remove', index)">
+                                    {{ tag.name }}<span class="remove-tag">×</span>
+                                </span>
+
+                                <input type="text" v-model="tagInput" @input="useFilterTags"
+                                    @keydown.enter.prevent="useTradeTagsChange('add', tagInput)"
+                                    @keydown.tab.prevent="useTradeTagsChange('add', tagInput)"
+                                    class="form-control tag-input" placeholder="Add a tag">
+                                <div class="clickable-area" v-on:click="useToggleTagsDropdown">
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
+                            :style="[!showTagsList ? 'border: none;' : '']">
+                            <span v-show="showTagsList" v-for="group in availableTags">
+                                <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
+                                    v-show="useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                    {{ group.name }}</h6>
+                                <li v-for="(suggestion, index) in useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
+                                    :key="index" :class="{ active: index === selectedTagIndex }"
+                                    @click="useTradeTagsChange('addFromDropdownMenu', suggestion)"
+                                    class="dropdown-item dropdown-item-tags">
+                                    <span class="ms-2">{{ suggestion.name }}</span>
+                                </li>
+                            </span>
+                        </ul>
                     </div>
-                    <!-- Mistakes -->
-                    <div class="col">
-                        <select v-on:change="useTradeSetupChange($event.target.value, 'mistake')" class="form-select">
-                            <option value='null' selected>Mistake</option>
-                            <option v-for="item in mistakes.filter(r => r.active == true)" v-bind:value="item.objectId"
-                                v-bind:selected="item.objectId == screenshot.mistake">{{ item.name }}</option>
-                        </select>
-                    </div>
+
+
 
                 </div>
             </div>
@@ -155,8 +198,8 @@ async function getScreenshotToEdit(param) {
         <div class="mt-3">
             <input type="file" @change="useSetupImageUpload" />
         </div>
-        <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="addScreenshot"/>
-    
+        <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="addScreenshot" />
+
         <p class="fst-italic fw-lighter text-center" v-show="screenshot.originalBase64">
             <small>Click on <i class="uil uil-image-edit ms-2 me-2"></i> to mark & annotate</small>
         </p>
@@ -168,4 +211,5 @@ async function getScreenshotToEdit(param) {
             <button type="cancel" onclick="location.href = '/screenshots';"
                 class="btn btn-outline-secondary btn-sm">Cancel</button>
         </div>
-</div></template>
+    </div>
+</template>

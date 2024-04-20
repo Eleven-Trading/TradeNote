@@ -1,118 +1,158 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, patterns, mistakes, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, stepper, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, selectedPatterns, selectedMistakes, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore } from "../stores/globals"
-import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts';
-import { useDeleteDiary, useGetDiaries } from "./diary";
-import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots'
-import { useDeletePlaybook } from "./playbooks";
-import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades";
-import { useLoadCalendar } from "./calendar";
-import { useGetExcursions, useGetSatisfactions } from "./daily";
-import { useGetMistakes, useGetPatterns, useGetSetups } from "./setups";
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis } from "../stores/globals.js"
+import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
+import { useDeleteDiary, useGetDiaries } from "./diary.js";
+import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
+import { useDeletePlaybook } from "./playbooks.js";
+import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades.js";
+import { useLoadCalendar } from "./calendar.js";
+import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
+
+/* MODULES */
+import Parse from 'parse/dist/parse.min.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+import axios from 'axios'
+import Shepherd from 'shepherd.js'
 
 /**************************************
 * INITS
 **************************************/
 
 export function useInitTab(param) {
-    let idCurrent
-    let idPrevious
+    console.log("\nINIT TAB for " + param)
+
     let hideCurrentTab = false
-    let idCurrentType
-    let idCurrentNumber
-    let idPreviousType
-    let idPreviousNumber
     let htmlIdCurrent
     let htmlIdPrevious
     let firstTimeClick
+    idCurrent.value = undefined // we set (back) to undefined because when click on modal on daily, we hide the tabs so we need to reinitiate them
+    idPrevious.value = undefined
 
     var triggerTabList = [].slice.call(document.querySelectorAll('#nav-tab button'))
     //console.log("trigger tab list "+triggerTabList)
     var self = // is.value needed or else could not call function inside eventlistener
 
-        console.log("\nINIT TAB for " + param)
 
-    triggerTabList.forEach((triggerEl) => {
-        //console.log("triggerEl "+triggerEl)
-        /*var tabTrigger = new bootstrap.Tab(triggerEl)
-        triggerEl.addEventListener('click', function(event) {
-            console.log("clicking")
-            //event.preventDefault()
-            //tabTrigger.show()
-        })*/
-        if (param == "dashboard") {
-            // GET TAB ID THAT IS CLICKED
-            //console.log(" -> triggerTabList Dashboard")
-            triggerEl.addEventListener('shown.bs.tab', async (event) => {
-                //console.log("target " + event.target.getAttribute('id')) // newly activated tab
-                selectedDashTab.value = event.target.getAttribute('id')
-                //console.log("selected tab " + selectedDashTab.value)
-                localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
-                await (renderData.value += 1)
-                await useECharts("init")
-                //console.log("related" + event.relatedTarget) // previous active tab
-            })
-        }
+        triggerTabList.forEach((triggerEl) => {
+            //console.log("triggerEl "+triggerEl.getAttribute('id'))
+            /*var tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function(event) {
+                console.log("clicking")
+                //event.preventDefault()
+                //tabTrigger.show()
+            })*/
+            if (param == "dashboard") {
+                // GET TAB ID THAT IS CLICKED
+                //console.log(" -> triggerTabList Dashboard")
+                triggerEl.addEventListener('shown.bs.tab', async (event) => {
+                    //console.log("target " + event.target.getAttribute('id')) // newly activated tab
+                    selectedDashTab.value = event.target.getAttribute('id')
+                    //console.log("selected tab " + selectedDashTab.value)
+                    localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
+                    await (renderData.value += 1)
+                    await useECharts("init")
+                    //console.log("related" + event.relatedTarget) // previous active tab
+                })
+            }
 
-        if (param == "daily") {
-            // GET TAB ID THAT IS CLICKED
+            if (param == "daily") {
+                // GET TAB ID THAT IS CLICKED
 
-            //console.log(" -> triggerTabList Daily")
+                //console.log(" -> triggerTabList Daily")
+                let idClicked
+                triggerEl.addEventListener('click', async (event) => {
+                    /*if (idClicked == event.target.getAttribute('id')) {
+                        console.log(" already clicked")
+                    } else {
+                        console.log(" first time clicked")
+                        idClicked = event.target.getAttribute('id')
+                    }
+                    console.log(" -> Click on " + event.target.getAttribute('id'))
+                    */
+                    if (idCurrent.value != undefined) idPrevious.value = idCurrent.value // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
 
-            triggerEl.addEventListener('click', (event) => {
-                //console.log(" click")
-
-                if (idCurrent != undefined) idPrevious = idCurrent // in case it's not on page load and we already are clicking on tabs, then inform that the previsous clicked tab (wich is for the moment current) should now become previous
-
-                idCurrent = event.target.getAttribute('id')
-
-                if (idPrevious == undefined) {
-                    firstTimeClick = true
-                    idPrevious = idCurrent //on page load, first time we click
-                    hideCurrentTab = !hideCurrentTab // is.value counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
-
-                }
-
-                //console.log(" -> id Current: " + idCurrent + " and previous: " + idPrevious)
-
-                idCurrentType = idCurrent.split('-')[0]
-                idCurrentNumber = idCurrent.split('-')[1]
-                idPreviousType = idPrevious.split('-')[0]
-                idPreviousNumber = idPrevious.split('-')[1]
-                htmlIdCurrent = "#" + idCurrentType + "Nav-" + idCurrentNumber
-                htmlIdPrevious = "#" + idPreviousType + "Nav-" + idPreviousNumber
-
-                if (idCurrent == idPrevious) {
-
-                    hideCurrentTab = !hideCurrentTab
-
-                    //console.log(" hide tab ? " + hideCurrentTab)
+                    idCurrent.value = event.target.getAttribute('id')
 
 
+                    if (idPrevious.value == undefined) {
+                        firstTimeClick = true
+                        idPrevious.value = idCurrent.value //on page load, first time we click
+                        hideCurrentTab = !hideCurrentTab // is.value counter intuitive but because further down we toggle hidCurrentTab, i need to toggle here if its first time click on load or else down there it would be hide true the first time. So here we set true so that further down, on first time click on page load it becomes false
 
-                    if (hideCurrentTab) { //hide content
-
-                        $(htmlIdCurrent).removeClass('show')
-                        $(htmlIdCurrent).removeClass('active')
-                        $("#" + idCurrent).removeClass('active')
-                    } else { //show content
-                        $(htmlIdCurrent).addClass('show')
-                        $(htmlIdCurrent).addClass('active')
-                        $("#" + idCurrent).addClass('active')
                     }
 
+                    //console.log(" -> id Current: " + idCurrent.value + " and previous: " + idPrevious.value)
 
+                    idCurrentType.value = idCurrent.value.split('-')[0]
+                    idCurrentNumber.value = idCurrent.value.split('-')[1]
+                    idPreviousType.value = idPrevious.value.split('-')[0]
+                    idPreviousNumber.value = idPrevious.value.split('-')[1]
+                    htmlIdCurrent = "#" + idCurrentType.value + "Nav-" + idCurrentNumber.value
+                    htmlIdPrevious = "#" + idPreviousType.value + "Nav-" + idPreviousNumber.value
 
-                } else {
-                    hideCurrentTab = false
-                    // in case.value, we have click on another tab so we need to "reset" the previsous tab 
-                    $(htmlIdPrevious).removeClass('show')
-                    $(htmlIdPrevious).removeClass('active')
-                    $("#" + idPrevious).removeClass('active')
-                }
+                    //console.log(" -> Daily tab click on "+idCurrentType.value + " - index "+idCurrentNumber.value)
+                    //console.log(" -> filtered trades "+JSON.stringify(filteredTrades[idCurrentNumber.value]))
 
-            })
-        }
-    })
+                    if (idCurrentType.value === "screenshots") {
+                        let screenshotsDate = filteredTrades[idCurrentNumber.value].dateUnix
+                        //console.log(" -> Clicked on screenshots tab in Daily so getting screensots for "+screenshotsDate)
+                        //console.log(" screenshots infos " + JSON.stringify(screenshotsInfos))
+                        let index = screenshotsInfos.findIndex(obj => obj.dateUnixDay == screenshotsDate)
+                        //console.log(" index " + index)
+                        if (index != -1) {
+
+                            if (screenshots.length == 0 || (screenshots.length > 0 && screenshots[0].dateUnixDay != screenshotsDate)) {
+                                console.log("  --> getting Screenshots")
+                                await (tabGettingScreenshots.value = true)
+                                await useGetScreenshots(true, screenshotsDate)
+                                await (tabGettingScreenshots.value = false)
+                            } else {
+                                console.log("  --> Screenshots already stored")
+                            }
+                        } else {
+                            console.log("  --> No screenshots")
+                        }
+                        //console.log(" screenshots "+JSON.stringify(screenshots[0]))
+                    }
+
+                    if (idCurrent.value == idPrevious.value) {
+                        hideCurrentTab = !hideCurrentTab;
+
+                        if (hideCurrentTab) { // hide content
+                            document.querySelector(htmlIdCurrent).classList.remove('show');
+                            document.querySelector(htmlIdCurrent).classList.remove('active');
+                            document.getElementById(idCurrent.value).classList.remove('active');
+                        } else { // show content
+                            document.querySelector(htmlIdCurrent).classList.add('show');
+                            document.querySelector(htmlIdCurrent).classList.add('active');
+                            document.getElementById(idCurrent.value).classList.add('active');
+                        }
+                    } else {
+                        hideCurrentTab = false;
+
+                        // In case of a different tab click, reset the previous tab
+                        document.querySelector(htmlIdPrevious).classList.remove('show');
+                        document.querySelector(htmlIdPrevious).classList.remove('active');
+                        document.getElementById(idPrevious.value).classList.remove('active');
+                    }
+
+                })
+            }
+        })
 
 
 }
@@ -162,7 +202,7 @@ export function useCheckCurrentUser() {
 
 export function getCurrentUser() {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
-    //console.log("currentUser " + JSON.stringify(currentUser))
+    //console.log("currentUser " + JSON.stringify(currentUser.value))
 }
 
 export function useGetTimeZone() {
@@ -172,7 +212,7 @@ export function useGetTimeZone() {
 }
 
 export async function useGetPeriods() {
-    console.log(" -> Getting periods")
+    //console.log(" -> Getting periods")
     return new Promise((resolve, reject) => {
         let temp = [{
             value: "all",
@@ -273,7 +313,7 @@ export function useInitShepherd() {
             useModalOverlay: true,
         }
     });
-    if (pageId.value != "dashboard"){
+    if (pageId.value != "dashboard") {
         alert("Please go to the dashboard page and launch the tutorial.")
         return
     }
@@ -336,7 +376,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step4',
-        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a 4 tabs for a given day:<ul><li>Trades: list of your trades</li><li>Blotter: your trades grouped by symbol</li><li>Screenshots: your annotated screenshots</li><li>Diary: your diary entries</li></ul></p><p>In the trades tab you can click on the table row to add additional information (note, pattern, mistake, etc.).</p>',
+        text: '<p>Daily shows a detailed view of trades per day.</p><p>For each day, there is a 4 tabs for a given day:<ul><li>Trades: list of your trades</li><li>Blotter: your trades grouped by symbol</li><li>Screenshots: your annotated screenshots</li><li>Diary: your diary entries</li></ul></p><p>In the trades tab you can click on the table row to add additional information (note, tags, etc.).</p>',
         attachTo: {
             element: '#step4',
             on: 'right'
@@ -376,7 +416,7 @@ export function useInitShepherd() {
         }
         ]
     },
-   
+
     {
         id: 'step6',
         text: 'Diary is where you can see and edit your diary entries.',
@@ -445,7 +485,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step10',
-        text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Share Per Trade (APPSPT) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
+        text: "<p>You can filter your trades per date, account, gross vs net (excluding or including fees and commissions) and position (long and/or short).</p><p>You can also decide to aggregate data per day, week or year.</p><p>On certain graphs, you can decide to see data as Average Profit Per Trade (APPT), Average Profit Per Security (APPS) or as profit factor.</p><p><b>In order to see you trades, please make sure you have chosen the right date range and that you have chosen at least one account and position type.</b></p>",
         attachTo: {
             element: '#step10',
             on: 'bottom'
@@ -493,7 +533,7 @@ export function useInitShepherd() {
     },
     {
         id: 'step12',
-        text: "In the sub-menu you can navigate to your settings, where you can amongst other add a profile picture and edit your patterns and mistakes. You can also see the version you are using as well as come back to this tutorial at any time as well as logout of your account (recommended when you update TradeNote version).",
+        text: "In the sub-menu you can navigate to your settings, where you can amongst other add a profile picture, add API Keys and edit your tags. You can also see the version you are using as well as come back to this tutorial at any time as well as logout of your account (recommended when you update TradeNote version).",
         attachTo: {
             element: '#step12',
             on: 'bottom'
@@ -628,13 +668,14 @@ export function useInitWheelEvent() {
         }, false)
 }
 
-export function useInitPopover() {
+/*export function useInitPopover() {
     console.log(" -> Init Popover")
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
     popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl)
     })
     var popDel
+    
     $(document).on('click', '.popoverDelete', (e) => {
         popDel = $(e.currentTarget);
         $('.popoverDelete').not(popDel.popover('hide'));
@@ -666,6 +707,65 @@ export function useInitPopover() {
         selectedItem.value = null
     });
 
+}*/
+
+export function useInitPopover() {
+    console.log(" -> Init Popover");
+
+    var popoverTriggerList
+
+    const getTriggerList = () => {
+        popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            new bootstrap.Popover(popoverTriggerEl);
+        });
+    }
+
+    getTriggerList()
+
+    var popDel;
+
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('popoverDelete')) {
+            popDel = e.target;
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete !== popDel) {
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+        }
+
+        if (e.target.classList.contains('popoverYes')) {
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete === popDel) {
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+            if (pageId.value == "notes") {
+                deleteNote.value();
+            }
+            if (pageId.value == "screenshots" || pageId.value == "daily") {
+                useDeleteScreenshot();
+            }
+            if (pageId.value == "diary") {
+                useDeleteDiary(true);
+            }
+            if (pageId.value == "playbook") {
+                useDeletePlaybook();
+            }
+        }
+
+        if (e.target.classList.contains('popoverNo')) {
+            document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
+                if (popDelete === popDel) {
+                    //console.log(" popDelete " + popDelete.classList)
+                    //console.log(" popDel " + popDel.classList)
+                    bootstrap.Popover.getInstance(popDelete).hide();
+                }
+            });
+            selectedItem.value = null;
+        }
+    });
 }
 
 export function useInitTooltip() {
@@ -747,8 +847,7 @@ export async function useMountDashboard() {
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
     await useGetSelectedRange()
-    useGetPatterns(), useGetMistakes(), useGetExcursions(), useGetSatisfactions()
-    await useGetSetups()
+    useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()
     await Promise.all([useGetFilteredTrades()])
     await useTotalTrades()
     await useGroupTrades()
@@ -756,12 +855,13 @@ export async function useMountDashboard() {
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
+    useInitTooltip()
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
+        await (dashboardChartsMounted.value = true)
         await (renderData.value += 1)
         await useECharts("init")
-        await (dashboardChartsMounted.value = true)
     }
 
 }
@@ -774,18 +874,11 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSetups(), useGetSatisfactions()])
-    useGetPatterns(), useGetMistakes()
-    /*useGetSetups()
-    useGetPatterns()
-    useGetMistakes()
-    useGetSatisfactions()*/
+    await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
     await useGetFilteredTrades()
-    await useGetFilteredTradesForDaily()
     spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
     useInitTab("daily")
-    //await Promise.all([useRenderDoubleLineChart(), useRenderPieChart(), useLoadCalendar(), useGetExcursions(), useGetDiaries(false), useGetScreenshots(true)])
     useRenderDoubleLineChart()
     useRenderPieChart()
     useLoadCalendar()
@@ -817,9 +910,8 @@ export async function useMountScreenshots() {
     await console.time("  --> Duration mount screenshots");
     useGetScreenshotsPagination()
     await useGetSelectedRange()
-    await Promise.all([useGetPatterns(), useGetMistakes()])
-    await useGetSetups()
-    await useGetScreenshots()
+    await Promise.all([useGetTags(), useGetAvailableTags()])
+    await useGetScreenshots(false)
     await console.timeEnd("  --> Duration mount screenshots")
     useInitPopover()
 }
@@ -841,20 +933,23 @@ export async function useLoadMore() {
     if (pageId.value == "daily") {
         await useGetFilteredTradesForDaily()
         await Promise.all([useRenderDoubleLineChart(), useRenderPieChart()])
-        useInitTab("daily")
+        await useInitTab("daily")
+        //await useGetDiaries(true)
         //await (renderingCharts.value = false)
     }
 
     if (pageId.value == "screenshots") {
-        await useGetScreenshots()
-    }
-
-    if (pageId.value == "diary") {
-        await useGetDiaries(true)
+        await useGetScreenshots(false)
     }
 
     spinnerLoadMore.value = false
 
+}
+
+export function useCheckIfWindowIsScrolled() {
+    window.addEventListener('scroll', () => {
+        windowIsScrolled.value = window.scrollY > 100;
+    });
 }
 
 /**************************************
@@ -946,42 +1041,18 @@ export async function useSetValues() {
             localStorage.setItem('selectedAccounts', selectedAccounts.value)
             selectedAccounts.value = localStorage.getItem('selectedAccounts').split(",")
         }
-        let selectedPatternsNull = Object.is(localStorage.getItem('selectedPatterns'), null)
-        let selectedMistakesNull = Object.is(localStorage.getItem('selectedMistakes'), null)
-        console.log("selectedPatternsNull " + selectedPatternsNull)
-        console.log("selectedMistakesNull " + selectedMistakesNull)
-        if (selectedPatternsNull || selectedMistakesNull) {
-            await Promise.all([useGetPatterns(), useGetMistakes()])
-            if (selectedPatternsNull) {
-                console.log("selected patterns is null ")
-                selectedPatterns.value.push("p000p")
-                let activePatterns = patterns.filter(obj => obj.active == true)
-                //console.log("active Patterns " + JSON.stringify(activePatterns))
-                if (activePatterns) {
-                    activePatterns.forEach(element => {
-                        selectedPatterns.value.push(element.objectId)
-                    });
-                }
-                patterns.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
-                localStorage.setItem('selectedPatterns', selectedPatterns.value)
-                console.log("selectedPatterns " + JSON.stringify(selectedPatterns.value))
-            }
 
-            if (selectedMistakesNull) {
-                console.log("selected Mistakes is null ")
-                selectedMistakes.value.push("m000m")
-                await useGetMistakes() //This will just trigger the first time we login, when selectedPatterns is null
-                let activeMistakes = mistakes.filter(obj => obj.active == true)
-                //console.log("active Mistakes " + JSON.stringify(activeMistakes))
-                if (activeMistakes) {
-                    activeMistakes.forEach(element => {
-                        selectedMistakes.value.push(element.objectId)
-                    });
-                }
+        let selectedTagsNull = Object.is(localStorage.getItem('selectedTags'), null)
+        console.log("selectedTagsNull " + selectedTagsNull)
+        if (selectedTagsNull) {
+            await useGetTags()
+            if (selectedTagsNull) {
+                console.log("selected tags is null ")
+                selectedTags.value.push("t000t")
 
-                mistakes.length = 0
-                localStorage.setItem('selectedMistakes', selectedMistakes.value)
-                console.log("selectedMistakes " + JSON.stringify(selectedMistakes.value))
+                tags.length = 0 // I'm already reseting in useGetPatterns but for some reason it would not be fast enough for this case
+                localStorage.setItem('selectedTags', selectedTags.value)
+                console.log("selectedTags " + JSON.stringify(selectedTags.value))
             }
 
         }
@@ -1035,6 +1106,120 @@ export function useToggleMobileMenu() {
 export function useCapitalizeFirstLetter(param) {
     return param.charAt(0).toUpperCase() + param.slice(1)
 }
+
+export function returnToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+export const useGetLegacy = async () => {
+    console.log(" -> Getting legacy information")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            //console.log(" currentLegacy " + JSON.stringify(currentLegacy))
+            if (currentLegacy != undefined && currentLegacy.length > 0) {
+                for (let index = 0; index < currentLegacy.length; index++) {
+                    const element = currentLegacy[index];
+                    legacy.push(element)
+                }
+
+            }
+            console.log("  --> Legacy " + JSON.stringify(legacy))
+            resolve()
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+export const useUpdateLegacy = async (param1) => {
+    console.log("\n -> Updating legacy information")
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+            let currentLegacy = parsedResults.legacy
+            const saveLegacy = () => {
+                console.log("  --> Saving legacy")
+                let temp = {}
+                temp.name = param1
+                temp.updated = true
+                currentLegacy.push(temp)
+            }
+
+            if (currentLegacy == undefined) {
+                currentLegacy = []
+                saveLegacy()
+
+            } else if (currentLegacy.length == 0) {
+                currentLegacy = []
+                saveLegacy()
+            }
+            else {
+                console.log("  --> Updating legacy")
+                let index = currentLegacy.findIndex(obj => obj.name == param1)
+                if (index == -1) {
+                    saveLegacy()
+                } else {
+                    currentLegacy[index].updated = true
+                }
+
+            }
+
+            results.set("legacy", currentLegacy)
+            results.save()
+                .then(async () => {
+                    console.log(' -> Saved/Updated legacy with id ' + results.id)
+                    resolve()
+                }, (error) => {
+                    console.log('Failed to save/update legacy, with error code: ' + error.message);
+                    reject()
+                })
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+export const useGetAPIS = async () => {
+    console.log("\n -> Getting APIS")
+    apis.length = 0
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+
+            if (parsedResults.apis != undefined) {
+                for (let index = 0; index < parsedResults.apis.length; index++) {
+                    const element = parsedResults.apis[index];
+                    apis.push(element)
+                }
+            }
+
+            resolve()
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+
 /**************************************
 * DATE FORMATS
 **************************************/
@@ -1097,6 +1282,9 @@ export function useDatetimeLocalFormat(param) {
     return dayjs.tz(param * 1000, timeZoneTrade.value).format("YYYY-MM-DDTHH:mm:ss") //here we ne
 }
 
+export function useStartOfDay(param) {
+    return dayjs(param * 1000).tz(timeZoneTrade.value).startOf("day").unix()
+}
 /**************************************
 * NUMBER FORMATS
 **************************************/
@@ -1112,8 +1300,20 @@ export function useTwoDecCurrencyFormat(param) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, style: 'currency', currency: 'USD' }).format(param)
 }
 
+export function useThreeDecCurrencyFormat(param) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 3, style: 'currency', currency: 'USD' }).format(param)
+}
+
+export function useXDecCurrencyFormat(param, param2) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: param2, style: 'currency', currency: 'USD' }).format(param)
+}
+
 export function useTwoDecFormat(param) {
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(param)
+}
+
+export function useXDecFormat(param, param2) {
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: param2 }).format(param)
 }
 
 export function useOneDecPercentFormat(param) {
