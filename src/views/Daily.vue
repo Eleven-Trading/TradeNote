@@ -435,7 +435,7 @@ function resetExcursion() {
 /**************
  * NOTES
  ***************/
-function noteClicked() {
+ function noteClicked() {
     //console.log("click")
     tradeNoteChanged.value = true
     saveButton.value = true
@@ -446,16 +446,8 @@ const tradeNoteChange = (param) => {
     //console.log(" -> New note " + tradeNote.value)
     tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
     tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
-    await awaitClick()
-        await (spinnerSetups.value = false)
-        saveButton.value = false
-        await useInitTooltip()
-        const myModalEl = document.getElementById('tradesModal')
-        myModalEl.addEventListener('shown.bs.modal', async (event) => {
 
-        })
 }
-
 
 /**************
  * SCREENSHOTS
