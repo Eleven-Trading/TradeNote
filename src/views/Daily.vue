@@ -189,8 +189,8 @@ async function clickTradesModal(param1, param2, param3) {
                         let ohlcPrices
                         let ohlcVolumes
 
-                        if (ohlcArray.lenght == 0) {
-                            console.log(" -> No ohlcArray. Getting OHLC for charts")
+                        if (ohlcArray.length == 0) {
+                            console.log(" -> No symbole/date in ohlcArray")
                             await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
                             ohlcTimestamps = ohlcArray[0].ohlcTimestamps
                             ohlcPrices = ohlcArray[0].ohlcPrices
@@ -200,16 +200,23 @@ async function clickTradesModal(param1, param2, param3) {
                             let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
 
                             if (index != -1) {
-                                console.log(" -> OHLC for charts already exists")
+                                console.log(" -> Symbol and/or date exists in ohlcArray")
                                 ohlcTimestamps = ohlcArray[index].ohlcTimestamps
                                 ohlcPrices = ohlcArray[index].ohlcPrices
                                 ohlcVolumes = ohlcArray[index].ohlcVolumes
                             } else {
-                                console.log(" -> Symbol does not exist in ohlcArray. Getting OHLC for charts")
+                                console.log(" -> Symbol and/or date does not exist in ohlcArray")
                                 await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
-                                ohlcTimestamps = ohlcArray[0].ohlcTimestamps
-                                ohlcPrices = ohlcArray[0].ohlcPrices
-                                ohlcVolumes = ohlcArray[0].ohlcVolumes
+                                
+                                let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+                                
+                                if (index != -1) {
+                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                }else{
+                                    console.log(" -> there's an issues with OHLC")
+                                }
                             }
                         }
 
@@ -558,7 +565,7 @@ const filterDiary = (param) => {
 }
 
 function getOHLC(date, symbol, entryTime, exitTime) {
-    console.log(" -> get ohlc for " + symbol + " on " + date)
+    console.log("  --> Getting OHLC for " + symbol + " on " + date)
     return new Promise(async (resolve, reject) => {
         await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
