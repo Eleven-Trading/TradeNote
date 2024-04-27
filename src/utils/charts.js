@@ -1719,9 +1719,10 @@ export function useScatterChart(param1) { //chart ID, green, red, page
         resolve()
     })
 }
-
+let candlestickChart
+let currentTD
 export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
-    //console.log(" trade "+JSON.stringify(trade))
+    //console.log(" trade " + JSON.stringify(trade))
     let green = '#26a69a'
     let red = '#FF6960'
     let exitMarkerColor
@@ -1777,7 +1778,12 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
 
 
     return new Promise((resolve, reject) => {
-        let myChart = echarts.init(document.getElementById("candlestickChart"));
+        if (!currentTD || currentTD != trade.td) {
+            candlestickChart = echarts.init(document.getElementById("candlestickChart"));
+            currentTD = trade.td
+        }
+
+
         const option = {
             tooltip: {
                 trigger: 'axis',
@@ -1788,7 +1794,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                     var obj = { top: 10 };
                     obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
                     return obj;
-                  }
+                }
             },
             dataZoom: [
                 {
@@ -1873,7 +1879,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
         }
 
-        myChart.setOption(option);
+        candlestickChart.setOption(option);
         resolve()
     })
 }
