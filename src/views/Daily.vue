@@ -6,13 +6,15 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
 import { useSetupImageUpload, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 
 import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
+
+import { useCandlestickChart } from '../utils/charts';
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -31,6 +33,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
+import axios from 'axios'
 
 
 const dailyTabs = [{
@@ -78,6 +81,12 @@ onMounted(async () => {
     useCreateAvailableTagsArray()
 
     tradesModal = new bootstrap.Modal("#tradesModal")
+    document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
+            const caller = event.relatedTarget
+            const index = caller.dataset.index
+            const index2 = caller.dataset.indextwo
+            clickTradesModal(index, index2, index2)
+        })
 })
 
 
@@ -141,9 +150,9 @@ async function clickTradesModal(param1, param2, param3) {
         else {
             //console.log(" -> Opening Modal or clicking next/back")
 
-            itemTradeIndex.value = param1
-            tradeIndexPrevious.value = param2
-            tradeIndex.value = param3
+            itemTradeIndex.value = Number(param1)
+            tradeIndexPrevious.value = Number(param2)
+            tradeIndex.value = Number(param3)
 
             let awaitClick = async () => {
 
@@ -175,6 +184,23 @@ async function clickTradesModal(param1, param2, param3) {
                     for (let key in screenshot) delete screenshot[key]
                     screenshot.side = null
                     screenshot.type = null
+                    
+                    try {
+                        candlestickChartFailureMessage=null
+                        await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                        await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTrades[itemTradeIndex.value].trades[param3])
+                    } catch (error) {
+                        if (error.response && error.response.status === 429) {
+                            candlestickChartFailureMessage="Too many requests, try again later"
+                        }
+                        else if (error.response) {
+                            candlestickChartFailureMessage=error.response.statusText
+                        }
+                        else {
+                            candlestickChartFailureMessage=error
+                        }
+                        console.error(error)
+                    }
                 }
 
                 //We differentiate
@@ -217,15 +243,6 @@ async function clickTradesModal(param1, param2, param3) {
             saveButton.value = false
             await useInitTooltip()
         }
-
-
-    document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
-            const caller = event.relatedTarget
-            const index = caller.dataset.index
-            const index2 = caller.dataset.indextwo
-            updateTradesModal(index, index2, index2)
-        })
-})
 
     }
 
@@ -439,48 +456,7 @@ async function updateExcursions() {
 /**************
  * MISC
  ***************/
-async function updateTradesModal(param1, param2, param3) {
-    //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
-    //param2 : also called tradeIndex, is the index inside the trades (= index of itemTrade.trades)
-    //param3 : tradeIndex back or next, so with -1 or +1. On modal open, param3 = param2
-    //console.log(" param 3 "+JSON.stringify(param3))
-    //console.log("param1 "+param1)
-    //console.log("param2 "+param2)
-    //console.log("param3 "+param3)
 
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        //We first update because setups rely on tradeIndex, so before tradeIndex changes to new modal page or simply use tradeIndex if we close
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-        }
-
-        if (tradeExcursionChanged.value) {
-            await updateExcursions()
-        }
-
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-
-        //Then we change indexes
-        itemTradeIndex.value = Number(param1)
-        tradeIndexPrevious.value = Number(param2)
-        tradeIndex.value = Number(param3)
-        
-        let selectedTrade = filteredTrades[itemTradeIndex.value].trades[param3]
-
-        let awaitClick = async () => {
-            tradeSetupChanged.value = false // we updated setups and trades so false cause not need to do it again when we hide modal
-            tradeExcursionChanged.value = false
-            tradeScreenshotChanged.value = false
-            modalDailyTradeOpen.value = true
-
-            await resetExcursion()
-=======
 function resetExcursion() {
     //console.log(" -> Resetting excursion")
     //we need to reset the setup variable each time
@@ -488,40 +464,7 @@ function resetExcursion() {
     excursion.stopLoss = null
     excursion.maePrice = null
     excursion.mfePrice = null
-
-
 }
-
-
-            //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
-            let findScreenshot = screenshots.find(obj => obj.name == selectedTrade.id)
-            if (findScreenshot) {
-                for (let key in screenshot) delete screenshot[key]
-                for (let key in findScreenshot) {
-                    screenshot[key] = findScreenshot[key]
-                }
-            } else {
-                for (let key in screenshot) delete screenshot[key]
-                screenshot.side = null
-                screenshot.type = null
-                try {
-                    candlestickChartFailureMessage=null
-                    await getOHLC(selectedTrade.td, selectedTrade.symbol, selectedTrade.entryTime, selectedTrade.exitTime)
-                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, selectedTrade)
-                } catch (error) {
-                    if (error.response && error.response.status === 429) {
-                        candlestickChartFailureMessage="Too many requests, try again later"
-                    }
-                    else if (error.response) {
-                        candlestickChartFailureMessage=error.response.statusText
-                    }
-                    else {
-                        candlestickChartFailureMessage=error
-                    }
-
-                    console.error(error)
-                }
-            }
 
 /**************
  * TAGS
@@ -531,41 +474,12 @@ function resetExcursion() {
 /**************
  * NOTES
  ***************/
- function noteClicked() {
+function noteClicked() {
     //console.log("click")
     tradeNoteChanged.value = true
     saveButton.value = true
 }
 
-
-            let findExcursion = excursions.filter(obj => obj.tradeId == selectedTrade.id)
-            if (findExcursion.length) {
-                findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
-                findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
-                findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
-                //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
-            }
-        }
-
-        await awaitClick()
-        await (spinnerSetups.value = false)
-        saveButton.value = false
-        await useInitTooltip()
-    }
-}
-
-async function hideTradesModal() {
-    if (markerAreaOpen.value == true) {
-        alert("Please save your screenshot annotation")
-        return
-    } else {
-        await (spinnerSetups.value = true)
-        if (tradeScreenshotChanged.value) {
-            await useSaveScreenshot()
-        }
-        if (tradeSetupChanged.value) {
-            await useUpdateSetups()
-=======
 const tradeNoteChange = (param) => {
     tradeNote.value = param
     //console.log(" -> New note " + tradeNote.value)
@@ -834,13 +748,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                                                         <tr v-for="(trade, index2) in itemTrade.trades"
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
-
-
                                                             class="pointerClass" :data-index="index" :data-indextwo="index2">
-
-
-                                                            v-on:click="clickTradesModal(index, index2, index2)"
-                                                            class="pointerClass">
 
                                                             <!--Symbol-->
 
@@ -1261,7 +1169,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                             <button
                                                 v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
-                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
+                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
                                                 v-bind:disabled="spinnerSetups == true">
                                                 <i class="fa fa-chevron-left me-2"></i></button>
                                         </div>
@@ -1275,7 +1183,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                         <div v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
-                                                v-on:click="updateTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
+                                                v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
                                                 v-bind:disabled="spinnerSetups == true">
                                                 <i class="fa fa-chevron-right ms-2"></i></button>
                                         </div>
