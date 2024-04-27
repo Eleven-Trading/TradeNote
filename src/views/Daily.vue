@@ -6,13 +6,15 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
 import { useSetupImageUpload, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 
 import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
+
+import { useCandlestickChart } from '../utils/charts';
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -31,6 +33,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat.js'
 dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
+import axios from 'axios'
 
 
 const dailyTabs = [{
@@ -62,6 +65,11 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 
+let ohlcArray = []
+
+
+let candlestickChartFailureMessage
+
 onBeforeMount(async () => {
 
 })
@@ -71,6 +79,12 @@ onMounted(async () => {
     useCreateAvailableTagsArray()
 
     tradesModal = new bootstrap.Modal("#tradesModal")
+    document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
+        const caller = event.relatedTarget
+        const index = caller.dataset.index
+        const index2 = caller.dataset.indextwo
+        clickTradesModal(index, index2, index2)
+    })
 })
 
 
@@ -134,9 +148,9 @@ async function clickTradesModal(param1, param2, param3) {
         else {
             //console.log(" -> Opening Modal or clicking next/back")
 
-            itemTradeIndex.value = param1
-            tradeIndexPrevious.value = param2
-            tradeIndex.value = param3
+            itemTradeIndex.value = Number(param1)
+            tradeIndexPrevious.value = Number(param2)
+            tradeIndex.value = Number(param3)
 
             let awaitClick = async () => {
 
@@ -168,6 +182,58 @@ async function clickTradesModal(param1, param2, param3) {
                     for (let key in screenshot) delete screenshot[key]
                     screenshot.side = null
                     screenshot.type = null
+
+                    try {
+                        candlestickChartFailureMessage = null
+                        let ohlcTimestamps
+                        let ohlcPrices
+                        let ohlcVolumes
+
+                        if (ohlcArray.length == 0) {
+                            console.log(" -> No symbole/date in ohlcArray")
+                            await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                            ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                            ohlcPrices = ohlcArray[0].ohlcPrices
+                            ohlcVolumes = ohlcArray[0].ohlcVolumes
+
+                        } else {
+                            let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+
+                            if (index != -1) {
+                                console.log(" -> Symbol and/or date exists in ohlcArray")
+                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                            } else {
+                                console.log(" -> Symbol and/or date does not exist in ohlcArray")
+                                await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                                
+                                let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+                                
+                                if (index != -1) {
+                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                }else{
+                                    console.log(" -> there's an issues with OHLC")
+                                }
+                            }
+                        }
+
+                        await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTrades[itemTradeIndex.value].trades[param3])
+
+                    } catch (error) {
+                        if (error.response && error.response.status === 429) {
+                            candlestickChartFailureMessage = "Too many requests, try again later"
+                        }
+                        else if (error.response) {
+                            candlestickChartFailureMessage = error.response.statusText
+                        }
+                        else {
+                            candlestickChartFailureMessage = error
+                        }
+                        console.error(error)
+                    }
                 }
 
                 //We differentiate
@@ -214,6 +280,7 @@ async function clickTradesModal(param1, param2, param3) {
     }
 
 }
+
 
 const checkDate = ((param1, param2) => {
     //console.log("param 1 "+param1)
@@ -418,6 +485,11 @@ async function updateExcursions() {
     })
 }
 
+
+/**************
+ * MISC
+ ***************/
+
 function resetExcursion() {
     //console.log(" -> Resetting excursion")
     //we need to reset the setup variable each time
@@ -425,12 +497,12 @@ function resetExcursion() {
     excursion.stopLoss = null
     excursion.maePrice = null
     excursion.mfePrice = null
-
 }
 
 /**************
  * TAGS
  ***************/
+
 
 /**************
  * NOTES
@@ -448,7 +520,6 @@ const tradeNoteChange = (param) => {
     tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
 
 }
-
 
 /**************
  * SCREENSHOTS
@@ -472,6 +543,7 @@ const filteredScreenshots = (param1, param2) => {
             screenshotsArray = screenshots
         } else {
             screenshotsArray = screenshotsInfos
+
         }
         for (let index2 = 0; index2 < screenshotsArray.length; index2++) {
             const el2 = screenshotsArray[index2]
@@ -491,6 +563,48 @@ const filterDiary = (param) => {
     //console.log(" filter diary ")
     return diaries.filter(obj => obj.dateUnix == param)
 }
+
+function getOHLC(date, symbol, entryTime, exitTime) {
+    console.log("  --> Getting OHLC for " + symbol + " on " + date)
+    return new Promise(async (resolve, reject) => {
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
+
+            .then((response) => {
+                let tempArray = {}
+                tempArray.date = date
+                tempArray.symbol = symbol
+                tempArray.ohlcTimestamps = []
+                tempArray.ohlcPrices = []
+                tempArray.ohlcVolumes = []
+
+                for (let index = 0; index < response.data.results.length; index++) {
+                    const element = response.data.results[index];
+
+                    let temp = []
+
+                    tempArray.ohlcTimestamps.push(element.t)
+                    temp.push(element.c)
+                    temp.push(element.o)
+                    temp.push(element.l)
+                    temp.push(element.h)
+                    tempArray.ohlcPrices.push(temp)
+                    tempArray.ohlcVolumes.push(element.v)
+                }
+
+                ohlcArray.push(tempArray)
+            })
+            .catch((error) => {
+                reject(error)
+            })
+            .finally(function () {
+                // always executed
+            })
+
+
+        resolve()
+    })
+}
+
 </script>
 
 <template>
@@ -673,10 +787,12 @@ const filterDiary = (param) => {
 
                                                         <tr v-for="(trade, index2) in itemTrade.trades"
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
-                                                            v-on:click="clickTradesModal(index, index2, index2)"
-                                                            class="pointerClass">
+                                                            class="pointerClass" :data-index="index"
+                                                            :data-indextwo="index2">
 
                                                             <!--Symbol-->
+
+
                                                             <td>{{ trade.symbol }}</td>
 
                                                             <!--Vol-->
@@ -810,9 +926,9 @@ const filterDiary = (param) => {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-show="idCurrentType == 'screenshots' && idCurrentNumber == index && tabGettingScreenshots" class="text-center spinnerHeigth">
-                                                    <div class="spinner-border text-blue"
-                                                        role="status"></div>
+                                                <div v-show="idCurrentType == 'screenshots' && idCurrentNumber == index && tabGettingScreenshots"
+                                                    class="text-center spinnerHeigth">
+                                                    <div class="spinner-border text-blue" role="status"></div>
                                                 </div>
                                                 <div v-if="filteredScreenshots(itemTrade).length > 0 && idCurrentType == 'screenshots' && idCurrentNumber == index"
                                                     v-for="itemScreenshot in filteredScreenshots(itemTrade, itemTrade.dateUnix)">
@@ -871,13 +987,21 @@ const filterDiary = (param) => {
 
         </div>
     </div>
+
     <!-- ============ TRADES MODAL ============ -->
     <div class="modal fade" id="tradesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
-                    <Screenshot v-if="screenshot.originalBase64" :screenshot-data="screenshot" source="dailyModal" />
+                    <div v-if="screenshot.originalBase64">
+                        <Screenshot :screenshot-data="screenshot" source="dailyModal" />
+                    </div>
+                    <div v-else>
+                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass">
+                        </div>
+                        <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+                    </div>
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
                         <table class="table">
@@ -1084,7 +1208,7 @@ const filterDiary = (param) => {
                                     <div class="row">
                                         <div class="col-4 text-start">
                                             <button
-                                                v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
+                                                v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex - 1)"
                                                 class="btn btn-outline-primary btn-sm ms-3 mb-2"
                                                 v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex - 1)"
                                                 v-bind:disabled="spinnerSetups == true">
@@ -1097,13 +1221,12 @@ const filterDiary = (param) => {
                                             <button v-else class="btn btn-outline-primary btn-sm"
                                                 v-on:click="clickTradesModal()">Close</button>
                                         </div>
-                                        <div v-if="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
+                                        <div v-show="filteredTrades[itemTradeIndex].trades.hasOwnProperty(tradeIndex + 1)"
                                             class="ms-auto col-4 text-end">
                                             <button class="btn btn-outline-primary btn-sm me-3 mb-2"
                                                 v-on:click="clickTradesModal(itemTradeIndex, tradeIndex, tradeIndex + 1)"
-                                                v-bind:disabled="spinnerSetups == true"><i
-                                                    class="fa fa-chevron-right ms-2"></i>
-                                            </button>
+                                                v-bind:disabled="spinnerSetups == true">
+                                                <i class="fa fa-chevron-right ms-2"></i></button>
                                         </div>
                                     </div>
                                 </div>

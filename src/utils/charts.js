@@ -871,7 +871,7 @@ export function useBarChart(param1) {
                         appt = proceeds / trades
                         apps = proceeds / quantities
                     }
-                    
+
                     probWins = (sumWinsCount / sumTrades)
 
                     pushingChartData()
@@ -898,7 +898,7 @@ export function useBarChart(param1) {
                         wins += element[amountCase.value + 'Wins']
                         loss += -element[amountCase.value + 'Loss']
                     }
-                    
+
                     sumWinsCount = 0
                     sumTrades = 0
                     sumWinsCount += element[amountCase.value + 'WinsCount']
@@ -941,7 +941,7 @@ export function useBarChart(param1) {
                         wins += element[amountCase.value + 'Wins']
                         loss += -element[amountCase.value + 'Loss']
                     }
-                    
+
                     sumWinsCount += element[amountCase.value + 'WinsCount']
                     sumTrades += element.trades
 
@@ -1001,12 +1001,12 @@ export function useBarChart(param1) {
                         wins += element[amountCase.value + 'Wins']
                         loss += -element[amountCase.value + 'Loss']
                     }
-                    
+
                     sumWinsCount = 0
                     sumTrades = 0
                     sumWinsCount += element[amountCase.value + 'WinsCount']
                     sumTrades += element.trades
-                   
+
                     chartXAxis.push(useChartFormat(dayjs.unix(key).startOf('month') / 1000))
                 }
                 if (i == keys.length) {
@@ -1187,9 +1187,9 @@ export function useBarChartNegative(param1) {
 
                 sumWins += element[amountCase.value + 'Wins']
                 sumLoss += element[amountCase.value + 'Loss']
-                
+
                 sumProceeds += element[amountCase.value + 'Proceeds']
-                
+
                 if (param1 == "barChartNegative4") {
                     trades += element.trades
                 } else {
@@ -1720,39 +1720,159 @@ export function useScatterChart(param1) { //chart ID, green, red, page
     })
 }
 
-export function useCandlestickChart(param1, param2, param3) { //
+export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
+    //console.log(" trade "+JSON.stringify(trade))
+    let green = '#26a69a'
+    let red = '#FF6960'
+    let exitMarkerColor
+    let entryMarkerColor
+    if (trade.strategy == 'long') {
+        entryMarkerColor = red
+        exitMarkerColor = green
+    } else {
+        entryMarkerColor = green
+        exitMarkerColor = red
+    }
+
+
+    const initialDataZoomPadding = dayjs(0).minute(5).unix()
+    const minimumDataZoomLevel = dayjs(0).minute(30).unix()
+
+    const timeZone = timeZoneTrade.value;
+    const tradeEntryTime = trade.entryTime
+    const tradeExitTime = trade.exitTime
+    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs.unix(trade.exitTime).tz(timeZone), 'day')
+    const spreadTime = tradeIsIntraday ? Math.abs(tradeExitTime - tradeEntryTime) : 0
+    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + 2 * initialDataZoomPadding)
+
+    const findDataZoomStartUnix = () => {
+        const tradeEntryTimeUnix = trade.entryTime
+        let dataZoomStartUnix = tradeEntryTimeUnix - dataZoomLevel / 2 - spreadTime / 2
+
+        for (let i = ohlcTimestamps.length - 1; i >= 0; i--) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix <= dataZoomStartUnix) {
+                dataZoomStartUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomStartUnix
+    }
+
+    const findDataZoomEndUnix = () => {
+        const tradeExitTimeUnix = trade.exitTime
+        let dataZoomEndUnix = tradeExitTimeUnix + dataZoomLevel / 2 + spreadTime / 2
+
+        for (let i = 0; i < ohlcTimestamps.length; i++) {
+            const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
+            if (ohlcTimestampUnix >= dataZoomEndUnix) {
+                dataZoomEndUnix = ohlcTimestampUnix
+                break
+            }
+        }
+
+        return dataZoomEndUnix
+    }
+
+
     return new Promise((resolve, reject) => {
-        //console.log("  --> " + param1)
-        //console.log("para 2 " + param2 + " and 3 " + param3)
         let myChart = echarts.init(document.getElementById("candlestickChart"));
         const option = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                position: function (pos, params, el, elRect, size) {
+                    var obj = { top: 10 };
+                    obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+                    return obj;
+                  }
+            },
             dataZoom: [
                 {
                     type: 'inside',
-                    start: 50,
-                    end: 100,
+                    startValue: '',
+                    endValue: '',
                     preventDefaultMouseMove: false
                 },
-
             ],
             xAxis: {
-                data: param1,
+                data: ohlcTimestamps.map((dateInMilliseconds) => {
+                    return useHourMinuteFormat(dateInMilliseconds / 1000)
+                }),
                 min: 'dataMin',
                 max: 'dataMax'
             },
             yAxis: {
-                scale: true,
-                //min: 132,
-                //max: 139
+                scale: true
             },
             series: [
-
                 {
                     type: 'candlestick',
-                    data: param2
-                }
+                    data: ohlcPrices,
+                    markPoint: {
+                        /*label: {
+                            formatter: function (param) {
+                                return param != null ? Math.round(param.value) + '' : '';
+                            }
+                        },*/
+                        data: [],
+                        tooltip: {
+                            formatter: function (param) {
+                                return param.name + '<br>' + (param.data.coord || '');
+                            }
+                        }
+                    }
+                },
             ]
         };
+
+        if (dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            option.series[0].markPoint.data.push({
+                name: 'entryMark',
+                symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
+                symbolSize: '17',
+                symbolRotate: '0',
+                symbolOffset: ['-60%', 0],
+                coord: [String(useHourMinuteFormat(trade.entryTime)), trade.entryPrice],
+                //value: trade.entryPrice,
+                itemStyle: {
+                    color: entryMarkerColor,
+                    borderColor: '#FFFFFF',
+                    borderWidth: '0.5'
+                },
+                emphasis: {
+                    disabled: true
+                }
+            })
+
+            option.dataZoom[0].startValue = useHourMinuteFormat(findDataZoomStartUnix())
+        }
+
+        if (dayjs.unix(trade.exitTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            option.series[0].markPoint.data.push({
+                name: 'exitMark',
+                symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
+                symbolSize: '17',
+                symbolRotate: '180',
+                symbolOffset: ['60%', 0],
+                coord: [String(useHourMinuteFormat(trade.exitTime)), trade.exitPrice],
+                //value: trade.exitPrice,
+                itemStyle: {
+                    color: exitMarkerColor,
+                    borderColor: '#FFFFFF',
+                    borderWidth: '0.5'
+                },
+                emphasis: {
+                    disabled: true
+                }
+            })
+
+            option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
+        }
+
         myChart.setOption(option);
         resolve()
     })
