@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted, computed, reactive } from 'vue';
+import { onBeforeMount, onMounted, computed, reactive, ref } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
@@ -68,7 +68,7 @@ let tradeSatisfactionDateUnix
 let ohlcArray = []
 
 
-let candlestickChartFailureMessage
+const candlestickChartFailureMessage = ref(null)
 
 onBeforeMount(async () => {
 
@@ -173,18 +173,17 @@ async function clickTradesModal(param1, param2, param3) {
 
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                for (let key in screenshot) delete screenshot[key]
                 if (findScreenshot) {
-                    for (let key in screenshot) delete screenshot[key]
+
                     for (let key in findScreenshot) {
                         screenshot[key] = findScreenshot[key]
                     }
                 } else {
-                    for (let key in screenshot) delete screenshot[key]
                     screenshot.side = null
                     screenshot.type = null
-
                     try {
-                        candlestickChartFailureMessage = null
+                        candlestickChartFailureMessage.value = null
                         let ohlcTimestamps
                         let ohlcPrices
                         let ohlcVolumes
@@ -207,14 +206,14 @@ async function clickTradesModal(param1, param2, param3) {
                             } else {
                                 console.log(" -> Symbol and/or date does not exist in ohlcArray")
                                 await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
-                                
+
                                 let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
-                                
+
                                 if (index != -1) {
-                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                ohlcPrices = ohlcArray[index].ohlcPrices
-                                ohlcVolumes = ohlcArray[index].ohlcVolumes
-                                }else{
+                                    ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                    ohlcPrices = ohlcArray[index].ohlcPrices
+                                    ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                } else {
                                     console.log(" -> there's an issues with OHLC")
                                 }
                             }
@@ -224,13 +223,13 @@ async function clickTradesModal(param1, param2, param3) {
 
                     } catch (error) {
                         if (error.response && error.response.status === 429) {
-                            candlestickChartFailureMessage = "Too many requests, try again later"
+                            candlestickChartFailureMessage.value = "Too many requests, try again later"
                         }
                         else if (error.response) {
-                            candlestickChartFailureMessage = error.response.statusText
+                            candlestickChartFailureMessage.value = error.response.statusText
                         }
                         else {
-                            candlestickChartFailureMessage = error
+                            candlestickChartFailureMessage.value = error
                         }
                         console.error(error)
                     }
@@ -997,11 +996,10 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                     <div v-if="screenshot.originalBase64">
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
-                    <div v-else>
-                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass">
-                        </div>
-                        <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+                    <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart" class="candlestickClass">
                     </div>
+                    <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
                         <table class="table">
