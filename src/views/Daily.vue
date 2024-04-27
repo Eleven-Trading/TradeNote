@@ -65,9 +65,7 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 
-let ohlcTimestamps = []
-let ohlcPrices = []
-let ohlcVolumes = []
+let ohlcArray = []
 
 
 let candlestickChartFailureMessage
@@ -82,11 +80,11 @@ onMounted(async () => {
 
     tradesModal = new bootstrap.Modal("#tradesModal")
     document.getElementById("tradesModal").addEventListener('shown.bs.modal', async (event) => {
-            const caller = event.relatedTarget
-            const index = caller.dataset.index
-            const index2 = caller.dataset.indextwo
-            clickTradesModal(index, index2, index2)
-        })
+        const caller = event.relatedTarget
+        const index = caller.dataset.index
+        const index2 = caller.dataset.indextwo
+        clickTradesModal(index, index2, index2)
+    })
 })
 
 
@@ -184,20 +182,48 @@ async function clickTradesModal(param1, param2, param3) {
                     for (let key in screenshot) delete screenshot[key]
                     screenshot.side = null
                     screenshot.type = null
-                    
+
                     try {
-                        candlestickChartFailureMessage=null
-                        await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                        candlestickChartFailureMessage = null
+                        let ohlcTimestamps
+                        let ohlcPrices
+                        let ohlcVolumes
+
+                        if (ohlcArray.lenght == 0) {
+                            console.log(" -> No ohlcArray. Getting OHLC for charts")
+                            await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                            ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                            ohlcPrices = ohlcArray[0].ohlcPrices
+                            ohlcVolumes = ohlcArray[0].ohlcVolumes
+
+                        } else {
+                            let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+
+                            if (index != -1) {
+                                console.log(" -> OHLC for charts already exists")
+                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                            } else {
+                                console.log(" -> Symbol does not exist in ohlcArray. Getting OHLC for charts")
+                                await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
+                                ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                                ohlcPrices = ohlcArray[0].ohlcPrices
+                                ohlcVolumes = ohlcArray[0].ohlcVolumes
+                            }
+                        }
+
                         await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTrades[itemTradeIndex.value].trades[param3])
+
                     } catch (error) {
                         if (error.response && error.response.status === 429) {
-                            candlestickChartFailureMessage="Too many requests, try again later"
+                            candlestickChartFailureMessage = "Too many requests, try again later"
                         }
                         else if (error.response) {
-                            candlestickChartFailureMessage=error.response.statusText
+                            candlestickChartFailureMessage = error.response.statusText
                         }
                         else {
-                            candlestickChartFailureMessage=error
+                            candlestickChartFailureMessage = error
                         }
                         console.error(error)
                     }
@@ -532,29 +558,33 @@ const filterDiary = (param) => {
 }
 
 function getOHLC(date, symbol, entryTime, exitTime) {
-    console.log(" get ohlc")
+    console.log(" -> get ohlc for " + symbol + " on " + date)
     return new Promise(async (resolve, reject) => {
         await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
             .then((response) => {
-                ohlcTimestamps = []
-                ohlcPrices = []
-                ohlcVolumes = []
+                let tempArray = {}
+                tempArray.date = date
+                tempArray.symbol = symbol
+                tempArray.ohlcTimestamps = []
+                tempArray.ohlcPrices = []
+                tempArray.ohlcVolumes = []
 
                 for (let index = 0; index < response.data.results.length; index++) {
                     const element = response.data.results[index];
 
                     let temp = []
 
-                    ohlcTimestamps.push(element.t)
+                    tempArray.ohlcTimestamps.push(element.t)
                     temp.push(element.c)
                     temp.push(element.o)
                     temp.push(element.l)
                     temp.push(element.h)
-                    ohlcPrices.push(temp)
-                    ohlcVolumes.push(element.v)
+                    tempArray.ohlcPrices.push(temp)
+                    tempArray.ohlcVolumes.push(element.v)
                 }
 
+                ohlcArray.push(tempArray)
             })
             .catch((error) => {
                 reject(error)
@@ -562,6 +592,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
             .finally(function () {
                 // always executed
             })
+
+
         resolve()
     })
 }
@@ -748,7 +780,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                                                         <tr v-for="(trade, index2) in itemTrade.trades"
                                                             data-bs-toggle="modal" data-bs-target="#tradesModal"
-                                                            class="pointerClass" :data-index="index" :data-indextwo="index2">
+                                                            class="pointerClass" :data-index="index"
+                                                            :data-indextwo="index2">
 
                                                             <!--Symbol-->
 
@@ -886,9 +919,9 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                             <!-- SCREENSHOTS TAB -->
                                             <div class="tab-pane fade txt-small" v-bind:id="'screenshotsNav-' + index"
                                                 role="tabpanel" aria-labelledby="nav-overview-tab">
-                                                <div v-show="idCurrentType == 'screenshots' && idCurrentNumber == index && tabGettingScreenshots" class="text-center spinnerHeigth">
-                                                    <div class="spinner-border text-blue"
-                                                        role="status"></div>
+                                                <div v-show="idCurrentType == 'screenshots' && idCurrentNumber == index && tabGettingScreenshots"
+                                                    class="text-center spinnerHeigth">
+                                                    <div class="spinner-border text-blue" role="status"></div>
                                                 </div>
                                                 <div v-if="filteredScreenshots(itemTrade).length > 0 && idCurrentType == 'screenshots' && idCurrentNumber == index"
                                                     v-for="itemScreenshot in filteredScreenshots(itemTrade, itemTrade.dateUnix)">
@@ -958,7 +991,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
                     <div v-else>
-                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass"></div>
+                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass">
+                        </div>
                         <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
                     </div>
                     <!-- *** Table *** -->
