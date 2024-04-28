@@ -6,7 +6,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser, apis } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
@@ -174,6 +174,7 @@ async function clickTradesModal(param1, param2, param3) {
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
                 for (let key in screenshot) delete screenshot[key]
+
                 if (findScreenshot) {
 
                     for (let key in findScreenshot) {
@@ -182,56 +183,71 @@ async function clickTradesModal(param1, param2, param3) {
                 } else {
                     screenshot.side = null
                     screenshot.type = null
-                    try {
-                        candlestickChartFailureMessage.value = null
-                        let ohlcTimestamps
-                        let ohlcPrices
-                        let ohlcVolumes
 
-                        if (ohlcArray.length == 0) {
-                            console.log(" -> No symbole/date in ohlcArray")
-                            await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
-                            ohlcTimestamps = ohlcArray[0].ohlcTimestamps
-                            ohlcPrices = ohlcArray[0].ohlcPrices
-                            ohlcVolumes = ohlcArray[0].ohlcVolumes
+                    /* GET OHLC / CANDLESTICK CHARTS */
+                    let index = apis.findIndex(obj => obj.provider == "polygon")
+                    if (index != -1) {
+                        let apiKey = apis[index].key
 
-                        } else {
-                            let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+                        if (apiKey) {
 
-                            if (index != -1) {
-                                console.log(" -> Symbol and/or date exists in ohlcArray")
-                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                ohlcPrices = ohlcArray[index].ohlcPrices
-                                ohlcVolumes = ohlcArray[index].ohlcVolumes
-                            } else {
-                                console.log(" -> Symbol and/or date does not exist in ohlcArray")
-                                await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
 
-                                let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
+                            try {
+                                candlestickChartFailureMessage.value = null
+                                let ohlcTimestamps
+                                let ohlcPrices
+                                let ohlcVolumes
+                                let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
+                                if (ohlcArray.length == 0) {
+                                    console.log(" -> No symbole/date in ohlcArray")
+                                    await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
+                                    ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                                    ohlcPrices = ohlcArray[0].ohlcPrices
+                                    ohlcVolumes = ohlcArray[0].ohlcVolumes
 
-                                if (index != -1) {
-                                    ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                    ohlcPrices = ohlcArray[index].ohlcPrices
-                                    ohlcVolumes = ohlcArray[index].ohlcVolumes
                                 } else {
-                                    console.log(" -> there's an issues with OHLC")
+                                    let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
+
+                                    if (index != -1) {
+                                        console.log(" -> Symbol and/or date exists in ohlcArray")
+                                        ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                        ohlcPrices = ohlcArray[index].ohlcPrices
+                                        ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                    } else {
+                                        console.log(" -> Symbol and/or date does not exist in ohlcArray")
+                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
+
+                                        let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
+
+                                        if (index != -1) {
+                                            ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                            ohlcPrices = ohlcArray[index].ohlcPrices
+                                            ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                        } else {
+                                            console.log(" -> there's an issues with OHLC")
+                                        }
+                                    }
                                 }
+
+                                await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject)
+
+                            } catch (error) {
+                                if (error.response && error.response.status === 429) {
+                                    candlestickChartFailureMessage.value = "Too many requests, try again later"
+                                }
+                                else if (error.response) {
+                                    candlestickChartFailureMessage.value = error.response.statusText
+                                }
+                                else {
+                                    candlestickChartFailureMessage.value = error
+                                }
+                                console.error(error)
                             }
+                        } else {
+                            candlestickChartFailureMessage.value = "Missing API Key. To see your entry and exist on a chart, insert your API key in settings."
                         }
-
-                        await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTrades[itemTradeIndex.value].trades[param3])
-
-                    } catch (error) {
-                        if (error.response && error.response.status === 429) {
-                            candlestickChartFailureMessage.value = "Too many requests, try again later"
-                        }
-                        else if (error.response) {
-                            candlestickChartFailureMessage.value = error.response.statusText
-                        }
-                        else {
-                            candlestickChartFailureMessage.value = error
-                        }
-                        console.error(error)
+                    } else {
+                        candlestickChartFailureMessage.value = "Missing API Key. To see your entry and exist on a chart, insert your API key in settings."
                     }
                 }
 
@@ -563,10 +579,24 @@ const filterDiary = (param) => {
     return diaries.filter(obj => obj.dateUnix == param)
 }
 
-function getOHLC(date, symbol, entryTime, exitTime) {
-    console.log("  --> Getting OHLC for " + symbol + " on " + date)
+function getOHLC(date, symbol, type, apiKey) {
+    
+    let ticker
+    if(type === "put" || type === "call" || type === "option"){
+        ticker = "O:"+symbol
+    }else if (type === "future"){
+        ticker = "I:"+symbol
+    }else if (type === "forex"){
+        ticker = "C:"+symbol
+    }else if (type === "crypto"){
+        ticker = "X:"+symbol
+    }else{
+        ticker = symbol
+    }
+    console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
+    
     return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
+        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey)
 
             .then((response) => {
                 let tempArray = {}
@@ -996,9 +1026,10 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                     <div v-if="screenshot.originalBase64">
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
-                    <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart" class="candlestickClass">
+                    <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart"
+                        class="candlestickClass">
                     </div>
-                    <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+                    <div class="container mt-2 text-center" v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
 
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">

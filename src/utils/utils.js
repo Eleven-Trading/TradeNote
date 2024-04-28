@@ -807,7 +807,7 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
+    await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes(), useGetAPIS()])
     await useGetFilteredTrades()
     spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
