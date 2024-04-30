@@ -173,6 +173,7 @@ async function clickTradesModal(param1, param2, param3) {
 
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                candlestickChartFailureMessage = null
                 if (findScreenshot) {
                     for (let key in screenshot) delete screenshot[key]
                     for (let key in findScreenshot) {
@@ -184,7 +185,6 @@ async function clickTradesModal(param1, param2, param3) {
                     screenshot.type = null
 
                     try {
-                        candlestickChartFailureMessage = null
                         let ohlcTimestamps
                         let ohlcPrices
                         let ohlcVolumes
