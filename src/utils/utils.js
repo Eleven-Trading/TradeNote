@@ -790,12 +790,15 @@ export async function useMountDashboard() {
     useInitTab("dashboard")
     useInitTooltip()
     await console.timeEnd("  --> Duration mount dashboard");
-    if (hasData.value) {
-        console.log("\nBUILDING CHARTS")
-        await (dashboardChartsMounted.value = true)
-        await (renderData.value += 1)
-        await useECharts("init")
-    }
+    await setTimeout(async () => {
+        console.log("Waited for 10 seconds");
+        if (hasData.value) {
+            console.log("\nBUILDING CHARTS")
+            await(dashboardChartsMounted.value = true)
+            await(renderData.value += 1)
+            await useECharts("init")
+        }
+    }, 2000);
 
 }
 

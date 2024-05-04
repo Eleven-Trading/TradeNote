@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeMount, onMounted } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
 import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray } from '../stores/globals';
@@ -65,8 +65,9 @@ const ratioCompute = computed(() => {
     return ratio
 })
 
-
-useMountDashboard()
+onBeforeMount(async () => {
+    useMountDashboard()
+})
 
 </script>
 
@@ -280,7 +281,9 @@ useMountDashboard()
                                 <!-- APPT/APPS/PROFIT FACTOR CHART -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>{{ ratioCompute.name }} <span v-if="ratioCompute.name != 'Profit Factor'">({{ ratioCompute.shortName }})</span></h6>
+                                        <h6>{{ ratioCompute.name }} <span
+                                                v-if="ratioCompute.name != 'Profit Factor'">({{ ratioCompute.shortName
+                                                }})</span></h6>
                                         <div v-bind:key="renderData" id="barChart1" class="chartClass"></div>
                                     </div>
                                 </div>

@@ -174,7 +174,8 @@ async function clickTradesModal(param1, param2, param3) {
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
                 for (let key in screenshot) delete screenshot[key]
-
+                candlestickChartFailureMessage.value = null // to avoid message when screenshot is present
+                
                 if (findScreenshot) {
 
                     for (let key in findScreenshot) {
@@ -188,60 +189,62 @@ async function clickTradesModal(param1, param2, param3) {
                     let index = apis.findIndex(obj => obj.provider == "polygon")
                     if (index != -1) {
                         let apiKey = apis[index].key
-
+                        let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
                         if (apiKey) {
-
-
-                            try {
-                                candlestickChartFailureMessage.value = null
-                                let ohlcTimestamps
-                                let ohlcPrices
-                                let ohlcVolumes
-                                let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
-                                if (ohlcArray.length == 0) {
-                                    console.log(" -> No symbole/date in ohlcArray")
-                                    await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
-                                    ohlcTimestamps = ohlcArray[0].ohlcTimestamps
-                                    ohlcPrices = ohlcArray[0].ohlcPrices
-                                    ohlcVolumes = ohlcArray[0].ohlcVolumes
-
-                                } else {
-                                    let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
-
-                                    if (index != -1) {
-                                        console.log(" -> Symbol and/or date exists in ohlcArray")
-                                        ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                        ohlcPrices = ohlcArray[index].ohlcPrices
-                                        ohlcVolumes = ohlcArray[index].ohlcVolumes
-                                    } else {
-                                        console.log(" -> Symbol and/or date does not exist in ohlcArray")
+                            console.log(" type "+filteredTradesObject.type)
+                            if (filteredTradesObject.type == "future") {
+                                candlestickChartFailureMessage.value = "Polygon API doesn't currently support Futures."
+                            } else {
+                                try {
+                                    candlestickChartFailureMessage.value = null
+                                    let ohlcTimestamps
+                                    let ohlcPrices
+                                    let ohlcVolumes
+                                    if (ohlcArray.length == 0) {
+                                        console.log(" -> No symbole/date in ohlcArray")
                                         await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
+                                        ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                                        ohlcPrices = ohlcArray[0].ohlcPrices
+                                        ohlcVolumes = ohlcArray[0].ohlcVolumes
 
+                                    } else {
                                         let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
 
                                         if (index != -1) {
+                                            console.log(" -> Symbol and/or date exists in ohlcArray")
                                             ohlcTimestamps = ohlcArray[index].ohlcTimestamps
                                             ohlcPrices = ohlcArray[index].ohlcPrices
                                             ohlcVolumes = ohlcArray[index].ohlcVolumes
                                         } else {
-                                            console.log(" -> there's an issues with OHLC")
+                                            console.log(" -> Symbol and/or date does not exist in ohlcArray")
+                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
+
+                                            let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
+
+                                            if (index != -1) {
+                                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                            } else {
+                                                console.log(" -> there's an issues with OHLC")
+                                            }
                                         }
                                     }
-                                }
 
-                                await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject)
+                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject)
 
-                            } catch (error) {
-                                if (error.response && error.response.status === 429) {
-                                    candlestickChartFailureMessage.value = "Too many requests, try again later"
+                                } catch (error) {
+                                    if (error.response && error.response.status === 429) {
+                                        candlestickChartFailureMessage.value = "Too many requests, try again later"
+                                    }
+                                    else if (error.response) {
+                                        candlestickChartFailureMessage.value = error.response.statusText
+                                    }
+                                    else {
+                                        candlestickChartFailureMessage.value = error
+                                    }
+                                    console.error(error)
                                 }
-                                else if (error.response) {
-                                    candlestickChartFailureMessage.value = error.response.statusText
-                                }
-                                else {
-                                    candlestickChartFailureMessage.value = error
-                                }
-                                console.error(error)
                             }
                         } else {
                             candlestickChartFailureMessage.value = "Missing API Key. To see your entry and exist on a chart, insert your API key in settings."
@@ -580,21 +583,21 @@ const filterDiary = (param) => {
 }
 
 function getOHLC(date, symbol, type, apiKey) {
-    
+
     let ticker
-    if(type === "put" || type === "call" || type === "option"){
-        ticker = "O:"+symbol
-    }else if (type === "future"){
-        ticker = "I:"+symbol
-    }else if (type === "forex"){
-        ticker = "C:"+symbol
-    }else if (type === "crypto"){
-        ticker = "X:"+symbol
-    }else{
+    if (type === "put" || type === "call" || type === "option") {
+        ticker = "O:" + symbol
+    } else if (type === "future") {
+        ticker = "I:" + symbol
+    } else if (type === "forex") {
+        ticker = "C:" + symbol
+    } else if (type === "crypto") {
+        ticker = "X:" + symbol
+    } else {
         ticker = symbol
     }
     console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
-    
+
     return new Promise(async (resolve, reject) => {
         await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey)
 
@@ -1029,7 +1032,8 @@ function getOHLC(date, symbol, type, apiKey) {
                     <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart"
                         class="candlestickClass">
                     </div>
-                    <div class="container mt-2 text-center" v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+                    <div class="container mt-2 text-center" v-show="candlestickChartFailureMessage">{{
+        candlestickChartFailureMessage }}</div>
 
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">

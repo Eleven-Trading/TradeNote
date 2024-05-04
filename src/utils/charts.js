@@ -29,10 +29,14 @@ const white38 = "hsla(0, 0%, 100%, 0.38)"
 const maxChartValues = 20
 
 
-export function useECharts(param) {
+export async function useECharts(param) {
     //console.log(" -> eCharts " + param)
-
-    for (let index = 1; index <= 2; index++) {
+    let green
+    let red
+    green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
+    red = (totals[amountCase.value + 'LossCount'] / totals.trades)
+    await usePieChart("pieChart1", green, red)
+    /*for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
         if (param == "clear") {
@@ -59,7 +63,7 @@ export function useECharts(param) {
                     red = dissatisfied / satisfactionArray.length
                 }
             }
-            usePieChart(chartId, green, red)
+            await usePieChart(chartId, green, red)
         }
     }
 
@@ -73,7 +77,7 @@ export function useECharts(param) {
         }
     }*/
 
-    for (let index = 1; index <= 1; index++) {
+    /*for (let index = 1; index <= 1; index++) {
         var chartId = 'lineBarChart' + index
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
@@ -102,21 +106,7 @@ export function useECharts(param) {
         if (param == "init" || param == "barChartNegative") {
             useBarChartNegative(chartId)
         }
-    });
-
-    /*for (let index = 1; index <= 2; index++) {
-        var chartId = 'scatterChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "scatterChart") {
-            useScatterChart(chartId)
-        }
-    }*/
-
-    /*for (let index = 1; index <= 1; index++) {
-        echarts.init(document.getElementById('boxPlotChart' + index)).clear()
-    }*/
+    });*/
 }
 
 export function useRenderDoubleLineChart() {
