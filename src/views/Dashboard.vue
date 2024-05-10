@@ -66,8 +66,10 @@ const ratioCompute = computed(() => {
 })
 
 onBeforeMount(async () => {
-    useMountDashboard()
+   
 })
+
+useMountDashboard()
 
 </script>
 

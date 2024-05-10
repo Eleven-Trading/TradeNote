@@ -31,18 +31,20 @@ const maxChartValues = 20
 
 export async function useECharts(param) {
     //console.log(" -> eCharts " + param)
-    let green
+    /*let green
     let red
     green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
     red = (totals[amountCase.value + 'LossCount'] / totals.trades)
-    await usePieChart("pieChart1", green, red)
-    /*for (let index = 1; index <= 2; index++) {
+    await usePieChart("pieChart1", green, red)*/
+    
+    for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
         }
-
+        console.log(" param "+param)
+        console.log(" index "+index)
         if (param == "init") {
             let green
             let red
@@ -51,23 +53,25 @@ export async function useECharts(param) {
                 //red = probLoss
                 green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
                 red = (totals[amountCase.value + 'LossCount'] / totals.trades)
+                await usePieChart(chartId, green, red)
 
             }
-            if (index == 2) {
+            if (index == 2 && satisfactionArray.length>0) {
                 //green = satisfied
                 //red = dissatisfied
+                console.log(" satisfactionArray "+JSON.stringify(satisfactionArray))
                 let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
                 let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
                 if (satisfactionArray.length > 0) {
                     green = satisfied / satisfactionArray.length
                     red = dissatisfied / satisfactionArray.length
                 }
+                await usePieChart(chartId, green, red)
             }
-            await usePieChart(chartId, green, red)
         }
     }
 
-    /*for (let index = 1; index <= 1; index++) {
+    for (let index = 1; index <= 1; index++) {
         var chartId = 'lineChart' + index
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
@@ -75,7 +79,7 @@ export async function useECharts(param) {
         if (param == "init") {
             useLineChart(chartId)
         }
-    }*/
+    }
 
     /*for (let index = 1; index <= 1; index++) {
         var chartId = 'lineBarChart' + index
@@ -157,7 +161,7 @@ export function useRenderPieChart() {
 }
 
 export function useLineChart(param) { //chartID, chartDataGross, chartDataNet, chartCategories
-    //console.log("  --> " + param)
+    console.log("  --> " + param)
     return new Promise((resolve, reject) => {
         var myChart = echarts.init(document.getElementById(param));
         var chartData = []
