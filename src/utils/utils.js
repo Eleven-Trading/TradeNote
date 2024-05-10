@@ -61,7 +61,7 @@ export function useInitTab(param) {
                 triggerEl.addEventListener('shown.bs.tab', async (event) => {
                     //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                     selectedDashTab.value = event.target.getAttribute('id')
-                    //console.log("selected tab " + selectedDashTab.value)
+                    console.log("selected tab " + selectedDashTab.value)
                     localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
                     await (renderData.value += 1)
                     await useECharts("init")

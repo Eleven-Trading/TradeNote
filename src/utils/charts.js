@@ -43,8 +43,7 @@ export async function useECharts(param) {
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
         }
-        console.log(" param "+param)
-        console.log(" index "+index)
+        
         if (param == "init") {
             let green
             let red
@@ -71,7 +70,7 @@ export async function useECharts(param) {
         }
     }
 
-    for (let index = 1; index <= 1; index++) {
+    /*for (let index = 1; index <= 1; index++) {
         var chartId = 'lineChart' + index
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
@@ -79,9 +78,9 @@ export async function useECharts(param) {
         if (param == "init") {
             useLineChart(chartId)
         }
-    }
+    }*/
 
-    /*for (let index = 1; index <= 1; index++) {
+    for (let index = 1; index <= 1; index++) {
         var chartId = 'lineBarChart' + index
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
@@ -110,7 +109,7 @@ export async function useECharts(param) {
         if (param == "init" || param == "barChartNegative") {
             useBarChartNegative(chartId)
         }
-    });*/
+    });
 }
 
 export function useRenderDoubleLineChart() {
