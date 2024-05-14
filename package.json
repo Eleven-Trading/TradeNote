@@ -30,7 +30,8 @@
     "shepherd.js": "^11.2.0",
     "sortablejs": "^1.15.2",
     "vue": "^3.2.47",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",

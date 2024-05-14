@@ -22,6 +22,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import Papa from 'papaparse';
 import _ from 'lodash'
+import * as XLSX from 'xlsx';
 
 
 tradesData.length = 0
