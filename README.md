@@ -252,4 +252,4 @@ I'm a trader and recreational developer. My days are very packed but I will do m
 - And more...
 
 # License
-This project is open sourced under the GNU GPL v3 licence.
+This project is open sourced under the GNU GPL v3 licence..
