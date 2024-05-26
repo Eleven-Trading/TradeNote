@@ -50,6 +50,9 @@
             },
             "legacy": {
                 "type": "Array"
+            },
+            "layoutStyle": {
+                "type": "Array"
             }
         },
         "classLevelPermissions": {
