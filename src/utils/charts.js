@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals.js"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom } from "../stores/globals.js"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat, useXDecFormat } from "./utils.js"
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
@@ -1729,7 +1729,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
     }
 
 
-    const initialDataZoomPadding = dayjs(0).minute(5).unix()
+    const initialDataZoomPadding = dayjs(0).minute(dailyChartZoom.value).unix()
     const minimumDataZoomLevel = dayjs(0).minute(30).unix()
 
     const timeZone = timeZoneTrade.value;
@@ -1805,7 +1805,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 max: 'dataMax'
             },
             yAxis: {
-                scale: true
+                scale: true,
             },
             series: [
                 {

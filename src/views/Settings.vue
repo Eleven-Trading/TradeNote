@@ -469,12 +469,14 @@ const updateAPIS = async () => {
     <div class="row mt-2">
         <div class="row justify-content-md-center">
             <div class="col-12 col-md-9">
-                <!--=============== PROFILE ===============-->
-                <!-- Picture -->
+                <!--=============== Layout & Style ===============-->
+                
                 <div class="row align-items-center">
-                    <p class="fs-5 fw-bold">Profile</p>
+                    <p class="fs-5 fw-bold">Layout & Style</p>
+                    
+                <!-- Prfile Picture -->    
                     <div class="col-12 col-md-3">
-                        Your profile picture
+                        Profile Picture
                     </div>
                     <div class="col-12 col-md-9">
                         <input type="file" @change="uploadProfileAvatar" />

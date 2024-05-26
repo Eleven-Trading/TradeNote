@@ -29,6 +29,9 @@ export const idCurrentNumber = ref()
 export const idPreviousType = ref()
 export const idPreviousNumber = ref()
 
+/* Layout & Style */
+export const dailyChartZoom = ref(800)
+
 
 /**************************************
 * LOADING AND MOUNTING
