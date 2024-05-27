@@ -36,14 +36,14 @@ export async function useECharts(param) {
     green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
     red = (totals[amountCase.value + 'LossCount'] / totals.trades)
     await usePieChart("pieChart1", green, red)*/
-    
+
     for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
         if (param == "clear") {
             echarts.init(document.getElementById(chartId)).clear()
         }
-        
+
         if (param == "init") {
             let green
             let red
@@ -55,10 +55,10 @@ export async function useECharts(param) {
                 await usePieChart(chartId, green, red)
 
             }
-            if (index == 2 && satisfactionArray.length>0) {
+            if (index == 2 && satisfactionArray.length > 0) {
                 //green = satisfied
                 //red = dissatisfied
-                console.log(" satisfactionArray "+JSON.stringify(satisfactionArray))
+                console.log(" satisfactionArray " + JSON.stringify(satisfactionArray))
                 let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
                 let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
                 if (satisfactionArray.length > 0) {
@@ -1714,6 +1714,7 @@ export function useScatterChart(param1) { //chart ID, green, red, page
 }
 let candlestickChart
 let currentTD
+
 export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
     //console.log(" trade " + JSON.stringify(trade))
     let green = '#26a69a'
@@ -1776,16 +1777,28 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             currentTD = trade.td
         }
 
-
+        let decimals = 2
         const option = {
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
                     type: 'cross'
                 },
+                backgroundColor: "rgba(255, 255, 255, 0)",
+                borderColor: "rgba(255, 255, 255, 0)",
+                textStyle: {
+                    color: "rgba(255, 255, 255, 1)"
+                },
+                formatter: function (param) {
+                    //console.log(" param "+JSON.stringify(param[0]))
+                    // ?, close, open, low, high
+                    let color
+                    param[0].data[1] >= param[0].data[2] ? color = "#47b262" : color = "#eb5454"
+                    return param[0].name + " - O <span style='color: "+color+"'>" + useXDecFormat(param[0].data[2], decimals) + "</span> H <span style='color: "+color+"'>" + useXDecFormat(param[0].data[4], decimals) + "</span> L <span style='color: "+color+"'>" + useXDecFormat(param[0].data[3], decimals) + "</span> C <span style='color: "+color+"'>" + useXDecFormat(param[0].data[1], decimals)
+                },
                 position: function (pos, params, el, elRect, size) {
-                    var obj = { top: 10 };
-                    obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+                    var obj = { top: 5 };
+                    obj[['left'][+(pos[10] < size.viewSize[0] / 2)]] = 5;
                     return obj;
                 }
             },
@@ -1802,10 +1815,18 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                     return useHourMinuteFormat(dateInMilliseconds / 1000)
                 }),
                 min: 'dataMin',
-                max: 'dataMax'
+                max: 'dataMax',
+
             },
             yAxis: {
                 scale: true,
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#333', // dark grey
+                        width: 0.5 // thinner line
+                    }
+                }
             },
             series: [
                 {
