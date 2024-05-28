@@ -559,7 +559,7 @@ const updateAPIS = async () => {
                                         :value="group.color">
                                 </div>
                             </div>
-                            <div :id="group.id">
+                            <div class="availableTagsCardInputs" :id="group.id">
                                 <div v-for="tag in group.tags">
                                     <input type="text" :style="{ backgroundColor: group.color }" class="availableTags"
                                         v-on:input="inputGroupTag(tag.id, $event.target.value)" :id="tag.id"

@@ -1204,7 +1204,7 @@ h4 {
     padding: 3px;
     margin-bottom: 3px;
     border: transparent;
-    width: 94%;
+    width: 90%;
     color: var(--white-87);
 }
 
@@ -1216,6 +1216,25 @@ h4 {
     border-radius: 5px;
     padding: 5px;
 }
+
+.availableTagsCardInputs{
+    overflow-y: auto;
+    height: 150px; /* adjust this value to your needs */
+}
+
+.availableTagsCardInputs::-webkit-scrollbar {
+    width: 10px;
+    background-color: #343a40; /* dark background */
+  }
+  
+  .availableTagsCardInputs::-webkit-scrollbar-thumb {
+    background-color: #6c757d; /* dark thumb */
+    border-radius: 10px;
+  }
+  
+  .availableTagsCardInputs::-webkit-scrollbar-track {
+    background-color: #343a40; /* dark track */
+  }
 
 #colorPicker {
     width: 30px;
