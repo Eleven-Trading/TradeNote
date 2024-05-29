@@ -45,9 +45,9 @@ export async function useBrokerTradeZero(param) {
             } else {
                 tempArray = param
             }
-
+            const types = ["stock", "future", "forex", "call", "put"]
             tempArray.forEach(element => {
-                if (element.Type == "") {
+                if (element.Type == "" || !types.includes(element.Type)) {
                     element.Type = "stock"
                 }
                 tradesData.push(JSON.parse(JSON.stringify(element)))
