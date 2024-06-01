@@ -53,18 +53,7 @@ onMounted(async () => {
                                 </span>
                             </div>
                             <div class="col-12">
-                                <p v-if="itemDiary.journal.positive != '<p><br></p>'">
-                                    <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                                    <span v-html="itemDiary.journal.positive"></span>
-                                </p>
-                                <p v-if="itemDiary.journal.negative != '<p><br></p>'">
-                                    <span class="dashInfoTitle">Negative aspect</span>
-                                    <span v-html="itemDiary.journal.negative"></span>
-                                </p>
-                                <p v-if="itemDiary.journal.other != '<p><br></p>'">
-                                    <span class="dashInfoTitle">Observations</span>
-                                    <span v-html="itemDiary.journal.other"></span>
-                                </p>
+                                <p v-html="itemDiary.diary"></p>
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { useCheckCurrentUser, useInitTooltip, useGetAPIS } from '../utils/utils';
-import { currentUser, renderProfile, availableTags, apis } from '../stores/globals';
+import { useCheckCurrentUser, useInitTooltip, useGetAPIS, useGetLayoutStyle } from '../utils/utils';
+import { currentUser, renderProfile, availableTags, apis, layoutStyle } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
 /* MODULES */
@@ -17,9 +17,12 @@ const availableTagsTags = reactive([])
 let groupToDelete = ref(null)
 let tagToDelete = ref(null)
 
+let inputCount = ref(null)
+
 onBeforeMount(async () => {
     await useGetAvailableTags()
     await useGetAPIS()
+    //await useGetLayoutStyle()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
     //console.log(" available tags "+JSON.stringify(availableTags))
     for (let index = 0; index < availableTags.length; index++) {
@@ -143,14 +146,6 @@ const initSortable = (param1) => {
 
 }
 
-const getNewArray = () => {
-    var order = Sortable.toArray();
-    console.log("order " + order)
-}
-
-const sortAvailableTags = () => {
-
-}
 
 const addNewGroup = async () => {
     let temp = {}
@@ -430,6 +425,25 @@ const generateAPIKey = () => {
     //console.log(" APIS " + JSON.stringify(apis))
 }
 
+/*********************
+ * LAYOUT & SETUP
+ *********************/
+ const inputDiaryTitles = (param1, param2) => {
+    console.log(" param 1 "+param1)
+    console.log(" param 2 "+param2)
+    if(layoutStyle.diaryTitles != undefined && layoutStyle.diaryTitles.length>0){
+        console.log("title exists")
+        layoutStyle.diaryTitles.splice(param1, 0, param2);
+        console.log(" Layout Style "+JSON.stringify(layoutStyle.diaryTitles))
+    }else{
+        console.log("title does not exists")
+        layoutStyle.diaryTitles = []    
+        layoutStyle.diaryTitles.splice(param1, 0, param2);
+        console.log(" Layout Style "+JSON.stringify(layoutStyle))
+    }
+    
+
+ }
 const updateAPIS = async () => {
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING APIS")
@@ -468,19 +482,42 @@ const updateAPIS = async () => {
 <template>
     <div class="row mt-2">
         <div class="row justify-content-md-center">
-            <div class="col-12 col-md-9">
+            <div class="col-12 col-md-8">
                 <!--=============== Layout & Style ===============-->
-                
+
                 <div class="row align-items-center">
                     <p class="fs-5 fw-bold">Layout & Style</p>
-                    
-                <!-- Prfile Picture -->    
-                    <div class="col-12 col-md-3">
+
+                    <!-- Prfile Picture -->
+                    <div class="col-12 col-md-4">
                         Profile Picture
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
                         <input type="file" @change="uploadProfileAvatar" />
                     </div>
+
+                    <!--<div class="col-12 col-md-4 mt-3">Diary Categories<i class="ps-1 uil uil-info-circle"
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Custom category separation for your diary entries."></i>
+                    </div>
+                    <div class="col-12 col-md-8 mt-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <button @click="inputCount++">+</button>
+                            </div>
+                            <div class="col-6">
+                                {{ inputCount }}
+                                <button @click="inputCount > 1 ? inputCount-- : null">-</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12 offset-md-4 col-md-8">
+                        <div v-for="(n, index) in inputCount" :key="n">
+                            <input :id="index" class="form-control mt-2" type="text" @input="inputDiaryTitles(index,$event.target.value)"/>
+                        </div>
+                    </div>-->
+
                 </div>
 
                 <div class="mt-3 mb-3">
@@ -493,11 +530,11 @@ const updateAPIS = async () => {
                 <div class="mt-3 row align-items-center">
                     <p class="fs-5 fw-bold">API Keys</p>
                     <div class="row">
-                        <div class="col-12 col-md-3">TradeNote<i class="ps-1 uil uil-info-circle"
+                        <div class="col-12 col-md-4">TradeNote<i class="ps-1 uil uil-info-circle"
                                 data-bs-toggle="tooltip"
                                 data-bs-title="Your TradeNote API Key for using the TradeNote APIs."></i>
                         </div>
-                        <div class="col-12 col-md-9">
+                        <div class="col-12 col-md-8">
                             <div class="row">
                                 <div class="col-10">
                                     <input type="text" class="form-control"
@@ -513,10 +550,10 @@ const updateAPIS = async () => {
                     </div>
 
                     <div class="row mt-2">
-                        <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                        <div class="col-12 col-md-4">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                 data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
                         </div>
-                        <div class="col-12 col-md-9">
+                        <div class="col-12 col-md-8">
                             <input type="text" class="form-control"
                                 :value="apis.filter(obj => obj.provider === 'polygon').length > 0 && apis.filter(obj => obj.provider === 'polygon')[0].key ? apis.filter(obj => obj.provider === 'polygon')[0].key : ''"
                                 @input="polygonKey = $event.target.value" />
@@ -577,11 +614,11 @@ const updateAPIS = async () => {
 
                 <!-- Delete Group -->
                 <div class="mt-5 row align-items-center">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         Group to delete<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                             data-bs-title="Tags will be moved to Ungrouped."></i>
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
                         <select v-on:input="groupToDelete = $event.target.value" class="form-select">
                             <option selected></option>
                             <option v-for="item in availableTags.filter(obj => obj.id !== 'group_0')" :key="item.id"
@@ -596,10 +633,10 @@ const updateAPIS = async () => {
 
                 <!-- Delete Tag -->
                 <div class="mt-5 row align-items-center">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         Tag to delete
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
 
                         <select v-on:input="tagToDelete = $event.target.value" class="form-select">
                             <option selected></option>

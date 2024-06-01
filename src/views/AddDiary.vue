@@ -28,7 +28,7 @@ currentDate.value = dayjs().tz(timeZoneTrade.value).format("YYYY-MM-DD")
 
 onBeforeMount(async () => {
     await (spinnerLoadingPage.value = true)
-    await Promise.all([diaryDateInput(currentDate.value), useInitQuill(0), useInitQuill(1), useInitQuill(2)])
+    await Promise.all([diaryDateInput(currentDate.value), useInitQuill("Diary")])
     await initDiaryJson()
     await getDiaryToEdit(itemToEditId.value)
     await sessionStorage.removeItem('editItemId');
@@ -62,9 +62,7 @@ async function getDiaryToEdit(param) {
         diaryUpdate.date = dayjs.unix(diary.dateUnix).format("YYYY-MM-DD")
         diaryUpdate.dateDateFormat = new Date(diaryUpdate.date)
         //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
-        document.querySelector("#quillEditor0 .ql-editor").innerHTML = diary.journal.positive
-        document.querySelector("#quillEditor1 .ql-editor").innerHTML = diary.journal.negative
-        document.querySelector("#quillEditor2 .ql-editor").innerHTML = diary.journal.other
+        document.querySelector("#quillEditorDiary .ql-editor").innerHTML = diary.diary
     } else {
         console.log(' -> No diary to edit')
         //alert("Query did not return any results")
@@ -74,7 +72,7 @@ async function getDiaryToEdit(param) {
 async function initDiaryJson(param) {
     return new Promise(async (resolve, reject) => {
 
-        diaryUpdate.journal = {}
+        diaryUpdate.diary = {}
 
         resolve()
     })
@@ -87,7 +85,7 @@ async function initDiaryJson(param) {
 <template>
     <SpinnerLoadingPage />
     <div class="row mt-2">
-        <!-- ============ ADD JOURNAL ============ -->
+        <!-- ============ ADD Diary ============ -->
         <div>
             <div v-show="!spinnerLoadingPage">
                 <div class="mt-3 input-group mb-3">
@@ -95,17 +93,8 @@ async function initDiaryJson(param) {
                         v-bind:value="diaryUpdate.hasOwnProperty('date') ? diaryUpdate.date : diaryUpdate.date = currentDate"
                         v-on:input="diaryDateInput($event.target.value)" />
                 </div>
-                <h5>Positive Aspects</h5>
                 <div class="mt-2">
-                    <div id="quillEditor0"></div>
-                </div>
-                <h5 class="mt-3">Negative Aspects</h5>
-                <div class="mt-2">
-                    <div id="quillEditor1"></div>
-                </div>
-                <h5 class="mt-3">Observations</h5>
-                <div class="mt-2">
-                    <div id="quillEditor2"></div>
+                    <div id="quillEditorDiary"></div>
                 </div>
                 <div class="mt-3">
                     <button :disabled="!diaryButton" type="button" v-on:click="useUploadDiary()"

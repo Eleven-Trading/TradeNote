@@ -67,7 +67,7 @@ export async function useUploadDiary() {
         if (results) {
             results.set("date", diaryUpdate.dateDateFormat)
             results.set("dateUnix", diaryUpdate.dateUnix)
-            results.set("journal", diaryUpdate.journal)
+            results.set("diary", diaryUpdate.diary)
             await results.save() //very important to have await or else too quick to update
             usePageRedirect()
 
@@ -89,7 +89,7 @@ export async function useUploadDiary() {
         object.set("user", Parse.User.current())
         object.set("date", diaryUpdate.dateDateFormat)
         object.set("dateUnix", diaryUpdate.dateUnix)
-        object.set("journal", diaryUpdate.journal)
+        object.set("diary", diaryUpdate.diary)
         object.setACL(new Parse.ACL(Parse.User.current()));
         object.save()
             .then((object) => {
@@ -104,7 +104,7 @@ export async function useUploadDiary() {
 
 export async function useDeleteDiary(param1, param2) {
     //console.log("selected item " + selectedItem.value)
-    console.log("\nDELETING JOURNAL ENTRY")
+    console.log("\nDELETING DIARY ENTRY")
     const parseObject = Parse.Object.extend("diaries");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", selectedItem.value);

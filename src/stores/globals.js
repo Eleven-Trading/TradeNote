@@ -2959,6 +2959,7 @@ export const brokerData = ref()
 **************************************/
 export const renderProfile = ref(0)
 export const apis = reactive([])
+export const layoutStyle = reactive([])
 
 /**************************************
 * SELECTED & FILTERS

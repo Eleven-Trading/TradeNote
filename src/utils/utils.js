@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
 import { useDeleteDiary, useGetDiaries } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
@@ -616,19 +616,7 @@ export async function useInitQuill(param) {
             }
 
             if (pageId.value == "addDiary") {
-                let elements = document.querySelectorAll(".ql-editor");
-                elements.forEach((input, index) => {
-                    if (index == 0) {
-                        diaryUpdate.journal.positive = input.innerHTML
-                    }
-                    if (index == 1) {
-                        diaryUpdate.journal.negative = input.innerHTML
-                    }
-                    if (index == 2) {
-                        diaryUpdate.journal.other = input.innerHTML
-                    }
-                })
-                //console.log(" -> diaryUpdate " + JSON.stringify(diaryUpdate))
+                diaryUpdate.diary = document.querySelector(".ql-editor").innerHTML
                 diaryButton.value = true
             }
 
@@ -1151,6 +1139,31 @@ export const useGetAPIS = async () => {
     })
 }
 
+export const useGetLayoutStyle = async () => {
+    console.log("\n -> Getting Layout Style")
+    layoutStyle.length = 0
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
+
+            if (parsedResults.layoutStyle != undefined) {
+                for (let index = 0; index < parsedResults.layoutStyle.length; index++) {
+                    const element = parsedResults.layoutStyle[index];
+                    layoutStyle.push(element)
+                }
+            }
+
+            resolve()
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
 
 /**************************************
 * DATE FORMATS

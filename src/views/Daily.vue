@@ -175,7 +175,7 @@ async function clickTradesModal(param1, param2, param3) {
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
                 for (let key in screenshot) delete screenshot[key]
                 candlestickChartFailureMessage.value = null // to avoid message when screenshot is present
-                
+
                 if (findScreenshot) {
 
                     for (let key in findScreenshot) {
@@ -191,7 +191,7 @@ async function clickTradesModal(param1, param2, param3) {
                         let apiKey = apis[index].key
                         let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
                         if (apiKey) {
-                            console.log(" type "+filteredTradesObject.type)
+                            console.log(" type " + filteredTradesObject.type)
                             if (filteredTradesObject.type == "future") {
                                 candlestickChartFailureMessage.value = "Polygon API doesn't currently support Futures."
                             } else {
@@ -674,8 +674,8 @@ function getOHLC(date, symbol, type, apiKey) {
                                                 }}):
                                                 <span
                                                     v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
-    }}</span>
+                                                        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
+                                                    }}</span>
                                             </div>
 
                                         </div>
@@ -833,9 +833,9 @@ function getOHLC(date, symbol, type, apiKey) {
                                                             <!--Position-->
                                                             <td>
                                                                 {{
-        trade.strategy.charAt(0).toUpperCase() +
-        trade.strategy.slice(1)
-    }}
+                                                                    trade.strategy.charAt(0).toUpperCase() +
+                                                                trade.strategy.slice(1)
+                                                                }}
                                                             </td>
 
                                                             <!--Entry-->
@@ -861,8 +861,8 @@ function getOHLC(date, symbol, type, apiKey) {
                                                                     v-else-if="trade.type == 'forex'">-</span><span
                                                                     v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(trade.grossSharePL)
-    }}</span>
+                                                                    useTwoDecCurrencyFormat(trade.grossSharePL)
+                                                                    }}</span>
                                                             </td>
 
                                                             <!--P&L-->
@@ -880,18 +880,18 @@ function getOHLC(date, symbol, type, apiKey) {
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
                                                                         :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{
-        useGetTagInfo(tag).tagName }}
+                                                                        useGetTagInfo(tag).tagName }}
                                                                     </span>
                                                                     <span v-show="tags.tags.length > 2">+{{
-        tags.tags.length
-        - 2 }}</span>
+                                                                        tags.tags.length
+                                                                        - 2 }}</span>
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 <span
                                                                     v-for="note in notes.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-if="note.note.length > 12">{{
-        note.note.substring(0, 12) }}...</span><span
+                                                                        note.note.substring(0, 12) }}...</span><span
                                                                         v-else>{{ note.note }}</span>
                                                                 </span>
                                                             </td>
@@ -938,7 +938,7 @@ function getOHLC(date, symbol, type, apiKey) {
 
                                                             <td>{{ blot.symbol }}</td>
                                                             <td>{{ useDecimalsArithmetic(blot.buyQuantity,
-        blot.sellQuantity) }}</td>
+                                                                blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ useTwoDecCurrencyFormat(blot.grossProceeds) }}</td>
@@ -976,18 +976,7 @@ function getOHLC(date, symbol, type, apiKey) {
                                                 aria-labelledby="nav-overview-tab">
                                                 <div
                                                     v-for="itemDiary in diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix)">
-                                                    <p v-if="itemDiary.journal.positive != '<p><br></p>'">
-                                                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                                                        <span v-html="itemDiary.journal.positive"></span>
-                                                    </p>
-                                                    <p v-if="itemDiary.journal.negative != '<p><br></p>'">
-                                                        <span class="dashInfoTitle">Negative aspect</span>
-                                                        <span v-html="itemDiary.journal.negative"></span>
-                                                    </p>
-                                                    <p v-if="itemDiary.journal.other != '<p><br></p>'">
-                                                        <span class="dashInfoTitle">Observations</span>
-                                                        <span v-html="itemDiary.journal.other"></span>
-                                                    </p>
+                                                    <p v-html="itemDiary.diary"></p>
                                                 </div>
                                             </div>
 
@@ -1033,7 +1022,7 @@ function getOHLC(date, symbol, type, apiKey) {
                         class="candlestickClass">
                     </div>
                     <div class="container mt-2 text-center" v-show="candlestickChartFailureMessage">{{
-        candlestickChartFailureMessage }}</div>
+                        candlestickChartFailureMessage }}</div>
 
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
@@ -1057,10 +1046,10 @@ function getOHLC(date, symbol, type, apiKey) {
                                 <tr>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].symbol }}</td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].buyQuantity +
-        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
+                                        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
                                     </td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' :
-        'Short'
+                                        'Short'
                                         }}</td>
 
                                     <td>
@@ -1074,8 +1063,8 @@ function getOHLC(date, symbol, type, apiKey) {
                                                     data-bs-toggle="tooltip" data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade closed on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)"></i></span></span><span
                                             v-else>{{
-        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-    }}<span
+                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                            }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1086,10 +1075,10 @@ function getOHLC(date, symbol, type, apiKey) {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-        (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-    }}</span><span v-else>{{
-            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
-        }}<span
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
+                                            }}</span><span v-else>{{
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
+                                            }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1100,32 +1089,32 @@ function getOHLC(date, symbol, type, apiKey) {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else>{{
-        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
-    }}</span></td>
+                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
+                                            }}</span></td>
 
 
                                     <!--Exit Price-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-        (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
-    }}</span><span v-else>{{
-            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
-        }}</span></td>
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
+                                            }}</span><span v-else>{{
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
+                                            }}</span></td>
 
                                     <!--Duration-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else><span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{
-        useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-            -
-            filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-    }}</span><span v-else>{{
-            useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-                -
-                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-        }}</span></span>
+                                                    useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                                                        -
+                                                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                }}</span><span v-else>{{
+                                                    useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                                                        -
+                                                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                }}</span></span>
                                     </td>
 
                                     <!--P&L/Vol-->
@@ -1135,8 +1124,8 @@ function getOHLC(date, symbol, type, apiKey) {
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'"></span><span
                                             v-else
                                             v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
-    }}</span>
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
+                                            }}</span>
                                     </td>
 
                                     <!--P&L-->
@@ -1145,8 +1134,8 @@ function getOHLC(date, symbol, type, apiKey) {
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                             {{
-        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
-    }}</span>
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
+                                            }}</span>
                                     </td>
                                 </tr>
                             </tbody>

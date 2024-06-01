@@ -432,8 +432,8 @@
                 "targetClass": "_User",
                 "required": false
             },
-            "journal": {
-                "type": "Object",
+            "diary": {
+                "type": "String",
                 "required": false
             }
         },

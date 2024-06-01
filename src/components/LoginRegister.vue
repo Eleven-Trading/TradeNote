@@ -342,6 +342,39 @@ const checkLegacy = async (param) => {
       })
     }
 
+    const updateDiary = async () => {
+      return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("diaries");
+        const query = new Parse.Query(parseObject);
+        const results = await query.find();
+        if (results.length > 0) {
+          for (let i = 0; i < results.length; i++) {
+            let setupsArray = []
+            const object = results[i];
+            //console.log(" -> Object id " + object.id)
+
+
+            //Saving to notes
+            if (object.get('journal') != undefined && object.get('journal') != '') {
+
+              object.set("diary", Object.values(object.get('journal')).join(''))
+              object.save()
+                .then(async (object) => {
+                  console.log(' -> Updated diary with id ' + object.id)
+                }, (error) => {
+                  console.log('Failed to create new diary, with error code: ' + error.message);
+                })
+            }
+          }
+          await useUpdateLegacy("updateDiary")
+          resolve()
+
+        } else {
+          console.log(" -> No diary to copy")
+          resolve()
+        }
+      })
+    }
 
     await useGetLegacy()
 
@@ -350,6 +383,7 @@ const checkLegacy = async (param) => {
       await updateTags()
       await updateNotes()
       await updateTagsArray()
+      await updateDiary()
     }
 
     else if (legacy.length > 0) {
@@ -379,6 +413,13 @@ const checkLegacy = async (param) => {
         await updateTagsArray()
       } else {
         console.log("  --> Legacy 'updateTagsArray' done")
+      }
+
+      let index5 = legacy.findIndex(obj => obj.name == "updateDiary")
+      if (index5 == -1) {
+        await updateDiary()
+      } else {
+        console.log("  --> Legacy 'updateDiary' done")
       }
 
     } else {
