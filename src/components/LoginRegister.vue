@@ -342,11 +342,11 @@ const checkLegacy = async (param) => {
       })
     }
 
-    const updateDiary = async () => {
+    const copyDiary = async () => {
       return new Promise(async (resolve, reject) => {
         const parseObject = Parse.Object.extend("diaries");
         const query = new Parse.Query(parseObject);
-        const results = await query.find();
+        const results = await query.findAll(); // findAll gets all (limited to 1000 instead of default 100)
         if (results.length > 0) {
           for (let i = 0; i < results.length; i++) {
             let setupsArray = []
@@ -366,7 +366,6 @@ const checkLegacy = async (param) => {
                 })
             }
           }
-          await useUpdateLegacy("updateDiary")
           resolve()
 
         } else {
@@ -374,6 +373,12 @@ const checkLegacy = async (param) => {
           resolve()
         }
       })
+    }
+
+    const updateDiary = async () => {
+      console.log("\n -> Handling diary legacy")
+      await copyDiary()
+      await useUpdateLegacy("updateDiary")
     }
 
     await useGetLegacy()

@@ -862,6 +862,10 @@ export async function useLoadMore() {
         await useGetScreenshots(false)
     }
 
+    if (pageId.value == "diary") {
+        await useGetDiaries(true)
+    }
+
     spinnerLoadMore.value = false
 
 }
