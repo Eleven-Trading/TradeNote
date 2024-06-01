@@ -1,6 +1,6 @@
 import { selectedMonth, pageId, screenshots, screenshot, tradeScreenshotChanged, dateScreenshotEdited, renderData, markerAreaOpen, spinnerLoadingPage, spinnerSetups, editingScreenshot, timeZoneTrade, endOfList, screenshotsPagination, screenshotsQueryLimit, selectedItem, saveButton, resizeCompressImg, resizeCompressMaxWidth, resizeCompressMaxHeight, resizeCompressQuality, expandedScreenshot, expandedId, expandedSource, selectedScreenshot, selectedScreenshotIndex, selectedScreenshotSource, tags, selectedTags, tradeTags, screenshotsInfos } from '../stores/globals.js'
 import { useLoadMore } from './utils.js';
-import { useUpdateTags } from './daily.js';
+import { useUpdateTags, useUpdateAvailableTags} from './daily.js';
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -441,7 +441,7 @@ export async function useSaveScreenshot() {
             await useUploadScreenshotToParse()
         } else {
             //console.log("tags")
-            await useUpdateTags()
+            await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
             await useUploadScreenshotToParse()
         }
 

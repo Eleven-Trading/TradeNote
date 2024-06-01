@@ -1,5 +1,6 @@
 import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals.js"
 import { usePageRedirect } from "./utils.js";
+import { useUpdateTags, useUpdateAvailableTags } from "./daily.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -39,7 +40,7 @@ export async function useGetDiaries(param1, param2) {
                 });
             }
         } else {
-            if (pageId.value == "diary"){
+            if (pageId.value == "diary") {
                 endOfList.value = true
             }
         }
@@ -55,51 +56,56 @@ export async function useGetDiaries(param1, param2) {
 
 
 export async function useUploadDiary() {
+    return new Promise(async (resolve, reject) => {
+        
+        await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
+        
+        const parseObject = Parse.Object.extend("diaries");
 
-    const parseObject = Parse.Object.extend("diaries");
-
-    if (diaryIdToEdit.value) {
-        console.log(" -> Updating diary")
-        console.log("diaryUpdate "+JSON.stringify(diaryUpdate))
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", diaryIdToEdit.value);
-        const results = await query.first();
-        if (results) {
-            results.set("date", diaryUpdate.dateDateFormat)
-            results.set("dateUnix", diaryUpdate.dateUnix)
-            results.set("diary", diaryUpdate.diary)
-            await results.save() //very important to have await or else too quick to update
-            usePageRedirect()
-
-
-        } else {
-            alert("Update query did not return any results")
-        }
-    } else {
-        const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", diaryUpdate.dateUnix);
-        const results = await query.first();
-        if (results) {
-            alert("Diary with that date already exists")
-            return
-        }
-
-        console.log(" -> saving diary")
-        const object = new parseObject();
-        object.set("user", Parse.User.current())
-        object.set("date", diaryUpdate.dateDateFormat)
-        object.set("dateUnix", diaryUpdate.dateUnix)
-        object.set("diary", diaryUpdate.diary)
-        object.setACL(new Parse.ACL(Parse.User.current()));
-        object.save()
-            .then((object) => {
-                console.log(' -> Added new diary with id ' + object.id)
+        if (diaryIdToEdit.value) {
+            console.log(" -> Updating diary")
+            console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+            const query = new Parse.Query(parseObject);
+            query.equalTo("objectId", diaryIdToEdit.value);
+            const results = await query.first();
+            if (results) {
+                results.set("date", diaryUpdate.dateDateFormat)
+                results.set("dateUnix", diaryUpdate.dateUnix)
+                results.set("diary", diaryUpdate.diary)
+                await results.save() //very important to have await or else too quick to update
                 usePageRedirect()
 
-            }, (error) => {
-                console.log('Failed to create new object, with error code: ' + error.message);
-            });
-    }
+
+            } else {
+                alert("Update query did not return any results")
+            }
+        } else {
+            const query = new Parse.Query(parseObject);
+            query.equalTo("dateUnix", diaryUpdate.dateUnix);
+            const results = await query.first();
+            if (results) {
+                alert("Diary with that date already exists")
+                return
+            }
+
+            console.log(" -> saving diary")
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("date", diaryUpdate.dateDateFormat)
+            object.set("dateUnix", diaryUpdate.dateUnix)
+            object.set("diary", diaryUpdate.diary)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then((object) => {
+                    console.log(' -> Added new diary with id ' + object.id)
+                    usePageRedirect()
+
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                });
+        }
+        resolve()
+    })
 }
 
 export async function useDeleteDiary(param1, param2) {

@@ -1,4 +1,4 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit } from "../stores/globals.js";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit, diaryUpdate } from "../stores/globals.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -419,7 +419,13 @@ export const useUpdateTags = async () => {
         const query = new Parse.Query(parseObject);
         if (pageId.value == "addScreenshot") {
             query.equalTo("tradeId", screenshot.name)
-        } else {
+        }
+
+        else if (pageId.value == "addDiary") {
+            query.equalTo("tradeId", diaryUpdate.dateUnix.toString())
+        }
+        
+        else {
             query.equalTo("tradeId", tradeTagsId.value)
         }
         const results = await query.first();
@@ -448,7 +454,12 @@ export const useUpdateTags = async () => {
             if (pageId.value == "addScreenshot") {
                 object.set("dateUnix", screenshot.dateUnix)
                 object.set("tradeId", screenshot.name)
-            } else {
+            }
+            else if (pageId.value == "addDiary") {
+                object.set("dateUnix", diaryUpdate.dateUnix)
+                object.set("tradeId", diaryUpdate.dateUnix.toString())
+            }
+            else {
                 object.set("dateUnix", tradeTagsDateUnix.value)
                 object.set("tradeId", tradeTagsId.value)
             }

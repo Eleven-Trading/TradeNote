@@ -2,16 +2,17 @@
 import { onMounted, onBeforeMount } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import NoData from '../components/NoData.vue';
-import { spinnerLoadingPage, diaries, selectedItem, spinnerLoadMore, endOfList } from '../stores/globals';
+import { spinnerLoadingPage, diaries, selectedItem, spinnerLoadMore, endOfList, tags } from '../stores/globals';
 import { useCheckVisibleScreen, useCreatedDateFormat, useEditItem, useInitPopover, useLoadMore } from '../utils/utils';
 import { useGetDiaries } from '../utils/diary';
+import { useGetTags, useGetTagInfo, useGetAvailableTags } from '../utils/daily';
 
 onBeforeMount(async () => {
-    
+
 })
 
 onMounted(async () => {
-    await useGetDiaries(true)
+    await Promise.all([useGetDiaries(true), useGetTags(), useGetAvailableTags()])
     useInitPopover()
     window.addEventListener('scroll', () => {
         let scrollTop = window.scrollY
@@ -52,7 +53,17 @@ onMounted(async () => {
                                         data-bs-toggle="popover" data-bs-placement="left"></i>
                                 </span>
                             </div>
-                            <div class="col-12">
+                            <div>
+                                <span v-for="tags in tags.filter(obj => obj.tradeId == itemDiary.dateUnix.toString())">
+                                    <span v-for="tag in tags.tags.slice(0, 7)" class="tag txt-small"
+                                        :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{useGetTagInfo(tag).tagName }}
+                                    </span>
+                                    <span v-show="tags.tags.length > 7">+{{
+                                        tags.tags.length
+                                        -  7}}</span>
+                                </span>
+                            </div>
+                            <div class="col-12 mt-2">
                                 <p v-html="itemDiary.diary"></p>
                             </div>
                         </div>
