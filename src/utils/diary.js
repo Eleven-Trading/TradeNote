@@ -55,7 +55,8 @@ export async function useGetDiaries(param1, param2) {
 
 
 
-export async function useUploadDiary() {
+export async function useUploadDiary(param) {
+    console.log(" diaray param "+param)
     return new Promise(async (resolve, reject) => {
         
         await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
@@ -73,7 +74,7 @@ export async function useUploadDiary() {
                 results.set("dateUnix", diaryUpdate.dateUnix)
                 results.set("diary", diaryUpdate.diary)
                 await results.save() //very important to have await or else too quick to update
-                usePageRedirect()
+                if (param != "autoSave") usePageRedirect()
 
 
             } else {
@@ -98,7 +99,7 @@ export async function useUploadDiary() {
             object.save()
                 .then((object) => {
                     console.log(' -> Added new diary with id ' + object.id)
-                    usePageRedirect()
+                    if (param != "autoSave") usePageRedirect()
 
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);

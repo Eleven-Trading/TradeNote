@@ -1,7 +1,7 @@
 import { useRoute } from "vue-router";
 import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
-import { useDeleteDiary, useGetDiaries } from "./diary.js";
+import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
 import { useDeletePlaybook } from "./playbooks.js";
 import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades.js";
@@ -609,6 +609,9 @@ export async function useInitQuill(param) {
         quill.root.setAttribute('spellcheck', true)
         //console.log("quill " + quill)
 
+        let countdownInterval = null;
+        let countdownSeconds = 5;
+
         quill.on('text-change', () => {
             if (pageId.value == "addScreenshot") {
                 setupUpdate.value.checkList = document.querySelector(".ql-editor").innerHTML
@@ -618,6 +621,17 @@ export async function useInitQuill(param) {
             if (pageId.value == "addDiary") {
                 diaryUpdate.diary = document.querySelector(".ql-editor").innerHTML
                 diaryButton.value = true
+
+                clearTimeout(countdownInterval);
+                countdownSeconds = 5; // reset countdown
+                countdownInterval = setInterval(function () {
+                    //console.log(`Countdown: ${countdownSeconds}`);
+                    countdownSeconds--;
+                    if (countdownSeconds === 0) {
+                        clearTimeout(countdownInterval);
+                        useUploadDiary("autoSave")
+                    }
+                }, 1000); // 1 second interval
             }
 
             if (pageId.value == "addPlaybook") {
@@ -780,8 +794,8 @@ export async function useMountDashboard() {
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
-        await(dashboardChartsMounted.value = true)
-        await(renderData.value += 1)
+        await (dashboardChartsMounted.value = true)
+        await (renderData.value += 1)
         await useECharts("init")
     }
 }
