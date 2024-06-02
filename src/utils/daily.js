@@ -3,19 +3,25 @@ import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
 
+
+
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING SATISFACTIONS");
         satisfactionTradeArray.length = 0
         satisfactionArray.length = 0
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
         const parseObject = Parse.Object.extend("satisfactions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value); // limit to at most 10 results
+        if (pageId.value == "diary") {
+            query.notEqualTo("tradeId", "")
+        } else {
+            let startD = selectedRange.value.start
+            let endD = selectedRange.value.end
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.limit(queryLimit.value); // limit to at most 10 results
+        }
 
         const results = await query.find();
         for (let i = 0; i < results.length; i++) {
@@ -32,6 +38,66 @@ export async function useGetSatisfactions() {
 
         }
         //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        resolve()
+
+    })
+}
+
+export const useDailySatisfactionChange = async (param1, param2, param3) => {
+    console.log("\nDAILY SATISFACTION CHANGE")
+    //console.time("  --> Duration daily satisfaction change")
+    if (param3){
+        param3.satisfaction = param2
+    }else{
+        let index = satisfactionArray.findIndex(obj => obj.dateUnix == param1)
+        if (index != -1){
+            satisfactionArray[index].satisfaction = param2
+        }else{
+            let temp = {}
+            temp.dateUnix = param1
+            temp.satisfaction = param2
+            satisfactionArray.push(temp)
+        }
+    }
+    await useUpdateDailySatisfaction(param1, param2)
+    //await console.timeEnd("  --> Duration daily satisfaction change")
+}
+
+export const useUpdateDailySatisfaction = async (param1, param2) => { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
+    //console.log(" param 1 " + param1)
+    console.log(" -> updating satisfactions")
+    return new Promise(async (resolve, reject) => {
+
+        const parseObject = Parse.Object.extend("satisfactions");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("dateUnix", param1)
+        query.doesNotExist("tradeId") /// this is how we differentiate daily from trades satisfaction records
+        const results = await query.first();
+        if (results) {
+            console.log(" -> Updating satisfaction")
+            results.set("satisfaction", param2)
+
+            results.save()
+                .then(async () => {
+                    console.log(' -> Updated satisfaction with id ' + results.id)
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        } else {
+            console.log(" -> Saving satisfaction")
+
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("dateUnix", param1)
+            object.set("satisfaction", param2)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then(async (object) => {
+                    console.log(' -> Added new satisfaction with id ' + object.id)
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        }
         resolve()
 
     })
@@ -194,7 +260,7 @@ export const useCreateAvailableTagsArray = () => {
 
 let filteredSuggestions = []
 export const useFilterSuggestions = (param) => {
-    
+
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
     //console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
@@ -413,7 +479,7 @@ export const useUpdateTags = async () => {
         let tagsArray = []
         for (let index = 0; index < tradeTags.length; index++) {
             const element = tradeTags[index];
-            tagsArray.push(element.id)            
+            tagsArray.push(element.id)
         }
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
@@ -424,7 +490,7 @@ export const useUpdateTags = async () => {
         else if (pageId.value == "addDiary") {
             query.equalTo("tradeId", diaryUpdate.dateUnix.toString())
         }
-        
+
         else {
             query.equalTo("tradeId", tradeTagsId.value)
         }

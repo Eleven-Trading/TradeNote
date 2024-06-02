@@ -12,7 +12,7 @@ import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDu
 
 import { useSetupImageUpload, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags, useDailySatisfactionChange } from '../utils/daily';
 
 import { useCandlestickChart } from '../utils/charts';
 
@@ -312,54 +312,7 @@ const checkDate = ((param1, param2) => {
 /**************
  * SATISFACTION
  ***************/
-async function dailySatisfactionChange(param1, param2, param3) {
-    console.log("\nDAILY SATISFACTION CHANGE")
-    //console.time("  --> Duration daily satisfaction change")
-    param3.satisfaction = param2
-    await updateDailySatisfaction(param1, param2)
-    //await console.timeEnd("  --> Duration daily satisfaction change")
-}
 
-async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
-    //console.log(" param 1 " + param1)
-    console.log(" -> updating satisfactions")
-    return new Promise(async (resolve, reject) => {
-
-        const parseObject = Parse.Object.extend("satisfactions");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", param1)
-        query.doesNotExist("tradeId") /// this is how we differentiate daily from trades satisfaction records
-        const results = await query.first();
-        if (results) {
-            console.log(" -> Updating satisfaction")
-            results.set("satisfaction", param2)
-
-            results.save()
-                .then(async () => {
-                    console.log(' -> Updated satisfaction with id ' + results.id)
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        } else {
-            console.log(" -> Saving satisfaction")
-
-            const object = new parseObject();
-            object.set("user", Parse.User.current())
-            object.set("dateUnix", param1)
-            object.set("satisfaction", param2)
-            object.setACL(new Parse.ACL(Parse.User.current()));
-            object.save()
-                .then(async (object) => {
-                    console.log(' -> Added new satisfaction with id ' + object.id)
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        }
-        resolve()
-
-
-    })
-}
 
 
 async function tradeSatisfactionChange(param1, param2) {
@@ -665,9 +618,9 @@ function getOHLC(date, symbol, type, apiKey) {
                                         <div class="row">
                                             <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix)
                                                 }}
-                                                <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
+                                                <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
-                                                <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
+                                                <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
                                             </div>
                                             <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
