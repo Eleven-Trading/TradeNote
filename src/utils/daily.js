@@ -132,7 +132,8 @@ export async function useGetExcursions() {
  * TAGS 
  ****************************************/
 export const useGetTagInfo = (param) => {
-
+    //console.log("param "+JSON.stringify(param))
+    //console.log(" available tags "+JSON.stringify(availableTags))
     const findTagInfo = (tagId) => {
         let temp = {}
         //check if tag id exists then return color
@@ -584,10 +585,10 @@ export const useUpdateAvailableTags = async () => {
                 let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
 
                 let tempArray = []
-                if (pageId.value == "daily") {
-                    tempArray = newTradeTags
-                } else {
+                if (pageId.value == "registerSignup") {
                     tempArray = tradeTags
+                } else {
+                    tempArray = newTradeTags
                 }
 
                 for (let index = 0; index < tempArray.length; index++) {

@@ -151,7 +151,7 @@ const addNewGroup = async () => {
     let temp = {}
     const addToAvailableTags = async () => {
         return new Promise(async (resolve, reject) => {
-            console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+            //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 
             if (newAvailableTags.length > 0) {
                 const highestId = newAvailableTags.reduce((max, obj) => Math.max(max, parseInt(obj.id.replace("group_", ""), 10)), -Infinity);
@@ -352,7 +352,7 @@ const inputGroupName = (param1, param2) => {
 
 const inputGroupColor = (param1, param2) => {
     newAvailableTags[param1].color = param2
-    console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+    //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 }
 
 

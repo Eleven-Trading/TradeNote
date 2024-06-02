@@ -297,7 +297,7 @@ input:checked+.slider:before {
 
 .dropdown-item:hover,
 .dropdown-item:active {
-    background-color: var(--blue-active-color);
+    background-color: var(--black-bg-7);
     color: var(--white-87);
 }
 

@@ -117,7 +117,7 @@ async function initDiaryJson(param) {
                     <div class="form-control dropdown form-select" style="height: auto;">
                         <div style="display: flex; align-items: center; flex-wrap: wrap;">
                             <span v-for="(tag, index) in tradeTags" :key="index" class="tag txt-small"
-                                :style="{ 'background-color': useGetTagInfo(tag).groupColor }"
+                                :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
                                 @click="useTradeTagsChange('remove', index)">
                                 {{ tag.name }}<span class="remove-tag">×</span>
                             </span>

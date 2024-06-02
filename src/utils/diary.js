@@ -64,7 +64,7 @@ export async function useUploadDiary() {
 
         if (diaryIdToEdit.value) {
             console.log(" -> Updating diary")
-            console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+            //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
             const query = new Parse.Query(parseObject);
             query.equalTo("objectId", diaryIdToEdit.value);
             const results = await query.first();
