@@ -59,6 +59,7 @@ const dailyTabs = [{
 ]
 
 let tradesModal = null
+let tagsModal = null
 
 let tradeSatisfactionId
 let tradeSatisfaction
@@ -84,6 +85,13 @@ onMounted(async () => {
         const index = caller.dataset.index
         const index2 = caller.dataset.indextwo
         clickTradesModal(index, index2, index2)
+    })
+
+    tagsModal = new bootstrap.Modal("#tagsModal")
+    document.getElementById("tagsModal").addEventListener('shown.bs.modal', async (event) => {
+        const caller = event.relatedTarget
+        const index = caller.dataset.index
+        clickTagsModal(index)
     })
 })
 
@@ -299,6 +307,33 @@ async function clickTradesModal(param1, param2, param3) {
 
 }
 
+const clickTagsModal = (param1) => {
+    itemTradeIndex.value = Number(param1)
+    tradeTags.length = 0
+    let findTags = tags.find(obj => obj.tradeId == filteredTrades[itemTradeIndex.value].dateUnix)
+    if (findTags) {
+        findTags.tags.forEach(element => {
+            for (let obj of availableTags) {
+                for (let tag of obj.tags) {
+                    if (tag.id === element) {
+                        let temp = {}
+                        temp.id = tag.id
+                        temp.name = tag.name
+                        tradeTags.push(temp)
+                    }
+                }
+            }
+        });
+    }
+}
+
+const saveDailyTags = async () => {
+    if (tradeTagsChanged.value) {
+        await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
+        await Promise.all([useGetTags(), useGetAvailableTags()])
+    }
+    tagsModal.hide()
+}
 
 const checkDate = ((param1, param2) => {
     //console.log("param 1 "+param1)
@@ -622,6 +657,9 @@ function getOHLC(date, symbol, type, apiKey) {
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                                 <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+                                                
+                                                <i v-show="tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length == 0 || (tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length > 0 && tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())[0].tags.length === 0)" data-bs-toggle="modal" data-bs-target="#tagsModal"
+                                                    :data-index="index" class="ms-2 uil uil-tag-alt pointerClass"></i>
                                             </div>
                                             <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
                                                 }}):
@@ -631,6 +669,21 @@ function getOHLC(date, symbol, type, apiKey) {
                                                     }}</span>
                                             </div>
 
+                                        </div>
+                                        <div>
+                                            <span
+                                                v-for="tags in tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())">
+                                                <span v-for="tag in tags.tags.slice(0, 7)"
+                                                    class="tag txt-small pointerClass"
+                                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }" data-bs-toggle="modal" data-bs-target="#tagsModal"
+                                                    :data-index="index" >{{
+                                                        useGetTagInfo(tag).tagName
+                                                    }}
+                                                </span>
+                                                <span v-show="tags.tags.length > 7">+{{
+                                                    tags.tags.length
+                                                    - 7 }}</span>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -787,7 +840,7 @@ function getOHLC(date, symbol, type, apiKey) {
                                                             <td>
                                                                 {{
                                                                     trade.strategy.charAt(0).toUpperCase() +
-                                                                trade.strategy.slice(1)
+                                                                    trade.strategy.slice(1)
                                                                 }}
                                                             </td>
 
@@ -814,7 +867,7 @@ function getOHLC(date, symbol, type, apiKey) {
                                                                     v-else-if="trade.type == 'forex'">-</span><span
                                                                     v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-                                                                    useTwoDecCurrencyFormat(trade.grossSharePL)
+                                                                        useTwoDecCurrencyFormat(trade.grossSharePL)
                                                                     }}</span>
                                                             </td>
 
@@ -833,7 +886,7 @@ function getOHLC(date, symbol, type, apiKey) {
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
                                                                         :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{
-                                                                        useGetTagInfo(tag).tagName }}
+                                                                            useGetTagInfo(tag).tagName }}
                                                                     </span>
                                                                     <span v-show="tags.tags.length > 2">+{{
                                                                         tags.tags.length
@@ -1062,11 +1115,11 @@ function getOHLC(date, symbol, type, apiKey) {
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{
                                                     useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
                                                         -
-                                                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
                                                 }}</span><span v-else>{{
                                                     useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
                                                         -
-                                                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
                                                 }}</span></span>
                                     </td>
 
@@ -1220,4 +1273,52 @@ function getOHLC(date, symbol, type, apiKey) {
             </div>
         </div>
     </div>
+
+    <!-- ============ TRADES MODAL ============ -->
+    <div class="modal fade" id="tagsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <!-- Tags -->
+                <div class="container col mt-4">
+                    <div class="form-control dropdown form-select" style="height: auto;">
+                        <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                            <span v-for="(tag, index) in tradeTags" :key="index" class="tag txt-small"
+                                :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
+                                @click="useTradeTagsChange('remove', index)">
+                                {{ tag.name }}<span class="remove-tag">×</span>
+                            </span>
+
+                            <input type="text" v-model="tagInput" @input="useFilterTags"
+                                @keydown.enter.prevent="useTradeTagsChange('add', tagInput)"
+                                @keydown.tab.prevent="useTradeTagsChange('add', tagInput)"
+                                class="form-control tag-input" placeholder="Add a tag">
+                            <div class="clickable-area" v-on:click="useToggleTagsDropdown">
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
+                        :style="[!showTagsList ? 'border: none;' : '']">
+                        <span v-show="showTagsList" v-for="group in availableTags">
+                            <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
+                                v-show="useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                {{ group.name }}</h6>
+                            <li v-for="(suggestion, index) in useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
+                                :key="index" :class="{ active: index === selectedTagIndex }"
+                                @click="useTradeTagsChange('addFromDropdownMenu', suggestion)"
+                                class="dropdown-item dropdown-item-tags">
+                                <span class="ms-2">{{ suggestion.name }}</span>
+                            </li>
+                        </span>
+                    </ul>
+                </div>
+                <div class="col text-center mt-4 mb-4">
+                    <button class="btn btn-outline-primary btn-sm" v-on:click="tagsModal.hide()">Close</button>
+                    <button class="btn btn-outline-success btn-sm ms-4" v-on:click="saveDailyTags()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </template>

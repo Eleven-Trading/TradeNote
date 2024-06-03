@@ -56,7 +56,7 @@ export async function useGetDiaries(param1, param2) {
 
 
 export async function useUploadDiary(param) {
-    console.log(" diaray param "+param)
+    //console.log(" diaray param "+param)
     return new Promise(async (resolve, reject) => {
         
         await Promise.all([useUpdateAvailableTags(), useUpdateTags()])

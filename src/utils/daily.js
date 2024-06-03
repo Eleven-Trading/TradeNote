@@ -46,13 +46,13 @@ export async function useGetSatisfactions() {
 export const useDailySatisfactionChange = async (param1, param2, param3) => {
     console.log("\nDAILY SATISFACTION CHANGE")
     //console.time("  --> Duration daily satisfaction change")
-    if (param3){
+    if (param3) {
         param3.satisfaction = param2
-    }else{
+    } else {
         let index = satisfactionArray.findIndex(obj => obj.dateUnix == param1)
-        if (index != -1){
+        if (index != -1) {
             satisfactionArray[index].satisfaction = param2
-        }else{
+        } else {
             let temp = {}
             temp.dateUnix = param1
             temp.satisfaction = param2
@@ -382,8 +382,14 @@ export const useTradeTagsChange = async (param1, param2) => {
 
 
     if (pageId.value == "daily") {
+        //console.log(" itemTradeIndex.value " + itemTradeIndex.value)
+        //console.log(" tradeIndex.value " + tradeIndex.value)
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
-        tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        if (tradeIndex.value) {
+            tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        } else {
+            tradeTagsId.value = null // setting null so that when in useUpdateTags tradeTagsId is null / we're updating daily tags
+        }
     }
 
 };
@@ -484,6 +490,7 @@ export const useUpdateTags = async () => {
         }
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
+
         if (pageId.value == "addScreenshot") {
             query.equalTo("tradeId", screenshot.name)
         }
@@ -493,7 +500,12 @@ export const useUpdateTags = async () => {
         }
 
         else {
-            query.equalTo("tradeId", tradeTagsId.value)
+            if (tradeTagsId.value) {
+                query.equalTo("tradeId", tradeTagsId.value)
+            } else {
+                //it's the case when changing daily tags, tradeTagsId.value is null (see useTradeTagsChange)
+                query.equalTo("tradeId", tradeTagsDateUnix.value.toString())
+            }
         }
         const results = await query.first();
         if (results) {
@@ -527,8 +539,15 @@ export const useUpdateTags = async () => {
                 object.set("tradeId", diaryUpdate.dateUnix.toString())
             }
             else {
-                object.set("dateUnix", tradeTagsDateUnix.value)
-                object.set("tradeId", tradeTagsId.value)
+                if (tradeTagsId.value) {
+                    object.set("dateUnix", tradeTagsDateUnix.value)
+                    object.set("tradeId", tradeTagsId.value)
+                } else {
+                    //it's the case when changing daily tags, tradeTagsId.value is null
+                    object.set("dateUnix", tradeTagsDateUnix.value)
+                    object.set("tradeId", tradeTagsDateUnix.value.toString())
+                }
+
             }
             object.setACL(new Parse.ACL(Parse.User.current()));
             object.save()
