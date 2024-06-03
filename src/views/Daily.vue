@@ -332,6 +332,11 @@ const saveDailyTags = async () => {
         await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
         await Promise.all([useGetTags(), useGetAvailableTags()])
     }
+    closeTagsModal()
+}
+
+const closeTagsModal = async () => {
+    tradeTags.length = 0
     tagsModal.hide()
 }
 
@@ -1314,7 +1319,7 @@ function getOHLC(date, symbol, type, apiKey) {
                     </ul>
                 </div>
                 <div class="col text-center mt-4 mb-4">
-                    <button class="btn btn-outline-primary btn-sm" v-on:click="tagsModal.hide()">Close</button>
+                    <button class="btn btn-outline-primary btn-sm" v-on:click="closeTagsModal">Close</button>
                     <button class="btn btn-outline-success btn-sm ms-4" v-on:click="saveDailyTags()">Save</button>
                 </div>
             </div>
