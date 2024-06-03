@@ -1,21 +1,29 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit, diaryUpdate } from "../stores/globals.js";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit, diaryUpdate, diaryQueryLimit, diaryPagination } from "../stores/globals.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
 
 
+//query limit must be same as diary limit
+let satisfactionPagination = 0
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING SATISFACTIONS");
-        satisfactionTradeArray.length = 0
-        satisfactionArray.length = 0
         const parseObject = Parse.Object.extend("satisfactions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
+        query.descending("dateUnix")
         if (pageId.value == "diary") {
-            query.notEqualTo("tradeId", "")
+            //console.log(" diaryQueryLimit.value " + diaryQueryLimit.value)
+            //console.log(" satisfactionPagination " + satisfactionPagination)
+            //Here we do not do .length = 0 because we want it to remember the satisfaction array
+            query.equalTo("tradeId", undefined)
+            query.limit(diaryQueryLimit.value);
+            query.skip(satisfactionPagination)
         } else {
+            satisfactionTradeArray.length = 0
+            satisfactionArray.length = 0
             let startD = selectedRange.value.start
             let endD = selectedRange.value.end
             query.greaterThanOrEqualTo("dateUnix", startD)
@@ -38,6 +46,8 @@ export async function useGetSatisfactions() {
 
         }
         //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        satisfactionPagination = satisfactionPagination + diaryQueryLimit.value
+
         resolve()
 
     })

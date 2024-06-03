@@ -2883,6 +2883,8 @@ export const diaries = reactive([])
 export const diaryUpdate = reactive({})
 export const diaryIdToEdit = ref()
 export const diaryButton = ref(false)
+export const diaryQueryLimit = ref(10)
+export const diaryPagination = ref(0)
 
 /**************************************
 * PLAYBOOKS

@@ -12,7 +12,8 @@ onBeforeMount(async () => {
 })
 
 onMounted(async () => {
-    await Promise.all([useGetDiaries(true), useGetTags(), useGetAvailableTags(), useGetSatisfactions()])
+    await useGetDiaries(true)
+    await Promise.all([useGetTags(), useGetAvailableTags(), useGetSatisfactions()])
     useInitPopover()
     window.addEventListener('scroll', () => {
         let scrollTop = window.scrollY
@@ -44,6 +45,7 @@ onMounted(async () => {
                             <div class="col-12 cardFirstLine">
                                 <div class=" d-flex align-items-center fw-bold">
                                     <div class="col-auto">{{ useCreatedDateFormat(itemDiary.dateUnix) }}
+
                                         <i v-on:click="useDailySatisfactionChange(itemDiary.dateUnix, true)"
                                             v-bind:class="[(satisfactionArray.find(obj => obj.dateUnix == itemDiary.dateUnix) != undefined && satisfactionArray.find(obj => obj.dateUnix == itemDiary.dateUnix).satisfaction == true) ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                         <i v-on:click="useDailySatisfactionChange(itemDiary.dateUnix, false)"

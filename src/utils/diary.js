@@ -1,12 +1,11 @@
-import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals.js"
+import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData, diaryQueryLimit, diaryPagination } from "../stores/globals.js"
 import { usePageRedirect } from "./utils.js";
 import { useUpdateTags, useUpdateAvailableTags } from "./daily.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
 
-let diaryQueryLimit = 10
-let diaryPagination = 0
+
 
 export async function useGetDiaries(param1, param2) {
     //param1: true is diary page
@@ -20,8 +19,8 @@ export async function useGetDiaries(param1, param2) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         if (param1) {
-            query.limit(diaryQueryLimit);
-            query.skip(diaryPagination)
+            query.limit(diaryQueryLimit.value);
+            query.skip(diaryPagination.value)
         } else {
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
@@ -46,7 +45,7 @@ export async function useGetDiaries(param1, param2) {
         }
 
         //console.log(" -> Diaries " + JSON.stringify(diaries))
-        diaryPagination = diaryPagination + diaryQueryLimit
+        diaryPagination.value = diaryPagination.value + diaryQueryLimit.value
         if (pageId.value != "daily") spinnerLoadingPage.value = false //we remove it later
         spinnerLoadMore.value = false
         resolve()
@@ -129,8 +128,8 @@ export async function useDeleteDiary(param1, param2) {
 async function refreshDiaries() {
     console.log(" -> Refreshing diary entries")
     return new Promise(async (resolve, reject) => {
-        diaryQueryLimit = 10
-        diaryPagination = 0
+        diaryQueryLimit.value = 10
+        diaryPagination.value = 0
         diaries.length = 0
         await useGetDiaries(true)
         //useInitPopover()

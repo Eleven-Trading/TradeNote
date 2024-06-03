@@ -878,6 +878,7 @@ export async function useLoadMore() {
 
     if (pageId.value == "diary") {
         await useGetDiaries(true)
+        await useGetSatisfactions()
     }
 
     spinnerLoadMore.value = false
