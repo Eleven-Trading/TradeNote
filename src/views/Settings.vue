@@ -21,6 +21,7 @@ let inputCount = ref(null)
 
 onBeforeMount(async () => {
     await useGetAvailableTags()
+    useGetAvailableTagsTags()
     await useGetAPIS()
     //await useGetLayoutStyle()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
