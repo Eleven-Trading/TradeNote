@@ -58,7 +58,7 @@ export async function useECharts(param) {
             if (index == 2 && satisfactionArray.length > 0) {
                 //green = satisfied
                 //red = dissatisfied
-                console.log(" satisfactionArray " + JSON.stringify(satisfactionArray))
+                //console.log(" satisfactionArray " + JSON.stringify(satisfactionArray))
                 let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
                 let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
                 if (satisfactionArray.length > 0) {
@@ -100,7 +100,7 @@ export async function useECharts(param) {
         }
     }
 
-    let indexes = [1, 2, 3, 4, 7, 13, 16, 17] // This way.value here because I took out some charts
+    let indexes = [1, 2, 3, 4, 7, 13, 16, 17, 18] // This way.value here because I took out some charts
     indexes.forEach(index => {
         var chartId = 'barChartNegative' + index
         if (param == "clear") {
@@ -1117,6 +1117,7 @@ export function useBarChartNegative(param1) {
     return new Promise((resolve, reject) => {
         var yAxis = []
         var series = []
+        let yName = []
         if (param1 == "barChartNegative1") {
             var keyObject = groups.timeframe
         }
@@ -1157,6 +1158,10 @@ export function useBarChartNegative(param1) {
             var keyObject = groups.position
         }
 
+        if (param1 == "barChartNegative18") {
+            var keyObject = groups.tags
+        }
+
         const keys = Object.keys(keyObject);
 
         //console.log("object " + JSON.stringify(keyObject))
@@ -1173,11 +1178,10 @@ export function useBarChartNegative(param1) {
             let quantities = 0
             var profitFactor = 0
             var numElements = keyObject[key].length
+            
             //console.log("num elemnets " + numElements)
             keyObject[key].forEach((element, index) => {
                 //console.log("index " + index)
-                //console.log("element " + JSON.stringify(element))
-
                 sumWins += element[amountCase.value + 'Wins']
                 sumLoss += element[amountCase.value + 'Loss']
 
@@ -1212,10 +1216,16 @@ export function useBarChartNegative(param1) {
                         ratio = profitFactor
                     }
 
-                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
+                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17" || param1 == "barChartNegative18") {
                         series.unshift(ratio)
                     }
 
+                    if (param1 == "barChartNegative18"){
+                        let temp = {}
+                        temp.tagId = key
+                        temp.tagName = element.tagName
+                        yName.push(temp)
+                    }
                 }
             })
         }
@@ -1246,6 +1256,34 @@ export function useBarChartNegative(param1) {
 
         }
 
+        if (param1 == "barChartNegative18") {
+            //1) combine the arrays:
+            /*for (var k = 0; k < yName.length; k++) {
+                yAxis[k] = yName[k];
+            }*/
+            console.log(" yName "+JSON.stringify(yName))
+            var list = [];
+            for (var j = 0; j < series.length; j++)
+                list.push({ 'ratio': series[j], 'name': yAxis[j] });
+            //2) sort:
+            list.sort(function (a, b) {
+                return ((a.ratio < b.ratio) ? -1 : ((a.ratio == b.ratio) ? 0 : 1));
+                //Sort could be modified to, for example, sort on the age 
+                // if the name is the same.
+            });
+            //3) separate them back out:
+            for (var k = 0; k < list.length; k++) {
+                series[k] = list[k].ratio;
+                console.log(" ")
+                let index = yName.findIndex(obj => obj.tagId == list[k].name )
+                if (index != -1){
+                    yAxis[k] = yName[index].tagName
+                }else{
+                    console.log(" -> Index / tag name does not exist")
+                }
+            }
+
+        }
         const option = {
             tooltip: {
                 trigger: 'axis',
@@ -1383,7 +1421,8 @@ export function useBarChartNegative(param1) {
                             }
                         } else if (param1 == "barChartNegative17") {
                             return (useCapitalizeFirstLetter(params))
-                        } else {
+                        }
+                        else {
                             return params
                         }
                     }

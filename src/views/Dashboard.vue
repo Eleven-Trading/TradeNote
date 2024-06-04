@@ -427,7 +427,15 @@ onBeforeMount(async () => {
                                 </div>
 
                                 <!-- GROUP BY TAGS -->
-
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Group by Tag ({{ ratioCompute.shortName }})</h6>
+                                        <div class="text-center" v-if="!dashboardChartsMounted">
+                                            <div class="spinner-border text-blue" role="status"></div>
+                                        </div>
+                                        <div v-bind:key="renderData" id="barChartNegative18" class="chartClass"></div>
+                                    </div>
+                                </div>
 
                                 <!-- GROUP BY TAG COMBINATION -->
 

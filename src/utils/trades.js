@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags } from "../stores/globals.js"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags } from "../stores/globals.js"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils.js";
 import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
@@ -93,19 +93,19 @@ export async function useGetFilteredTrades(param) {
                         //console.log(" element "+JSON.stringify(element))
 
                         //Check if trade(Id) is present in tags list
-                        let index = tags.findIndex(obj => obj.tradeId == element.id)
-                        if (index != -1) {
+                        let tagsIndex = tags.findIndex(obj => obj.tradeId == element.id || obj.tradeId == element.td)
+                        if (tagsIndex != -1) {
                             //console.log(" -> selected tags "+Object.values(selectedTags.value))
-                            //console.log(" -> trade tags " + JSON.stringify(tags[index].tags))
-                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[index].tags.find(obj => obj.id === value)))
+                            //console.log(" -> trade tags " + JSON.stringify(tags[tagsIndex].tags))
+                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[tagsIndex].tags.find(obj => obj.id === value)))
 
                             //Case/check if tag_id is present in selectedTagsArray
-                            if (selectedTagsArray.some(value => tags[index].tags.find(obj => obj === value))) {
+                            if (selectedTagsArray.some(value => tags[tagsIndex].tags.find(obj => obj === value))) {
                                 tradeTagsSelected = true
                             }
 
                             //If its not present, there may be the case where array is null, but 'No tags' is still selected
-                            if (tags[index].tags.length == 0 && selectedTagsArray.includes("t000t")) {
+                            if (tags[tagsIndex].tags.length == 0 && selectedTagsArray.includes("t000t")) {
                                 tradeTagsSelected = true
                             }
                         }
@@ -128,6 +128,26 @@ export async function useGetFilteredTrades(param) {
 
                         if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && tradeTagsSelected) {
 
+                            //console.log(" -> trade tags " + JSON.stringify(tags[tagsIndex]))
+                            if (tags[tagsIndex] != undefined) {
+                                let tempArray = []
+                                for (let index = 0; index < tags[tagsIndex].tags.length; index++) {
+                                    const tagsElement = tags[tagsIndex].tags[index];
+                                    for (let obj of availableTags) {
+                                        for (let tag of obj.tags) {
+                                            if (tag.id === tagsElement) {
+                                                let temp = {}
+                                                temp.id = tag.id
+                                                temp.name = tag.name
+                                                tempArray.push(temp)
+                                            }
+                                        }
+                                    }
+                                    //let index = availableTags.findIndex(obj)
+                                    //console.log(" tempArray "+JSON.stringify(tempArray))
+                                    element.tags = tempArray
+                                }
+                            }
                             element.satisfaction = tradeSatisfaction
 
 
@@ -836,6 +856,38 @@ export async function useGroupTrades() {
             .value()
         //console.log("group by position " + JSON.stringify(groups.position))
 
+        /*******************
+        * GROUP BY TAGS
+        *******************/
+        //console.log(" temp1 " + JSON.stringify(temp1))
+        //console.log(" tags " + JSON.stringify(tags))
+
+        // Flatten the array of tags and add the id and name properties to each tag object
+        const flattenedData = temp1.reduce((acc, obj) => {
+            if (obj.tags) {
+                obj.tags.forEach(tag => {
+                    acc.push({ ...obj, tag });
+                });
+            } else {
+                acc.push({ ...obj, tag: { id: 'no_tags', name: 'No Tags' } });
+            }
+            return acc;
+        }, []);
+
+        // Group by tag id
+        const groupedData = _.groupBy(flattenedData, 'tag.id');
+
+        // Convert the grouped data object to an object with the desired structure
+        const result = Object.keys(groupedData).reduce((acc, key) => {
+            acc[key] = groupedData[key].map(obj => ({
+                tagName: obj.tag.name,
+                ...obj
+            }));
+            return acc;
+        }, {});
+
+        groups.tags = result
+        //console.log("tags " + JSON.stringify(groups.tags))
 
         /*******************
          * GROUP BY SYMBOL
