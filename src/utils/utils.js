@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
 import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
@@ -609,9 +609,6 @@ export async function useInitQuill(param) {
         quill.root.setAttribute('spellcheck', true)
         //console.log("quill " + quill)
 
-        let countdownInterval = null;
-        let countdownSeconds = 5;
-
         quill.on('text-change', () => {
             if (pageId.value == "addScreenshot") {
                 setupUpdate.value.checkList = document.querySelector(".ql-editor").innerHTML
@@ -622,13 +619,13 @@ export async function useInitQuill(param) {
                 diaryUpdate.diary = document.querySelector(".ql-editor").innerHTML
                 diaryButton.value = true
 
-                clearTimeout(countdownInterval);
-                countdownSeconds = 5; // reset countdown
-                countdownInterval = setInterval(function () {
-                    //console.log(`Countdown: ${countdownSeconds}`);
-                    countdownSeconds--;
-                    if (countdownSeconds === 0) {
-                        clearTimeout(countdownInterval);
+                clearTimeout(countdownInterval.value);
+                countdownSeconds.value = 5; // reset countdown
+                countdownInterval.value = setInterval(function () {
+                    //console.log(`Countdown: ${countdownSeconds.value}`);
+                    countdownSeconds.value--;
+                    if (countdownSeconds.value === 0) {
+                        clearTimeout(countdownInterval.value);
                         useUploadDiary("autoSave")
                     }
                 }, 1000); // 1 second interval

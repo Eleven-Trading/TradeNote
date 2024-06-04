@@ -57,9 +57,9 @@ export async function useGetDiaries(param1, param2) {
 export async function useUploadDiary(param) {
     //console.log(" diaray param "+param)
     return new Promise(async (resolve, reject) => {
-        
+
         await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
-        
+
         const parseObject = Parse.Object.extend("diaries");
 
         if (diaryIdToEdit.value) {
@@ -97,8 +97,13 @@ export async function useUploadDiary(param) {
             object.setACL(new Parse.ACL(Parse.User.current()));
             object.save()
                 .then((object) => {
-                    console.log(' -> Added new diary with id ' + object.id)
-                    if (param != "autoSave") usePageRedirect()
+                    console.log('  --> Added new diary with id ' + object.id)
+                    if (param != "autoSave") {
+                        usePageRedirect()
+                    }else{
+                        //in case we add diary for first time / not editing, as we're autosaving, we need to add the new id to diaryIdToEdit.value, else will get alert "Diary with that date already exists"
+                        diaryIdToEdit.value = object.id
+                    }
 
                 }, (error) => {
                     console.log('Failed to create new object, with error code: ' + error.message);

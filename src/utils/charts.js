@@ -1261,7 +1261,7 @@ export function useBarChartNegative(param1) {
             /*for (var k = 0; k < yName.length; k++) {
                 yAxis[k] = yName[k];
             }*/
-            console.log(" yName "+JSON.stringify(yName))
+            //console.log(" yName "+JSON.stringify(yName))
             var list = [];
             for (var j = 0; j < series.length; j++)
                 list.push({ 'ratio': series[j], 'name': yAxis[j] });
@@ -1274,7 +1274,6 @@ export function useBarChartNegative(param1) {
             //3) separate them back out:
             for (var k = 0; k < list.length; k++) {
                 series[k] = list[k].ratio;
-                console.log(" ")
                 let index = yName.findIndex(obj => obj.tagId == list[k].name )
                 if (index != -1){
                     yAxis[k] = yName[index].tagName

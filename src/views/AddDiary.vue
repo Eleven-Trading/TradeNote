@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
-import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTrade, diaryIdToEdit, diaryButton, tradeTags, tagInput, selectedTagIndex, showTagsList, availableTags, tags } from '../stores/globals';
+import { spinnerLoadingPage, itemToEditId, currentDate, diaryUpdate, timeZoneTrade, diaryIdToEdit, diaryButton, tradeTags, tagInput, selectedTagIndex, showTagsList, availableTags, tags, countdownSeconds } from '../stores/globals';
 import { useInitQuill, useDateCalFormat } from '../utils/utils';
 import { useUploadDiary } from '../utils/diary'
 import { useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useGetTags, useGetAvailableTags, useGetTagInfo } from '../utils/daily';
@@ -151,10 +151,12 @@ async function initDiaryJson(param) {
                 <div class="mt-2">
                     <div id="quillEditorDiary"></div>
                 </div>
-                <div class="mt-3">
-                    <button :disabled="!diaryButton" type="button" v-on:click="useUploadDiary()"
-                        class="btn btn-success btn-lg">Submit</button>
+                
+                <div class="progress buttonProgress mt-3" role="progressbar" :disabled="!diaryButton" type="button" v-on:click="useUploadDiary()">
+                    
+                    <div class="progress-bar buttonProgressBar text-center" :style="{ width: (5 - countdownSeconds) / 5 * 100 + '%' }"><span class="progress-bar-text">Submit</span></div>
                 </div>
+
                 <div class="mt-3">
                     <button type="cancel" onclick="location.href = '/diary';"
                         class="btn btn-outline-secondary btn-sm">Cancel</button>

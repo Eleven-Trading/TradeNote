@@ -29,6 +29,9 @@ export const idCurrentNumber = ref()
 export const idPreviousType = ref()
 export const idPreviousNumber = ref()
 
+export const countdownInterval = ref(null)
+export const countdownSeconds = ref(5)
+
 /* Layout & Style */
 export const dailyChartZoom = ref(800)
 
