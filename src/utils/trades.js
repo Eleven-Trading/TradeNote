@@ -56,6 +56,7 @@ export async function useGetFilteredTrades(param) {
                 //console.log(" -> Looping "+element.dateUnix)
                 //console.log("trades "+JSON.stringify(element.trades))
                 //console.log(" element " + JSON.stringify(element))
+                
                 if (element.trades) {
                     let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                     temp.trades = []
@@ -89,15 +90,16 @@ export async function useGetFilteredTrades(param) {
 
                         let tradeTagsSelected = false
                         let selectedTagsArray = Object.values(selectedTags.value)
+
                         //console.log(" tags "+JSON.stringify(tags))
                         //console.log(" element "+JSON.stringify(element))
 
-                        //Check if trade(Id) is present in tags list
-                        let tagsIndex = tags.findIndex(obj => obj.tradeId == element.id || obj.tradeId == element.td)
+                        //Check if trade(Id) is present in tags list for Trades
+                        let tagsIndex = tags.findIndex(obj => obj.tradeId == element.id)
                         if (tagsIndex != -1) {
                             //console.log(" -> selected tags "+Object.values(selectedTags.value))
                             //console.log(" -> trade tags " + JSON.stringify(tags[tagsIndex].tags))
-                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[tagsIndex].tags.find(obj => obj.id === value)))
+                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[tagsIndex].tags.find(obj => obj === value)))
 
                             //Case/check if tag_id is present in selectedTagsArray
                             if (selectedTagsArray.some(value => tags[tagsIndex].tags.find(obj => obj === value))) {
@@ -109,14 +111,38 @@ export async function useGetFilteredTrades(param) {
                                 tradeTagsSelected = true
                             }
                         }
+                        
+                        //If not, check if no tags is selected or not
+                        else {
+                            if (selectedTagsArray.includes("t000t")) {
+                                tradeTagsSelected = true
+                            }
+                        }   
 
+                        //Check if trade(Id) is present in tags list for Daily tags
+                        let dayTagsIndex = tags.findIndex(obj => obj.tradeId == element.td)
+                        if (dayTagsIndex != -1) {
+                            //console.log(" -> selected tags "+Object.values(selectedTags.value))
+                            //console.log(" -> trade tags " + JSON.stringify(tags[dayTagsIndex].tags))
+                            //console.log(" includes ? "+selectedTagsArray.some(value => tags[dayTagsIndex].tags.find(obj => obj === value)))
+
+                            //Case/check if tag_id is present in selectedTagsArray
+                            if (selectedTagsArray.some(value => tags[dayTagsIndex].tags.find(obj => obj === value))) {
+                                tradeTagsSelected = true
+                            }
+
+                            //If its not present, there may be the case where array is null, but 'No tags' is still selected
+                            if (tags[dayTagsIndex].tags.length == 0 && selectedTagsArray.includes("t000t")) {
+                                tradeTagsSelected = true
+                            }
+                        }
+                        
                         //If not, check if no tags is selected or not
                         else {
                             if (selectedTagsArray.includes("t000t")) {
                                 tradeTagsSelected = true
                             }
                         }
-
 
                         let tradeSatisfaction = null
                         for (let index = 0; index < satisfactionTradeArray.length; index++) {
@@ -127,15 +153,23 @@ export async function useGetFilteredTrades(param) {
                         }
 
                         if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && tradeTagsSelected) {
+                            
+                            /**
+                             * We're using tempArray to be able to group
+                             * However, as we want to group only the selected tags, we need to check if tag.id is included in selectedTagsArray
+                             */
 
                             //console.log(" -> trade tags " + JSON.stringify(tags[tagsIndex]))
+                            let tempArray = []
                             if (tags[tagsIndex] != undefined) {
-                                let tempArray = []
                                 for (let index = 0; index < tags[tagsIndex].tags.length; index++) {
                                     const tagsElement = tags[tagsIndex].tags[index];
                                     for (let obj of availableTags) {
                                         for (let tag of obj.tags) {
-                                            if (tag.id === tagsElement) {
+                                            if (tag.id === tagsElement && selectedTagsArray.includes(tag.id)) { // as you can have several tags per trade or day, we filter out only the once that are in selectedArray
+                                                //console.log(" selectedTagsArray "+selectedTagsArray)
+                                                //console.log(" in selected array " +selectedTagsArray.includes(tag.id))
+                                                //console.log(" tag "+JSON.stringify(tag))
                                                 let temp = {}
                                                 temp.id = tag.id
                                                 temp.name = tag.name
@@ -145,9 +179,35 @@ export async function useGetFilteredTrades(param) {
                                     }
                                     //let index = availableTags.findIndex(obj)
                                     //console.log(" tempArray "+JSON.stringify(tempArray))
-                                    element.tags = tempArray
+                                    
                                 }
                             }
+
+                            if (tags[dayTagsIndex] != undefined) {
+                                
+                                for (let index = 0; index < tags[dayTagsIndex].tags.length; index++) {
+                                    const tagsElement = tags[dayTagsIndex].tags[index];
+                                    for (let obj of availableTags) {
+                                        for (let tag of obj.tags) {
+                                            if (tag.id === tagsElement && selectedTagsArray.includes(tag.id)) { // as you can have several tags per trade or day, we filter out only the once that are in selectedArray
+                                                //console.log(" selectedTagsArray "+selectedTagsArray)
+                                                //console.log(" in selected array " +selectedTagsArray.includes(tag.id))
+                                                //console.log(" tag "+JSON.stringify(tag))
+                                                let temp = {}
+                                                temp.id = tag.id
+                                                temp.name = tag.name
+                                                tempArray.push(temp)
+                                            }
+                                        }
+                                    }
+                                    //let index = availableTags.findIndex(obj)
+                                    //console.log(" tempArray "+JSON.stringify(tempArray))
+                                }
+                            }  
+
+                            element.tags = tempArray
+
+                            //console.log(" element "+JSON.stringify(element))
                             element.satisfaction = tradeSatisfaction
 
 
