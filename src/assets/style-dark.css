@@ -1279,11 +1279,11 @@ h4 {
 
 .buttonProgress {
     font-weight: 400;
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     line-height: 1.5;
     background-color: #198754;
-    height: 45px;
-    width: 96px;
+    height: 31px;
+    width: 62.76px;
     position: relative !important;
 }
 
