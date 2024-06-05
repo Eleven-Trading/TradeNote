@@ -148,6 +148,18 @@ async function clickTradesModal(param1, param2, param3) {
         if (param1 === undefined && param2 === undefined && param3 === undefined) {
             //console.log(" -> Closing Modal")
             await (spinnerSetups.value = false)
+
+            itemTradeIndex.value = undefined
+            tradeIndexPrevious.value = undefined
+            tradeIndex.value = undefined
+
+            tradeNoteChanged.value = false
+            tradeExcursionChanged.value = false
+            tradeScreenshotChanged.value = false
+            tradeTagsChanged.value = false
+
+            showTagsList.value = false
+
             tradesModal.hide()
             await (modalDailyTradeOpen.value = false) //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
             await useInitTab("daily")
@@ -199,7 +211,6 @@ async function clickTradesModal(param1, param2, param3) {
                         let apiKey = apis[index].key
                         let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
                         if (apiKey) {
-                            console.log(" type " + filteredTradesObject.type)
                             if (filteredTradesObject.type == "future") {
                                 candlestickChartFailureMessage.value = "Polygon API doesn't currently support Futures."
                             } else {
@@ -332,6 +343,7 @@ const saveDailyTags = async () => {
         await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
         await Promise.all([useGetTags(), useGetAvailableTags()])
     }
+    tradeTagsChanged.value = false
     closeTagsModal()
 }
 
@@ -662,8 +674,9 @@ function getOHLC(date, symbol, type, apiKey) {
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
                                                 <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
-                                                
-                                                <i v-show="tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length == 0 || (tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length > 0 && tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())[0].tags.length === 0)" data-bs-toggle="modal" data-bs-target="#tagsModal"
+
+                                                <i v-show="tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length == 0 || (tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length > 0 && tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())[0].tags.length === 0)"
+                                                    data-bs-toggle="modal" data-bs-target="#tagsModal"
                                                     :data-index="index" class="ms-2 uil uil-tag-alt pointerClass"></i>
                                             </div>
                                             <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
@@ -680,8 +693,9 @@ function getOHLC(date, symbol, type, apiKey) {
                                                 v-for="tags in tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())">
                                                 <span v-for="tag in tags.tags.slice(0, 7)"
                                                     class="tag txt-small pointerClass"
-                                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }" data-bs-toggle="modal" data-bs-target="#tagsModal"
-                                                    :data-index="index" >{{
+                                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }"
+                                                    data-bs-toggle="modal" data-bs-target="#tagsModal"
+                                                    :data-index="index">{{
                                                         useGetTagInfo(tag).tagName
                                                     }}
                                                 </span>

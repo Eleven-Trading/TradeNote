@@ -395,7 +395,8 @@ export const useTradeTagsChange = async (param1, param2) => {
         //console.log(" itemTradeIndex.value " + itemTradeIndex.value)
         //console.log(" tradeIndex.value " + tradeIndex.value)
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
-        if (tradeIndex.value) {
+        console.log(" tradeIndex.value "+tradeIndex.value)
+        if (tradeIndex.value != undefined) {
             tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
         } else {
             tradeTagsId.value = null // setting null so that when in useUpdateTags tradeTagsId is null / we're updating daily tags
