@@ -4,28 +4,31 @@ import DashboardLayout from '../layouts/Dashboard.vue'
 import { registerOff } from '../stores/globals'
 import axios from 'axios'
 
+const run = async () => {
+    async function getRegisterPage() {
+        return new Promise((resolve, reject) => {
+            console.log("\nGETTING REGISTER PAGE")
+            axios.post('/registerPage')
+                .then((response) => {
+                    //console.log(" response "+JSON.stringify(response))
+                    //localStorage.setItem('parse_app_id', response.data)
+                    //console.log("  --> App id in localstorage " + localStorage.getItem('parse_app_id'))
+                    registerOff.value = response.data
+                    resolve()
+                })
+                .catch((error) => {
+                    console.log(" -> Error getting register page " + error)
+                    reject(error)
+                });
+    
+    
+        })
+    }
 
-async function getRegisterPage() {
-    return new Promise((resolve, reject) => {
-        console.log("\nGETTING REGISTER PAGE")
-        axios.post('/registerPage')
-            .then((response) => {
-                //console.log(" response "+JSON.stringify(response))
-                //localStorage.setItem('parse_app_id', response.data)
-                //console.log("  --> App id in localstorage " + localStorage.getItem('parse_app_id'))
-                registerOff.value = response.data
-                resolve()
-            })
-            .catch((error) => {
-                console.log(" -> Error getting register page " + error)
-                reject(error)
-            });
-
-
-    })
+    await getRegisterPage()
 }
 
-await getRegisterPage()
+await run()
 
 const router = createRouter({
     history: createWebHistory(
