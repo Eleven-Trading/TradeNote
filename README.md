@@ -107,7 +107,7 @@ If you have any other issues, please visite the [Discord](https://discord.gg/ZbH
 - Node 18.X
 
 #### Installation
-1. Download the docker-compose.yml file
+1. Download the docker compose.yml file
 2. Run `docker compose up -d`
 
 This will automatically setup the database (mongodDB) and the TradeNote app.
@@ -151,7 +151,7 @@ If you want to run the latest version of TradeNote you can also build the image 
 1. Clone from github
 2. cd into TradeNote directory 
 3. Run
-    - For Docker Compose : Run `docker compose -f docker-compose-local.yml up -d`
+    - For Docker Compose : Run `docker compose -f docker compose-local.yml up -d`
     - For Docker: run `docker build -f docker/Dockerfile . -t tradenote:<tag>`
 
 #### Dev Mode
@@ -199,6 +199,33 @@ Example 2 (advanced)
 When you have an open trade you will see "Open" in the time column on the daily page and "Closed" when the swing trade has been closed. Hover your mouse over the question mark to get information when the trade was opened and closed. 
 
 P&L as well as partial close is calculated on the closing day.
+
+## Updating
+The following information is just for your convienance. We encourage you to make your own research on how to update running applications. 
+
+### Using Docker Compose
+1. Pull the latest Docker image: You can do this by running docker compose pull < service-name > in your terminal. This command will pull the latest image for the specified service from the Docker registry.
+2. Stop the running service: You can stop the running service with the command docker compose stop < service-name >. This will stop the service without removing it.
+3. Remove the existing container: You can remove the existing container with the command docker compose rm < service-name >. This will remove the stopped container.
+4. Start the service with the updated image: You can start the service with the updated image with the command docker compose up -d < service-name >. The -d flag runs the container in detached mode, which means it will run in the background.
+5. Verify the update: You can verify that the update was successful by checking the logs of the container with the command docker compose logs < service-name > or by checking the running service's behavior.
+
+Remember to replace < service-name> with the name of your service as defined in your docker compose.yml file.
+
+This is a general process and may vary depending on the specifics of your application and your Docker Compose setup. Always make sure to test your changes in a safe environment before deploying them to production.
+
+### Using Docker
+1. Pull the latest Docker image: You can do this by running docker pull < image-name >:< tag > in your terminal. This command will pull the latest version of the specified image from Docker Hub.
+2. Stop the running container: You can stop the running container with the command docker stop < container-id >. Replace < container-id > with the ID of the running container.
+3. Remove the existing container: You can remove the existing container with the command docker rm < container-id >. Replace < container-id > with the ID of the stopped container.
+4. Start a new container with the updated image: You can start a new container with the updated image with the command docker run < image-name >:< tag >. Replace < image-name > and < tag > with the name and tag of the updated image.
+5. Verify the update: You can verify that the update was successful by checking the logs of the container with the command docker logs < container-id > or by checking the running container's behavior.
+
+Remember to replace < image-name >, < tag >, and < container-id > with the appropriate values for your application and Docker setup.
+
+This is a general process and may vary depending on the specifics of your application and your Docker setup. Always make sure to test your changes in a safe environment before deploying them to production.
+
+
 
 ## TradeNote API (Experimental)
 TradeNote provides an API so that you can setup an auto import of your trades. Please note that this a very experimental feature AND unfortunately, I will  not be able to provide support on how to make a POST request. 
