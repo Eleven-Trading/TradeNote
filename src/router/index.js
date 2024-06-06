@@ -4,7 +4,7 @@ import DashboardLayout from '../layouts/Dashboard.vue'
 import { registerOff } from '../stores/globals'
 import axios from 'axios'
 
-const run = async () => {
+(async () => {
     async function getRegisterPage() {
         return new Promise((resolve, reject) => {
             console.log("\nGETTING REGISTER PAGE")
@@ -20,15 +20,13 @@ const run = async () => {
                     console.log(" -> Error getting register page " + error)
                     reject(error)
                 });
-    
-    
+
+
         })
     }
 
     await getRegisterPage()
-}
-
-await run()
+})();
 
 const router = createRouter({
     history: createWebHistory(
