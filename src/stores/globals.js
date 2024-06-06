@@ -3,6 +3,7 @@ import { ref, reactive } from "vue";
 /**************************************
 * GENERAL
 **************************************/
+export const registerOff = ref(false)
 export const parseId = ref()
 export const pageId = ref()
 export const currentUser = ref()

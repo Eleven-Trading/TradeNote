@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import { pageId, timeZones, availableTags, tradeTags, legacy } from '../stores/globals';
+import { pageId, timeZones, availableTags, tradeTags, legacy, registerOff } from '../stores/globals';
 import { getCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
 import { useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
 
@@ -11,6 +11,7 @@ import axios from 'axios'
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)
 let existingSchema = []
+
 
 async function login() {
   console.log("\nLOGIN")
@@ -456,7 +457,7 @@ const checkLegacy = async (param) => {
       "Log&nbsp;in" : "Register" }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
           aria-hidden="true"></span></button>
     </form>
-    <div class="text-center mt-3"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :
+    <div class="text-center mt-3" v-if="!registerOff"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :
       "Login" }}</a> page</div>
   </main>
 </template>

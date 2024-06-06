@@ -36,6 +36,8 @@ const PROXY_PORT = 39482;
 
 let server = null
 
+export let allowRegister = false
+
 const startIndex = async () => {
 
     const startServer = async () => {
@@ -135,6 +137,12 @@ const startIndex = async () => {
     app.post("/parseAppId", (req, res) => {
         //console.log("\nAPI : post APP ID")
         res.send(process.env.APP_ID)
+    });
+
+    app.post("/registerPage", (req, res) => {
+        //console.log("\nAPI : post APP ID")
+        //console.log(" REGISTER_OFF "+process.env.REGISTER_OFF)
+        res.send(process.env.REGISTER_OFF)
     });
 
     app.post("/posthog", (req, res) => {
