@@ -12,8 +12,10 @@ By creating and sharing TradeNote as an open source project, I hope to help othe
 ![dashboard](https://f003.backblazeb2.com/file/7ak-public/tradenote/TradeNote-Dashboard.png "Dashboard")
 
 ### Project
-#### Dicsussions and Feeback
+#### Contact
 For support or feedback, feel free to join our [Discord](https://discord.gg/ZbHekKYb85 "Discord"), or create an issue on this repository.
+
+Join the [emailing list](https://eleven.m-pages.com/tradenote "emailing list") to receive news about updates and new features.
 
 #### Upcoming features
 You can see upcoming features and project development on the [project page](https://github.com/orgs/Eleven-Trading/projects/1 "Project").

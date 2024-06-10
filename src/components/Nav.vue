@@ -196,6 +196,7 @@ function getLatestVersion() {
                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
                                     v-bind:data-bs-title="'New version available<br>v' + latestVersion"></i></span>
                         </li>
+                        <li class="text-center"><a class="txt-small blue-link" target="_blank" href="https://eleven.m-pages.com/tradenote">Get Updates</a></li>
                     </ul>
                 </div>
             </div>

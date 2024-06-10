@@ -464,6 +464,17 @@ img.logo {
     color: var(--blue-active-color);
 }
 
+.blue-link {
+    color: var(--blue-color) !important;
+}
+
+.blue-link:hover {
+    color: var(--blue-color) !important;
+}
+
+.blue-link:active {
+    color: var(--blue-active-color);
+}
 
 /*=================== /END NAV BAR AND SIDE MENU/ ===================*/
 
