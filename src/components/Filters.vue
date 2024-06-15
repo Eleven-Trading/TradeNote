@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeMount, onMounted } from "vue";
-import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily, useCheckVisibleScreen } from "../utils/utils.js";
+import { useMonthFormat, useDateCalFormat, useDateCalFormatMonth, useMountCalendar, useMountDashboard, useMountDaily, useCheckVisibleScreen, useExport } from "../utils/utils.js";
 import { pageId, currentUser, timeZoneTrade, periodRange, positions, timeFrames, ratios, grossNet, plSatisfaction, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccounts, selectedGrossNet, selectedPlSatisfaction, selectedDateRange, selectedMonth, selectedPeriodRange, tempSelectedPlSatisfaction, amountCase, amountCapital, hasData, selectedTags, tags, availableTags } from "../stores/globals"
 import { useECharts } from "../utils/charts.js";
 import { useRefreshScreenshot } from "../utils/screenshots"
@@ -264,13 +264,13 @@ const checkAllTagsSelected = () => {
             temp.push(el.id)
         }
     }
-    
-    if ((temp.length + 1) == selectedTags.value.length){
+
+    if ((temp.length + 1) == selectedTags.value.length) {
         allTagsSelected.value = true
-    }else {
+    } else {
         allTagsSelected.value = false
     }
-    
+
 }
 const selectAllTags = () => {
 
@@ -318,13 +318,13 @@ const selectAllTags = () => {
                     </span>
 
                     <span v-show="filters[pageId].includes('grossNet')">{{ selectedGrossNet.charAt(0).toUpperCase() +
-                    selectedGrossNet.slice(1) }} data |
+                        selectedGrossNet.slice(1) }} data |
                     </span>
 
                     <span v-show="filters[pageId].includes('positions')">
                         <span v-if="positions.length == selectedPositions.length">All positions |</span>
                         <span v-else>{{ selectedPositions.toString().charAt(0).toUpperCase() +
-                    selectedPositions.toString().slice(1) }} |</span>
+                            selectedPositions.toString().slice(1) }} |</span>
                     </span>
 
                     <span v-show="filters[pageId].includes('timeFrame')">
@@ -479,6 +479,20 @@ const selectAllTags = () => {
 
                 <div class="col-12 text-center">
                     <button class="btn btn-success btn-sm mt-2" v-on:click="saveFilter">Filter</button>
+                    <span v-if="pageId == 'dashboard'">
+                        <button class="btn btn-secondary btn-sm mt-2 ms-4 dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item"
+                                    v-on:click="useExport('json', useDateCalFormat(selectedDateRange.start), useDateCalFormat(selectedDateRange.end))">JSON</a>
+                            </li>
+                            <li><a class="dropdown-item"
+                                    v-on:click="useExport('csv', useDateCalFormat(selectedDateRange.start), useDateCalFormat(selectedDateRange.end))">CSV</a>
+                            </li>
+                        </ul>
+                    </span>
+
                 </div>
             </div>
         </div>

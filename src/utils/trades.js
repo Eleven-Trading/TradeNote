@@ -81,6 +81,8 @@ export async function useGetFilteredTrades(param) {
 
                     //console.log("element "+JSON.stringify(element))
                     element.trades.forEach(element => {
+                        element = _.omit(element, ["excursions"]) //We recreate trades and omit excursions
+
                         //console.log("element "+JSON.stringify(element))
                         if (element.side == "long") {
                             element.priceVar = element.entryPrice - element.exitPrice
@@ -206,12 +208,30 @@ export async function useGetFilteredTrades(param) {
                             }  
 
                             element.tags = tempArray
-
+                            
                             //console.log(" element "+JSON.stringify(element))
                             element.satisfaction = tradeSatisfaction
 
 
+                            element.stopLoss = null
+                            element.maePrice = null
+                            element.mfePrice = null
+
+                            let indexExcursion = excursions.findIndex(obj => obj.tradeId == element.id)
+                            if(indexExcursion != -1){
+                                if (excursions[indexExcursion].stopLoss) element.stopLoss = excursions[indexExcursion].stopLoss
+                                if (excursions[indexExcursion].maePrice) element.maePrice = excursions[indexExcursion].maePrice
+                                if (excursions[indexExcursion].mfePrice) element.mfePrice = excursions[indexExcursion].mfePrice
+                            }
+
+                            /**
+                             * CALC OPTIMIZATION
+                             */
+
+
+
                             temp.trades.push(element)
+                            
                             filteredTradesTrades.push(element)
                             //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
                         }
