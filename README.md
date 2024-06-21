@@ -27,6 +27,9 @@ TradeNote is a responsive website that runs on VueJs, JS and HTML and uses [Pars
 If you like this project, <font size="5">please 🌟 this repository</font> and don't hesitate to show me <s>the money</s> love ;)
 <p><a href='https://ko-fi.com/eleven70433' target='_blank'><img height='35' style='margin-top:20px;border:0px;height:46px;' src='https://az743702.vo.msecnd.net/cdn/kofi3.png?v=0' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></p>
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Eleven-Trading/TradeNote&type=Date)](https://star-history.com/#Eleven-Trading/TradeNote&Date)
 
 # TradeNote
 ### Structure
