@@ -107,6 +107,15 @@ Please use the standalone thinkorswim application and follow the steps below.
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD1.png" width="200">
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD2.png" width="200"></div>
 
+
+
+In some cases you may see the following message on import
+
+>ERROR IN UPLOAD FILE
+No matching execution in Account Trade History for execution in Cash Balance on xx/xx/xx xx:xx:xx. Please correct your file manually and upload it again.
+
+The way the import code works is that it looks for matching executions in two tables : Account Trade History and Cash Balance. The code matches these executions by date and time. However, there is a bug in TD where certain matching executions have one or two seconds time difference. You need to look for those time differences and change them manually.
+
 # TradeStation
 1. Select the "Orders" tab at the bottom of the TradeManager window in TradeStation.
 2. Choose "Filled Orders" from the "Status" drop-down menu at the top of the screen.
