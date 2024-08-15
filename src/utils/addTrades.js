@@ -21,6 +21,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import _ from 'lodash'
 import axios from 'axios'
+import Papa from 'papaparse';
 
 let openPosition = false
 let tradeAccounts = []
@@ -83,7 +84,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
         //console.log("param1 " + param1)
         //console.log("param2 " + param2)
         //console.log("param3 " + param3)
-        console.log("IMPORTING FILE")
+        console.log("\nIMPORTING FILE")
         // Using Papa Parse : https://www.papaparse.com/docs
         spinnerLoadingPage.value = true
         //spinnerLoadingPageText.value = "Importing file ..."
@@ -259,15 +260,43 @@ export async function useImportTrades(param1, param2, param3, param0) {
             })
         }
 
+
+        /****************************
+        * CREATE EXECUTIONS, TRADES
+        ****************************/
         const create = async () => {
             await createTempExecutions().catch((error) => {
-                alert("Error in upload file (" + error + ")")
+                if (param2 != "api") {
+                    alert("Error in upload file (" + error + ")")
+                }
             })
 
             await createExecutions()
 
-            if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value) {
-                await getOHLCV()
+            if (uploadMfePrices.value) {
+                if (currentUser.value.apis.findIndex(obj => obj.provider === "databento") > -1) {
+                    try {
+                        await getOHLCV("databento", param2);
+                    } catch (error) {
+                        if (param2 != "api") {
+                            alert("Error getting OHLCV (" + error + ")")
+                        }
+                        reject("Error getting OHLCV (" + error + ")")
+                        return; // stop the function execution
+                    }
+                } else if (currentUser.value.apis.findIndex(obj => obj.provider === "polygon") > -1) {
+                    try {
+                        await getOHLCV("polygon", param2);
+                    } catch (error) {
+                        if (param2 != "api") {
+                            alert("Error getting OHLCV (" + error + ")")
+                        }
+                        reject("Error getting OHLCV (" + error + ")")
+                        return; // stop the function execution
+                    }
+                } else {
+                    console.log(" -> No APIs stored for MFE and charts")
+                }
             }
             /*await createTrades().then(async () => {
                 //console.log(" -> Open posisitions: " + openPosition)
@@ -276,12 +305,12 @@ export async function useImportTrades(param1, param2, param3, param0) {
                     alert("You have one or more open positions. Please close all your positions before import.")
                     return
                 } else {
-    
+     
                     await filterExisting("trades")
                     await useCreateBlotter()
                     await useCreatePnL()
                 }
-    
+     
             })*/
             await getOpenPositionsParse(param2, param0)
             await createTrades()
@@ -292,6 +321,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
             await (spinnerLoadingPage.value = false)
             resolve()
+
         }
 
         const retryFunction = (callback, delay, tries) => {
@@ -334,6 +364,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 async function createTempExecutions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING TEMP EXECUTION")
+
         //spinnerLoadingPageText.value = "Creating temp executions"
         const keys = Object.keys(tradesData);
         var temp = [];
@@ -341,6 +372,7 @@ async function createTempExecutions() {
 
         var lastId
         var x
+
 
         tempExecutions.length = 0 // reinitialize, for API
         tradedSymbols.length = 0 // reinitialize, for API
@@ -412,9 +444,15 @@ async function createTempExecutions() {
                 temp2.trade = null;
 
                 tempExecutions.push(temp2);
+                //console.log(" tempExecutions " + JSON.stringify(tempExecutions));
 
-                if (!tradedSymbols.includes(temp2.symbol)) {
-                    tradedSymbols.push(temp2.symbol)
+
+                let index = tradedSymbols.findIndex(obj => obj.symbol === temp2.symbol)
+                if (index === -1) {
+                    let temp = {}
+                    temp.symbol = temp2.symbol
+                    temp.secType = temp2.type
+                    tradedSymbols.push(temp)
                 }
 
                 if (tradedStartDate == null) {
@@ -430,18 +468,22 @@ async function createTempExecutions() {
                 } else if (temp2.execTime > tradedEndDate) {
                     tradedEndDate = temp2.execTime
                 }
+                //console.log(" tradedSymbols " + JSON.stringify(tradedSymbols));
 
                 //console.log(" -> Trade start date " + tradedStartDate)
                 //console.log(" -> Trade end date " + tradedEndDate)
                 //console.log("temp " + JSON.stringify(temp2))
-                //console.log(" -> Created temp executions");
+
             } catch (error) {
                 console.log("  --> ERROR " + error)
                 reject(error)
             }
         }
+        console.log(" -> Created temp executions");
+        console.log(" -> Created traded symbols");
         resolve()
     })
+
 }
 
 async function createExecutions() {
@@ -466,74 +508,196 @@ async function createExecutions() {
     })
 }
 
-async function getOHLCV() {
+const createOHLCV = (param, param2) => {
+    //console.log(" param "+JSON.stringify(param))
     return new Promise(async (resolve, reject) => {
-        console.log("\nGETTING OHLCV")
-        //spinnerLoadingPageText.value = "Getting OHLCV"
+        let papaParse = Papa.parse(param, { header: true })
+        let tempArray = papaParse.data
+        //console.log(' tempArray ' + JSON.stringify(tempArray))
+        for (let index = 0; index < tempArray.length; index++) {
+            const element = tempArray[index];
+            if (element.ts_event) {
 
+                //console.log(" ts_event " + element.ts_event)
+                let NYTime = dayjs.tz(element.ts_event, "UTC").tz(timeZoneTrade.value).unix() // telling it's UTC time and converting to trade TZ
+
+                let temp2 = {}
+                temp2.v = Number(element.volume)
+                temp2.o = Number(element.open)
+                temp2.c = Number(element.close)
+                temp2.h = Number(element.high)
+                temp2.l = Number(element.low)
+                temp2.t = NYTime * 1000
+                param2.ohlcv.push(temp2)
+
+            }
+
+            if ((index + 1) === tempArray.length) {
+                ohlcv.push(param2)
+                //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
+                resolve()
+            }
+
+        }
+    })
+}
+
+const getOHLCV = (param, param2) => {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nGETTING OHLCV from " + param)
+        //spinnerLoadingPageText.value = "Getting OHLCV"
+        console.log(" Traded Symbols " + JSON.stringify(tradedSymbols))
         ohlcv.length = 0 // reinitialize, for API
         const asyncLoop = async () => {
             for (let i = 0; i < tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
                 let temp = {}
-                temp.symbol = tradedSymbols[i]
-                //console.log(" -> From date " + tradedStartDate)
+                temp.symbol = tradedSymbols[i].symbol
+                let databentoSymbol = temp.symbol
+                let stype_in = "raw_symbol"
+
+                console.log(" -> From date " + tradedStartDate)
                 //console.log(" -> To " + tradedEndDate)
-                let toDate = dayjs(tradedEndDate * 1000).tz(timeZoneTrade.value).endOf('day').unix()
-                //console.log(" -> To date " + toDate)
+                //let currentDateYesterday = dayjs().tz(timeZoneTrade.value).subtract(1, 'day').unix()
+                //console.log(" currentDateYesterday "+currentDateYesterday)
+                let toDate = dayjs(tradedEndDate * 1000).endOf('day').unix()
+                //if (toDate > currentDateYesterday) toDate = dayjs(currentDateYesterday * 1000).subtract(7, 'hour').unix()
+                console.log(" -> To date " + toDate)
 
-                axios.interceptors.response.use(undefined, (err) => {
-                    const { config, message } = err;
-                    if (err) {
-                        console.log(" -> Interceptors status " + err.response.status)
-                        console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
-                        console.log(" -> Interceptors message " + message)
-                        //spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                if (param === "databento") {
+                    let dataset
+                    temp.ohlcv = []
+
+                    if (tradedSymbols[i].secType === "future") {
+                        dataset = "GLBX.MDP3"
+                        databentoSymbol = temp.symbol + ".c.0"
+                        stype_in = "continuous"
+
+                    } else if (tradedSymbols[i].secType === "stock") {
+                        dataset = "XNAS.ITCH"
+
+                    } else if (tradedSymbols[i].secType === "call" || tradedSymbols[i].secType === "put") {
+
+                    } else if (tradedSymbols[i].secType === "forex") {
+
                     }
-                    if (!config || !config.retry) {
-                        return Promise.reject(err);
+                    let index = currentUser.value.apis.findIndex(obj => obj.provider === 'databento')
+
+                    let data =
+                    {
+                        'dataset': dataset,
+                        'stype_in': stype_in,
+                        'symbols': databentoSymbol,
+                        'schema': 'ohlcv-1m',
+                        'start': tradedStartDate * 1000000000,
+                        'end': toDate * 1000000000,
+                        'encoding': 'csv',
+                        'pretty_px': 'true',
+                        'pretty_ts': 'true',
+                        'map_symbols': 'true',
+                        'username': currentUser.value.apis[index].key
                     }
 
-                    // If there is an error and the status is not 429, we just alert (return rejection). Else we continue and retry
-                    if (err.response.status != 429) {
-                        alert("Error getting OHLCV with message: " + message)
-                        return Promise.reject(err);
+                    //console.log(" data "+JSON.stringify(data))
+                    if (param2 === "api") {
+                        try {
+                            const username = currentUser.value.apis[index].key
+                            const password = '';
+
+
+                            let config = {
+                                method: 'post',
+                                maxBodyLength: Infinity,
+                                url: "https://hist.databento.com/v0/timeseries.get_range",
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64')
+                                },
+                                data: data
+                            };
+
+                            axios.request(config)
+                                .then(async (response) => {
+                                    await createOHLCV(response.data, temp)
+                                    resolve()
+                                })
+                                .catch((error) => {
+                                    console.log(" -> Error in databento response " + error)
+                                    reject(error)
+                                });
+
+                        } catch (error) {
+                            console.log(" -> Error getting databento " + error)
+                            reject(error)
+                        }
+                    } else {
+                        axios.post('/api/databento', data)
+                            .then(async (response) => {
+                                await createOHLCV(response.data, temp)
+                                resolve()
+                            })
+                            .catch((error) => {
+                                console.log(" -> Error in databento response " + error)
+                                reject(error)
+                            });
                     }
 
-                    config.retry -= 1;
 
-                    const delayRetryRequest = new Promise((resolve) => {
-                        setTimeout(() => {
-                            console.log(" -> Retrying the request ", config.url);
-                            resolve();
-                        }, config.retryDelay || 1000);
+                } else if (param === "polygon") {
+                    axios.interceptors.response.use(undefined, (err) => {
+                        const { config, message } = err;
+                        if (err) {
+                            console.log(" -> Interceptors status " + err.response.status)
+                            console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
+                            console.log(" -> Interceptors message " + message)
+                            //spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                        }
+                        if (!config || !config.retry) {
+                            return Promise.reject(err);
+                        }
+
+                        // If there is an error and the status is not 429, we just alert (return rejection). Else we continue and retry
+                        if (err.response.status != 429) {
+                            alert("Error getting OHLCV with message: " + message)
+                            return Promise.reject(err);
+                        }
+
+                        config.retry -= 1;
+
+                        const delayRetryRequest = new Promise((resolve) => {
+                            setTimeout(() => {
+                                console.log(" -> Retrying the request ", config.url);
+                                resolve();
+                            }, config.retryDelay || 1000);
+                        });
+
+                        return delayRetryRequest.then(() => axios(config));
                     });
 
-                    return delayRetryRequest.then(() => axios(config));
-                });
+                    // when request, can set retry times and retry delay time
+                    let index = currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')
+                    await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.apis[index].key, { retry: 5, retryDelay: 60000 })
+                        .then((response) => {
+                            //console.log(" -> data " + JSON.stringify(response))
+                            //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
+                            temp.ohlcv = response.data.results
+                            ohlcv.push(temp)
+                            //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
+                            resolve()
+                        })
+                        .catch((error) => {
 
-                // when request, can set retry times and retry delay time
-                let index = currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')
-                await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.apis[index].key, { retry: 5, retryDelay: 60000 })
-                    .then((response) => {
-                        //console.log(" -> data " + JSON.stringify(response))
-                        //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
-                        temp.ohlcv = response.data.results
-                        ohlcv.push(temp)
-                        //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
-                    })
-                    .catch((error) => {
-
-                        console.log(" -> Polygon api get error " + error.status);
-                    })
-                    .finally(function () {
-                        // always executed
-                    })
-
+                            console.log(" -> Polygon api get error " + error.status);
+                            reject(error)
+                        })
+                        .finally(function () {
+                            // always executed
+                        })
+                }
 
             }
+
         }
         await asyncLoop()
-        resolve()
     })
 }
 
@@ -541,7 +705,7 @@ async function getOHLCV() {
 async function getOpenPositionsParse(param99, param0) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
-        console.log(" param 99 "+param99)
+        //console.log(" param 99 " + param99)
         openPositionsParse.length = 0 // reinitialize, for API
         let parseObject
         let query
@@ -1022,7 +1186,7 @@ async function createTrades() {
                          * GETTING MFE PRICE
                          *****/
 
-                        if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                        if (uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
                             console.log("  --> Getting MFE Price")
                             let ohlcvSymbol = ohlcv[ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
                             //todo exclude if trade in same minute timeframe
@@ -1030,10 +1194,10 @@ async function createTrades() {
                             //console.log(" ohlcvSymbol " + JSON.stringify(ohlcvSymbol))
 
                             if (ohlcvSymbol != undefined) {
-                                //console.log(" initEntryTime " + initEntryTime * 1000)
+                                console.log(" initEntryTime " + initEntryTime * 1000)
                                 //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
                                 let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
-                                //console.log(" temp start index "+tempStartIndex)
+                                console.log(" temp start index " + tempStartIndex)
                                 let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= trde.exitTime * 1000) //findIndex returns the first element
                                 let tempStartTime = ohlcvSymbol[tempStartIndex]
                                 let tempEndTime = ohlcvSymbol[tempEndIndex]

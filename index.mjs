@@ -4,6 +4,7 @@ import { ParseServer } from 'parse-server'
 import ParseNode from 'parse/node.js'
 import path from 'path'
 import fs from 'fs'
+import axios from 'axios'
 import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
@@ -289,12 +290,14 @@ const startIndex = async () => {
         await getAllUsers()
         const targetKey = req.headers['api-key'] || req.query['api-key'];
         //console.log(" -> target Key " + targetKey)
-        const findIndexByKey = (allUsers, targetKey) => {
+        
+        const checkIPKey = (allUsers, targetKey) => {
             for (const user of Object.values(allUsers)) {
                 if (user.hasOwnProperty("apis")) {
                     const index = user.apis.findIndex(obj => obj.key === targetKey);
                     if (index !== -1) {
-                        return index;
+                        currentUser.value = user
+                        return true;
                     }
                 }
 
@@ -303,10 +306,10 @@ const startIndex = async () => {
         }
 
         // Usage example
-        const index = findIndexByKey(allUsers, targetKey);
-        if (index != -1) {
-            console.log(" -> Valid api key found")
-            currentUser.value = allUsers[index]
+        const hasIPKey = checkIPKey(allUsers, targetKey);
+
+        if (hasIPKey) {            
+            console.log(" -> Valid api key found :)")
             next();
         } else {
             console.log(" -> Invalid api key")
@@ -326,7 +329,7 @@ const startIndex = async () => {
 
                 //console.log(" uploadMfePrices "+uploadMfePrices.value)
                 // Call the function from addTrades.js
-                //console.log(" -> current user " + JSON.stringify(currentUser.value))
+
                 await useGetTimeZone()
                 await useGetExistingTradesArray("api", ParseNode)
                 await useImportTrades(data.data, "api", data.selectedBroker, ParseNode)
@@ -339,6 +342,44 @@ const startIndex = async () => {
             res.status(500).send({ error: 'Error creating executions' });
         }
     });
+
+    app.post('/api/databento', async (req, res) => {
+        //console.log(" calling databento")
+        const data = req.body;
+        //console.log(" data "+JSON.stringify(data))
+        try {
+            const username = data.username;
+            const password = '';
+
+
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: "https://hist.databento.com/v0/timeseries.get_range",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64')
+                },
+                data: data
+            };
+
+            let responseBack
+            axios.request(config)
+                .then((response) => {
+                    //console.log("\n -> Resp " + response.data)
+                    responseBack = response.data
+                    res.status(200).send(responseBack);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    res.status(500).send({ error: error });
+                });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).send({ error: error });
+        }
+    })
 
 }
 

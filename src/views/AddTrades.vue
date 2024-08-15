@@ -59,7 +59,7 @@ function stepperPrevious() {
     </p>
 
     <!--MFE-->
-    <div class="mt-4" v-if="currentUser.marketDataApiKey">
+    <div class="mt-4" v-if="currentUser.apis.findIndex(obj => obj.provider === 'polygon' || obj.provider === 'databento') > -1">
         <div class="form-check form-switch">
             <label>Add MFE prices automatically (<a href="https://polygon.io/system" target="_blank">system
                     status</a>)</label>

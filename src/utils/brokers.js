@@ -610,11 +610,12 @@ export async function useBrokerTradeStation(param) {
 /****************************
  * INTERACTIVE BROKERS
  ****************************/
-export async function useBrokerInteractiveBrokers(param) {
+export async function useBrokerInteractiveBrokers(param, param2) {
     return new Promise(async (resolve, reject) => {
         try {
-
+            //console.log("param "+param)
             let papaParse = Papa.parse(param, { header: true })
+            
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
             papaParse.data.forEach(element => {
