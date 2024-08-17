@@ -274,7 +274,10 @@ export async function useImportTrades(param1, param2, param3, param0) {
             await createExecutions()
 
             if (uploadMfePrices.value) {
-                if (currentUser.value.apis.findIndex(obj => obj.provider === "databento") > -1) {
+                let databentoIndex = currentUser.value.apis.findIndex(obj => obj.provider === "databento")
+                let polygonIndex = currentUser.value.apis.findIndex(obj => obj.provider === "polygon")
+
+                if (databentoIndex > -1 && currentUser.value.apis[databentoIndex].key !="") {
                     try {
                         await getOHLCV("databento", param2);
                     } catch (error) {
@@ -284,7 +287,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
                         reject("Error getting OHLCV (" + error + ")")
                         return; // stop the function execution
                     }
-                } else if (currentUser.value.apis.findIndex(obj => obj.provider === "polygon") > -1) {
+                } else if (polygonIndex > -1 && currentUser.value.apis[polygonIndex].key !="") {
                     try {
                         await getOHLCV("polygon", param2);
                     } catch (error) {
