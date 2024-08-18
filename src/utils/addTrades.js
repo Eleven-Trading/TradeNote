@@ -559,7 +559,7 @@ const getOHLCV = (param, param2) => {
                 let stype_in = "raw_symbol"
 
                 console.log(" -> From date " + tradedStartDate)
-                //console.log(" -> To " + tradedEndDate)
+                console.log(" -> To " + tradedEndDate)
                 //let currentDateYesterday = dayjs().tz(timeZoneTrade.value).subtract(1, 'day').unix()
                 //console.log(" currentDateYesterday "+currentDateYesterday)
                 let toDate = dayjs(tradedEndDate * 1000).endOf('day').unix()

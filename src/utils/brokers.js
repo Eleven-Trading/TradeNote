@@ -623,10 +623,15 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = element.ClientAccountID
+
+                    let tempDate = element["Date/Time"].split(";")[0]
+                    let tempTime = element["Date/Time"].split(";")[1]
+
+
                     //console.log("element.TradeDate. " + element.TradeDate)
-                    let tempYear = element.TradeDate.slice(0, 4)
-                    let tempMonth = element.TradeDate.slice(4, 6)
-                    let tempDay = element.TradeDate.slice(6, 8)
+                    let tempYear = tempDate.slice(0, 4)
+                    let tempMonth = tempDate.slice(4, 6)
+                    let tempDay = tempDate.slice(6, 8)
                     let newDate = tempMonth + "/" + tempDay + "/" + tempYear
 
                     temp["T/D"] = newDate
@@ -664,9 +669,9 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
                     temp.Price = element.Price
 
-                    let tempEntryHour = element.OrderTime.split(";")[1].slice(0, 2)
-                    let tempEntryMinutes = element.OrderTime.split(";")[1].slice(2, 4)
-                    let tempEntrySeconds = element.OrderTime.split(";")[1].slice(4, 6)
+                    let tempEntryHour = tempTime.slice(0, 2)
+                    let tempEntryMinutes = tempTime.slice(2, 4)
+                    let tempEntrySeconds = tempTime.slice(4, 6)
 
                     temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
 
