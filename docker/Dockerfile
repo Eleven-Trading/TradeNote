@@ -7,7 +7,7 @@
 #RUN npm run build
 #CMD ["npm", "start"]
 
-FROM node:18-alpine3.17
+FROM node:18-alpine
 RUN apk add --no-cache bash
 WORKDIR /app
 ADD ./ .
