@@ -511,7 +511,7 @@ async function createExecutions() {
     })
 }
 
-const createOHLCV = (param, param2) => {
+export const useCreateOHLCV = (param, param2) => {
     //console.log(" param "+JSON.stringify(param))
     return new Promise(async (resolve, reject) => {
         let papaParse = Papa.parse(param, { header: true })
@@ -538,7 +538,7 @@ const createOHLCV = (param, param2) => {
             if ((index + 1) === tempArray.length) {
                 ohlcv.push(param2)
                 //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
-                resolve()
+                resolve(ohlcv)
             }
 
         }
@@ -620,7 +620,7 @@ const getOHLCV = (param, param2) => {
 
                             axios.request(config)
                                 .then(async (response) => {
-                                    await createOHLCV(response.data, temp)
+                                    await useCreateOHLCV(response.data, temp)
                                     resolve()
                                 })
                                 .catch((error) => {
@@ -635,7 +635,7 @@ const getOHLCV = (param, param2) => {
                     } else {
                         axios.post('/api/databento', data)
                             .then(async (response) => {
-                                await createOHLCV(response.data, temp)
+                                await useCreateOHLCV(response.data, temp)
                                 resolve()
                             })
                             .catch((error) => {

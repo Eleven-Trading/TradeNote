@@ -34,6 +34,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import axios from 'axios'
+import { useCreateOHLCV } from '../utils/addTrades';
 
 
 const dailyTabs = [{
@@ -206,13 +207,24 @@ async function clickTradesModal(param1, param2, param3) {
                     screenshot.type = null
 
                     /* GET OHLC / CANDLESTICK CHARTS */
-                    let index = apis.findIndex(obj => obj.provider == "polygon")
+                    let index = -1
+                    let databentoIndex = currentUser.value.apis.findIndex(obj => obj.provider === "databento")
+                    let polygonIndex = currentUser.value.apis.findIndex(obj => obj.provider === "polygon")
+                    let apiSource
+                    if (databentoIndex > -1 && currentUser.value.apis[databentoIndex].key != "") {
+                        index = databentoIndex
+                        apiSource = "databento"
+                    } else if (polygonIndex > -1 && currentUser.value.apis[polygonIndex].key != "") {
+                        index = polygonIndex
+                        apiSource = "polygon"
+                    }
+
                     if (index != -1) {
                         let apiKey = apis[index].key
                         let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
                         if (apiKey) {
-                            if (filteredTradesObject.type == "future") {
-                                candlestickChartFailureMessage.value = "Polygon API doesn't currently support Futures."
+                            if (filteredTradesObject.type == "future" && (databentoIndex === -1 || currentUser.value.apis[databentoIndex].key === "")) {
+                                candlestickChartFailureMessage.value = "You need a Databento API for Futures."
                             } else {
                                 try {
                                     candlestickChartFailureMessage.value = null
@@ -220,8 +232,8 @@ async function clickTradesModal(param1, param2, param3) {
                                     let ohlcPrices
                                     let ohlcVolumes
                                     if (ohlcArray.length == 0) {
-                                        console.log(" -> No symbole/date in ohlcArray")
-                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
+                                        console.log(" -> No symbol/date in ohlcArray")
+                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey, apiSource)
                                         ohlcTimestamps = ohlcArray[0].ohlcTimestamps
                                         ohlcPrices = ohlcArray[0].ohlcPrices
                                         ohlcVolumes = ohlcArray[0].ohlcVolumes
@@ -587,59 +599,138 @@ const filterDiary = (param) => {
     return diaries.filter(obj => obj.dateUnix == param)
 }
 
-function getOHLC(date, symbol, type, apiKey) {
+function getOHLC(date, symbol, type, apiKey, apiSource) {
+    if (apiSource === "databento") {
+        return new Promise(async (resolve, reject) => {
+            let temp = {}
+            temp.symbol = symbol
+            let databentoSymbol = temp.symbol
+            let stype_in = "raw_symbol"
+            let toDate = dayjs(date * 1000).endOf('day').unix()
+            let dataset
 
-    let ticker
-    if (type === "put" || type === "call" || type === "option") {
-        ticker = "O:" + symbol
-    } else if (type === "future") {
-        ticker = "I:" + symbol
-    } else if (type === "forex") {
-        ticker = "C:" + symbol
-    } else if (type === "crypto") {
-        ticker = "X:" + symbol
-    } else {
-        ticker = symbol
+            temp.ohlcv = []
+
+            if (type === "future") {
+                dataset = "GLBX.MDP3"
+                databentoSymbol = temp.symbol + ".c.0"
+                stype_in = "continuous"
+
+            } else if (type === "stock") {
+                dataset = "XNAS.ITCH"
+
+            } else if (tradedSymbols[i].secType === "call" || tradedSymbols[i].secType === "put") {
+
+            } else if (tradedSymbols[i].secType === "forex") {
+
+            }
+
+            let data =
+            {
+                'dataset': dataset,
+                'stype_in': stype_in,
+                'symbols': databentoSymbol,
+                'schema': 'ohlcv-1m',
+                'start': date * 1000000000,
+                'end': toDate * 1000000000,
+                'encoding': 'csv',
+                'pretty_px': 'true',
+                'pretty_ts': 'true',
+                'map_symbols': 'true',
+                'username': apiKey
+            }
+
+            axios.post('/api/databento', data)
+                .then(async (response) => {
+                    //console.log(" response "+JSON.stringify(response.data))
+                    let res = await useCreateOHLCV(response.data, temp)
+                    //console.log(" res "+JSON.stringify(res))
+                    let tempArray = {}
+                    tempArray.date = date
+                    tempArray.symbol = symbol
+                    tempArray.ohlcTimestamps = []
+                    tempArray.ohlcPrices = []
+                    tempArray.ohlcVolumes = []
+
+                    for (let index = 0; index < res[0].ohlcv.length; index++) {
+                        const element = res[0].ohlcv[index];
+
+                        let temp = []
+
+                        tempArray.ohlcTimestamps.push(element.t)
+                        temp.push(element.c)
+                        temp.push(element.o)
+                        temp.push(element.l)
+                        temp.push(element.h)
+                        tempArray.ohlcPrices.push(temp)
+                        tempArray.ohlcVolumes.push(element.v)
+                    }
+
+                    ohlcArray.push(tempArray)
+                    resolve()
+                })
+                .catch((error) => {
+                    console.log(" -> Error in databento response " + error)
+                    reject(error)
+                });
+        })
+
     }
-    console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
+    else if (apiSource === "polygon") {
 
-    return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey)
+        let ticker
+        if (type === "put" || type === "call" || type === "option") {
+            ticker = "O:" + symbol
+        } else if (type === "future") {
+            ticker = "I:" + symbol
+        } else if (type === "forex") {
+            ticker = "C:" + symbol
+        } else if (type === "crypto") {
+            ticker = "X:" + symbol
+        } else {
+            ticker = symbol
+        }
+        console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
 
-            .then((response) => {
-                let tempArray = {}
-                tempArray.date = date
-                tempArray.symbol = symbol
-                tempArray.ohlcTimestamps = []
-                tempArray.ohlcPrices = []
-                tempArray.ohlcVolumes = []
+        return new Promise(async (resolve, reject) => {
+            await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey)
 
-                for (let index = 0; index < response.data.results.length; index++) {
-                    const element = response.data.results[index];
+                .then((response) => {
+                    let tempArray = {}
+                    tempArray.date = date
+                    tempArray.symbol = symbol
+                    tempArray.ohlcTimestamps = []
+                    tempArray.ohlcPrices = []
+                    tempArray.ohlcVolumes = []
 
-                    let temp = []
+                    for (let index = 0; index < response.data.results.length; index++) {
+                        const element = response.data.results[index];
 
-                    tempArray.ohlcTimestamps.push(element.t)
-                    temp.push(element.c)
-                    temp.push(element.o)
-                    temp.push(element.l)
-                    temp.push(element.h)
-                    tempArray.ohlcPrices.push(temp)
-                    tempArray.ohlcVolumes.push(element.v)
-                }
+                        let temp = []
 
-                ohlcArray.push(tempArray)
-            })
-            .catch((error) => {
-                reject(error)
-            })
-            .finally(function () {
-                // always executed
-            })
+                        tempArray.ohlcTimestamps.push(element.t)
+                        temp.push(element.c)
+                        temp.push(element.o)
+                        temp.push(element.l)
+                        temp.push(element.h)
+                        tempArray.ohlcPrices.push(temp)
+                        tempArray.ohlcVolumes.push(element.v)
+                    }
 
+                    ohlcArray.push(tempArray)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+                .finally(function () {
+                    // always executed
+                })
 
-        resolve()
-    })
+            resolve()
+
+        })
+    }
+
 }
 
 </script>
