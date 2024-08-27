@@ -566,7 +566,7 @@ const updateAPIS = async () => {
 
                     <div class="row mt-2">
                         <div class="col-12 col-md-4">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                                data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Works with stocks and options."></i>
                         </div>
                         <div class="col-12 col-md-8">
                             <input type="text" class="form-control"
@@ -577,7 +577,7 @@ const updateAPIS = async () => {
 
                     <div class="row mt-2">
                         <div class="col-12 col-md-4">Databento<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                data-bs-title="Your Datanento API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                                data-bs-title="Your Datanento API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Works with Futures."></i>
                         </div>
                         <div class="col-12 col-md-8">
                             <input type="text" class="form-control"

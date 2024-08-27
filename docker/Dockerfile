@@ -1,12 +1,4 @@
-#FROM node:18-alpine3.17
-#RUN apk add --no-cache bash
-#WORKDIR /app
-#COPY package.json ./
-#RUN npm install -timeout=600000
-#COPY . .
-#RUN npm run build
-#CMD ["npm", "start"]
-
+# Using 18 alpine because supports arm/v8 and arm/v8 needed for silicon chips
 FROM node:18-alpine
 RUN apk add --no-cache bash
 WORKDIR /app

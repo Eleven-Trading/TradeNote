@@ -167,7 +167,7 @@ If you want to run the latest version of TradeNote you can also build the image 
 1. Clone the project (Master or Beta branch)
 2. cd into your project
 3. Run `npm install`
-4. Run `APP_ID=xxx MASTER_KEY=xxx ANALYTICS_OFF="true" MONGO_USER=xxx MONGO_PASSWORD=xxx TRADENOTE_DATABASE=xxx MONGO_URL=xxx MONGO_PORT=xxx TRADENOTE_PORT=xxx NODE_ENV='dev' node index.js`
+4. Run `APP_ID=xxx MASTER_KEY=xxx ANALYTICS_OFF="true" MONGO_USER=xxx MONGO_PASSWORD=xxx TRADENOTE_DATABASE=xxx MONGO_URL=xxx MONGO_PORT=xxx TRADENOTE_PORT=xxx NODE_ENV='dev' node index.mjs`
 
 ## First Steps
 ### Registering a User
