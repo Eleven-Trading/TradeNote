@@ -1753,7 +1753,8 @@ export function useScatterChart(param1) { //chart ID, green, red, page
 let candlestickChart
 let currentTD
 
-export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
+export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade, firstTimeOpen) {
+    console.log(" -> creating candlestick chart")
     //console.log(" trade " + JSON.stringify(trade))
     let green = '#26a69a'
     let red = '#FF6960'
@@ -1810,9 +1811,12 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
 
 
     return new Promise((resolve, reject) => {
-        if (!currentTD || currentTD != trade.td) {
+        //console.log(" currentTD "+currentTD)
+        //console.log(" trade.td "+trade.td)
+        if (firstTimeOpen) {
+            console.log(" init new candlestickChart")
             candlestickChart = echarts.init(document.getElementById("candlestickChart"));
-            currentTD = trade.td
+            //currentTD = trade.td
         }
 
         let decimals = 2
@@ -1930,7 +1934,6 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
 
             option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
         }
-
         candlestickChart.setOption(option);
         resolve()
     })

@@ -101,6 +101,7 @@ onMounted(async () => {
  * MODAL INTERACTION
  ***************/
 let loadScreenshots = false
+let firstTimeOpen = true // needed to init or not candlestickCharts in useCandlestickChart
 
 async function clickTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
@@ -165,10 +166,10 @@ async function clickTradesModal(param1, param2, param3) {
             await (modalDailyTradeOpen.value = false) //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
             await useInitTab("daily")
             loadScreenshots = false
+            firstTimeOpen = true
         }
         else {
             //console.log(" -> Opening Modal or clicking next/back")
-
             itemTradeIndex.value = Number(param1)
             tradeIndexPrevious.value = Number(param2)
             tradeIndex.value = Number(param3)
@@ -248,10 +249,10 @@ async function clickTradesModal(param1, param2, param3) {
                                             ohlcVolumes = ohlcArray[index].ohlcVolumes
                                         } else {
                                             console.log(" -> Symbol and/or date does not exist in ohlcArray")
-                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey)
-
-                                            let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
-
+                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey, apiSource)
+                                            //console.log("ohlcArray "+JSON.stringify(ohlcArray))
+                                            let index = ohlcArray.findIndex(obj => obj.date === filteredTradesObject.td && obj.symbol === filteredTradesObject.symbol)
+                                            //console.log("index "+index)
                                             if (index != -1) {
                                                 ohlcTimestamps = ohlcArray[index].ohlcTimestamps
                                                 ohlcPrices = ohlcArray[index].ohlcPrices
@@ -261,8 +262,8 @@ async function clickTradesModal(param1, param2, param3) {
                                             }
                                         }
                                     }
-
-                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject)
+                                    
+                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, firstTimeOpen)
 
                                 } catch (error) {
                                     if (error.response && error.response.status === 429) {
@@ -317,7 +318,7 @@ async function clickTradesModal(param1, param2, param3) {
                     findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
                     //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
                 }
-
+                if (firstTimeOpen) firstTimeOpen = false
             }
             await awaitClick()
             await (spinnerSetups.value = false)
@@ -600,6 +601,7 @@ const filterDiary = (param) => {
 }
 
 function getOHLC(date, symbol, type, apiKey, apiSource) {
+    console.log(" -> getting OHLC from "+apiSource+" for date "+date)
     if (apiSource === "databento") {
         return new Promise(async (resolve, reject) => {
             let temp = {}
@@ -643,8 +645,9 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
             axios.post('/api/databento', data)
                 .then(async (response) => {
                     //console.log(" response "+JSON.stringify(response.data))
+
                     let res = await useCreateOHLCV(response.data, temp)
-                    //console.log(" res "+JSON.stringify(res))
+
                     let tempArray = {}
                     tempArray.date = date
                     tempArray.symbol = symbol
@@ -652,8 +655,8 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                     tempArray.ohlcPrices = []
                     tempArray.ohlcVolumes = []
 
-                    for (let index = 0; index < res[0].ohlcv.length; index++) {
-                        const element = res[0].ohlcv[index];
+                    for (let index = 0; index < res.ohlcv.length; index++) {
+                        const element = res.ohlcv[index];
 
                         let temp = []
 
@@ -667,6 +670,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                     }
 
                     ohlcArray.push(tempArray)
+                    //console.log("ohlcArray "+JSON.stringify(ohlcArray))
                     resolve()
                 })
                 .catch((error) => {
@@ -1384,7 +1388,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
         </div>
     </div>
 
-    <!-- ============ TRADES MODAL ============ -->
+    <!-- ============ TAGS MODAL ============ -->
     <div class="modal fade" id="tagsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">

@@ -536,9 +536,9 @@ export const useCreateOHLCV = (param, param2) => {
             }
 
             if ((index + 1) === tempArray.length) {
-                ohlcv.push(param2)
+                ohlcv.push(param2) // this is used for when adding trades
                 //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
-                resolve(ohlcv)
+                resolve(param2) // resolving only param2, used for daily.vue (because I just want to get back the created OHLC, not the full / existing ohlcv array)
             }
 
         }
