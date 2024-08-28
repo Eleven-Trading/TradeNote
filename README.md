@@ -179,6 +179,8 @@ Start by registering a user. Visit `http://localhost:8080/register` to register 
 #### Instructions
 Please make sure to follow the instructions in the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for exporting and importing trades. 
 
+Community members have also created custom scripts to convert export files to fit the template in [custom scripts](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers/conversionScripts.md "custom scripts"). 
+
 
 #### Swing trades
 ❗Important Notice❗
