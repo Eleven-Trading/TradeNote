@@ -273,7 +273,8 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
             await createExecutions()
 
-            if (uploadMfePrices.value) {
+            if (currentUser.value.hasOwnProperty('apis') && (currentUser.value.apis.findIndex(obj => obj.provider === 'polygon' || obj.provider === 'databento') > -1) && uploadMfePrices.value) {
+
                 let databentoIndex = currentUser.value.apis.findIndex(obj => obj.provider === "databento")
                 let polygonIndex = currentUser.value.apis.findIndex(obj => obj.provider === "polygon")
 
