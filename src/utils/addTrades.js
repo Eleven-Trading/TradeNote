@@ -1198,10 +1198,8 @@ async function createTrades() {
                             //console.log(" ohlcvSymbol " + JSON.stringify(ohlcvSymbol))
 
                             if (ohlcvSymbol != undefined) {
-                                console.log(" initEntryTime " + initEntryTime * 1000)
                                 //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
                                 let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
-                                console.log(" temp start index " + tempStartIndex)
                                 let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= trde.exitTime * 1000) //findIndex returns the first element
                                 let tempStartTime = ohlcvSymbol[tempStartIndex]
                                 let tempEndTime = ohlcvSymbol[tempEndIndex]
@@ -1290,6 +1288,11 @@ async function createTrades() {
                                     }
 
                                     console.log("   ---> Iterating between entry price and exit price")
+                                    //console.log(" mfePrice 1 "+mfePrice)
+                                    //console.log("priceDifference "+priceDifference)
+                                    //console.log("initEntryPrice "+initEntryPrice)
+                                    //console.log("trde.exitPrice "+trde.exitPrice)
+
                                     //console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
                                     for (let i = startIndex; i <= endIndex; i++) {
                                         //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
@@ -1298,14 +1301,16 @@ async function createTrades() {
 
                                     }
                                     //console.log(" -> Price difference "+priceDifference)
-                                    if (initEntryPrice != trde.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
+                                    if (initEntryPrice != trde.exitPrice && priceDifference > 0) { //case where stop or exit price loss above entryprice
                                         console.log("   ---> Iterating between exit price and up until price hits / equals entry price, and at the latest until market close")
                                         let i = endIndex
                                         let ohlcvSymbolPrice
                                         trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
 
                                         //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
-                                        while (i <= endOfDayTimeIndex && (trde.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
+                                        
+                                        //we iterate until the end of trading day OR until is equal to the exitTrade time (endTime) or when the price move above or below the initEntryPrice
+                                        while (i <= endOfDayTimeIndex && ((ohlcvSymbol[i].t/1000) <= ((endTime/1000))) && (trde.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
                                             trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
                                             //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+useDateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
                                             if (trde.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
@@ -1314,6 +1319,7 @@ async function createTrades() {
 
                                         }
                                     }
+
                                     if (trde.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
                                     if (trde.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
 
