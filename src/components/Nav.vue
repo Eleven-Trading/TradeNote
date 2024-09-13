@@ -93,6 +93,11 @@ const pages = [{
     id: "forecast",
     name: "Forecast",
     icon: "uil uil-cloud-sun"
+},
+{
+    id: "imports",
+    name: "Imports",
+    icon: "uil uil-import"
 }
 ]
 //console.log(" user "+useCheckCurrentUser())
@@ -176,14 +181,22 @@ function getLatestVersion() {
                         <span v-else><img class="profileImg" src="../assets/astronaut.png" /></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li>
-                            <a class="dropdown-item" v-on:click="useInitShepherd()">
-                                <i class="uil uil-question-circle me-2"></i>Tutorial</a>
-                        </li>
+
                         <li>
                             <a class="dropdown-item" href="settings">
                                 <i class="uil uil-sliders-v-alt me-2"></i>Settings</a>
                         </li>
+
+                        <li>
+                            <a class="dropdown-item" href="imports">
+                                <i class="uil uil-import me-2"></i>Imports</a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" v-on:click="useInitShepherd()">
+                                <i class="uil uil-question-circle me-2"></i>Tutorial</a>
+                        </li>
+
                         <li>
                             <a class="dropdown-item" v-on:click="logout()">
                                 <i class="uil uil-signout me-2"></i>Logout</a>

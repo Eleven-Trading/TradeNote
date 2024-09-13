@@ -160,6 +160,16 @@ const router = createRouter({
         },
         component: () =>
             import('../views/Settings.vue')
+    },
+    {
+        path: '/imports',
+        name: 'imports',
+        meta: {
+            title: "Imports",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/Imports.vue')
     }
     ]
 })

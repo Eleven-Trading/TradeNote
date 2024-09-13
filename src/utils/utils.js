@@ -4,7 +4,7 @@ import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './chart
 import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
 import { useDeletePlaybook } from "./playbooks.js";
-import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades.js";
+import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades, useDeleteTrade, useDeleteExcursions } from "./trades.js";
 import { useLoadCalendar } from "./calendar.js";
 import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
 
@@ -649,6 +649,7 @@ export function useInitPopover() {
     const getTriggerList = () => {
         popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
         popoverTriggerList.forEach(function (popoverTriggerEl) {
+
             new bootstrap.Popover(popoverTriggerEl);
         });
     }
@@ -657,12 +658,15 @@ export function useInitPopover() {
 
     var popDel;
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async  function (e) {
         if (e.target.classList.contains('popoverDelete')) {
             popDel = e.target;
             document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
                 if (popDelete !== popDel) {
-                    bootstrap.Popover.getInstance(popDelete).hide();
+                    const popoverInstance = bootstrap.Popover.getInstance(popDelete);
+                    if (popoverInstance) {
+                        popoverInstance.hide();
+                    }
                 }
             });
         }
@@ -684,6 +688,11 @@ export function useInitPopover() {
             }
             if (pageId.value == "playbook") {
                 useDeletePlaybook();
+            }
+
+            if (pageId.value === "imports") {
+                await useDeleteTrade()
+                await useDeleteExcursions()
             }
         }
 
@@ -1183,10 +1192,10 @@ export const useGetLayoutStyle = async () => {
 export const useExport = async (param1, param2, param3) => {
     // Convert the JSON object to a string
     let blobData
-    let exportName = param2+"_"+param3
+    let exportName = param2 + "_" + param3
     let exportExt
     let csvSeparation = ";"
-    
+
     if (param1 == "json") {
         const jsonData = JSON.stringify(filteredTradesTrades, null, 2);
 
@@ -1219,7 +1228,7 @@ export const useExport = async (param1, param2, param3) => {
     const url = URL.createObjectURL(blobData);
     const a = document.createElement("a");
     a.href = url;
-    a.download = exportName+""+exportExt
+    a.download = exportName + "" + exportExt
     a.click();
 
     // Release the blob URL

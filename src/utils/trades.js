@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags } from "../stores/globals.js"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags, selectedItem, imports } from "../stores/globals.js"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils.js";
 import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
@@ -56,7 +56,7 @@ export async function useGetFilteredTrades(param) {
                 //console.log(" -> Looping "+element.dateUnix)
                 //console.log("trades "+JSON.stringify(element.trades))
                 //console.log(" element " + JSON.stringify(element))
-                
+
                 if (element.trades) {
                     let temp = _.omit(element, ["trades", "pAndL", "blotter"]) //We recreate trades and pAndL
                     temp.trades = []
@@ -113,13 +113,13 @@ export async function useGetFilteredTrades(param) {
                                 tradeTagsSelected = true
                             }
                         }
-                        
+
                         //If not, check if no tags is selected or not
                         else {
                             if (selectedTagsArray.includes("t000t")) {
                                 tradeTagsSelected = true
                             }
-                        }   
+                        }
 
                         //Check if trade(Id) is present in tags list for Daily tags
                         let dayTagsIndex = tags.findIndex(obj => obj.tradeId == element.td)
@@ -138,7 +138,7 @@ export async function useGetFilteredTrades(param) {
                                 tradeTagsSelected = true
                             }
                         }
-                        
+
                         //If not, check if no tags is selected or not
                         else {
                             if (selectedTagsArray.includes("t000t")) {
@@ -155,7 +155,7 @@ export async function useGetFilteredTrades(param) {
                         }
 
                         if ((selectedRange.value.start === 0 && selectedRange.value.end === 0 ? element.td >= selectedRange.value.start : element.td >= selectedRange.value.start && element.td < selectedRange.value.end) && selectedPositions.value.includes(element.strategy) && selectedAccounts.value.includes(element.account) && tradeTagsSelected) {
-                            
+
                             /**
                              * We're using tempArray to be able to group
                              * However, as we want to group only the selected tags, we need to check if tag.id is included in selectedTagsArray
@@ -181,12 +181,12 @@ export async function useGetFilteredTrades(param) {
                                     }
                                     //let index = availableTags.findIndex(obj)
                                     //console.log(" tempArray "+JSON.stringify(tempArray))
-                                    
+
                                 }
                             }
 
                             if (tags[dayTagsIndex] != undefined) {
-                                
+
                                 for (let index = 0; index < tags[dayTagsIndex].tags.length; index++) {
                                     const tagsElement = tags[dayTagsIndex].tags[index];
                                     for (let obj of availableTags) {
@@ -205,10 +205,10 @@ export async function useGetFilteredTrades(param) {
                                     //let index = availableTags.findIndex(obj)
                                     //console.log(" tempArray "+JSON.stringify(tempArray))
                                 }
-                            }  
+                            }
 
                             element.tags = tempArray
-                            
+
                             //console.log(" element "+JSON.stringify(element))
                             element.satisfaction = tradeSatisfaction
 
@@ -218,7 +218,7 @@ export async function useGetFilteredTrades(param) {
                             element.mfePrice = null
 
                             let indexExcursion = excursions.findIndex(obj => obj.tradeId == element.id)
-                            if(indexExcursion != -1){
+                            if (indexExcursion != -1) {
                                 if (excursions[indexExcursion].stopLoss) element.stopLoss = excursions[indexExcursion].stopLoss
                                 if (excursions[indexExcursion].maePrice) element.maePrice = excursions[indexExcursion].maePrice
                                 if (excursions[indexExcursion].mfePrice) element.mfePrice = excursions[indexExcursion].mfePrice
@@ -231,7 +231,7 @@ export async function useGetFilteredTrades(param) {
 
 
                             temp.trades.push(element)
-                            
+
                             filteredTradesTrades.push(element)
                             //console.log(" -> Temp trades "+JSON.stringify(temp.trades))
                         }
@@ -280,32 +280,39 @@ export async function useGetFilteredTrades(param) {
 /***************************************
  * GETTING DATA FROM PARSE DB 
  ***************************************/
-export async function useGetTrades() {
+export async function useGetTrades(param) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING TRADES");
         console.time("  --> Duration getting trades");
         //spinnerLoadingPageText.value = "Getting trades from ParseDB"
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
-        //console.log("start D "+startD)
-        //console.log("end D "+endD)
+
         const parseObject = Parse.Object.extend("trades");
         const query = new Parse.Query(parseObject)
         query.equalTo("user", Parse.User.current());
-        query.ascending("dateUnix");
         query.exclude("executions", "blotter", "pAndL") // we omit to make it lighter
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value);
+        if (pageId.value === "imports" || param === "imports") {
+            query.descending("dateUnix");
+            query.limit(20);
+        } else {
+            let startD = selectedRange.value.start
+            let endD = selectedRange.value.end
+            //console.log("start D "+startD)
+            //console.log("end D "+endD)
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.ascending("dateUnix");
+            query.limit(queryLimit.value);
+        }
         const results = await query.find();
         console.timeEnd("  --> Duration getting trades");
         //console.log("results "+JSON.stringify(results))
         if (results.length > 0) { //here results is an array so we use lenght. Sometimees results is not array then we use if results simply
             trades = []
             trades = JSON.parse(JSON.stringify(results))
+            imports.length = 0
+            imports.value = JSON.parse(JSON.stringify(results))
         }
-        //console.log("trades "+JSON.stringify(trades))
-        resolve()
+        resolve() // I'm adding trades to capture it in Imports... but normally I should be using global variable. But here in trades.js i'm not using the global. Don't remember why.
     })
 }
 
@@ -1244,4 +1251,55 @@ export async function useRefreshTrades() {
     } else {
         window.location.href = "/dashboard"
     }
+}
+
+/***************************************
+* IMPORTS
+***************************************/
+
+export const useDeleteTrade = async () => {
+    return new Promise(async (resolve, reject) => {
+        //console.log("screenshot "+JSON.stringify(screenshots))
+
+        /* Now, let's delete screenshot */
+
+        const parseObject = Parse.Object.extend("trades");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("dateUnix", selectedItem.value);
+        const results = await query.first();
+
+        if (results) {
+            await results.destroy()
+            console.log('  --> Deleted trade with id ' + results.id)
+            useGetTrades("imports")
+            resolve()
+        } else {
+            alert("There was problem with deleting trade")
+            reject("There was problem with deleting trade")
+        }
+    })
+}
+
+export const useDeleteExcursions = async () => {
+    return new Promise(async (resolve, reject) => {
+
+        const parseObject = Parse.Object.extend("excursions");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("dateUnix", selectedItem.value);
+        const results = await query.find();
+
+        if (results.length > 0) {
+            try {
+                // Destroy each object in the results array
+                await Promise.all(results.map(result => result.destroy()));
+                console.log('  --> Deleted excursions with ids ' + results.map(result => result.id).join(', '));
+                resolve();
+            } catch (error) {
+                alert("There was a problem with deleting excursions");
+                reject(error);
+            }
+        } else {
+            console.log("No excursions found to delete");
+        }
+    })
 }

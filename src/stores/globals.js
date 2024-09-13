@@ -80,6 +80,7 @@ export const totalsByDate = reactive({})
 export const groups = reactive({})
 export const profitAnalysis = reactive({})
 export const timeFrame = ref(15)
+export const imports = ref([])
 
 /**************************************
 * ADD TRADES
