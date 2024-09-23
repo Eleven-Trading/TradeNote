@@ -35,9 +35,9 @@ onBeforeMount(async () => {
     <div class="row mt-2">
         <div>
             <div>
-                <p>List of your latest imports. Please be careful when deleting imports, especially when you are swing trading. This can lead to unexpected behavior.</p>
+                <p>Please be careful when deleting imports, especially when you are swing trading, as it can lead to unexpected behavior.</p>
                 <p>When you delete an import, it will also delete your excursions. However, screenshots, tags, notes and satisfactions are not deleted.</p>
-                <p>You can also manipulate your database directly using a MongoDB GUI or CLI.</p>
+                <p>You can also manage your database using a MongoDB GUI or CLI.</p>
                 <table class="table">
                     <thead>
                     </thead>

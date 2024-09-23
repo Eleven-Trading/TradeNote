@@ -13,7 +13,7 @@ Note : make sure to input one execution per line, not aggregated trade. So one l
 - T/D: trade date in MM/DD/YYYY format
 - S/D: same as T/D, trade date in MM/DD/YYYY format
 - Currency: currency applied to the price of symbol
-- Type: not relevant. Put 0
+- Type: must be of type stock, future, forex, call or put
 - Side: side of the execution
     - B: Buy
     - S: Sell
