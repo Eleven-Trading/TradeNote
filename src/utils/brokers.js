@@ -822,8 +822,6 @@ export async function useTradovate(param) {
                     temp["Gross Proceeds"] = proceedsNumber.toString()
 
                     let echangeFees = futuresTradovateFees.value.filter(item => item.symbol == temp.Symbol)
-                    console.log("echangeFees "+echangeFees)
-                    console.log(" selectedTradovateTier.value "+selectedTradovateTier.value)
                     let commNumber = 0
                     if (echangeFees) {
                         //console.log(" -> exchange fee "+JSON.stringify(echangeFees[0].fee))
