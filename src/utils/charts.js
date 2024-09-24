@@ -1178,7 +1178,7 @@ export function useBarChartNegative(param1) {
             let quantities = 0
             var profitFactor = 0
             var numElements = keyObject[key].length
-            
+
             //console.log("num elemnets " + numElements)
             keyObject[key].forEach((element, index) => {
                 //console.log("index " + index)
@@ -1220,7 +1220,7 @@ export function useBarChartNegative(param1) {
                         series.unshift(ratio)
                     }
 
-                    if (param1 == "barChartNegative18"){
+                    if (param1 == "barChartNegative18") {
                         let temp = {}
                         temp.tagId = key
                         temp.tagName = element.tagName
@@ -1274,10 +1274,10 @@ export function useBarChartNegative(param1) {
             //3) separate them back out:
             for (var k = 0; k < list.length; k++) {
                 series[k] = list[k].ratio;
-                let index = yName.findIndex(obj => obj.tagId == list[k].name )
-                if (index != -1){
+                let index = yName.findIndex(obj => obj.tagId == list[k].name)
+                if (index != -1) {
                     yAxis[k] = yName[index].tagName
-                }else{
+                } else {
                     console.log(" -> Index / tag name does not exist")
                 }
             }
@@ -1754,7 +1754,7 @@ let candlestickChart
 let currentTD
 
 export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade, firstTimeOpen) {
-    console.log(" -> creating candlestick chart")
+    //console.log(" -> creating candlestick chart")
     //console.log(" trade " + JSON.stringify(trade))
     let green = '#26a69a'
     let red = '#FF6960'
@@ -1769,20 +1769,49 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
     }
 
 
-    const initialDataZoomPadding = dayjs(0).minute(dailyChartZoom.value).unix()
-    const minimumDataZoomLevel = dayjs(0).minute(30).unix()
+    const maxZoomStartUnix = dayjs(trade.entryTime * 1000).tz(timeZoneTrade.value).startOf('day').unix()
+    const maxZoomEndUnix = dayjs(trade.exitTime * 1000).tz(timeZoneTrade.value).endOf('day').unix()
 
-    const timeZone = timeZoneTrade.value;
-    const tradeEntryTime = trade.entryTime
-    const tradeExitTime = trade.exitTime
-    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs.unix(trade.exitTime).tz(timeZone), 'day')
-    const spreadTime = tradeIsIntraday ? Math.abs(tradeExitTime - tradeEntryTime) : 0
-    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + 2 * initialDataZoomPadding)
+
+    let dataZoomStartUnix
+    let dataZoomEndUnix
+
+    const startOfMinute = (param) => {
+        return dayjs(param * 1000).tz(timeZoneTrade.value).startOf('minute').unix()
+    }
+
+    const endOfMinute = (param) => {
+        return dayjs(param * 1000).tz(timeZoneTrade.value).endOf('minute').unix()
+    }
+
+    if (dailyChartZoom.value === 1) {
+        dataZoomStartUnix = startOfMinute(trade.entryTime)
+        dataZoomEndUnix = endOfMinute(trade.exitTime)
+    }
+
+    if (dailyChartZoom.value === 2) {
+        dataZoomStartUnix = startOfMinute((maxZoomStartUnix - trade.entryTime) / 2)
+        dataZoomEndUnix = endOfMinute((maxZoomEndUnix - trade.exitTime) / 2)
+    }
+
+    if (dailyChartZoom.value === 3) {
+        dataZoomStartUnix = startOfMinute(maxZoomStartUnix)
+        dataZoomEndUnix = endOfMinute(maxZoomEndUnix)
+    }
+
+    /*
+    const initialDataZoomPadding = dayjs(0).minute(dailyChartZoom.value).unix()
+    const minimumDataZoomLevel = dayjs.unix(0).tz(timeZoneTrade.value).minute(30).unix() // if trading near start of day, needs to be at least minimumDataZoomLevel
+    console.log(" initialDataZoomPadding "+initialDataZoomPadding)
+    console.log(" minimumDataZoomLevel "+minimumDataZoomLevel)
+    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day')
+    const spreadTime = tradeIsIntraday ? Math.abs(trade.exitTime - trade.entryTime) : 0
+    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + (2 * initialDataZoomPadding))
+    console.log(" dataZoomLevel "+dataZoomLevel)
 
     const findDataZoomStartUnix = () => {
-        const tradeEntryTimeUnix = trade.entryTime
-        let dataZoomStartUnix = tradeEntryTimeUnix - dataZoomLevel / 2 - spreadTime / 2
-
+        let dataZoomStartUnix = trade.entryTime - (dataZoomLevel / 2) - (spreadTime / 2)
+        console.log("dataZoomStartUnix1 "+dataZoomStartUnix)
         for (let i = ohlcTimestamps.length - 1; i >= 0; i--) {
             const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
             if (ohlcTimestampUnix <= dataZoomStartUnix) {
@@ -1790,13 +1819,12 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 break
             }
         }
-
+        console.log("dataZoomStartUnix2 "+dataZoomStartUnix)
         return dataZoomStartUnix
     }
 
     const findDataZoomEndUnix = () => {
-        const tradeExitTimeUnix = trade.exitTime
-        let dataZoomEndUnix = tradeExitTimeUnix + dataZoomLevel / 2 + spreadTime / 2
+        let dataZoomEndUnix = trade.exitTime + dataZoomLevel / 2 + spreadTime / 2
 
         for (let i = 0; i < ohlcTimestamps.length; i++) {
             const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
@@ -1805,16 +1833,16 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 break
             }
         }
-
+        console.log(" dataZoomEndUnix "+dataZoomEndUnix)
         return dataZoomEndUnix
     }
-
+    */
 
     return new Promise((resolve, reject) => {
         //console.log(" currentTD "+currentTD)
         //console.log(" trade.td "+trade.td)
         if (firstTimeOpen) {
-            console.log(" init new candlestickChart")
+            //console.log(" init new candlestickChart")
             candlestickChart = echarts.init(document.getElementById("candlestickChart"));
             //currentTD = trade.td
         }
@@ -1836,7 +1864,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                     // ?, close, open, low, high
                     let color
                     param[0].data[1] >= param[0].data[2] ? color = "#47b262" : color = "#eb5454"
-                    return param[0].name + " - O <span style='color: "+color+"'>" + useXDecFormat(param[0].data[2], decimals) + "</span> H <span style='color: "+color+"'>" + useXDecFormat(param[0].data[4], decimals) + "</span> L <span style='color: "+color+"'>" + useXDecFormat(param[0].data[3], decimals) + "</span> C <span style='color: "+color+"'>" + useXDecFormat(param[0].data[1], decimals)
+                    return param[0].name + " - O <span style='color: " + color + "'>" + useXDecFormat(param[0].data[2], decimals) + "</span> H <span style='color: " + color + "'>" + useXDecFormat(param[0].data[4], decimals) + "</span> L <span style='color: " + color + "'>" + useXDecFormat(param[0].data[3], decimals) + "</span> C <span style='color: " + color + "'>" + useXDecFormat(param[0].data[1], decimals)
                 },
                 position: function (pos, params, el, elRect, size) {
                     var obj = { top: 5 };
@@ -1891,7 +1919,8 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             ]
         };
 
-        if (dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            //console.log(" trade.entryPrice " + trade.entryPrice)
             option.series[0].markPoint.data.push({
                 name: 'entryMark',
                 symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
@@ -1910,10 +1939,10 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 }
             })
 
-            option.dataZoom[0].startValue = useHourMinuteFormat(findDataZoomStartUnix())
+            option.dataZoom[0].startValue = useHourMinuteFormat(dataZoomStartUnix)
         }
 
-        if (dayjs.unix(trade.exitTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+        if (dayjs.unix(trade.exitTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'exitMark',
                 symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
@@ -1932,7 +1961,7 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 }
             })
 
-            option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
+            option.dataZoom[0].endValue = useHourMinuteFormat(dataZoomEndUnix)
         }
         candlestickChart.setOption(option);
         resolve()

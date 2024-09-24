@@ -34,7 +34,7 @@ export const countdownInterval = ref(null)
 export const countdownSeconds = ref(5)
 
 /* Layout & Style */
-export const dailyChartZoom = ref(800)
+export const dailyChartZoom = ref(3) //1: zoom inn 2: medium zoom 3: fully/max zoom out
 
 
 /**************************************
