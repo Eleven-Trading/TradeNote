@@ -209,13 +209,13 @@ async function clickTradesModal(param1, param2, param3) {
 
                     /* GET OHLC / CANDLESTICK CHARTS */
                     let index = -1
-                    let databentoIndex = currentUser.value.apis.findIndex(obj => obj.provider === "databento")
-                    let polygonIndex = currentUser.value.apis.findIndex(obj => obj.provider === "polygon")
+                    let databentoIndex = apis.findIndex(obj => obj.provider === "databento")
+                    let polygonIndex = apis.findIndex(obj => obj.provider === "polygon")
                     let apiSource
-                    if (databentoIndex > -1 && currentUser.value.apis[databentoIndex].key != "") {
+                    if (databentoIndex > -1 && apis[databentoIndex].key != "") {
                         index = databentoIndex
                         apiSource = "databento"
-                    } else if (polygonIndex > -1 && currentUser.value.apis[polygonIndex].key != "") {
+                    } else if (polygonIndex > -1 && apis[polygonIndex].key != "") {
                         index = polygonIndex
                         apiSource = "polygon"
                     }
@@ -224,7 +224,7 @@ async function clickTradesModal(param1, param2, param3) {
                         let apiKey = apis[index].key
                         let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
                         if (apiKey) {
-                            if (filteredTradesObject.type == "future" && (databentoIndex === -1 || currentUser.value.apis[databentoIndex].key === "")) {
+                            if (filteredTradesObject.type == "future" && (databentoIndex === -1 || apis[databentoIndex].key === "")) {
                                 candlestickChartFailureMessage.value = "You need a Databento API for Futures."
                             } else {
                                 try {
