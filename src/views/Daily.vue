@@ -261,8 +261,7 @@ async function clickTradesModal(param1, param2, param3) {
                                                 console.log(" -> there's an issues with OHLC")
                                             }
                                         }
-                                    }
-                                    
+                                    }   
                                     await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, firstTimeOpen)
 
                                 } catch (error) {
@@ -601,16 +600,16 @@ const filterDiary = (param) => {
 }
 
 function getOHLC(date, symbol, type, apiKey, apiSource) {
-    console.log(" -> getting OHLC from "+apiSource+" for date "+date)
     if (apiSource === "databento") {
+        console.log(" -> getting OHLC from "+apiSource+" for date "+date)
         return new Promise(async (resolve, reject) => {
             let temp = {}
             temp.symbol = symbol
             let databentoSymbol = temp.symbol
             let stype_in = "raw_symbol"
-            let toDate = dayjs(date * 1000).endOf('day').unix()
+            let toDate = dayjs(date * 1000).tz(timeZoneTrade.value).endOf('day').unix()
             let dataset
-
+            //console.log("toDate "+toDate)
             temp.ohlcv = []
 
             if (type === "future") {
