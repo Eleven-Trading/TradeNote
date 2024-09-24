@@ -1738,8 +1738,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1749,8 +1749,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1760,8 +1760,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1771,8 +1771,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.29
+            "apex": 1.55,
+            "topstep": 2.29
         }
     },
     {
@@ -1782,8 +1782,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1793,8 +1793,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1804,8 +1804,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1815,8 +1815,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1826,7 +1826,7 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5
+            "apex": 1.5
         }
     },
     {
@@ -1845,8 +1845,8 @@ export const futuresTradovateFees = ref([
             "free": 3.61,
             "monthly": 3.31,
             "lifetime": 2.91,
-            "Apex": 2.32,
-            "Topstep": 2.91
+            "apex": 2.32,
+            "topstep": 2.91
         }
     },
     {
@@ -1874,8 +1874,8 @@ export const futuresTradovateFees = ref([
             "free": 3.02,
             "monthly": 2.92,
             "lifetime": 2.76,
-            "Apex": 2.67,
-            "Topstep": 1.32
+            "apex": 2.67,
+            "topstep": 1.32
         }
     },
     {
@@ -1885,8 +1885,8 @@ export const futuresTradovateFees = ref([
             "free": 0.72,
             "monthly": 0.62,
             "lifetime": 0.46,
-            "Apex": 0.37,
-            "Topstep": 0.42
+            "apex": 0.37,
+            "topstep": 0.42
         }
     },
     {
@@ -1896,7 +1896,7 @@ export const futuresTradovateFees = ref([
             "free": 2.72,
             "monthly": 2.46,
             "lifetime": 2.06,
-            "Apex": 1.46
+            "apex": 1.46
         }
     },
     {
@@ -1906,7 +1906,7 @@ export const futuresTradovateFees = ref([
             "free": 1.75,
             "monthly": 1.45,
             "lifetime": 1.05,
-            "Apex": 0.46
+            "apex": 0.46
         }
     },
     {
@@ -1916,7 +1916,7 @@ export const futuresTradovateFees = ref([
             "free": 1.87,
             "monthly": 1.59,
             "lifetime": 1.19,
-            "Apex": 0.59
+            "apex": 0.59
         }
     },
     {
@@ -1926,7 +1926,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.68,
             "lifetime": 1.28,
-            "Apex": 0.68
+            "apex": 0.68
         }
     },
     {
@@ -1936,7 +1936,7 @@ export const futuresTradovateFees = ref([
             "free": 1.67,
             "monthly": 1.38,
             "lifetime": 0.98,
-            "Apex": 0.39
+            "apex": 0.39
         }
     },
     {
@@ -1946,7 +1946,7 @@ export const futuresTradovateFees = ref([
             "free": 0.69,
             "monthly": 0.59,
             "lifetime": 0.43,
-            "Apex": 0.34
+            "apex": 0.34
         }
     },
     {
@@ -1956,7 +1956,7 @@ export const futuresTradovateFees = ref([
             "free": 0.65,
             "monthly": 0.55,
             "lifetime": 0.39,
-            "Apex": 0.30
+            "apex": 0.30
         }
     },
     {
@@ -1966,7 +1966,7 @@ export const futuresTradovateFees = ref([
             "free": 2.62,
             "monthly": 2.32,
             "lifetime": 1.92,
-            "Apex": 1.33
+            "apex": 1.33
         }
     },
     {
@@ -1976,7 +1976,7 @@ export const futuresTradovateFees = ref([
             "free": 2.62,
             "monthly": 2.32,
             "lifetime": 1.92,
-            "Apex": 1.33
+            "apex": 1.33
         }
     },
     {
@@ -1995,8 +1995,8 @@ export const futuresTradovateFees = ref([
             "free": 2.11,
             "monthly": 1.81,
             "lifetime": 1.41,
-            "Apex": 0.82,
-            "Topstep": 1.41
+            "apex": 0.82,
+            "topstep": 1.41
         }
     },
     {
@@ -2006,8 +2006,8 @@ export const futuresTradovateFees = ref([
             "free": 2.11,
             "monthly": 1.81,
             "lifetime": 1.41,
-            "Apex": 0.82,
-            "Topstep": 1.41
+            "apex": 0.82,
+            "topstep": 1.41
         }
     },
     {
@@ -2017,8 +2017,8 @@ export const futuresTradovateFees = ref([
             "free": 2.41,
             "monthly": 2.11,
             "lifetime": 1.71,
-            "Apex": 1.12,
-            "Topstep": 1.71
+            "apex": 1.12,
+            "topstep": 1.71
         }
     },
     {
@@ -2028,8 +2028,8 @@ export const futuresTradovateFees = ref([
             "free": 2.26,
             "monthly": 1.96,
             "lifetime": 1.56,
-            "Apex": 0.97,
-            "Topstep": 1.65
+            "apex": 0.97,
+            "topstep": 1.65
         }
     },
     {
@@ -2039,8 +2039,8 @@ export const futuresTradovateFees = ref([
             "free": 2.33,
             "monthly": 2.03,
             "lifetime": 1.63,
-            "Apex": 1.04,
-            "Topstep": 1.63
+            "apex": 1.04,
+            "topstep": 1.63
         }
     },
     {
@@ -2050,7 +2050,7 @@ export const futuresTradovateFees = ref([
             "free": 2.26,
             "monthly": 1.96,
             "lifetime": 1.56,
-            "Topstep": 1.56
+            "topstep": 1.56
         }
     },
     {
@@ -2069,7 +2069,7 @@ export const futuresTradovateFees = ref([
             "free": 2.71,
             "monthly": 2.41,
             "lifetime": 2.01,
-            "Topstep": 2.01
+            "topstep": 2.01
         }
     },
     {
@@ -2088,7 +2088,7 @@ export const futuresTradovateFees = ref([
             "free": 0.82,
             "monthly": 0.72,
             "lifetime": 0.56,
-            "Apex": 0.47
+            "apex": 0.47
         }
     },
     {
@@ -2125,7 +2125,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2135,7 +2135,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2145,7 +2145,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2155,7 +2155,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2165,8 +2165,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2176,8 +2176,8 @@ export const futuresTradovateFees = ref([
             "free": 1.02,
             "monthly": 0.92,
             "lifetime": 0.76,
-            "Apex": 0.67,
-            "Topstep": 0.82
+            "apex": 0.67,
+            "topstep": 0.82
         }
     },
     {
@@ -2187,8 +2187,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2207,8 +2207,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2218,7 +2218,7 @@ export const futuresTradovateFees = ref([
             "free": 1.52,
             "monthly": 1.42,
             "lifetime": 1.26,
-            "Topstep": 1.32
+            "topstep": 1.32
         }
     },
     {
@@ -2237,7 +2237,7 @@ export const futuresTradovateFees = ref([
             "free": 2.21,
             "monthly": 1.91,
             "lifetime": 1.51,
-            "Apex": 0.92
+            "apex": 0.92
         }
     },
     {
@@ -2247,7 +2247,7 @@ export const futuresTradovateFees = ref([
             "free": 2.21,
             "monthly": 1.91,
             "lifetime": 1.51,
-            "Apex": 0.92
+            "apex": 1.17
         }
     },
     {
@@ -2257,7 +2257,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67
+            "apex": 0.67
         }
     },
     {
@@ -2267,7 +2267,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67
+            "apex": 0.67
         }
     },
     {
@@ -2277,8 +2277,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 1.81
+            "apex": 1.77,
+            "topstep": 1.81
         }
     },
     {
@@ -2288,7 +2288,7 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72
+            "apex": 1.77
         }
     },
     {
@@ -2307,8 +2307,8 @@ export const futuresTradovateFees = ref([
             "free": 2.66,
             "monthly": 2.36,
             "lifetime": 1.96,
-            "Apex": 1.37,
-            "Topstep": 1.96
+            "apex": 1.37,
+            "topstep": 1.96
         }
     },
     {
@@ -2318,8 +2318,8 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67,
-            "Topstep": 1.26
+            "apex": 0.67,
+            "topstep": 1.26
         }
     },
     {
@@ -2338,8 +2338,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2349,8 +2349,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2360,8 +2360,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2371,8 +2371,8 @@ export const futuresTradovateFees = ref([
             "free": 1.02,
             "monthly": 0.92,
             "lifetime": 0.76,
-            "Apex": 0.67,
-            "Topstep": 0.82
+            "apex": 0.67,
+            "topstep": 0.82
         }
     },
     {
@@ -2382,8 +2382,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.77,
+            "topstep": 2.26
         }
     },
     {
@@ -2393,7 +2393,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2403,7 +2403,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2413,7 +2413,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2423,7 +2423,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2433,8 +2433,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2444,8 +2444,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2455,8 +2455,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2466,8 +2466,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2477,8 +2477,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2488,7 +2488,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2498,7 +2498,7 @@ export const futuresTradovateFees = ref([
             "free": 2.31,
             "monthly": 2.01,
             "lifetime": 1.61,
-            "Apex": 1.02
+            "apex": 1.02
         }
     },
     {
@@ -2508,8 +2508,8 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41,
-            "Topstep": 0.56
+            "apex": 0.41,
+            "topstep": 0.56
         }
     },
     {
@@ -2519,8 +2519,8 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41,
-            "Topstep": 0.56
+            "apex": 0.41,
+            "topstep": 0.56
         }
     },
     {
@@ -2530,7 +2530,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2540,7 +2540,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2550,7 +2550,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2560,7 +2560,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2570,8 +2570,8 @@ export const futuresTradovateFees = ref([
             "free": 2.31,
             "monthly": 2.01,
             "lifetime": 1.61,
-            "Apex": 1.02,
-            "Topstep": 1.61
+            "apex": 1.02,
+            "topstep": 1.61
         }
     },
     {
@@ -2581,8 +2581,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2592,8 +2592,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2603,8 +2603,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2614,8 +2614,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2625,8 +2625,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2636,8 +2636,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2647,8 +2647,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2658,8 +2658,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2669,7 +2669,7 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77
+            "apex": 1.77
         }
     },
     {
@@ -2679,7 +2679,7 @@ export const futuresTradovateFees = ref([
             "free": 2.81,
             "monthly": 2.51,
             "lifetime": 2.11,
-            "Apex": 1.52
+            "apex": 1.52
         }
     },
     {
@@ -2688,7 +2688,8 @@ export const futuresTradovateFees = ref([
         "fee": {
             "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "apex": 2.27
         }
     },
     {
@@ -2698,8 +2699,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2709,8 +2710,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2720,7 +2721,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2730,7 +2731,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2740,7 +2741,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2750,7 +2751,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2760,7 +2761,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2772,8 +2773,7 @@ export const futuresTradovateFees = ref([
             "lifetime": 2.86
         }
     }
-]
-)
+])
 
 export const tradovateTiers = reactive([{
     value: "free",
@@ -2786,7 +2786,16 @@ export const tradovateTiers = reactive([{
 {
     value: "lifetime",
     label: "Lifetime"
+},
+{
+    value: "apex",
+    label: "Apex"
+},
+{
+    value: "topstep",
+    label: "Topstep"
 }
+
 ])
 
 export const selectedTradovateTier = ref()
