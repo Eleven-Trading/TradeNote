@@ -542,17 +542,15 @@ function resetExcursion() {
 /**************
  * NOTES
  ***************/
-function noteClicked() {
-    //console.log("click")
-    tradeNoteChanged.value = true
-    saveButton.value = true
-}
 
 const tradeNoteChange = (param) => {
     tradeNote.value = param
     //console.log(" -> New note " + tradeNote.value)
     tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
     tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+    //console.log(" tradeNoteId.value " + tradeNoteId.value)
+    tradeNoteChanged.value = true
+    saveButton.value = true
 
 }
 
@@ -1333,8 +1331,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="tradeNote" v-on:change="tradeNoteChange($event.target.value)"
-                                        v-on:click="noteClicked"></textarea>
+                                        v-bind:value="tradeNote" @input="tradeNoteChange($event.target.value)"></textarea>
                                 </div>
 
                                 <!-- Forth line -->
