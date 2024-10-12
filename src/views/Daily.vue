@@ -101,7 +101,7 @@ onMounted(async () => {
  * MODAL INTERACTION
  ***************/
 let loadScreenshots = false
-let firstTimeOpen = true // needed to init or not candlestickCharts in useCandlestickChart
+let initCandleChart = true // needed to init or not candlestickCharts in useCandlestickChart
 
 async function clickTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
@@ -166,7 +166,7 @@ async function clickTradesModal(param1, param2, param3) {
             await (modalDailyTradeOpen.value = false) //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
             await useInitTab("daily")
             loadScreenshots = false
-            firstTimeOpen = true
+            initCandleChart = true
         }
         else {
             //console.log(" -> Opening Modal or clicking next/back")
@@ -199,11 +199,12 @@ async function clickTradesModal(param1, param2, param3) {
                 candlestickChartFailureMessage.value = null // to avoid message when screenshot is present
 
                 if (findScreenshot) {
-
+                    //console.log(" found screenshot")
                     for (let key in findScreenshot) {
                         screenshot[key] = findScreenshot[key]
                     }
                 } else {
+                    //console.log(" did not find any screenshot")
                     screenshot.side = null
                     screenshot.type = null
 
@@ -262,7 +263,8 @@ async function clickTradesModal(param1, param2, param3) {
                                             }
                                         }
                                     }   
-                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, firstTimeOpen)
+                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, initCandleChart)
+                                    initCandleChart = false
 
                                 } catch (error) {
                                     if (error.response && error.response.status === 429) {
@@ -317,7 +319,7 @@ async function clickTradesModal(param1, param2, param3) {
                     findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
                     //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
                 }
-                if (firstTimeOpen) firstTimeOpen = false
+                //if (firstTimeOpen) firstTimeOpen = false
             }
             await awaitClick()
             await (spinnerSetups.value = false)
