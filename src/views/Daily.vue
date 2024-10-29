@@ -16,6 +16,8 @@ import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTa
 
 import { useCandlestickChart } from '../utils/charts';
 
+import { useGetMFEPrices } from '../utils/addTrades';
+
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
 import dayjs from 'dayjs'
@@ -67,10 +69,14 @@ let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 
-let ohlcArray = []
+let ohlcArray = [] // array used for charts
+let ohlcv = [] // array used for MFE / excursion calculation (same as in addTrades.js)
 
 
 const candlestickChartFailureMessage = ref(null)
+const apiIndex = ref(-1)
+const apiKey = ref(null)
+const apiSource = ref(null)
 
 onBeforeMount(async () => {
 
@@ -174,6 +180,18 @@ async function clickTradesModal(param1, param2, param3) {
             tradeIndexPrevious.value = Number(param2)
             tradeIndex.value = Number(param3)
 
+            apiIndex.value = -1
+            let databentoIndex = apis.findIndex(obj => obj.provider === "databento")
+            let polygonIndex = apis.findIndex(obj => obj.provider === "polygon")
+
+            if (databentoIndex > -1 && apis[databentoIndex].key != "") {
+                apiIndex.value = databentoIndex
+                apiSource.value = "databento"
+            } else if (polygonIndex > -1 && apis[polygonIndex].key != "") {
+                apiIndex.value = polygonIndex
+                apiSource.value = "polygon"
+            }
+
             let awaitClick = async () => {
 
                 modalDailyTradeOpen.value = true
@@ -209,22 +227,12 @@ async function clickTradesModal(param1, param2, param3) {
                     screenshot.type = null
 
                     /* GET OHLC / CANDLESTICK CHARTS */
-                    let index = -1
-                    let databentoIndex = apis.findIndex(obj => obj.provider === "databento")
-                    let polygonIndex = apis.findIndex(obj => obj.provider === "polygon")
-                    let apiSource
-                    if (databentoIndex > -1 && apis[databentoIndex].key != "") {
-                        index = databentoIndex
-                        apiSource = "databento"
-                    } else if (polygonIndex > -1 && apis[polygonIndex].key != "") {
-                        index = polygonIndex
-                        apiSource = "polygon"
-                    }
 
-                    if (index != -1) {
-                        let apiKey = apis[index].key
+
+                    if (apiIndex.value != -1) {
+                        apiKey.value = apis[apiIndex.value].key
                         let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
-                        if (apiKey) {
+                        if (apiKey.value) {
                             if (filteredTradesObject.type == "future" && (databentoIndex === -1 || apis[databentoIndex].key === "")) {
                                 candlestickChartFailureMessage.value = "You need a Databento API for Futures."
                             } else {
@@ -235,7 +243,7 @@ async function clickTradesModal(param1, param2, param3) {
                                     let ohlcVolumes
                                     if (ohlcArray.length == 0) {
                                         console.log(" -> No symbol/date in ohlcArray")
-                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey, apiSource)
+                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type)
                                         ohlcTimestamps = ohlcArray[0].ohlcTimestamps
                                         ohlcPrices = ohlcArray[0].ohlcPrices
                                         ohlcVolumes = ohlcArray[0].ohlcVolumes
@@ -250,7 +258,7 @@ async function clickTradesModal(param1, param2, param3) {
                                             ohlcVolumes = ohlcArray[index].ohlcVolumes
                                         } else {
                                             console.log(" -> Symbol and/or date does not exist in ohlcArray")
-                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type, apiKey, apiSource)
+                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type)
                                             //console.log("ohlcArray "+JSON.stringify(ohlcArray))
                                             let index = ohlcArray.findIndex(obj => obj.date === filteredTradesObject.td && obj.symbol === filteredTradesObject.symbol)
                                             //console.log("index "+index)
@@ -262,7 +270,7 @@ async function clickTradesModal(param1, param2, param3) {
                                                 console.log(" -> there's an issues with OHLC")
                                             }
                                         }
-                                    }   
+                                    }
                                     await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, initCandleChart)
                                     initCandleChart = false
 
@@ -522,6 +530,24 @@ async function updateExcursions() {
     })
 }
 
+const updateMFEPrices = async (param) => {
+    //console.log(" param " + JSON.stringify(param))
+    return new Promise(async (resolve, reject) => {
+        spinnerSetups.value = true
+        let symbols = []
+        ohlcv = []
+        for (let index = 0; index < param.length; index++) {
+            const element = param[index];
+            if(!symbols.includes(element.symbol)){
+                await getOHLC(element.td, element.symbol, element.type)
+                symbols.push(element.symbol)
+            }
+            await useGetMFEPrices()
+        }
+        //console.log(" ohlcv "+JSON.stringify(ohlcv))
+        resolve()
+    })
+}
 
 /**************
  * MISC
@@ -599,12 +625,16 @@ const filterDiary = (param) => {
     return diaries.filter(obj => obj.dateUnix == param)
 }
 
-function getOHLC(date, symbol, type, apiKey, apiSource) {
-    if (apiSource === "databento") {
-        console.log(" -> getting OHLC from "+apiSource+" for date "+date)
+
+
+function getOHLC(date, symbol, type) {
+    if (apiSource.value === "databento") {
+        console.log(" -> getting OHLC from " + apiSource.value + " for date " + useDateCalFormat(date))
+
         return new Promise(async (resolve, reject) => {
             let temp = {}
             temp.symbol = symbol
+
             let databentoSymbol = temp.symbol
             let stype_in = "raw_symbol"
             let toDate = dayjs(date * 1000).tz(timeZoneTrade.value).endOf('day').unix()
@@ -638,7 +668,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                 'pretty_px': 'true',
                 'pretty_ts': 'true',
                 'map_symbols': 'true',
-                'username': apiKey
+                'username': apiKey.value
             }
 
             axios.post('/api/databento', data)
@@ -646,6 +676,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                     //console.log(" response "+JSON.stringify(response.data))
 
                     let res = await useCreateOHLCV(response.data, temp)
+                    ohlcv.push(res) // used for MFE calculation (same as in addTrades.js)
 
                     let tempArray = {}
                     tempArray.date = date
@@ -679,7 +710,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
         })
 
     }
-    else if (apiSource === "polygon") {
+    else if (apiSource.value === "polygon") {
 
         let ticker
         if (type === "put" || type === "call" || type === "option") {
@@ -696,7 +727,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
         console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
 
         return new Promise(async (resolve, reject) => {
-            await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey)
+            await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey.value)
 
                 .then((response) => {
                     let tempArray = {}
@@ -705,6 +736,11 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                     tempArray.ohlcTimestamps = []
                     tempArray.ohlcPrices = []
                     tempArray.ohlcVolumes = []
+
+                    let temp = {}
+                    temp.symbol = symbol
+                    temp.ohlcv = response.data.results
+                    ohlcv.push(temp) // used for MFE calculation (same as in addTrades.js)
 
                     for (let index = 0; index < response.data.results.length; index++) {
                         const element = response.data.results[index];
@@ -772,6 +808,7 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                                                 <i v-show="tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length == 0 || (tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length > 0 && tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())[0].tags.length === 0)"
                                                     data-bs-toggle="modal" data-bs-target="#tagsModal"
                                                     :data-index="index" class="ms-2 uil uil-tag-alt pointerClass"></i>
+
                                             </div>
                                             <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
                                                 }}):
@@ -1318,9 +1355,9 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                                         <!-- MFE -->
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price"
-                                                style="font-size: small;" v-bind:value="excursion.mfePrice"
-                                                v-on:click="tradeExcursionClicked"
-                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
+                                                        style="font-size: small;" v-bind:value="excursion.mfePrice"
+                                                        v-on:click="tradeExcursionClicked"
+                                                        v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
                                         </div>
                                         <!-- Delete
                                         <div class="col-1">
@@ -1333,7 +1370,8 @@ function getOHLC(date, symbol, type, apiKey, apiSource) {
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="tradeNote" @input="tradeNoteChange($event.target.value)"></textarea>
+                                        v-bind:value="tradeNote"
+                                        @input="tradeNoteChange($event.target.value)"></textarea>
                                 </div>
 
                                 <!-- Forth line -->

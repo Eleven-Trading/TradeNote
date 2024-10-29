@@ -675,7 +675,8 @@ export async function useBrokerInteractiveBrokers(param, param2) {
 
                     temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
 
-                    temp.Comm = (-Number(element.Commission)).toString()
+                    let commNum = Number(element.Commission)
+                    temp.Comm = (-commNum).toString()
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
@@ -683,7 +684,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
                     temp["Gross Proceeds"] = element.Proceeds
-                    temp["Net Proceeds"] = element.NetCash
+                    temp["Net Proceeds"] = element.Proceeds - (-commNum) // I'm not using Net Cash because on same day or sometimes with normal input, Net Cash is not / still not calculated on IBKR side. So I calculate it myself
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
                     temp.Note = ""

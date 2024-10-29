@@ -94,6 +94,7 @@ export const tradeId = ref()
 export const existingImports = reactive([])
 export const existingTradesArray = reactive([])
 export const gotExistingTradesArray = ref(false)
+export const marketCloseTime = ref("16:00:00")
 
 export const futureContractsJson = ref(
     [
@@ -2799,6 +2800,13 @@ export const tradovateTiers = reactive([{
 ])
 
 export const selectedTradovateTier = ref()
+
+/**************************************
+* ADD EXCURSIONS
+**************************************/
+export const daysBack = ref(30)
+export const daysMargin = ref(2)
+
 /**************************************
 * CHARTS
 **************************************/

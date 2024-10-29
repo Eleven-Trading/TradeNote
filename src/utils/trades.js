@@ -1,4 +1,4 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags, selectedItem, imports } from "../stores/globals.js"
+import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags, selectedItem, imports, daysBack } from "../stores/globals.js"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils.js";
 import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
@@ -293,7 +293,15 @@ export async function useGetTrades(param) {
         if (pageId.value === "imports" || param === "imports") {
             query.descending("dateUnix");
             query.limit(20);
-        } else {
+        } 
+        else if (pageId.value === "addExcursions") {
+            let startD = dayjs().subtract(daysBack.value, 'days').unix()
+            let endD = dayjs().unix()
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.ascending("dateUnix");
+        }
+        else {
             let startD = selectedRange.value.start
             let endD = selectedRange.value.end
             //console.log("start D "+startD)

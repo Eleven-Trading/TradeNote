@@ -85,6 +85,11 @@ const pages = [{
     icon: "uil uil-image-v"
 },
 {
+    id: "addExcursions",
+    name: "Add Excursions",
+    icon: "uil uil-refresh"
+},
+{
     id: "entries",
     name: "Entries",
     icon: "uil uil-signin"
@@ -170,6 +175,9 @@ function getLatestVersion() {
                         </li>
                         <li>
                             <a class="dropdown-item" href="addPlaybook">Playbook</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="addExcursions">Excursions</a>
                         </li>
 
                     </ul>

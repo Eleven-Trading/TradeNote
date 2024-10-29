@@ -658,7 +658,7 @@ export function useInitPopover() {
 
     var popDel;
 
-    document.addEventListener('click', async  function (e) {
+    document.addEventListener('click', async function (e) {
         if (e.target.classList.contains('popoverDelete')) {
             popDel = e.target;
             document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
@@ -1027,7 +1027,10 @@ export function useEditItem(param) {
     }
 }
 
-export function usePageRedirect() {
+export function usePageRedirect(param) {
+    if(param){
+        window.location.href = "/" + param
+    }
     if (pageId.value == "daily") {
         window.location.href = "/daily"
     }

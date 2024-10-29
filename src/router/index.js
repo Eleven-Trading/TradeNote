@@ -152,6 +152,16 @@ const router = createRouter({
             import('../views/AddScreenshot.vue')
     },
     {
+        path: '/addExcursions',
+        name: 'addExcursions',
+        meta: {
+            title: "Add Excursions",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/AddExcursions.vue')
+    },
+    {
         path: '/settings',
         name: 'settings',
         meta: {

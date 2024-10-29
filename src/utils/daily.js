@@ -1,8 +1,23 @@
 import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit, diaryUpdate, diaryQueryLimit, diaryPagination } from "../stores/globals.js";
+import { daysBack } from "../stores/globals.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
-
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
 
 //query limit must be same as diary limit
 let satisfactionPagination = 0
@@ -117,15 +132,25 @@ export const useUpdateDailySatisfaction = async (param1, param2) => { //param1 :
 export async function useGetExcursions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING EXCURSIONS")
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
+        
         const parseObject = Parse.Object.extend("excursions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.ascending("order");
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value); // limit to at most 10 results
+        if (pageId.value === "addExcursions") {
+            let startD = dayjs().subtract(daysBack.value, 'days').unix()
+            let endD = dayjs().unix()
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.ascending("dateUnix");
+        }
+        else {
+            let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.limit(queryLimit.value); // limit to at most 10 results
+        }
         excursions.length = 0
         const results = await query.find();
         results.forEach(element => {
@@ -395,7 +420,7 @@ export const useTradeTagsChange = async (param1, param2) => {
         //console.log(" itemTradeIndex.value " + itemTradeIndex.value)
         //console.log(" tradeIndex.value " + tradeIndex.value)
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
-        console.log(" tradeIndex.value "+tradeIndex.value)
+        console.log(" tradeIndex.value " + tradeIndex.value)
         if (tradeIndex.value != undefined) {
             tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
         } else {
@@ -684,7 +709,7 @@ export async function useGetNotes() {
 
             }
         }
-        console.log("  --> notes " + JSON.stringify(notes))
+        //console.log("  --> notes " + JSON.stringify(notes))
         resolve()
 
     })
