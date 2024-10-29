@@ -60,7 +60,7 @@ export async function useGetSatisfactions() {
             }
 
         }
-        //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
         satisfactionPagination = satisfactionPagination + diaryQueryLimit.value
 
         resolve()

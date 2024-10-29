@@ -6,7 +6,7 @@ import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser, apis } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser, apis, satisfactionTradeArray, satisfactionArray } from '../stores/globals';
 
 import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
@@ -327,6 +327,16 @@ async function clickTradesModal(param1, param2, param3) {
                     findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
                     //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
                 }
+
+                //let findSatisfaction = excursions.filter(obj => obj.tradeId == filteredTradeId)
+                console.log(" satisfactionTradeArray "+JSON.stringify(satisfactionArray))
+                if (findExcursion.length) {
+                    findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                    findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                    findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                    //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+                }
+
                 //if (firstTimeOpen) firstTimeOpen = false
             }
             await awaitClick()
@@ -390,9 +400,8 @@ const checkDate = ((param1, param2) => {
 
 
 async function tradeSatisfactionChange(param1, param2) {
-
     tradeSatisfactionId = param1.id
-    tradeSatisfactionDateUnix = param1.dateUnix
+    tradeSatisfactionDateUnix = param1.td
     tradeSatisfaction = param2
     param1.satisfaction = tradeSatisfaction
     await updateTradeSatisfaction()
@@ -530,24 +539,6 @@ async function updateExcursions() {
     })
 }
 
-const updateMFEPrices = async (param) => {
-    //console.log(" param " + JSON.stringify(param))
-    return new Promise(async (resolve, reject) => {
-        spinnerSetups.value = true
-        let symbols = []
-        ohlcv = []
-        for (let index = 0; index < param.length; index++) {
-            const element = param[index];
-            if(!symbols.includes(element.symbol)){
-                await getOHLC(element.td, element.symbol, element.type)
-                symbols.push(element.symbol)
-            }
-            await useGetMFEPrices()
-        }
-        //console.log(" ohlcv "+JSON.stringify(ohlcv))
-        resolve()
-    })
-}
 
 /**************
  * MISC
