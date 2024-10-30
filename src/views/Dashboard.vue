@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onBeforeMount, onMounted } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
-import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray } from '../stores/globals';
+import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray, availableTags, groups, barChartNegativeTagGroups } from '../stores/globals';
 import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat, useXDecFormat } from '../utils/utils';
 import NoData from '../components/NoData.vue';
 
@@ -66,7 +66,14 @@ const ratioCompute = computed(() => {
 })
 
 onBeforeMount(async () => {
-    useMountDashboard()
+    
+    await useMountDashboard()
+    //console.log(" availableTags "+JSON.stringify(availableTags))
+    //console.log(" groups "+JSON.stringify(groups))
+
+    //getting the "id" of barChartNegative based on the tag groups
+    
+    //console.log(" barChartNegativeTagGroups "+JSON.stringify(barChartNegativeTagGroups.value))
 })
 
 
@@ -438,7 +445,15 @@ onBeforeMount(async () => {
                                 </div>
 
                                 <!-- GROUP BY TAG COMBINATION -->
-
+                                <div class="col-12 col-xl-6 mb-3" v-for="obj in barChartNegativeTagGroups">
+                                    <div class="dailyCard">
+                                        <h6>Group by Tag Group - {{ obj.name }} ({{ ratioCompute.shortName }})</h6>
+                                        <div class="text-center" v-if="!dashboardChartsMounted">
+                                            <div class="spinner-border text-blue" role="status"></div>
+                                        </div>
+                                        <div v-bind:key="renderData" :id="'barChartNegative'+obj.id" class="chartClass"></div>
+                                    </div>
+                                </div>
 
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom } from "../stores/globals.js"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom, barChartNegativeTagGroups } from "../stores/globals.js"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat, useXDecFormat } from "./utils.js"
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
@@ -30,13 +30,6 @@ const maxChartValues = 20
 
 
 export async function useECharts(param) {
-    //console.log(" -> eCharts " + param)
-    /*let green
-    let red
-    green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
-    red = (totals[amountCase.value + 'LossCount'] / totals.trades)
-    await usePieChart("pieChart1", green, red)*/
-
     for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
@@ -70,46 +63,23 @@ export async function useECharts(param) {
         }
     }
 
-    /*for (let index = 1; index <= 1; index++) {
-        var chartId = 'lineChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init") {
-            useLineChart(chartId)
-        }
-    }*/
-
-    for (let index = 1; index <= 1; index++) {
-        var chartId = 'lineBarChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "lineBarChart") {
-            useLineBarChart(chartId)
-        }
+    function handleCharts(prefix, useChartFunction) {
+        let elements = document.querySelectorAll(`[id^="${prefix}"]`);
+        elements.forEach(element => {
+            if (param == "clear") {
+                echarts.init(element).clear();
+            }
+            if (param == "init" || param == prefix) {
+                useChartFunction(element.id);
+            }
+        });
     }
-
-    for (let index = 1; index <= 2; index++) {
-        var chartId = 'barChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "barChart") {
-            useBarChart(chartId)
-        }
-    }
-
-    let indexes = [1, 2, 3, 4, 7, 13, 16, 17, 18] // This way.value here because I took out some charts
-    indexes.forEach(index => {
-        var chartId = 'barChartNegative' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "barChartNegative") {
-            useBarChartNegative(chartId)
-        }
-    });
+    
+    // Call the function for each chart type
+    handleCharts('lineBarChart', useLineBarChart);
+    handleCharts('barChart', useBarChart);
+    handleCharts('barChartNegative', useBarChartNegative);
+    
 }
 
 export function useRenderDoubleLineChart() {
@@ -1118,52 +1088,58 @@ export function useBarChartNegative(param1) {
         var yAxis = []
         var series = []
         let yName = []
+        var keyObject
         if (param1 == "barChartNegative1") {
-            var keyObject = groups.timeframe
+            keyObject = groups.timeframe
         }
         if (param1 == "barChartNegative2") {
-            var keyObject = groups.duration
+            keyObject = groups.duration
         }
         if (param1 == "barChartNegative3") {
-            var keyObject = groups.day
+            keyObject = groups.day
         }
         if (param1 == "barChartNegative4") {
-            var keyObject = groups.trades
+            keyObject = groups.trades
         }
         if (param1 == "barChartNegative7") {
-            var keyObject = groups.executions
+            keyObject = groups.executions
         }
 
         if (param1 == "barChartNegative12") {
-            var keyObject = groups.shareFloat
+            keyObject = groups.shareFloat
         }
 
         if (param1 == "barChartNegative13") {
-            var keyObject = groups.entryPrice
+            keyObject = groups.entryPrice
         }
 
         if (param1 == "barChartNegative14") {
-            var keyObject = groups.mktCap
+            keyObject = groups.mktCap
         }
 
         if (param1 == "barChartNegative16") {
-            var keyObject = groups.symbols
+            keyObject = groups.symbols
         }
 
         if (param1 == "barChartNegative7") {
-            var keyObject = groups.executions
+            keyObject = groups.executions
         }
 
         if (param1 == "barChartNegative17") {
-            var keyObject = groups.position
+            keyObject = groups.position
         }
 
         if (param1 == "barChartNegative18") {
-            var keyObject = groups.tags
+            keyObject = groups.tags
         }
 
+        //case for group tags
+        let obj = barChartNegativeTagGroups.value.find(obj => param1.includes(obj.id));
+        if (obj != undefined){
+            keyObject = groups[obj.id]
+        }
+        
         const keys = Object.keys(keyObject);
-
         //console.log("object " + JSON.stringify(keyObject))
         //console.log("keys " + JSON.stringify(keys))
         for (const key of keys) {
@@ -1216,11 +1192,11 @@ export function useBarChartNegative(param1) {
                         ratio = profitFactor
                     }
 
-                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17" || param1 == "barChartNegative18") {
+                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17" || param1 == "barChartNegative18" || obj != undefined) {
                         series.unshift(ratio)
                     }
 
-                    if (param1 == "barChartNegative18") {
+                    if (param1 == "barChartNegative18" || obj != undefined) {
                         let temp = {}
                         temp.tagId = key
                         temp.tagName = element.tagName
@@ -1256,7 +1232,7 @@ export function useBarChartNegative(param1) {
 
         }
 
-        if (param1 == "barChartNegative18") {
+        if (param1 == "barChartNegative18" || obj != undefined) {
             //1) combine the arrays:
             /*for (var k = 0; k < yName.length; k++) {
                 yAxis[k] = yName[k];

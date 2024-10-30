@@ -84,6 +84,37 @@ Upload screenshots of you trades ("Entry" option) or simply an interesting setup
 
 ![Screenshots Page](https://f003.backblazeb2.com/file/7ak-public/tradenote/Capture%20d%E2%80%99%C3%A9cran%202023-03-26%20%C3%A0%2015.07.16.png "Screenshots Page")
 
+### Full List of Features
+#### Import
+Import trades from your broker platform.
+
+#### Vizualize
+Visualize your trades on charts and get meaningful insight from your data.
+
+#### Filter
+Filter your results by date, position, patterns, mistakes and much more.
+
+#### Excursions
+Add MFE prices automatically for deeper efficiency analysis.
+
+#### Diary
+Keep a daily diary of your trading journey to work on your trader psychology.
+
+#### Satisfaction
+Mark each of your trades and days as good or bad depending on your trading rules.
+
+#### Screenshots
+Add and annotate chart screenshots to reflect on your trade entries or any interesting setups.
+
+#### Tag & Annotate
+Add pattern, mistake and note for each trade.
+
+#### Remove Imports
+Clean your imports with one simple click.
+
+#### Responsive
+Use TradeNote on your mobile devices.
+
 # Setup
 ## Installation
 ### ❗Important Notice ❗

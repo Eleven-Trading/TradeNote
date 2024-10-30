@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds, filteredTradesTrades } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds, filteredTradesTrades, barChartNegativeTagGroups, availableTags, groups } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
 import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
@@ -787,6 +787,7 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
+    barChartNegativeTagGroups.length = 0
     await useGetSelectedRange()
     await Promise.all([useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()])
     await Promise.all([useGetFilteredTrades()])
@@ -797,6 +798,15 @@ export async function useMountDashboard() {
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
     useInitTooltip()
+    await availableTags.forEach(element => {
+        let index = Object.keys(groups).indexOf(element.id);
+        if (index != -1) {
+            let temp = {}
+            temp.id = element.id
+            temp.name = element.name
+            barChartNegativeTagGroups.value.push(temp)
+        }
+    });
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
@@ -1028,7 +1038,7 @@ export function useEditItem(param) {
 }
 
 export function usePageRedirect(param) {
-    if(param){
+    if (param) {
         window.location.href = "/" + param
     }
     if (pageId.value == "daily") {

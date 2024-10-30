@@ -175,6 +175,8 @@ export const useGetTagInfo = (param) => {
         for (let obj of availableTags) {
             for (let tag of obj.tags) {
                 if (tag.id === tagId) {
+                    temp.tagGroupId = obj.id
+                    temp.tagGroupName = obj.name
                     temp.groupColor = obj.color
                     temp.tagName = tag.name
                     return temp

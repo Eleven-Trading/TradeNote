@@ -20,6 +20,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import _ from 'lodash'
+import { useGetTagInfo } from "./daily.js";
 
 let trades = []
 
@@ -970,12 +971,20 @@ export async function useGroupTrades() {
         }, []);
 
         // Group by tag id
-        const groupedData = _.groupBy(flattenedData, 'tag.id');
+        //console.log(" flattenedData "+JSON.stringify(flattenedData))
+        flattenedData.forEach(element => {
+           let tagInfo = useGetTagInfo(element.tag.id) 
+           //console.log(" tagInfo "+JSON.stringify(tagInfo))
+           element.tag.groupName = tagInfo.tagGroupName
+           element.tag.groupId = tagInfo.tagGroupId
+        });
+        const groupByTag = _.groupBy(flattenedData, 'tag.id');
 
         // Convert the grouped data object to an object with the desired structure
-        const result = Object.keys(groupedData).reduce((acc, key) => {
-            acc[key] = groupedData[key].map(obj => ({
+        const result = Object.keys(groupByTag).reduce((acc, key) => {
+            acc[key] = groupByTag[key].map(obj => ({
                 tagName: obj.tag.name,
+                tagGroupName: obj.tag.groupName,
                 ...obj
             }));
             return acc;
@@ -983,6 +992,28 @@ export async function useGroupTrades() {
 
         groups.tags = result
         //console.log("tags " + JSON.stringify(groups.tags))
+
+        /****
+         * Group by group tags and then create groups by these groups to get the tags
+         */
+        const groupByTagGroup = _.groupBy(flattenedData, 'tag.groupId');
+
+        // Convert the grouped data object to an object with the desired structure
+        const result2 = Object.keys(groupByTagGroup).reduce((acc, key) => {
+            acc[key] = groupByTagGroup[key].map(obj => ({
+                tagName: obj.tag.name,
+                tagGroupName: obj.tag.groupName,
+                ...obj
+            }));
+            return acc;
+        }, {});
+
+        //console.log(" groupByTagGroup "+JSON.stringify(groupByTagGroup))
+        for (let key in result2) {
+            groups[key] = _.groupBy(result2[key], 'tag.id');
+        }
+        
+        //console.log(" groups "+JSON.stringify(groups))
 
         /*******************
          * GROUP BY SYMBOL

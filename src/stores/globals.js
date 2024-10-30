@@ -52,6 +52,7 @@ export const tabGettingScreenshots = ref(false)
 //Dashboard
 export const dashboardChartsMounted = ref()
 export const dashboardIdMounted = ref(false)
+export const barChartNegativeTagGroups = ref([])
 
 //Charts
 export const renderingCharts = ref(true) // this is for spinner
