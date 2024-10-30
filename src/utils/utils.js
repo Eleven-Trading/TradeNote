@@ -787,7 +787,7 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
-    barChartNegativeTagGroups.length = 0
+    barChartNegativeTagGroups.value = []
     await useGetSelectedRange()
     await Promise.all([useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()])
     await Promise.all([useGetFilteredTrades()])

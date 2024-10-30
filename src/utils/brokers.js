@@ -615,7 +615,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
         try {
             //console.log("param "+param)
             let papaParse = Papa.parse(param, { header: true })
-            
+
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
             papaParse.data.forEach(element => {
@@ -1368,6 +1368,137 @@ export async function useFundTraders(param) {
             }
 
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        } catch (error) {
+            console.log("  --> ERROR " + error)
+            reject(error)
+        }
+        resolve()
+    })
+}
+
+/****************************
+ * TASTYTRADE
+ ****************************/
+export async function useTasyTrade(param, param2) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let papaParse = Papa.parse(param, { header: true })
+
+            // we need to sort because in case of option exercice I need to look into the past
+            papaParse.data.sort((a, b) => {
+                return a.Date.localeCompare(b.Date);
+            });
+            //console.log("papaparse " + JSON.stringify(papaParse.data))
+
+            papaParse.data.forEach(element => {
+                //Exclude void rows, money movement and option cash settlements because I calculate them myself
+                if (element.Date != "" && element.Type != "Money Movement" && !element["Sub Type"].includes("Cash Settled")) {
+                    //console.log("element " + JSON.stringify(element))
+                    let temp = {}
+                    temp.Account = element.ClientAccountID
+
+                    let tempDate = element.Date.split("T")[0]
+                    let tempTime = element.Date.split("T")[1]
+
+
+                    //console.log("element.TradeDate. " + element.TradeDate)
+                    let tempYear = tempDate.slice(0, 4)
+                    let tempMonth = tempDate.slice(5, 7)
+                    let tempDay = tempDate.slice(8, 10)
+                    let newDate = tempMonth + "/" + tempDay + "/" + tempYear
+
+                    temp["T/D"] = newDate
+                    temp["S/D"] = newDate
+                    temp.Currency = element.Currency
+
+                    //Type
+                    temp.Type = "stock"
+                    if (element["Instrument Type"] == "Future") {
+                        temp.Type = "future"
+                    }
+                    if (element["Instrument Type"] == "Equity Option") {
+                        element["Call or Put"] == "CALL" ? temp.Type = "call" : temp.Type = "put"
+                    }
+                    //console.log("  --> Type " + temp.Type)
+
+                    if (element["Action"] == "BUY_TO_OPEN") {
+                        temp.Side = "B"
+                    }
+                    if (element["Action"] == "BUY_TO_CLOSE") {
+                        temp.Side = "BC"
+                    }
+                    if (element["Action"] == "SELL_TO_CLOSE") {
+                        temp.Side = "S"
+                    }
+                    if (element["Action"] == "SELL_TO_OPEN") {
+                        temp.Side = "SS"
+                    }
+
+                    //Case for futures
+                    if (element["Action"] == "BUY" && Number(element.Value) == 0) {
+                        temp.Side = "B"
+                    }
+                    if (element["Action"] == "BUY" && Number(element.Value) != 0) {
+                        temp.Side = "BC"
+                    }
+                    if (element["Action"] == "SELL" && Number(element.Value) != 0) {
+                        temp.Side = "S"
+                    }
+                    if (element["Action"] == "SELL" && Number(element.Value) == 0) {
+                        temp.Side = "SS"
+                    }
+
+                    temp.SymbolOriginal = element["Symbol"]
+                    if (element["Action"] == "" && (temp.Type == "call" || temp.Type == "put")) {
+                        let index = tradesData.findIndex(obj => obj.SymbolOriginal == temp.SymbolOriginal)
+                        if (index != -1) {
+                            let side = tradesData[index].Side
+                            if (side == "B") temp.Side = "S"
+                            if (side == "SS") temp.Side = "BC"
+                            console.log(" -> Prior option " + temp.SymbolOriginal + " was " + side)
+                        } else {
+                            console.log("No prior open option for " + temp.SymbolOriginal + ". This is an issues !")
+                            //alert("No prior open option for "+temp.SymbolOriginal+". This is an issues !")
+                        }
+                    }
+
+                    if (temp.Type == "stock") {
+                        temp.Symbol = element["Symbol"]
+                    }
+                    if (temp.Type == "call" || temp.Type == "put") {
+                        temp.Symbol = element["Underlying Symbol"]
+                    }
+                    if (temp.Type == "future") {
+                        temp.Symbol = element["Symbol"].slice(1, -2);
+                    }
+
+                    temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
+                    temp.Price = element["Average Price"]
+
+                    let tempEntryHour = tempTime.slice(0, 2)
+                    let tempEntryMinutes = tempTime.slice(2, 4)
+                    let tempEntrySeconds = tempTime.slice(4, 6)
+
+                    temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
+
+                    let commNum = Number(element.Commissions) + Number(element.Fees)
+                    temp.Comm = (-commNum).toString()
+                    temp.SEC = "0"
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Gross Proceeds"] = element.Value
+                    temp["Net Proceeds"] = element.Value - (-commNum) // I'm not using Net Cash because on same day or sometimes with normal input, Net Cash is not / still not calculated on IBKR side. So I calculate it myself
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+                    //console.log("temp "+JSON.stringify(temp))
+                    tradesData.push(temp)
+                }
+            });
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)

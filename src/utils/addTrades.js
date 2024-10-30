@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, marketCloseTime } from '../stores/globals.js'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders } from './brokers.js'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTasyTrade } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
@@ -134,7 +134,9 @@ export async function useImportTrades(param1, param2, param3, param0) {
             selectedBroker.value = param3
 
         }
-        if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template" || selectedBroker.value == "tdAmeritrade" || selectedBroker.value == "interactiveBrokers" || selectedBroker.value == "tradovate" || selectedBroker.value == "ninjaTrader" || selectedBroker.value == "heldentrader" || selectedBroker.value == "rithmic" || selectedBroker.value == "fundTraders") {
+
+        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade"]
+        if (readAsTextArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
             } else {
@@ -142,7 +144,8 @@ export async function useImportTrades(param1, param2, param3, param0) {
             }
         }
 
-        if (selectedBroker.value == "metaTrader5") {
+        let readAsArrayBufferArray = ["metaTrader5"]
+        if (readAsArrayBufferArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
             } else {
@@ -256,6 +259,16 @@ export async function useImportTrades(param1, param2, param3, param0) {
         if (selectedBroker.value == "fundTraders") {
             console.log(" -> FundTraders")
             await useFundTraders(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TASTYTRADE
+         ****************************/
+        if (selectedBroker.value == "tastyTrade") {
+            console.log(" -> TastyTrade")
+            await useTasyTrade(fileInput).catch(error => {
                 importFileErrorFunction(error)
             })
         }
