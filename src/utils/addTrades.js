@@ -315,20 +315,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
                     console.log(" -> No APIs stored for MFE and charts")
                 }
             }
-            /*await createTrades().then(async () => {
-                //console.log(" -> Open posisitions: " + openPosition)
-                if (openPosition) {
-                    //console.log("You have one or more open positions. Please close all your positions before import.")
-                    alert("You have one or more open positions. Please close all your positions before import.")
-                    return
-                } else {
-     
-                    await filterExisting("trades")
-                    await useCreateBlotter()
-                    await useCreatePnL()
-                }
-     
-            })*/
+            
             await getOpenPositionsParse(param2, param0)
             await createTrades()
             await filterExisting("trades")
@@ -429,8 +416,8 @@ async function createTempExecutions() {
                 if (temp2.side == "SS") {
                     temp2.strategy = "short"
                 }
-
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
+                temp2.symbolOriginal = tradesData[key].SymbolOriginal
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
 
@@ -1107,6 +1094,7 @@ async function createTrades() {
                         temp7.sellQuantity = 0
                     }
                     temp7.symbol = tempExec.symbol;
+                    temp7.symbolOriginal = tempExec.symbolOriginal;
                     temp7.entryTime = tempExec.execTime;
                     initEntryTime = tempExec.execTime
                     temp7.exitTime = 0

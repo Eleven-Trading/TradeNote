@@ -49,7 +49,9 @@ export async function useBrokerTradeZero(param) {
             tempArray.forEach(element => {
                 if (element.Type == "" || !types.includes(element.Type)) {
                     element.Type = "stock"
+                    
                 }
+                element.SymbolOriginal = element["Symbol"]
                 tradesData.push(JSON.parse(JSON.stringify(element)))
             });
             //console.log("tradesData " + JSON.stringify(tradesData))
@@ -123,6 +125,7 @@ export async function useBrokerMetaTrader5(param) {
                         if (Object.values(row)[3] == "sell" && Object.values(row)[4] == "out") {
                             temp.Side = "S"
                         }
+                        temp.SymbolOriginal = Object.values(row)[2]
                         temp.Symbol = Object.values(row)[2].replace(/#*/, '')
                         temp.Qty = (Object.values(row)[5]).toString()
                         //console.log(" -> Qty import "+temp.Qty)
@@ -252,6 +255,7 @@ export async function useBrokerTdAmeritrade(param) {
                     let type
                     let side
                     let symb
+                    let symbolOriginal
                     let qtyNumber
                     let priceNumber
                     let amount
@@ -279,8 +283,10 @@ export async function useBrokerTdAmeritrade(param) {
                         if (param2.Side == "SELL" && param2["Pos Effect"] == "TO CLOSE") {
                             side = "S"
                         }
-
+                        
                         symb = param2.Symbol
+                        symbolOriginal = symb
+
                         if (symb.includes("/")) {
                             let temp1 = symb.slice(1)
                             let temp2 = temp1.slice(0, -3)
@@ -361,6 +367,7 @@ export async function useBrokerTdAmeritrade(param) {
 
                     temp.Side = side
 
+                    temp.SymbolOriginal = symbolOriginal
                     type == "call" || type == "put" ? temp.Symbol = symb + "" + temp.Type.charAt(0) : temp.Symbol = symb
 
                     qtyNumber >= 0 ? qtyNumber = qtyNumber : qtyNumber = -qtyNumber
@@ -505,7 +512,8 @@ export async function useBrokerTradeStation(param) {
                     if (element.Type == "Sell to Open") {
                         temp.Side = "SS"
                     }
-
+                    
+                    temp.SymbolOriginal = element.Symbol.trim()
                     temp.Symbol = element.Symbol.trim()
                     if (temp.Type == "future") {
                         temp.Symbol = temp.Symbol.slice(0, -3)
@@ -660,6 +668,8 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                         temp.Side = "SS"
                     }
 
+                    temp.SymbolOriginal = element["Symbol"]
+
                     if (temp.Type == "stock") {
                         temp.Symbol = element["Symbol"]
                     } else {
@@ -792,6 +802,7 @@ export async function useTradovate(param) {
 
                     totalQty == 0 ? newTrade = true : newTrade = false
 
+                    temp.SymbolOriginal = tempExec.Contract
                     temp.Symbol = tempExec.Product
 
 
@@ -978,6 +989,7 @@ export async function useBrokerHeldentrader(param) {
 
                     totalQty == 0 ? newTrade = true : newTrade = false
 
+                    temp.SymbolOriginal = element.Instrument
                     temp.Symbol = element.Instrument
 
                     temp.Price = element.Price
@@ -1052,6 +1064,7 @@ export async function useNinjaTrader(param) {
                         temp.Side = "SS"
                     }
 
+                    temp.SymbolOriginal = element.Instrument
                     temp.Symbol = element.Instrument.split(" ")[0]
 
                     let priceNumber = Number(element.Price)
@@ -1207,6 +1220,7 @@ export async function useRithmic(param) {
 
                         totalQty == 0 ? newTrade = true : newTrade = false
 
+                        temp.SymbolOriginal = tempExec.Symbol
                         temp.Symbol = tempExec.Symbol.slice(0, -2)
 
 
@@ -1330,6 +1344,7 @@ export async function useFundTraders(param) {
 
                         totalQty == 0 ? newTrade = true : newTrade = false
 
+                        temp.SymbolOriginal = tempExec.Symbol
                         temp.Symbol = tempExec.Symbol
 
 
@@ -1449,6 +1464,7 @@ export async function useTasyTrade(param, param2) {
                     }
 
                     temp.SymbolOriginal = element["Symbol"]
+                    
                     if (element["Action"] == "" && (temp.Type == "call" || temp.Type == "put")) {
                         let index = tradesData.findIndex(obj => obj.SymbolOriginal == temp.SymbolOriginal)
                         if (index != -1) {
@@ -1481,16 +1497,20 @@ export async function useTasyTrade(param, param2) {
 
                     temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
 
-                    let commNum = Number(element.Commissions) + Number(element.Fees)
-                    temp.Comm = (-commNum).toString()
+                    let commNum = isNaN(Number(element.Commissions)) ? 0 : Number(element.Commissions)
+                    let feeNum = isNaN(Number(element.Fees)) ? 0 : Number(element.Fees)
+                    let commNumSum = commNum + feeNum
+                    temp.Comm = (-commNumSum).toString()
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
                     temp.Nasdaq = "0"
                     temp["ECN Remove"] = "0"
                     temp["ECN Add"] = "0"
-                    temp["Gross Proceeds"] = element.Value
-                    temp["Net Proceeds"] = element.Value - (-commNum) // I'm not using Net Cash because on same day or sometimes with normal input, Net Cash is not / still not calculated on IBKR side. So I calculate it myself
+                    let valNum = Number(element.Value.replace(/[^\d.-]/g, ''));
+                    temp["Gross Proceeds"] = valNum
+                    temp["Net Proceeds"] = valNum - (-commNumSum) // I'm not using Net Cash because on same day or sometimes with normal input, Net Cash is not / still not calculated on IBKR side. So I calculate it myself
+
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
                     temp.Note = ""
@@ -1498,7 +1518,7 @@ export async function useTasyTrade(param, param2) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
