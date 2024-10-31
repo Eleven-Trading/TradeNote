@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds, filteredTradesTrades, barChartNegativeTagGroups, availableTags, groups } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds, barChartNegativeTagGroups, availableTags, groups } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
 import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
@@ -1202,15 +1202,19 @@ export const useGetLayoutStyle = async () => {
     })
 }
 
-export const useExport = async (param1, param2, param3) => {
+export const useExport = async (param1, param2, param3, param4) => {
     // Convert the JSON object to a string
     let blobData
-    let exportName = param2 + "_" + param3
+    let exportName = param2 
+    if (param3 != null){
+        exportName = exportName + "_" + param3
+    }
+    
     let exportExt
     let csvSeparation = ";"
 
     if (param1 == "json") {
-        const jsonData = JSON.stringify(filteredTradesTrades, null, 2);
+        const jsonData = JSON.stringify(param4, null, 2);
 
         // Create a blob from the JSON string
         blobData = new Blob([jsonData], { type: "application/json" });
@@ -1219,11 +1223,11 @@ export const useExport = async (param1, param2, param3) => {
     }
     if (param1 == "csv") {
         // Extract the header row from the JSON object
-        const headers = Object.keys(filteredTradesTrades[0]);
+        const headers = Object.keys(param4[0]);
         const csvRows = [headers.join(csvSeparation)];
 
         // Convert the JSON object to a CSV string
-        filteredTradesTrades.forEach(row => {
+        param4.forEach(row => {
             const csvRow = headers.map(header => {
                 return row[header];
             }).join(csvSeparation);

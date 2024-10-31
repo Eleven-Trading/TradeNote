@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { useCheckCurrentUser, useInitTooltip, useGetAPIS, useGetLayoutStyle } from '../utils/utils';
+import { useCheckCurrentUser, useInitTooltip, useGetAPIS, useGetLayoutStyle, useExport } from '../utils/utils';
 import { currentUser, renderProfile, availableTags, apis, layoutStyle } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
@@ -26,7 +26,8 @@ onBeforeMount(async () => {
     await useGetAPIS()
     //await useGetLayoutStyle()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
-    //console.log(" available tags "+JSON.stringify(availableTags))
+    //console.log(" available tags " + JSON.stringify(availableTags))
+    //console.log(" availableTagsTags "+JSON.stringify(availableTagsTags))
     for (let index = 0; index < availableTags.length; index++) {
         const element = JSON.parse(JSON.stringify(availableTags[index]))
         newAvailableTags.push(element)
@@ -86,6 +87,7 @@ const useGetAvailableTagsTags = () => {
         const element = availableTags[index];
         for (let index = 0; index < element.tags.length; index++) {
             const el = element.tags[index];
+            el.groupName = element.name
             availableTagsTags.push(el)
         }
 
@@ -430,22 +432,22 @@ const generateAPIKey = () => {
 /*********************
  * LAYOUT & SETUP
  *********************/
- const inputDiaryTitles = (param1, param2) => {
-    console.log(" param 1 "+param1)
-    console.log(" param 2 "+param2)
-    if(layoutStyle.diaryTitles != undefined && layoutStyle.diaryTitles.length>0){
+const inputDiaryTitles = (param1, param2) => {
+    console.log(" param 1 " + param1)
+    console.log(" param 2 " + param2)
+    if (layoutStyle.diaryTitles != undefined && layoutStyle.diaryTitles.length > 0) {
         console.log("title exists")
         layoutStyle.diaryTitles.splice(param1, 0, param2);
-        console.log(" Layout Style "+JSON.stringify(layoutStyle.diaryTitles))
-    }else{
+        console.log(" Layout Style " + JSON.stringify(layoutStyle.diaryTitles))
+    } else {
         console.log("title does not exists")
-        layoutStyle.diaryTitles = []    
+        layoutStyle.diaryTitles = []
         layoutStyle.diaryTitles.splice(param1, 0, param2);
-        console.log(" Layout Style "+JSON.stringify(layoutStyle))
+        console.log(" Layout Style " + JSON.stringify(layoutStyle))
     }
-    
 
- }
+
+}
 const updateAPIS = async () => {
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING APIS")
@@ -510,29 +512,6 @@ const updateAPIS = async () => {
                     <div class="col-12 col-md-8">
                         <input type="file" @change="uploadProfileAvatar" />
                     </div>
-
-                    <!--<div class="col-12 col-md-4 mt-3">Diary Categories<i class="ps-1 uil uil-info-circle"
-                            data-bs-toggle="tooltip"
-                            data-bs-title="Custom category separation for your diary entries."></i>
-                    </div>
-                    <div class="col-12 col-md-8 mt-3">
-                        <div class="row">
-                            <div class="col-6">
-                                <button @click="inputCount++">+</button>
-                            </div>
-                            <div class="col-6">
-                                {{ inputCount }}
-                                <button @click="inputCount > 1 ? inputCount-- : null">-</button>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="col-12 offset-md-4 col-md-8">
-                        <div v-for="(n, index) in inputCount" :key="n">
-                            <input :id="index" class="form-control mt-2" type="text" @input="inputDiaryTitles(index,$event.target.value)"/>
-                        </div>
-                    </div>-->
-
                 </div>
 
                 <div class="mt-3 mb-3">
@@ -576,7 +555,8 @@ const updateAPIS = async () => {
                     </div>
 
                     <div class="row mt-2">
-                        <div class="col-12 col-md-4">Databento<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                        <div class="col-12 col-md-4">Databento<i class="ps-1 uil uil-info-circle"
+                                data-bs-toggle="tooltip"
                                 data-bs-title="Your Datanento API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Works with Futures."></i>
                         </div>
                         <div class="col-12 col-md-8">
@@ -599,12 +579,26 @@ const updateAPIS = async () => {
                 <div class="mt-3 row">
                     <p class="fs-5 fw-bold">TAGS</p>
                     <p class="fw-lighter">Create tag groups and assign tags to your groups.</p>
-                    <div>
-
-                        <button type="button" v-on:click="addNewGroup" class="btn blueBtn btn-sm"><i
-                                class="uil uil-plus me-2"></i>Group</button>
-                        <button v-show="newAvailableTags.length > 0" type="button" v-on:click="addNewTag"
-                            class="btn blueBtn btn-sm ms-3"><i class="uil uil-plus me-2"></i>Tag</button>
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="button" v-on:click="addNewGroup" class="btn blueBtn btn-sm"><i
+                                    class="uil uil-plus me-2"></i>Group</button>
+                            <button v-show="newAvailableTags.length > 0" type="button" v-on:click="addNewTag"
+                                class="btn blueBtn btn-sm ms-3"><i class="uil uil-plus me-2"></i>Tag</button>
+                        </div>
+                        <div class="col-6 text-end">
+                            <button class="btn btn-secondary btn-sm mt-2 ms-4 dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                        v-on:click="useExport('json', 'tags', null, availableTagsTags)">JSON</a>
+                                </li>
+                                <li><a class="dropdown-item"
+                                        v-on:click="useExport('csv', 'tags', null, availableTagsTags)">CSV</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <div v-for="(group, groupIndex) in availableTags" class="col-12 col-md-6">
                         <div class="availableTagsCard mt-3">
