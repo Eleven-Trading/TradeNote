@@ -66,7 +66,7 @@ const ratioCompute = computed(() => {
 })
 
 onBeforeMount(async () => {
-    
+    barChartNegativeTagGroups.length = 0
     await useMountDashboard()
     //console.log(" availableTags "+JSON.stringify(availableTags))
     //console.log(" groups "+JSON.stringify(groups))
