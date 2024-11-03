@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, marketCloseTime } from '../stores/globals.js'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTasyTrade } from './brokers.js'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
@@ -268,7 +268,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
          ****************************/
         if (selectedBroker.value == "tastyTrade") {
             console.log(" -> TastyTrade")
-            await useTasyTrade(fileInput).catch(error => {
+            await useTastyTrade(fileInput).catch(error => {
                 importFileErrorFunction(error)
             })
         }

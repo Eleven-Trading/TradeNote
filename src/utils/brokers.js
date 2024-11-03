@@ -49,7 +49,7 @@ export async function useBrokerTradeZero(param) {
             tempArray.forEach(element => {
                 if (element.Type == "" || !types.includes(element.Type)) {
                     element.Type = "stock"
-                    
+
                 }
                 element.SymbolOriginal = element["Symbol"]
                 tradesData.push(JSON.parse(JSON.stringify(element)))
@@ -283,7 +283,7 @@ export async function useBrokerTdAmeritrade(param) {
                         if (param2.Side == "SELL" && param2["Pos Effect"] == "TO CLOSE") {
                             side = "S"
                         }
-                        
+
                         symb = param2.Symbol
                         symbolOriginal = symb
 
@@ -512,7 +512,7 @@ export async function useBrokerTradeStation(param) {
                     if (element.Type == "Sell to Open") {
                         temp.Side = "SS"
                     }
-                    
+
                     temp.SymbolOriginal = element.Symbol.trim()
                     temp.Symbol = element.Symbol.trim()
                     if (temp.Type == "future") {
@@ -1394,7 +1394,7 @@ export async function useFundTraders(param) {
 /****************************
  * TASTYTRADE
  ****************************/
-export async function useTasyTrade(param, param2) {
+export async function useTastyTrade(param, param2) {
     return new Promise(async (resolve, reject) => {
         try {
             let papaParse = Papa.parse(param, { header: true })
@@ -1410,7 +1410,7 @@ export async function useTasyTrade(param, param2) {
                 if (element.Date != "" && element.Type != "Money Movement" && !element["Sub Type"].includes("Cash Settled")) {
                     //console.log("element " + JSON.stringify(element))
                     let temp = {}
-                    temp.Account = element.ClientAccountID
+                    temp.Account = "TastyTrade1"
 
                     let tempDate = element.Date.split("T")[0]
                     let tempTime = element.Date.split("T")[1]
@@ -1464,7 +1464,7 @@ export async function useTasyTrade(param, param2) {
                     }
 
                     temp.SymbolOriginal = element["Symbol"]
-                    
+
                     if (element["Action"] == "" && (temp.Type == "call" || temp.Type == "put")) {
                         let index = tradesData.findIndex(obj => obj.SymbolOriginal == temp.SymbolOriginal)
                         if (index != -1) {
@@ -1494,8 +1494,11 @@ export async function useTasyTrade(param, param2) {
                     let tempEntryHour = tempTime.slice(0, 2)
                     let tempEntryMinutes = tempTime.slice(2, 4)
                     let tempEntrySeconds = tempTime.slice(4, 6)
-
-                    temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
+                    const dateTime = dayjs.utc(element.Date)
+                    const tradeTZ = dateTime.tz(timeZoneTrade.value)
+                    const timeInTZ = tradeTZ.format("HH:mm:ss");
+                    //console.log("original time "+element.Date+" and timeInTZ "+timeInTZ); 
+                    temp["Exec Time"] = timeInTZ
 
                     let commNum = isNaN(Number(element.Commissions)) ? 0 : Number(element.Commissions)
                     let feeNum = isNaN(Number(element.Fees)) ? 0 : Number(element.Fees)
