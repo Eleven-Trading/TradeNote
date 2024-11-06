@@ -133,7 +133,7 @@ Note: currently, TradeNote does not take into account ECN fees (available soon).
 4. Download as CSV.
 
 # MetaTrader 5 (MT 5)
-Please use the standalone MT5 windows application and follow the steps below. 
+Please use the standalone MT5 windows application and follow the steps below. Also, make sure to set the MT5 language to English before exporting the trades. In the MT5 main menu at the top go to View -> Languages and select English.
 
 1. In the MetaTrader Terminal window, select the History tab.
 2. Right-click on any order in the account history, and select the time period you want to export.

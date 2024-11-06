@@ -627,7 +627,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
             papaParse.data.forEach(element => {
-                if (element.ClientAccountID) {
+                if (element.ClientAccountID && element.AssetClass != "CASH") {
                     //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = element.ClientAccountID
@@ -653,6 +653,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     if (element.AssetClass == "OPT") {
                         element["Put/Call"] == "C" ? temp.Type = "call" : temp.Type = "put"
                     }
+
                     //console.log("  --> Type " + temp.Type)
 
                     if (element["Buy/Sell"] == "BUY" && (element["Code"].includes("O"))) {
@@ -1407,7 +1408,8 @@ export async function useTastyTrade(param, param2) {
 
             papaParse.data.forEach(element => {
                 //Exclude void rows, money movement and option cash settlements because I calculate them myself
-                if (element.Date != "" && element.Type != "Money Movement" && !element["Sub Type"].includes("Cash Settled")) {
+                if (element.Date != "" && element.Type != "Money Movement" && element["Sub Type"] != "Exercise" && element["Sub Type"] != "Assignment") {
+                    //console.log(" sub type "+element["Sub Type"])
                     //console.log("element " + JSON.stringify(element))
                     let temp = {}
                     temp.Account = "TastyTrade1"
@@ -1465,7 +1467,7 @@ export async function useTastyTrade(param, param2) {
 
                     temp.SymbolOriginal = element["Symbol"]
 
-                    if (element["Action"] == "" && (temp.Type == "call" || temp.Type == "put")) {
+                    if ((element["Sub Type"] == "Cash Settled Exercise" || element["Sub Type"] == "Cash Settled Assignment" || element["Sub Type"] == "Expiration") && (temp.Type == "call" || temp.Type == "put")) {
                         let index = tradesData.findIndex(obj => obj.SymbolOriginal == temp.SymbolOriginal)
                         if (index != -1) {
                             let side = tradesData[index].Side
@@ -1489,6 +1491,8 @@ export async function useTastyTrade(param, param2) {
                     }
 
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
+
+                    
                     temp.Price = element["Average Price"]
 
                     let tempEntryHour = tempTime.slice(0, 2)
@@ -1513,6 +1517,11 @@ export async function useTastyTrade(param, param2) {
                     let valNum = Number(element.Value.replace(/[^\d.-]/g, ''));
                     temp["Gross Proceeds"] = valNum
                     temp["Net Proceeds"] = valNum - (-commNumSum) // I'm not using Net Cash because on same day or sometimes with normal input, Net Cash is not / still not calculated on IBKR side. So I calculate it myself
+
+                    /*if (element["Sub Type"] == "Cash Settled Exercise"){
+                        console.log(" valNum "+valNum)
+                    }*/
+
 
                     temp["Clr Broker"] = ""
                     temp.Liq = ""
