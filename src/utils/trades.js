@@ -415,6 +415,7 @@ export async function useTotalTrades() {
         */
 
         /* 1a - In each filtered trade, we will iterate trade to create totals */
+        //console.log("filteredTrades  "+JSON.stringify(filteredTrades))
         filteredTrades.forEach((element, index) => {
             // Other fees
             if (element.cashJournal != undefined) {
@@ -1021,7 +1022,6 @@ export async function useGroupTrades() {
         groups.symbols = _(temp1)
             .groupBy('symbol')
             .value()
-        //console.log("symbols " + JSON.stringify(groups.symbols))
 
         /*******************
          * GROUP BY PUBLIC FLOAT

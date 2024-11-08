@@ -74,12 +74,12 @@ export async function useECharts(param) {
             }
         });
     }
-    
+
     // Call the function for each chart type
     handleCharts('lineBarChart', useLineBarChart);
     handleCharts('barChart', useBarChart);
     handleCharts('barChartNegative', useBarChartNegative);
-    
+
 }
 
 export function useRenderDoubleLineChart() {
@@ -1135,13 +1135,14 @@ export function useBarChartNegative(param1) {
 
         //case for group tags
         let obj = barChartNegativeTagGroups.value.find(obj => param1.includes(obj.id));
-        if (obj != undefined){
+        if (obj != undefined) {
             keyObject = groups[obj.id]
         }
-        
+
+        // KEYS are the different array of groups: so long/short, array of symbols, etc.
         const keys = Object.keys(keyObject);
         //console.log("object " + JSON.stringify(keyObject))
-        //console.log("keys " + JSON.stringify(keys))
+
         for (const key of keys) {
 
             yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
@@ -1156,11 +1157,16 @@ export function useBarChartNegative(param1) {
             var numElements = keyObject[key].length
 
             //console.log("num elemnets " + numElements)
+
+            //console.log(" key "+key)
             keyObject[key].forEach((element, index) => {
                 //console.log("index " + index)
                 sumWins += element[amountCase.value + 'Wins']
                 sumLoss += element[amountCase.value + 'Loss']
 
+                //console.log(" symbol "+element.symbol)
+                //console.log(" element "+JSON.stringify(element))
+                //console.log(" proceeds "+element[amountCase.value + 'Proceeds'])
                 sumProceeds += element[amountCase.value + 'Proceeds']
 
                 if (param1 == "barChartNegative4") {
@@ -1170,12 +1176,17 @@ export function useBarChartNegative(param1) {
                 }
                 quantities += element.buyQuantity
 
+
+                //console.log(" sumProceeds "+sumProceeds)
+                //console.log(" trades "+trades)
+
                 //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                 if (numElements == (index + 1)) {
 
-                    appt = sumProceeds / trades
+                    appt = sumProceeds == 0 && trades == 0 ? null : sumProceeds / trades
 
-                    apps = sumProceeds / quantities
+
+                    apps = sumProceeds == 0 && quantities == 0 ? null : sumProceeds / quantities
 
                     sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
 
@@ -1191,6 +1202,8 @@ export function useBarChartNegative(param1) {
                     if (selectedRatio.value == "profitFactor") {
                         ratio = profitFactor
                     }
+
+                    //console.log(" ratio "+ratio)
 
                     if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17" || param1 == "barChartNegative18" || obj != undefined) {
                         series.unshift(ratio)
@@ -1209,20 +1222,34 @@ export function useBarChartNegative(param1) {
         if (param1 == "barChartNegative16" || param1 == "barChartNegative17") {
             //1) combine the arrays:
             var list = [];
-            for (var j = 0; j < series.length; j++)
-                list.push({ 'ratio': series[j], 'name': yAxis[j] });
+            for (var j = 0; j < series.length; j++) {
+
+                //for group by Symbol, if open trade then ratio will be null, so no need to show on group by symbol chart
+                if (series[j] != null) {
+                    list.push({ 'ratio': series[j], 'name': yAxis[j] });
+                    
+                }
+            }
             //2) sort:
             list.sort(function (a, b) {
                 return ((a.ratio < b.ratio) ? -1 : ((a.ratio == b.ratio) ? 0 : 1));
                 //Sort could be modified to, for example, sort on the age 
                 // if the name is the same.
             });
+
+            //console.log(" list " + JSON.stringify(list))
+            //console.log(" series "+JSON.stringify(series))
             //3) separate them back out:
+            // reinit arrays because in case of null, I have not included in list and I would sort series and yAxid but still leave space and leave some other values in place of the removed null
+            series = []
+            yAxis = []
             for (var k = 0; k < list.length; k++) {
                 series[k] = list[k].ratio;
+                //console.log(" series k "+JSON.stringify(series[k]))
                 yAxis[k] = list[k].name;
+                //console.log(" yAxis k "+JSON.stringify(yAxis[k]))
             }
-
+            
 
             /*var indices = Array.from(series.keys()).sort((a, b) => series[a] > series[b])
 
@@ -1232,7 +1259,7 @@ export function useBarChartNegative(param1) {
 
         }
 
-        if (param1 == "barChartNegative18" || obj != undefined) {
+        if (param1 == "barChartNegative18" || obj != undefined) {
             //1) combine the arrays:
             /*for (var k = 0; k < yName.length; k++) {
                 yAxis[k] = yName[k];
@@ -1271,7 +1298,11 @@ export function useBarChartNegative(param1) {
                     type: 'shadow'
                 },
                 formatter: (params) => {
-                    return useTwoDecCurrencyFormat(params[0].value)
+                    if (param1 == "barChartNegative16"){
+                        return params[0].name + " " + useTwoDecCurrencyFormat(params[0].value)
+                    }else{
+                        return useTwoDecCurrencyFormat(params[0].value)
+                    }
                 }
             },
             grid: {
