@@ -1,5 +1,5 @@
 
-<p style='font-size:30px;' align="center">TradeNote</p>
+<p style='font-size:2.5em;' align="center">TradeNote</p>
 <p style='font-size:16px;' align="center" style='margin-bottom:30px'>- Open Source Trading Journal -</p>
 
 <p align="center"><a href="https://tradenote.co">🌐 Website</a> | <a href="https://tradenote.co/project-overview.html">📚 Documentation</a> |  <a href="https://discord.gg/ZbHekKYb85"><img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/discord-icon.svg" width="12" height="12"/> Discord</a><p>
