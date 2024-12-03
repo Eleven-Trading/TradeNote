@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, marketCloseTime } from '../stores/globals.js'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade } from './brokers.js'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade, useTopstep } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
@@ -135,7 +135,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
         }
 
-        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade"]
+        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade", "topstep"]
         if (readAsTextArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
@@ -269,6 +269,16 @@ export async function useImportTrades(param1, param2, param3, param0) {
         if (selectedBroker.value == "tastyTrade") {
             console.log(" -> TastyTrade")
             await useTastyTrade(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TOPSTEP
+         ****************************/
+        if (selectedBroker.value == "topstep") {
+            console.log(" -> Topstep")
+            await useTopstep(fileInput).catch(error => {
                 importFileErrorFunction(error)
             })
         }
@@ -975,23 +985,11 @@ async function createTrades() {
                  * 4- It newTrade == false, the we check if we're in a classical process, in which case trde is derived from temp2, else it's
                  **/
 
-                //checking existing open position amongst Parse open positions
-                //console.log(" symbol "+tempExec.symbol)
-                //console.log(" type "+tempExec.type)
-                //console.log(" strategy "+tempExec.strategy)
-                //console.log(" openPositionsFile "+JSON.stringify(openPositionsFile))
-
                 
-                //const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+                /* Checking existing open position amongst open positions stored IN PARSE / DATABASE */
                 const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
-                //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
-                //console.log(" -> Open positions in File "+JSON.stringify(openPositionsFile))
-                //console.log(" -> "+JSON.stringify(tempExec))
-
-                //checking existing open position amongst open positions stored locally
-                //const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
-                //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
+                /* Checking existing open position amongst open positions stored LOCALLT */
                 const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
                 //checking existing open positions array when importing file
@@ -1004,11 +1002,12 @@ async function createTrades() {
                         //console.log("  --> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                         console.log("  --> Open position already in Parse")
                         //existingOpenPosition = existingOpenPositionParse
-                        Object.keys(openPositionsFile[existingOpenPositionParseIndex]).forEach((key) => {
+
+                        Object.keys(openPositionsParse[existingOpenPositionParseIndex]).forEach((key) => {
                             if (key == "td") {
                                 existingOpenPosition.td = tempExec.td
                             } else {
-                                existingOpenPosition[key] = openPositionsFile[existingOpenPositionParseIndex][key]
+                                existingOpenPosition[key] = openPositionsParse[existingOpenPositionParseIndex][key]
                             }
                         })
                         currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
@@ -1017,8 +1016,8 @@ async function createTrades() {
 
                         //const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol)
                         //openPositionsParse.splice(existingOpenPositionParseIndex, 1)
-                        //console.log(" Open positions "+JSON.stringify(openPositionsFile))
-                        //console.log(" Open positions length "+openPositionsFile.length)
+                        //console.log(" Open positions "+JSON.stringify(openPositionsParse))
+                        //console.log(" Open positions length "+openPositionsParse.length)
                     }
                     else if (existingOpenPositionFileIndex != -1) {
                         //console.log("  --> Open position already in current file for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))

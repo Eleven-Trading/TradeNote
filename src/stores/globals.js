@@ -2777,6 +2777,266 @@ export const futuresTradovateFees = ref([
     }
 ])
 
+export const futuresTopstepFees = ref(
+    [
+        {
+            "name": "E-mini S&P 500",
+            "symbol": "ES",
+            "fee": 2.80
+        },
+        {
+            "name": "Micro E-mini S&P",
+            "symbol": "MES",
+            "fee": 0.74
+        },
+        {
+            "name": "E-mini NASDAQ 100",
+            "symbol": "NQ",
+            "fee": 2.80
+        },
+        {
+            "name": "Micro E-mini NASDAQ 100",
+            "symbol": "MNQ",
+            "fee": 0.74
+        },
+        {
+            "name": "E-mini Russell 2000",
+            "symbol": "RTY",
+            "fee": 2.80
+        },
+        {
+            "name": "Micro E-mini Russell 2000",
+            "symbol": "M2K",
+            "fee": 0.74
+        },
+        {
+            "name": "Nikkei",
+            "symbol": "NKD",
+            "fee": 4.34
+        },
+        {
+            "name": "Micro E-mini Bitcoin",
+            "symbol": "MBT",
+            "fee": 2.04
+        },
+        {
+            "name": "Micro E-mini Ether",
+            "symbol": "MET",
+            "fee": 0.24
+        },
+        {
+            "name": "Crude Oil",
+            "symbol": "CL",
+            "fee": 3.04
+        },
+        {
+            "name": "Micro Crude Oil",
+            "symbol": "MCL",
+            "fee": 1.04
+        },
+        {
+            "name": "E-mini Crude Oil",
+            "symbol": "QM",
+            "fee": 2.44
+        },
+        {
+            "name": "Platinum",
+            "symbol": "PL",
+            "fee": 3.24
+        },
+        {
+            "name": "E-mini Natural Gas",
+            "symbol": "QG",
+            "fee": 1.04
+        },
+        {
+            "name": "RBOB Gasoline",
+            "symbol": "RB",
+            "fee": 3.04
+        },
+        {
+            "name": "Heating Oil",
+            "symbol": "HO",
+            "fee": 3.04
+        },
+        {
+            "name": "Natural Gas",
+            "symbol": "NG",
+            "fee": 3.20
+        },
+        {
+            "name": "Micro Henry Hub Natural Gas",
+            "symbol": "MNG",
+            "fee": 1.24
+        },
+        {
+            "name": "Mini-DOW",
+            "symbol": "YM",
+            "fee": 2.80
+        },
+        {
+            "name": "Micro Mini-DOW",
+            "symbol": "MYM",
+            "fee": 0.74
+        },
+        {
+            "name": "Australian $",
+            "symbol": "6A",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro AUD/USD",
+            "symbol": "M6A",
+            "fee": 0.52
+        },
+        {
+            "name": "British Pound",
+            "symbol": "6B",
+            "fee": 3.24
+        },
+        {
+            "name": "Canadian $",
+            "symbol": "6C",
+            "fee": 3.24
+        },
+        {
+            "name": "Euro FX",
+            "symbol": "6E",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro EUD/USD",
+            "symbol": "M6E",
+            "fee": 0.52
+        },
+        {
+            "name": "Japanese Yen",
+            "symbol": "6J",
+            "fee": 3.24
+        },
+        {
+            "name": "Swiss Franc",
+            "symbol": "6S",
+            "fee": 3.24
+        },
+        {
+            "name": "E-mini Euro FX",
+            "symbol": "E7",
+            "fee": 1.74
+        },
+        {
+            "name": "Mexican Peso",
+            "symbol": "6M",
+            "fee": 3.24
+        },
+        {
+            "name": "New Zealand $",
+            "symbol": "6N",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro GBP/USD",
+            "symbol": "M6B",
+            "fee": 0.52
+        },
+        {
+            "name": "2-Year Note",
+            "symbol": "ZT",
+            "fee": 1.34
+        },
+        {
+            "name": "5-Year Note",
+            "symbol": "ZF",
+            "fee": 1.34
+        },
+        {
+            "name": "10-Year Note",
+            "symbol": "ZN",
+            "fee": 1.60
+        },
+        {
+            "name": "30-Year Bond",
+            "symbol": "ZB",
+            "fee": 1.78
+        },
+        {
+            "name": "Ultra-Bond",
+            "symbol": "UB",
+            "fee": 1.94
+        },
+        {
+            "name": "Ultra-Note",
+            "symbol": "TN",
+            "fee": 1.64
+        },
+        {
+            "name": "Gold",
+            "symbol": "GC",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro Gold",
+            "symbol": "MGC",
+            "fee": 1.04
+        },
+        {
+            "name": "Silver",
+            "symbol": "SI",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro Silver",
+            "symbol": "SIL",
+            "fee": 2.04
+        },
+        {
+            "name": "Copper",
+            "symbol": "HG",
+            "fee": 3.24
+        },
+        {
+            "name": "Micro Copper",
+            "symbol": "MHG",
+            "fee": 1.24
+        },
+        {
+            "name": "Lean Hogs",
+            "symbol": "HE",
+            "fee": 4.24
+        },
+        {
+            "name": "Lean Cattle",
+            "symbol": "LE",
+            "fee": 4.24
+        },
+        {
+            "name": "Corn",
+            "symbol": "ZC",
+            "fee": 4.24
+        },
+        {
+            "name": "Wheat",
+            "symbol": "ZW",
+            "fee": 4.24
+        },
+        {
+            "name": "Soybean",
+            "symbol": "ZS",
+            "fee": 4.24
+        },
+        {
+            "name": "Soybean Meal",
+            "symbol": "ZM",
+            "fee": 4.24
+        },
+        {
+            "name": "Soybean Oil",
+            "symbol": "ZL",
+            "fee": 4.24
+        }
+    ]
+)
+
 export const tradovateTiers = reactive([{
     value: "free",
     label: "Free"
@@ -2979,6 +3239,11 @@ export const brokers = reactive([{
     value: "tastyTrade",
     label: "TastyTrade",
     assetTypes: ["stocks", "options", "futures"]
+},
+{
+    value: "topstep",
+    label: "Topstep",
+    assetTypes: ["futures"]
 }
 ])
 

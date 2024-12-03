@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier } from "../stores/globals.js"
+import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier, futuresTopstepFees } from "../stores/globals.js"
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -1492,7 +1492,7 @@ export async function useTastyTrade(param, param2) {
 
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
 
-                    
+
                     temp.Price = element["Average Price"]
 
                     let tempEntryHour = tempTime.slice(0, 2)
@@ -1531,6 +1531,113 @@ export async function useTastyTrade(param, param2) {
                 }
             });
             //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+        } catch (error) {
+            console.log("  --> ERROR " + error)
+            reject(error)
+        }
+        resolve()
+    })
+}
+
+/****************************
+ * TOPSTEP
+ ****************************/
+export async function useTopstep(param, param2) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let papaParse = Papa.parse(param, { header: true })
+            //console.log("papaparse " + JSON.stringify(papaParse.data))
+
+            papaParse.data.forEach(element => {
+                //Exclude void rows, money movement and option cash settlements because I calculate them myself
+                if (element.FilledAt != "" && element.Status == "Filled") {
+                    //console.log(" sub type "+element["Sub Type"])
+                    //console.log("element " + JSON.stringify(element))
+                    let temp = {}
+                    temp.Account = element.AccountName
+
+                    let tempDate = element.FilledAt.split(" ")[0]
+                    let tempTime = element.FilledAt.split(" ")[1]
+
+                    temp["T/D"] = tempDate
+                    temp["S/D"] = tempDate
+                    temp.Currency = "USD"
+
+                    //Type
+                    temp.Type = "future"
+
+                    if (element.PositionDisposition == "Opening" && element.Side == "Ask") {
+                        temp.Side = "B"
+                    }
+                    if (element.PositionDisposition == "Closing" && element.Side == "Ask") {
+                        temp.Side = "BC"
+                    }
+                    if (element.PositionDisposition == "Closing" && element.Side == "Bid") {
+                        temp.Side = "S"
+                    }
+                    if (element.PositionDisposition == "Opening" && element.Side == "Bid") {
+                        temp.Side = "SS"
+                    }
+
+
+                    temp.SymbolOriginal = element.ContractName
+
+                    temp.Symbol = element.ContractName.slice(1, -2);
+
+                    let qtyNumber = Number(element.Size)
+                    temp.Qty = qtyNumber.toString()
+
+                    let priceNumber = Number(element.ExecutePrice)
+                    temp.Price = priceNumber.toString()
+
+                    temp["Exec Time"] = tempTime
+
+                    let contractSpecs = futureContractsJson.value.filter(item => item.symbol == temp.Symbol)
+                    console.log(" -> contractSpecs " + JSON.stringify(contractSpecs))
+                    if (contractSpecs.length == 0) {
+                        reject("Missing information for future symbol " + temp.Symbol)
+                    }
+                    let tick = contractSpecs[0].tick
+                    let value = contractSpecs[0].value
+
+                    let qtyNumberSide
+
+                    if (temp.Side == "B" || temp.Side == "BC") {
+                        qtyNumberSide = -qtyNumber
+                    } else {
+                        qtyNumberSide = qtyNumber
+                    }
+
+                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
+                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
+
+                    temp["Gross Proceeds"] = proceedsNumber.toString()
+
+                    let echangeFees = futuresTopstepFees.value.filter(item => item.symbol == temp.Symbol)
+                    let commNumber = 0
+                    if (echangeFees) {
+                        console.log(" -> exchange fee "+JSON.stringify(echangeFees[0].fee))
+                        commNumber = echangeFees[0].fee * qtyNumber
+                    } else {
+                        reject("No Fees found")
+                    }
+                    temp.Comm = commNumber.toString()
+                    temp.SEC = "0"
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Net Proceeds"] = (proceedsNumber - commNumber).toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+                    //console.log("temp "+JSON.stringify(temp))
+                    tradesData.push(temp)
+
+                }
+            });
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
