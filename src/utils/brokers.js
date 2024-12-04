@@ -624,6 +624,8 @@ export async function useBrokerInteractiveBrokers(param, param2) {
             //console.log("param "+param)
             let papaParse = Papa.parse(param, { header: true })
 
+            papaParse.data.sort((a, b) => dayjs(a["Date/Time"], "YYYYMMDD;HHmmss") - dayjs(b["Date/Time"], "YYYYMMDD;HHmmss"))
+
             //we need to recreate the JSON with proper date format + we simplify
             //console.log("papaparse " + JSON.stringify(papaParse.data))
             papaParse.data.forEach(element => {
@@ -685,9 +687,10 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     let tempEntrySeconds = tempTime.slice(4, 6)
 
                     temp["Exec Time"] = tempEntryHour + ":" + tempEntryMinutes + ":" + tempEntrySeconds
-
+                    
                     let commNum = Number(element.Commission)
                     temp.Comm = (-commNum).toString()
+
                     temp.SEC = "0"
                     temp.TAF = "0"
                     temp.NSCC = "0"
@@ -703,7 +706,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     tradesData.push(temp)
                 }
             });
-            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
@@ -1566,23 +1569,23 @@ export async function useTopstep(param, param2) {
                     //Type
                     temp.Type = "future"
 
-                    if (element.PositionDisposition == "Opening" && element.Side == "Ask") {
+                    if (element.PositionDisposition == "Opening" && element.Side == "Bid") {
                         temp.Side = "B"
                     }
-                    if (element.PositionDisposition == "Closing" && element.Side == "Ask") {
+                    if (element.PositionDisposition == "Closing" && element.Side == "Bid") {
                         temp.Side = "BC"
                     }
-                    if (element.PositionDisposition == "Closing" && element.Side == "Bid") {
+                    if (element.PositionDisposition == "Closing" && element.Side == "Ask") {
                         temp.Side = "S"
                     }
-                    if (element.PositionDisposition == "Opening" && element.Side == "Bid") {
+                    if (element.PositionDisposition == "Opening" && element.Side == "Ask") {
                         temp.Side = "SS"
                     }
 
 
                     temp.SymbolOriginal = element.ContractName
 
-                    temp.Symbol = element.ContractName.slice(1, -2);
+                    temp.Symbol = element.ContractName.slice(0, -2);
 
                     let qtyNumber = Number(element.Size)
                     temp.Qty = qtyNumber.toString()
@@ -1608,8 +1611,8 @@ export async function useTopstep(param, param2) {
                         qtyNumberSide = qtyNumber
                     }
 
-                    let proceedsNumber = (qtyNumberSide * priceNumber) / tick * value // contract value (https://www.degiro.co.uk/knowledge/investing-in-futures/index-futures)
-                    //console.log(" Symobole "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
+                    let proceedsNumber = ((qtyNumberSide * priceNumber) / tick ) * value // contract value (https://www.degiro.com/uk/knowledge/investing-in-futures/index-futures)
+                    console.log(" Symbol "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
 
                     temp["Gross Proceeds"] = proceedsNumber.toString()
 
