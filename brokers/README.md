@@ -187,3 +187,18 @@ Please note that trades need to be ordered in ascending order
 6. Right-click anywhere in the output window, and choose "Export".
 7. Next, change the "Save as type" field to "CSV (*.csv).
 8. Finally, click "Save".  Your exported file will save to the location specified
+
+# TopstepX
+1.	Login to TopstepX account.
+2.	Click the Orders component.
+
+ <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx1.png" width="400">
+
+3.	Click export.
+
+ <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx2.png" width="400">
+
+4.	Select date range and click Export.
+
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx3.png" width="250">
+ 
