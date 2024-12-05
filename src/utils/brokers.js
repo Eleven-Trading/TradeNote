@@ -1,7 +1,7 @@
 
 //"T/D": "month/day/2022",
 
-import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier, futuresTopstepFees } from "../stores/globals.js"
+import { tradesData, timeZoneTrade, futureContractsJson, futuresTradeStationFees, futuresTradovateFees, selectedTradovateTier, futuresTopstepXFees } from "../stores/globals.js"
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -1543,9 +1543,9 @@ export async function useTastyTrade(param, param2) {
 }
 
 /****************************
- * TOPSTEP
+ * TOPSTEPX
  ****************************/
-export async function useTopstep(param, param2) {
+export async function useTopstepX(param, param2) {
     return new Promise(async (resolve, reject) => {
         try {
             let papaParse = Papa.parse(param, { header: true })
@@ -1612,14 +1612,14 @@ export async function useTopstep(param, param2) {
                     }
 
                     let proceedsNumber = ((qtyNumberSide * priceNumber) / tick ) * value // contract value (https://www.degiro.com/uk/knowledge/investing-in-futures/index-futures)
-                    console.log(" Symbol "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
+                    //console.log(" Symbol "+temp.Symbol+" on "+temp["T/D"]+" has gross proceed of " + proceedsNumber)
 
                     temp["Gross Proceeds"] = proceedsNumber.toString()
 
-                    let echangeFees = futuresTopstepFees.value.filter(item => item.symbol == temp.Symbol)
+                    let echangeFees = futuresTopstepXFees.value.filter(item => item.symbol == temp.Symbol)
                     let commNumber = 0
                     if (echangeFees) {
-                        console.log(" -> exchange fee "+JSON.stringify(echangeFees[0].fee))
+                        //console.log(" -> exchange fee "+JSON.stringify(echangeFees[0].fee))
                         commNumber = echangeFees[0].fee * qtyNumber
                     } else {
                         reject("No Fees found")
