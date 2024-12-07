@@ -163,7 +163,7 @@ export function useInitParse() {
         let path = window.location.pathname
         let parse_app_id = localStorage.getItem('parse_app_id') ? localStorage.getItem('parse_app_id') : "";
         let parse_url = "/parse"
-        console.log(" -> Parse id " + parse_app_id)
+        //console.log(" -> Parse id " + parse_app_id)
 
         Parse.initialize(parse_app_id)
         Parse.serverURL = parse_url
@@ -720,7 +720,7 @@ export function useInitTooltip() {
 
 export async function useInitPostHog() {
     return new Promise((resolve, reject) => {
-        axios.post('/posthog')
+        axios.post('/api/posthog')
             .then((response) => {
                 //console.log(response);
                 if (response.data != "off") {

@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^5.2.0",
     "axios": "^1.7.5",
     "calendarize": "^1.1.1",
     "dayjs": "^1.11.13",
@@ -29,6 +30,7 @@
     "quill": "^2.0.2",
     "shepherd.js": "^13.0.3",
     "sortablejs": "^1.15.2",
+    "stripe": "^17.4.0",
     "vue": "^3.4.38",
     "vue-router": "^4.4.3",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"

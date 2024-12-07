@@ -8,7 +8,7 @@ import axios from 'axios'
     async function getRegisterPage() {
         return new Promise((resolve, reject) => {
             console.log("\nGETTING REGISTER PAGE")
-            axios.post('/registerPage')
+            axios.post('/api/registerPage')
                 .then((response) => {
                     //console.log(" response "+JSON.stringify(response))
                     //localStorage.setItem('parse_app_id', response.data)
@@ -27,6 +27,47 @@ import axios from 'axios'
 
     await getRegisterPage()
 })();
+
+const checkCloud = async (to, from, next) => {
+    try {
+        // Make the POST request
+        const response = await axios.post('/api/checkCloud', {
+            key: 'value' // Replace with your payload if needed
+        });
+
+        console.log(" response "+JSON.stringify(response))
+        // Check the response and decide
+        if (response.status == 200) {
+            next(); // Proceed to the page
+        } else {
+             next('/');
+        }
+    } catch (error) {
+        console.error('Error during validation:', error);
+        next('/'); // Redirect on error
+    }
+}
+
+const checkCloudPayment = async (to, from, next) => {
+    try {
+        // Make the POST request
+        const response = await axios.post('/api/checkCloudPayment', {
+            key: 'value' // Replace with your payload if needed
+        });
+
+        console.log(" response "+JSON.stringify(response))
+        // Check the response and decide
+        if (response.status == 200) {
+            next(); // Proceed to the page
+        } else {
+             window.location.href = 'https://buy.stripe.com/14kdTQbFMcdG1jibIJ'
+             next(false);
+        }
+    } catch (error) {
+        console.error('Error during validation:', error);
+        next('/'); // Redirect on error
+    }
+}
 
 const router = createRouter({
     history: createWebHistory(
@@ -119,7 +160,9 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddTrades.vue')
+            import('../views/AddTrades.vue'),
+        beforeEnter: checkCloudPayment
+        
     },
     {
         path: '/addDiary',
@@ -129,7 +172,8 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddDiary.vue')
+            import('../views/AddDiary.vue'),
+        beforeEnter: checkCloudPayment
     },
     {
         path: '/addPlaybook',
@@ -139,7 +183,8 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddPlaybook.vue')
+            import('../views/AddPlaybook.vue'),
+        beforeEnter: checkCloudPayment
     },
     {
         path: '/addScreenshot',
@@ -149,7 +194,8 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddScreenshot.vue')
+            import('../views/AddScreenshot.vue'),
+        beforeEnter: checkCloudPayment
     },
     {
         path: '/addExcursions',
@@ -159,7 +205,8 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddExcursions.vue')
+            import('../views/AddExcursions.vue'),
+        beforeEnter: checkCloudPayment
     },
     {
         path: '/settings',
@@ -180,6 +227,28 @@ const router = createRouter({
         },
         component: () =>
             import('../views/Imports.vue')
+    },
+    {
+        path: '/checkout',
+        name: 'checkout',
+        meta: {
+            title: "Checkout",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/Checkout.vue'),
+        beforeEnter: checkCloud
+    },
+    {
+        path: '/checkoutSuccess',
+        name: 'checkoutSuccess',
+        meta: {
+            title: "Checkout Success",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/CheckoutSuccess.vue'),
+        beforeEnter: checkCloud
     }
     ]
 })

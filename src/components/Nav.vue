@@ -103,6 +103,16 @@ const pages = [{
     id: "imports",
     name: "Imports",
     icon: "uil uil-import"
+},
+{
+    id: "checkout",
+    name: "Checkout",
+    icon: "uil uil-shopping-cart"
+},
+{
+    id: "checkoutSuccess",
+    name: "Checkout Success",
+    icon: "uil uil-shopping-cart"
 }
 ]
 //console.log(" user "+useCheckCurrentUser())
@@ -160,8 +170,8 @@ function getLatestVersion() {
         <div class="col-6 ms-auto text-end">
             <div class="row">
                 <div id="step11" class="col align-self-end">
-                    <button class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
+                    <button class="btn blueBtn btn-sm" href="#" id="navbarDropdown" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="uil uil-plus me-2"></i>Add</button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li>
@@ -213,11 +223,14 @@ function getLatestVersion() {
                             <hr class="dropdown-divider">
                         </li>
                         <li class="text-center">
-                            <span class="txt-small">v{{ version }}<i v-if="latestVersion != version"
+                            <span class="txt-small">v{{ version }}
+                                <!--<i v-if="latestVersion != version"
                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
-                                    v-bind:data-bs-title="'New version available<br>v' + latestVersion"></i></span>
+                                    v-bind:data-bs-title="'New version available<br>v' + latestVersion"></i>-->
+                            </span>
                         </li>
-                        <li class="text-center"><a class="txt-small blue-link" target="_blank" href="https://eleven.m-pages.com/tradenote">Get Updates</a></li>
+                        <!--<li class="text-center"><a class="txt-small blue-link" target="_blank"
+                                href="https://eleven.m-pages.com/tradenote">Get Updates</a></li>-->
                     </ul>
                 </div>
             </div>

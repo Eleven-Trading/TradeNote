@@ -86,7 +86,7 @@ async function register() {
 async function updateSchema() {
   return new Promise((resolve, reject) => {
     console.log(" -> Updating schema")
-    axios.post('/updateSchemas').then((response) => {
+    axios.post('/api/updateSchemas').then((response) => {
       //console.log("  --> Schema response "+JSON.stringify(response))
       existingSchema = response.data.existingSchema
       resolve(response)

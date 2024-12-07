@@ -11,6 +11,16 @@ import Proxy from 'http-proxy'
 import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
 import { currentUser, uploadMfePrices, existingTradesArray, tradesData, existingImports } from './src/stores/globals.js';
 import { useGetTimeZone } from './src/utils/utils.js';
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE);
+
+let stripePriceId
+
+if (process.env.NODE_ENV == 'dev') {
+    stripePriceId = "price_1QTTt3FIT9U3HKjWU1jaoVUQ"
+} else {
+    stripePriceId = "price_1QSeAsFIT9U3HKjW3CxfwFz9"
+}
 
 let databaseURI
 
@@ -52,40 +62,58 @@ const startIndex = async () => {
     }
 
     const runServer = async () => {
-        console.log("\nRUNNING SERVER")
+        console.log("\nRUNNING SERVER");
+    
         return new Promise(async (resolve, reject) => {
             if (process.env.NODE_ENV == 'dev') {
-
-
-
-                var proxy = new Proxy.createProxyServer({
-                    target: { host: 'localhost', port: PROXY_PORT }
+                // Set up proxy for development environment
+                const proxy = new Proxy.createProxyServer({
+                    target: { host: 'localhost', port: PROXY_PORT },
                 });
-
-                // proxy anything yet-unhandled back to vite
-                app.get('*', (req, res) => proxy.web(req, res));
-
-                // proxy hmr ws back to vite
-                server.on('upgrade', (req, socket, head) => {
-                    if (req.url == '/') proxy.ws(req, socket, head)
+    
+                // Middleware to handle API routes
+                app.use('/api/*', (req, res, next) => {
+                    // Handle API routes here (e.g., route to a different backend or do something custom)
+                    //console.log("Handling API route:", req.url);
+                    next();  // Continue processing the request for /api/* routes
                 });
-
-                // start our vite dev server
+    
+                // Proxy all other routes to Vite
+                app.use((req, res, next) => {
+                    if (req.url.startsWith('/api/')) {
+                        return next(); // Let the /api/* routes be handled by the previous middleware
+                    }
+                    proxy.web(req, res); // Proxy all other routes to Vite
+                });
+    
+                // Start Vite dev server
                 const vite = await Vite.createServer({ server: { port: PROXY_PORT } });
                 vite.listen();
-                console.log(" -> Running vite dev server")
-                resolve()
-
+                console.log(" -> Running vite dev server");
+                resolve();
             } else {
-                app.use(express.static('dist'))
-                app.get('*', function (request, response) {
+                // In production, serve static files and handle API routes
+                app.use('/api/*', (req, res) => {
+                    // Handle API requests in production (e.g., route to a specific handler)
+                    //console.log("Handling API route:", req.url);
+                    // You can add logic to process the API requests, for example:
+                    // if (req.url === '/api/session-status') { ... }
+                });
+    
+                // Serve the static files from the 'dist' folder
+                app.use(express.static('dist'));
+    
+                // Catch-all route for any other requests (to handle SPAs)
+                app.get('*', (request, response) => {
                     response.sendFile(path.resolve('dist', 'index.html'));
                 });
-                console.log(" -> Running prod server")
-                resolve()
+    
+                console.log(" -> Running prod server");
+                resolve();
             }
-        })
-    }
+        });
+    };
+    
 
     const setupParseServer = async () => {
         console.log("\nSTARTING PARSE SERVER")
@@ -135,18 +163,18 @@ const startIndex = async () => {
 
     //API
 
-    app.post("/parseAppId", (req, res) => {
+    app.post("/api/parseAppId", (req, res) => {
         //console.log("\nAPI : post APP ID")
         res.send(process.env.APP_ID)
     });
 
-    app.post("/registerPage", (req, res) => {
+    app.post("/api/registerPage", (req, res) => {
         //console.log("\nAPI : post APP ID")
         //console.log(" REGISTER_OFF "+process.env.REGISTER_OFF)
         res.send(process.env.REGISTER_OFF)
     });
 
-    app.post("/posthog", (req, res) => {
+    app.post("/api/posthog", (req, res) => {
         //console.log("\nAPI : posthog")
         if (process.env.ANALYTICS_OFF) {
             res.send("off")
@@ -155,117 +183,191 @@ const startIndex = async () => {
         }
     });
 
-    app.post("/updateSchemas", async (req, res) => {
-        //console.log("\nAPI : post update schema")
 
-        let rawdata = fs.readFileSync('requiredClasses.json');
-        let schemasJson = JSON.parse(rawdata);
-        //console.log("schemasJson "+JSON.stringify(schemasJson))
+    /**********************************************
+     * CLOUD
+     **********************************************/
 
-        let existingSchema = []
-        const getExistingSchema = await ParseNode.Schema.all()
-        //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
+    app.post("/api/checkCloud", (req, res) => {
+        //console.log("\nAPI : posthog")
+        if (process.env.CLOUD) {
+            res.status(200).send('OK');
+        } else {
+            res.status(403).send('Forbidden');
+        }
+    });
 
-        const renameMongoDb = (param1, param2) => {
-            return new Promise(async (resolve, reject) => {
-                console.log(" -> Renaming class " + param1 + " to " + param2)
-                MongoClient.connect(databaseURI).then(async (client) => {
-                    console.log("  --> Connected to MongoDB")
-                    const connect = client.db(tradenoteDatabase);
-                    const allCollections = await connect.listCollections().toArray()
-                    //console.log("allCollections "+JSON.stringify(allCollections))
-                    let collectionExists = allCollections.filter(obj => obj.name == param1)
-                    //console.log("  --> collectionExists "+collectionExists.length)
-                    if (collectionExists.length > 0) {
-                        const collection = connect.collection(param1);
-                        collection.rename(param2).then(() => {
-                            console.log(" -> Renamed class successfully");
+    app.post("/api/checkCloudPayment", (req, res) => {
+        //console.log("\nAPI : posthog")
+        if (process.env.CLOUD) {
+            res.status(200).send('OK');
+            // Check if user has paid 
+            /// if yes, let inn, status 200
+            /// If not, check if user is older than 7 days
+            //// if older, redirect to stripe / status 202
+            //// else, let inn, status 200
+        } else {
+            res.status(200).send('OK');
+        }
+    });
+
+
+    app.use(express.json());
+
+    app.post('/api/create-checkout-session', async (req, res) => {
+        const session = await stripe.checkout.sessions.create({
+            ui_mode: 'embedded',
+            line_items: [
+                {
+                    // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    price: stripePriceId,
+                    quantity: 1,
+                },
+            ],
+            mode: 'subscription',
+            return_url: `http://localhost:${port}/checkoutSuccess?session_id={CHECKOUT_SESSION_ID}`,
+            automatic_tax: { enabled: true },
+        });
+
+        res.send({ clientSecret: session.client_secret });
+    });
+
+    app.get('/api/session-status', async (req, res) => {
+        try {
+            console.log("Getting session status");
+            const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    
+            //console.log("Session retrieved:", JSON.stringify(session));
+    
+            res.send({
+                session: session,
+                status: session.status,
+                customer_email: session.customer_details.email,
+                customer_id: session.customer
+            });
+        } catch (error) {
+            console.error("Error retrieving session:", error.message);
+            res.status(500).send({ error: error.message });
+        }
+    });
+
+
+
+    app.post("/api/updateSchemas", async (req, res) => {
+
+        if (!process.env.CLOUD) {
+            //console.log("\nAPI : post update schema")
+
+            let rawdata = fs.readFileSync('requiredClasses.json');
+            let schemasJson = JSON.parse(rawdata);
+            //console.log("schemasJson "+JSON.stringify(schemasJson))
+
+            let existingSchema = []
+            const getExistingSchema = await ParseNode.Schema.all()
+            //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
+
+            const renameMongoDb = (param1, param2) => {
+                return new Promise(async (resolve, reject) => {
+                    console.log(" -> Renaming class " + param1 + " to " + param2)
+                    MongoClient.connect(databaseURI).then(async (client) => {
+                        console.log("  --> Connected to MongoDB")
+                        const connect = client.db(tradenoteDatabase);
+                        const allCollections = await connect.listCollections().toArray()
+                        //console.log("allCollections "+JSON.stringify(allCollections))
+                        let collectionExists = allCollections.filter(obj => obj.name == param1)
+                        //console.log("  --> collectionExists "+collectionExists.length)
+                        if (collectionExists.length > 0) {
+                            const collection = connect.collection(param1);
+                            collection.rename(param2).then(() => {
+                                console.log(" -> Renamed class successfully");
+                                resolve()
+                            })
+                        } else {
+                            console.log(" -> Collection doesn't exist.")
+                            resolve()
+                        }
+
+                    }).catch((err) => {
+                        console.log(" -> Error renaming MongoDB class: " + err.Message);
+                        reject()
+                    })
+                })
+            }
+            for (let i = 0; i < getExistingSchema.length; i++) {
+                //console.log("Class name " + getExistingSchema[i].className)
+
+                //we check for classes/collections that need to be renamed
+                if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
+                    let oldName = getExistingSchema[i].className
+                    let newName
+
+                    if (getExistingSchema[i].className == "setupsEntries") newName = "screenshots"
+                    if (getExistingSchema[i].className == "journals") newName = "diaries"
+                    if (getExistingSchema[i].className == "patternsMistakes") newName = "setups"
+
+                    await renameMongoDb(oldName, newName)
+                } else {
+                    existingSchema.push(getExistingSchema[i].className)
+                }
+            }
+            //console.log(" -> Existing Schema " + existingSchema)
+
+            const updateSaveSchema = (param1, param2, param3) => {
+                return new Promise((resolve, reject) => {
+                    const mySchema = new ParseNode.Schema(param1);
+                    if (param2[param3].type === "String") mySchema.addString(param3)
+                    if (param2[param3].type === "Number") mySchema.addNumber(param3)
+                    if (param2[param3].type === "Boolean") mySchema.addBoolean(param3)
+                    if (param2[param3].type === "Date") mySchema.addDate(param3)
+                    if (param2[param3].type === "File") mySchema.addFile(param3)
+                    if (param2[param3].type === "GeoPoint") mySchema.addGeoPoint(param3)
+                    if (param2[param3].type === "Polygon") mySchema.addPolygon(param3)
+                    if (param2[param3].type === "Array") mySchema.addArray(param3)
+                    if (param2[param3].type === "Object") mySchema.addObject(param3)
+                    if (param2[param3].type === "Pointer") mySchema.addPointer(param3, param2[param3].targetClass)
+                    if (param2[param3].type === "Relation") mySchema.addRelation(param3, param2[param3].targetClass)
+
+                    //console.log("existing schema "+existingSchema)
+                    //console.log("includes ? "+existingSchema.includes(className))
+
+                    //If ParseNode (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
+                    if (existingSchema.includes(param1)) {
+                        mySchema.update().then((result) => {
+                            console.log("  --> Updating field " + param3)
+                            //console.log(" -> Updated schema " + JSON.stringify(result))
                             resolve()
                         })
                     } else {
-                        console.log(" -> Collection doesn't exist.")
-                        resolve()
+                        mySchema.save().then((result) => {
+                            //console.log(" -> Save new schema " + JSON.stringify(result))
+                            console.log("  --> Saving field " + param3)
+                            existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
+                            //console.log(" -> Existing Schema " + existingSchema)
+                            resolve()
+                        })
+                    }
+                })
+            }
+
+            for (let i = 0; i < schemasJson.length; i++) {
+                //console.log("el " + schemasJson[i].className)
+                let className = schemasJson[i].className
+                console.log(" -> Upsert class/collection " + className + " in ParseNode Schema")
+                let obj = schemasJson[i].fields
+                for (const key of Object.keys(obj)) {
+                    //console.log(key, obj[key]);
+                    if (key != "objectId" && key != "updatedAt" && key != "createdAt" && key != "ACL") {
+                        //console.log(" -> Key " + key)
+                        await updateSaveSchema(className, obj, key)
                     }
 
-                }).catch((err) => {
-                    console.log(" -> Error renaming MongoDB class: " + err.Message);
-                    reject()
-                })
-            })
-        }
-        for (let i = 0; i < getExistingSchema.length; i++) {
-            //console.log("Class name " + getExistingSchema[i].className)
-
-            //we check for classes/collections that need to be renamed
-            if (getExistingSchema[i].className == "setupsEntries" || getExistingSchema[i].className == "journals") {
-                let oldName = getExistingSchema[i].className
-                let newName
-
-                if (getExistingSchema[i].className == "setupsEntries") newName = "screenshots"
-                if (getExistingSchema[i].className == "journals") newName = "diaries"
-                if (getExistingSchema[i].className == "patternsMistakes") newName = "setups"
-
-                await renameMongoDb(oldName, newName)
-            } else {
-                existingSchema.push(getExistingSchema[i].className)
-            }
-        }
-        //console.log(" -> Existing Schema " + existingSchema)
-
-        const updateSaveSchema = (param1, param2, param3) => {
-            return new Promise((resolve, reject) => {
-                const mySchema = new ParseNode.Schema(param1);
-                if (param2[param3].type === "String") mySchema.addString(param3)
-                if (param2[param3].type === "Number") mySchema.addNumber(param3)
-                if (param2[param3].type === "Boolean") mySchema.addBoolean(param3)
-                if (param2[param3].type === "Date") mySchema.addDate(param3)
-                if (param2[param3].type === "File") mySchema.addFile(param3)
-                if (param2[param3].type === "GeoPoint") mySchema.addGeoPoint(param3)
-                if (param2[param3].type === "Polygon") mySchema.addPolygon(param3)
-                if (param2[param3].type === "Array") mySchema.addArray(param3)
-                if (param2[param3].type === "Object") mySchema.addObject(param3)
-                if (param2[param3].type === "Pointer") mySchema.addPointer(param3, param2[param3].targetClass)
-                if (param2[param3].type === "Relation") mySchema.addRelation(param3, param2[param3].targetClass)
-
-                //console.log("existing schema "+existingSchema)
-                //console.log("includes ? "+existingSchema.includes(className))
-
-                //If ParseNode (existing) schema includes the class name from required classes then update (just in case). Else add, and then add that class to existing schema array
-                if (existingSchema.includes(param1)) {
-                    mySchema.update().then((result) => {
-                        console.log("  --> Updating field " + param3)
-                        //console.log(" -> Updated schema " + JSON.stringify(result))
-                        resolve()
-                    })
-                } else {
-                    mySchema.save().then((result) => {
-                        //console.log(" -> Save new schema " + JSON.stringify(result))
-                        console.log("  --> Saving field " + param3)
-                        existingSchema.push(param1) // Once saved, we update for the rest of the fields, so we need to push to existingSchema
-                        //console.log(" -> Existing Schema " + existingSchema)
-                        resolve()
-                    })
                 }
-            })
-        }
-
-        for (let i = 0; i < schemasJson.length; i++) {
-            //console.log("el " + schemasJson[i].className)
-            let className = schemasJson[i].className
-            console.log(" -> Upsert class/collection " + className + " in ParseNode Schema")
-            let obj = schemasJson[i].fields
-            for (const key of Object.keys(obj)) {
-                //console.log(key, obj[key]);
-                if (key != "objectId" && key != "updatedAt" && key != "createdAt" && key != "ACL") {
-                    //console.log(" -> Key " + key)
-                    await updateSaveSchema(className, obj, key)
-                }
-
             }
+
+            res.send({ "existingSchema": existingSchema })
+        } else {
+            res.status(200).send('OK');
         }
-
-        res.send({ "existingSchema": existingSchema })
-
 
     })
 
@@ -290,7 +392,7 @@ const startIndex = async () => {
         await getAllUsers()
         const targetKey = req.headers['api-key'] || req.query['api-key'];
         //console.log(" -> target Key " + targetKey)
-        
+
         const checkIPKey = (allUsers, targetKey) => {
             for (const user of Object.values(allUsers)) {
                 if (user.hasOwnProperty("apis")) {
@@ -308,7 +410,7 @@ const startIndex = async () => {
         // Usage example
         const hasIPKey = checkIPKey(allUsers, targetKey);
 
-        if (hasIPKey) {            
+        if (hasIPKey) {
             console.log(" -> Valid api key found :)")
             next();
         } else {
