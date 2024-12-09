@@ -51,10 +51,10 @@ Note : make sure to input one execution per line, not aggregated trade. So one l
     2. Sections
         1. Click Trade Confirmation and only select Executions
         2. From there, you can either
-            1. Check the following boxes manually: Account ID, Date/Time, Settle Date, Currency, Underlying Symbol, Symbol, Buy/Sell, Quantity, Price, Commission, Code, Broker Execution Commission, Broker Clearing Commission, Third-Party Execution Commission, Thirs-Party Clearing Commission, Other Commissions, Proceeds, Net Cash, Trade ID, Order ID, AssetClass, Multiplier, Put/Call
+            1. Check the following boxes manually: Account ID, Date/Time, Settle Date, Currency, Underlying Symbol, Symbol, Buy/Sell, Quantity, Price, Commission, Code, Broker Execution Commission, Broker Clearing Commission, Third-Party Execution Commission, Third-Party Clearing Commission, Other Commission, Proceeds, Net Cash, Trade ID, Order ID, Asset Class, Multiplier, Put/Call
            2. Or execute the following script using your browser's DevTools console:
             ```js
-            const fields=["Account ID","Date/Time","Settle Date","Currency","Underlying Symbol","Symbol","Buy/Sell","Quantity","Price","Commission", "Code", "Broker Execution Commission","Broker Clearing Commission","Third-Party Execution Commission","Thirs-Party Clearing Commission","Other Commissions","Proceeds","Net Cash","Trade ID","Order ID","AssetClass","Multiplier","Put/Call"],container=document.querySelector('tbody[class="ui-sortable"]'),trs=container.querySelectorAll("tr");trs.forEach(e=>{let r=e.querySelectorAll("td"),t=r[1].childNodes[0].textContent;if(fields.includes(t)){let i=e.querySelector('input[type="checkbox"]');i.click()}});
+            const fields=["Account ID","Date/Time","Settle Date","Currency","Underlying Symbol","Symbol","Buy/Sell","Quantity","Price","Commission", "Code", "Broker Execution Commission","Broker Clearing Commission","Third-Party Execution Commission","Third-Party Clearing Commission","Other Commission","Proceeds","Net Cash","Trade ID","Order ID","Asset Class","Multiplier","Put/Call"],container=document.querySelector('tbody[class="ui-sortable"]'),trs=container.querySelectorAll("tr");trs.forEach(e=>{let r=e.querySelectorAll("td"),t=r[1].childNodes[0].textContent;if(fields.includes(t)){let i=e.querySelector('input[type="checkbox"]');i.click()}});
             ```
         4. Scroll to the bottom of the dialog and select Save
     3. Delivery Configuration
