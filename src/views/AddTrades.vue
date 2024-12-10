@@ -1,12 +1,16 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onBeforeMount, onMounted } from 'vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData, tradovateTiers, selectedTradovateTier } from '../stores/globals';
-import { useDecimalsArithmetic } from '../utils/utils';
+import { useCheckCloudPayment, useDecimalsArithmetic } from '../utils/utils';
 import { useImportTrades, useUploadTrades, useGetExistingTradesArray } from '../utils/addTrades'
-import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
+import { useCreatedDateFormat, useDateCalFormat, useGetCurrentUser } from '../utils/utils';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 
 spinnerLoadingPage.value = false
+
+onBeforeMount(async () => {
+        
+})
 
 onMounted(async () => {
     await useGetExistingTradesArray()

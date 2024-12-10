@@ -9,10 +9,14 @@ import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
 import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
-import { currentUser, uploadMfePrices, existingTradesArray, tradesData, existingImports } from './src/stores/globals.js';
+import { currentUser, uploadMfePrices} from './src/stores/globals.js';
 import { useGetTimeZone } from './src/utils/utils.js';
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE);
+let stripe
+if(process.env.STRIPE){
+     stripe = new Stripe(process.env.STRIPE);
+}
+
 
 let stripePriceId
 
@@ -39,6 +43,7 @@ console.log(' -> Database URI ' + hiddenDatabaseURI)
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
 var app = express();
+app.use(express.json());
 
 const port = process.env.TRADENOTE_PORT;
 const PROXY_PORT = 39482;
@@ -63,21 +68,21 @@ const startIndex = async () => {
 
     const runServer = async () => {
         console.log("\nRUNNING SERVER");
-    
+
         return new Promise(async (resolve, reject) => {
             if (process.env.NODE_ENV == 'dev') {
                 // Set up proxy for development environment
                 const proxy = new Proxy.createProxyServer({
                     target: { host: 'localhost', port: PROXY_PORT },
                 });
-    
+
                 // Middleware to handle API routes
                 app.use('/api/*', (req, res, next) => {
                     // Handle API routes here (e.g., route to a different backend or do something custom)
                     //console.log("Handling API route:", req.url);
                     next();  // Continue processing the request for /api/* routes
                 });
-    
+
                 // Proxy all other routes to Vite
                 app.use((req, res, next) => {
                     if (req.url.startsWith('/api/')) {
@@ -85,7 +90,7 @@ const startIndex = async () => {
                     }
                     proxy.web(req, res); // Proxy all other routes to Vite
                 });
-    
+
                 // Start Vite dev server
                 const vite = await Vite.createServer({ server: { port: PROXY_PORT } });
                 vite.listen();
@@ -99,21 +104,21 @@ const startIndex = async () => {
                     // You can add logic to process the API requests, for example:
                     // if (req.url === '/api/session-status') { ... }
                 });
-    
+
                 // Serve the static files from the 'dist' folder
                 app.use(express.static('dist'));
-    
+
                 // Catch-all route for any other requests (to handle SPAs)
                 app.get('*', (request, response) => {
                     response.sendFile(path.resolve('dist', 'index.html'));
                 });
-    
+
                 console.log(" -> Running prod server");
                 resolve();
             }
         });
     };
-    
+
 
     const setupParseServer = async () => {
         console.log("\nSTARTING PARSE SERVER")
@@ -188,31 +193,66 @@ const startIndex = async () => {
      * CLOUD
      **********************************************/
 
-    app.post("/api/checkCloud", (req, res) => {
-        //console.log("\nAPI : posthog")
-        if (process.env.CLOUD) {
-            res.status(200).send('OK');
+    app.post("/api/checkCloudPayment", async(req, res) => {
+        // Used for checking if can access add*, in case it's a paying user
+        let currentUser = req.body.currentUser
+        //console.log(" currentUser "+JSON.stringify(currentUser))
+        const trialPeriod = 2
+        //console.log(" current user " + JSON.stringify(req.body.currentUser))
+        if (process.env.STRIPE) {
+            console.log("\nAPI : checkCloudPayment")
+            // Check if user is stripe customer
+            
+            // Check if user has paying customer 
+            if (currentUser.hasOwnProperty("paymentService") && currentUser.paymentService.hasOwnProperty("subscriptionId")) {
+                /// if yes, let inn, status 200
+                const activeSubscription = ['active', 'trialing', 'past_due']
+                const subscription = await stripe.subscriptions.retrieve(currentUser.paymentService.subscriptionId)
+                if(activeSubscription.includes(subscription.status)){
+                    console.log(" -> User has valid subscription.");
+                    res.status(200).send('OK');
+                }else{
+                    console.log(" -> User has invalid subscription.");
+                    res.status(403).send('Forbidden');
+                }
+                
+            }
+
+            /// If not, check if user is within trial period
+            else {
+                
+                // Convert createdAt to a Date object
+                const createdAtDate = new Date(currentUser.createdAt);
+
+                // Get the current time
+                const currentDate = new Date();
+
+                // Calculate the time difference in milliseconds
+                const timeDifference = currentDate - createdAtDate;
+
+                // Convert the time difference to days
+                const differenceInDays = timeDifference / (1000 * 60 * 60 * 24); // Milliseconds to days
+
+                //// if older, redirect to stripe / status 403
+                if (differenceInDays > trialPeriod) {
+                    console.log(" -> User is past trial period.");
+                    res.status(403).send('Forbidden');
+                } 
+                
+                //// else, let inn, status 200
+                else {
+                    console.log(" -> User is within trial period.");
+                    res.status(200).send('OK');
+                }
+            }
+
+
+
+            
         } else {
-            res.status(403).send('Forbidden');
+            res.status(200).send('OK');
         }
     });
-
-    app.post("/api/checkCloudPayment", (req, res) => {
-        //console.log("\nAPI : posthog")
-        if (process.env.CLOUD) {
-            res.status(200).send('OK');
-            // Check if user has paid 
-            /// if yes, let inn, status 200
-            /// If not, check if user is older than 7 days
-            //// if older, redirect to stripe / status 202
-            //// else, let inn, status 200
-        } else {
-            res.status(200).send('OK');
-        }
-    });
-
-
-    app.use(express.json());
 
     app.post('/api/create-checkout-session', async (req, res) => {
         const session = await stripe.checkout.sessions.create({
@@ -236,9 +276,9 @@ const startIndex = async () => {
         try {
             console.log("Getting session status");
             const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    
+
             //console.log("Session retrieved:", JSON.stringify(session));
-    
+
             res.send({
                 session: session,
                 status: session.status,
@@ -255,7 +295,7 @@ const startIndex = async () => {
 
     app.post("/api/updateSchemas", async (req, res) => {
 
-        if (!process.env.CLOUD) {
+        if (!process.env.STRIPE) {
             //console.log("\nAPI : post update schema")
 
             let rawdata = fs.readFileSync('requiredClasses.json');

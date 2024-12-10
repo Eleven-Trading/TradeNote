@@ -1,5 +1,7 @@
 <script setup>
 import { onBeforeMount, ref, onMounted, nextTick } from 'vue';
+import { useCheckCloudPayment, useGetCurrentUser } from '../utils/utils';
+import { currentUser } from '../stores/globals';
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -20,28 +22,49 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import axios from 'axios'
 
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripe = ref(null);
-const elements = ref(null);
-const clientSecret = ref("");
-const message = ref("");
-const stripe_pk = "pk_test_51Kg2CGFIT9U3HKjW3pnX5rGQmQ285A6dB8c7Pd7ThtXoc0ZguzUJmnJPw7Dyby2sTi9G7ih2Eu1jj0BB8nzzP1jC00HpNuY5ZF"
 
 onBeforeMount(async () => {
+    await useGetCurrentUser();
+    try {
+        await useCheckCloudPayment(currentUser.value);
+        window.location.replace("/dashboard")
+    } catch (error) {
+        // Redirect to checkout page on error
+        let check = await initializeCheckout();
+        if (check == 403) {
+            window.location.replace("/dashboard")
+        }
+    }
 })
 
-onMounted(async () => {
-    //stripe.value = await loadStripe(stripe_pk);
-    initializeCheckout();
-    
-});
+async function updateProfile(param) {
+    return new Promise(async (resolve, reject) => {
+        console.log("\nUPDATING PROFILE")
+        console.log(" param "+JSON.stringify(param))
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("objectId", currentUser.value.objectId);
+        const results = await query.first();
+        if (results) {
+
+            results.set("paymentService", param)
+            await results.save().then(async () => { //very important to have await or else too quick to update
+                console.log(" -> Profile updated")
+            })
+            //
+        } else {
+            alert("Update query did not return any results")
+        }
+
+        resolve()
+    })
+}
 
 const initializeCheckout = async () => {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const sessionId = urlParams.get("session_id");
-
+    if (!sessionId) return 403
     try {
         // Axios request to the session-status endpoint
         const response = await axios.get("/api/session-status", {
@@ -49,13 +72,18 @@ const initializeCheckout = async () => {
         });
 
         const session = response.data; // Axios automatically parses JSON
-        console.log("Session:", JSON.stringify(session))
+        //console.log("Session:", JSON.stringify(session))
 
         if (session.status === "open") {
-            window.location.replace("/checkout.html"); // Correct redirection method
+            window.location.replace("/checkout"); // Correct redirection method
         } else if (session.status === "complete") {
-            document.getElementById("success").classList.remove("hidden");
             document.getElementById("customer-email").textContent = session.customer_email;
+            let param = 
+            
+            await updateProfile({
+                customerId: session.session.customer,
+                subscriptionId: session.session.subscription
+            })
         }
     } catch (error) {
         // Handle errors
@@ -75,12 +103,10 @@ const initializeCheckout = async () => {
 </script>
 <template>
     <div class="row justify-content-md-center">
-        <section id="success" class="hidden">
-            <p>
-                We appreciate your business! A confirmation email will be sent to <span id="customer-email"></span>.
-
-                If you have any questions, please email <a href="mailto:hello@eleven.trading">hello@eleven.trading</a>.
+        <div class="col-12 col-md-8 text-center">
+            <p>We appreciate your business! A confirmation email will be sent to <span id="customer-email"></span>.</p>
+            <p>If you have any questions, please email <a href="mailto:hello@eleven.trading">hello@eleven.trading</a>.
             </p>
-        </section>
+        </div>
     </div>
 </template>

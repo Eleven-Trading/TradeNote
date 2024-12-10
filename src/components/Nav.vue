@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import { useToggleMobileMenu } from '../utils/utils.js'
+import { useCheckCloudPayment, useGetCurrentUser, useToggleMobileMenu } from '../utils/utils.js'
 import { useInitShepherd, useInitTooltip } from "../utils/utils.js";
 import { pageId, currentUser, renderProfile, screenType, latestVersion } from "../stores/globals"
 import { version } from '../../package.json';
@@ -153,6 +153,20 @@ function getLatestVersion() {
     })
 }
 
+const navAdd = async (param) => {
+    await useGetCurrentUser();
+    try {
+        await useCheckCloudPayment(currentUser.value);
+        // Redirect only if no error occurs
+        window.location.href = "/" + param;
+    } catch (error) {
+        //console.log("-> useCheckCloudPayment error: " + error);
+        // Redirect to checkout page on error
+        window.location.href = "/checkout";
+    }
+};
+
+
 </script>
 
 <template>
@@ -175,19 +189,19 @@ function getLatestVersion() {
                         <i class="uil uil-plus me-2"></i>Add</button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li>
-                            <a class="dropdown-item" href="addTrades">Trades</a>
+                            <a class="dropdown-item" @click="navAdd('addTrades')">Trades</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="addDiary">Diary Entry</a>
+                            <a class="dropdown-item" @click="navAdd('addDiary')">Diary Entry</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="addScreenshot">Screenshot</a>
+                            <a class="dropdown-item" @click="navAdd('addScreenshot')">Screenshot</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="addPlaybook">Playbook</a>
+                            <a class="dropdown-item" @click="navAdd('addPlaybook')">Playbook</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="addExcursions">Excursions</a>
+                            <a class="dropdown-item" @click="navAdd('addExcursions')">Excursions</a>
                         </li>
 
                     </ul>

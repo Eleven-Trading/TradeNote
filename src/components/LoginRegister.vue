@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { pageId, timeZones, availableTags, tradeTags, legacy, registerOff } from '../stores/globals';
-import { getCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
+import { useGetCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
 import { useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
 
 /* MODULES */
@@ -28,7 +28,7 @@ async function login() {
     try {
       console.log(" -> Parse logIn")
       await Parse.User.logIn(loginForm.username, loginForm.password)
-      getCurrentUser()
+      useGetCurrentUser()
       useGetTimeZone()
       await useGetPeriods()
       await useSetValues()
@@ -67,7 +67,7 @@ async function register() {
 
     try {
       await user.signUp();
-      getCurrentUser()
+      useGetCurrentUser()
       useGetTimeZone()
       await useGetPeriods()
       await useSetValues()

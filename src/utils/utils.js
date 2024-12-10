@@ -178,7 +178,7 @@ export function useCheckCurrentUser() {
     console.log("\nCHECKING CURRENT USER")
     return new Promise((resolve, reject) => {
         var path = window.location.pathname
-        getCurrentUser()
+        useGetCurrentUser()
         //console.log(" -> parse user " + JSON.parse(JSON.stringify(Parse.User.current())))
         //console.log(" -> Current user " + JSON.stringify(currentUser.value))
         if (path != "/" && path != "/register") {
@@ -200,7 +200,7 @@ export function useCheckCurrentUser() {
 
 }
 
-export function getCurrentUser() {
+export const useGetCurrentUser = () => {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
     //console.log("currentUser " + JSON.stringify(currentUser.value))
 }
@@ -1368,3 +1368,33 @@ export function useDecimalsArithmetic(param1, param2) {
     //https://flaviocopes.com/javascript-decimal-arithmetics/
     return ((param1.toFixed(6) * 100) + (param2.toFixed(6) * 100)) / 100
 }
+
+
+/**************************************
+* CLOUD
+**************************************/
+
+export const useCheckCloudPayment = (param1) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let currentUser = param1
+            // Make the API call
+            const response = await axios.post('/api/checkCloudPayment', {
+                currentUser: currentUser,
+            });
+
+            //console.log('Response:', JSON.stringify(response));
+
+            // Resolve or reject based on response
+            if (response.status === 200) {
+                resolve(response.data); // Resolve with response data
+            } else {
+                reject(new Error(' -> Payment check failed. Redirecting to payment page.'));
+            }
+        } catch (error) {
+            console.error(' -> Error during validation:', error);
+            reject(error); // Reject with the caught error
+        }
+    });
+};
+

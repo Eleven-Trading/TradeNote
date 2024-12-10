@@ -28,46 +28,6 @@ import axios from 'axios'
     await getRegisterPage()
 })();
 
-const checkCloud = async (to, from, next) => {
-    try {
-        // Make the POST request
-        const response = await axios.post('/api/checkCloud', {
-            key: 'value' // Replace with your payload if needed
-        });
-
-        console.log(" response "+JSON.stringify(response))
-        // Check the response and decide
-        if (response.status == 200) {
-            next(); // Proceed to the page
-        } else {
-             next('/');
-        }
-    } catch (error) {
-        console.error('Error during validation:', error);
-        next('/'); // Redirect on error
-    }
-}
-
-const checkCloudPayment = async (to, from, next) => {
-    try {
-        // Make the POST request
-        const response = await axios.post('/api/checkCloudPayment', {
-            key: 'value' // Replace with your payload if needed
-        });
-
-        console.log(" response "+JSON.stringify(response))
-        // Check the response and decide
-        if (response.status == 200) {
-            next(); // Proceed to the page
-        } else {
-             window.location.href = 'https://buy.stripe.com/14kdTQbFMcdG1jibIJ'
-             next(false);
-        }
-    } catch (error) {
-        console.error('Error during validation:', error);
-        next('/'); // Redirect on error
-    }
-}
 
 const router = createRouter({
     history: createWebHistory(
@@ -160,8 +120,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddTrades.vue'),
-        beforeEnter: checkCloudPayment
+            import('../views/AddTrades.vue')
         
     },
     {
@@ -172,8 +131,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddDiary.vue'),
-        beforeEnter: checkCloudPayment
+            import('../views/AddDiary.vue')
     },
     {
         path: '/addPlaybook',
@@ -183,8 +141,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddPlaybook.vue'),
-        beforeEnter: checkCloudPayment
+            import('../views/AddPlaybook.vue')
     },
     {
         path: '/addScreenshot',
@@ -194,8 +151,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddScreenshot.vue'),
-        beforeEnter: checkCloudPayment
+            import('../views/AddScreenshot.vue')
     },
     {
         path: '/addExcursions',
@@ -205,8 +161,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/AddExcursions.vue'),
-        beforeEnter: checkCloudPayment
+            import('../views/AddExcursions.vue')
     },
     {
         path: '/settings',
@@ -236,8 +191,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/Checkout.vue'),
-        beforeEnter: checkCloud
+            import('../views/Checkout.vue')
     },
     {
         path: '/checkoutSuccess',
@@ -247,8 +201,7 @@ const router = createRouter({
             layout: DashboardLayout
         },
         component: () =>
-            import('../views/CheckoutSuccess.vue'),
-        beforeEnter: checkCloud
+            import('../views/CheckoutSuccess.vue')
     }
     ]
 })
