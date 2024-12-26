@@ -8,7 +8,7 @@ import axios from 'axios'
     async function getRegisterPage() {
         return new Promise((resolve, reject) => {
             console.log("\nGETTING REGISTER PAGE")
-            axios.post('/registerPage')
+            axios.post('/api/registerPage')
                 .then((response) => {
                     //console.log(" response "+JSON.stringify(response))
                     //localStorage.setItem('parse_app_id', response.data)
@@ -27,6 +27,7 @@ import axios from 'axios'
 
     await getRegisterPage()
 })();
+
 
 const router = createRouter({
     history: createWebHistory(
@@ -120,6 +121,7 @@ const router = createRouter({
         },
         component: () =>
             import('../views/AddTrades.vue')
+        
     },
     {
         path: '/addDiary',
@@ -180,6 +182,26 @@ const router = createRouter({
         },
         component: () =>
             import('../views/Imports.vue')
+    },
+    {
+        path: '/checkout',
+        name: 'checkout',
+        meta: {
+            title: "Checkout",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/Checkout.vue')
+    },
+    {
+        path: '/checkoutSuccess',
+        name: 'checkoutSuccess',
+        meta: {
+            title: "Checkout Success",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/CheckoutSuccess.vue')
     }
     ]
 })

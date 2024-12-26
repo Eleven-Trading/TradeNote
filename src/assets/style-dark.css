@@ -1316,3 +1316,13 @@ h4 {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+/* STRIPE */
+/* Variables */
+.form-control  {
+    color: var(--white-87) !important;
+}
+
+.InputElement.is-invalid {
+    color: blue !important
+}
