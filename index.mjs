@@ -168,9 +168,7 @@ const setupApiRoutes = (app) => {
     app.get('/api/getStripePk', async (req, res) => {
         res.status(200).send(stripePk);
     })
-    /******************* END CLOUD ****************************/
-
-
+    
     app.get('/api/session-status', async (req, res) => {
         try {
             console.log("Getting session status");
@@ -190,12 +188,12 @@ const setupApiRoutes = (app) => {
         }
     });
 
-
+    /******************* END CLOUD ****************************/
 
     app.post("/api/updateSchemas", async (req, res) => {
 
-        if (!process.env.STRIPE_SK) {
-            //console.log("\nAPI : post update schema")
+        if (!process.env.STRIPE_SK || process.env.UPSERT_SCHEMA) {
+            console.log("\nAPI : post update schema")
 
             let rawdata = fs.readFileSync('requiredClasses.json');
             let schemasJson = JSON.parse(rawdata);
@@ -205,6 +203,7 @@ const setupApiRoutes = (app) => {
             const getExistingSchema = await ParseNode.Schema.all()
             //console.log(" -> Get existing schema " + JSON.stringify(getExistingSchema))
 
+            /* 1- Rename legacy names in mongoDB */
             const renameMongoDb = (param1, param2) => {
                 return new Promise(async (resolve, reject) => {
                     console.log(" -> Renaming class " + param1 + " to " + param2)
@@ -232,6 +231,7 @@ const setupApiRoutes = (app) => {
                     })
                 })
             }
+
             for (let i = 0; i < getExistingSchema.length; i++) {
                 //console.log("Class name " + getExistingSchema[i].className)
 
@@ -251,6 +251,7 @@ const setupApiRoutes = (app) => {
             }
             //console.log(" -> Existing Schema " + existingSchema)
 
+            /* 2- Update or save new schemas in mongoDB */
             const updateSaveSchema = (param1, param2, param3) => {
                 return new Promise((resolve, reject) => {
                     const mySchema = new ParseNode.Schema(param1);
