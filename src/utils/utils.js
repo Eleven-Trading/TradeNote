@@ -1398,3 +1398,24 @@ export const useCheckCloudPayment = (param1) => {
     });
 };
 
+export const useGetStripePk = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const response = await axios.get('/api/getStripePk', {
+            });
+
+            //console.log('Response:', JSON.stringify(response));
+
+            // Resolve or reject based on response
+            if (response.status === 200) {
+                resolve(response.data); // Resolve with response data
+            } else {
+                reject(new Error(' -> Failed to get Stripe pk.'));
+            }
+        } catch (error) {
+            console.error(' -> Error getting Stripe pk:', error);
+            reject(error); // Reject with the caught error
+        }
+    });
+};
+

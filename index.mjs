@@ -12,19 +12,22 @@ import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './s
 import { currentUser, uploadMfePrices} from './src/stores/globals.js';
 import { useGetTimeZone } from './src/utils/utils.js';
 import Stripe from 'stripe';
-let stripe
-if(process.env.STRIPE){
-     stripe = new Stripe(process.env.STRIPE);
-}
 
 
+/* STRIPE VAR */
+let stripeSk //secret key
+let stripePk // public key
 let stripePriceId
+let stripeTrialPeriod
 
-if (process.env.NODE_ENV == 'dev') {
-    stripePriceId = "price_1QTTt3FIT9U3HKjWU1jaoVUQ"
-} else {
-    stripePriceId = "price_1QSeAsFIT9U3HKjW3CxfwFz9"
+if(process.env.STRIPE_SK){
+     stripeSk = new Stripe(process.env.STRIPE_SK);
+     stripePk = process.env.STRIPE_PK
+     stripePriceId = process.env.STRIPE_PRICE_ID
+     stripeTrialPeriod = process.env.STRIPE_TRIAL_PERIOD
 }
+
+/* END STRIPE */
 
 let databaseURI
 
@@ -190,16 +193,15 @@ const startIndex = async () => {
 
 
     /**********************************************
-     * CLOUD
+     * CLOUD / STRIPE
      **********************************************/
 
     app.post("/api/checkCloudPayment", async(req, res) => {
         // Used for checking if can access add*, in case it's a paying user
         let currentUser = req.body.currentUser
         //console.log(" currentUser "+JSON.stringify(currentUser))
-        const trialPeriod = 2
         //console.log(" current user " + JSON.stringify(req.body.currentUser))
-        if (process.env.STRIPE) {
+        if (process.env.STRIPE_SK) {
             console.log("\nAPI : checkCloudPayment")
             // Check if user is stripe customer
             
@@ -207,7 +209,7 @@ const startIndex = async () => {
             if (currentUser.hasOwnProperty("paymentService") && currentUser.paymentService.hasOwnProperty("subscriptionId")) {
                 /// if yes, let inn, status 200
                 const activeSubscription = ['active', 'trialing', 'past_due']
-                const subscription = await stripe.subscriptions.retrieve(currentUser.paymentService.subscriptionId)
+                const subscription = await stripeSk.subscriptions.retrieve(currentUser.paymentService.subscriptionId)
                 if(activeSubscription.includes(subscription.status)){
                     console.log(" -> User has valid subscription.");
                     res.status(200).send('OK');
@@ -234,7 +236,7 @@ const startIndex = async () => {
                 const differenceInDays = timeDifference / (1000 * 60 * 60 * 24); // Milliseconds to days
 
                 //// if older, redirect to stripe / status 403
-                if (differenceInDays > trialPeriod) {
+                if (differenceInDays > stripeTrialPeriod) {
                     console.log(" -> User is past trial period.");
                     res.status(403).send('Forbidden');
                 } 
@@ -255,7 +257,7 @@ const startIndex = async () => {
     });
 
     app.post('/api/create-checkout-session', async (req, res) => {
-        const session = await stripe.checkout.sessions.create({
+        const session = await stripeSk.checkout.sessions.create({
             ui_mode: 'embedded',
             line_items: [
                 {
@@ -272,10 +274,16 @@ const startIndex = async () => {
         res.send({ clientSecret: session.client_secret });
     });
 
+    app.get('/api/getStripePk', async (req, res) => {
+        res.status(200).send(stripePk);
+    })
+    /******************* END CLOUD ****************************/
+
+
     app.get('/api/session-status', async (req, res) => {
         try {
             console.log("Getting session status");
-            const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+            const session = await stripeSk.checkout.sessions.retrieve(req.query.session_id);
 
             //console.log("Session retrieved:", JSON.stringify(session));
 
@@ -295,7 +303,7 @@ const startIndex = async () => {
 
     app.post("/api/updateSchemas", async (req, res) => {
 
-        if (!process.env.STRIPE) {
+        if (!process.env.STRIPE_SK) {
             //console.log("\nAPI : post update schema")
 
             let rawdata = fs.readFileSync('requiredClasses.json');

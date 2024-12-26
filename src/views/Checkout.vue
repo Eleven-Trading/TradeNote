@@ -20,14 +20,11 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 
 import { loadStripe } from '@stripe/stripe-js';
-import { useCheckCloudPayment, useGetCurrentUser } from '../utils/utils';
+import { useCheckCloudPayment, useGetCurrentUser, useGetStripePk } from '../utils/utils';
 import { currentUser } from '../stores/globals';
 
 const stripe = ref(null);
-const elements = ref(null);
-const clientSecret = ref("");
-const message = ref("");
-const stripe_pk = "pk_test_51Kg2CGFIT9U3HKjW3pnX5rGQmQ285A6dB8c7Pd7ThtXoc0ZguzUJmnJPw7Dyby2sTi9G7ih2Eu1jj0BB8nzzP1jC00HpNuY5ZF"
+
 
 onBeforeMount(async () => {
     await useGetCurrentUser();
@@ -36,8 +33,8 @@ onBeforeMount(async () => {
         window.location.replace("/dashboard")
     } catch (error) {
         // Redirect to checkout page on error
-
-        stripe.value = await loadStripe(stripe_pk);
+        let stripePk = await useGetStripePk()
+        stripe.value = await loadStripe(stripePk);
         initializeCheckout();
     }
 
