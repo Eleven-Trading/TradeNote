@@ -9,7 +9,7 @@ import * as Vite from 'vite'
 import { MongoClient } from "mongodb"
 import Proxy from 'http-proxy'
 import { useImportTrades, useGetExistingTradesArray, useUploadTrades } from './src/utils/addTrades.js';
-import { currentUser, uploadMfePrices} from './src/stores/globals.js';
+import { currentUser, uploadMfePrices } from './src/stores/globals.js';
 import { useGetTimeZone } from './src/utils/utils.js';
 import Stripe from 'stripe';
 
@@ -20,11 +20,11 @@ let stripePk // public key
 let stripePriceId
 let stripeTrialPeriod
 
-if(process.env.STRIPE_SK){
-     stripeSk = new Stripe(process.env.STRIPE_SK);
-     stripePk = process.env.STRIPE_PK
-     stripePriceId = process.env.STRIPE_PRICE_ID
-     stripeTrialPeriod = process.env.STRIPE_TRIAL_PERIOD
+if (process.env.STRIPE_SK) {
+    stripeSk = new Stripe(process.env.STRIPE_SK);
+    stripePk = process.env.STRIPE_PK
+    stripePriceId = process.env.STRIPE_PRICE_ID
+    stripeTrialPeriod = process.env.STRIPE_TRIAL_PERIOD
 }
 
 /* END STRIPE */
@@ -57,119 +57,10 @@ let server = null
 
 export let allowRegister = false
 
-const startIndex = async () => {
 
-    const startServer = async () => {
-        console.log("\nSTARTING NODEJS SERVER")
-        return new Promise(async (resolve, reject) => {
-            server = app.listen(port, function () {
-                console.log(' -> TradeNote server started on http://localhost:' + port)
-            });
-            resolve(server)
-        })
-    }
+//API
 
-    const runServer = async () => {
-        console.log("\nRUNNING SERVER");
-
-        return new Promise(async (resolve, reject) => {
-            if (process.env.NODE_ENV == 'dev') {
-                // Set up proxy for development environment
-                const proxy = new Proxy.createProxyServer({
-                    target: { host: 'localhost', port: PROXY_PORT },
-                });
-
-                // Middleware to handle API routes
-                app.use('/api/*', (req, res, next) => {
-                    // Handle API routes here (e.g., route to a different backend or do something custom)
-                    //console.log("Handling API route:", req.url);
-                    next();  // Continue processing the request for /api/* routes
-                });
-
-                // Proxy all other routes to Vite
-                app.use((req, res, next) => {
-                    if (req.url.startsWith('/api/')) {
-                        return next(); // Let the /api/* routes be handled by the previous middleware
-                    }
-                    proxy.web(req, res); // Proxy all other routes to Vite
-                });
-
-                // Start Vite dev server
-                const vite = await Vite.createServer({ server: { port: PROXY_PORT } });
-                vite.listen();
-                console.log(" -> Running vite dev server");
-                resolve();
-            } else {
-                // In production, serve static files and handle API routes
-                app.use('/api/*', (req, res) => {
-                    // Handle API requests in production (e.g., route to a specific handler)
-                    //console.log("Handling API route:", req.url);
-                    // You can add logic to process the API requests, for example:
-                    // if (req.url === '/api/session-status') { ... }
-                });
-
-                // Serve the static files from the 'dist' folder
-                app.use(express.static('dist'));
-
-                // Catch-all route for any other requests (to handle SPAs)
-                app.get('*', (request, response) => {
-                    response.sendFile(path.resolve('dist', 'index.html'));
-                });
-
-                console.log(" -> Running prod server");
-                resolve();
-            }
-        });
-    };
-
-
-    const setupParseServer = async () => {
-        console.log("\nSTARTING PARSE SERVER")
-        return new Promise(async (resolve, reject) => {
-            const serv = new ParseServer({
-                databaseURI: databaseURI,
-                appId: process.env.APP_ID,
-                masterKey: process.env.MASTER_KEY,
-                port: port,
-                masterKeyIps: ['0.0.0.0/0', '::/0'],
-                allowClientClassCreation: false,
-                allowExpiredAuthDataToken: false
-            });
-
-            // EXPRESS USE
-            await serv.start().then(() => {
-                app.use('/parse', serv.app);
-                console.log(" -> ParseNode server started")
-                resolve()
-            })
-        })
-    }
-
-    await startServer()
-    await setupParseServer()
-    await runServer()
-
-    /*var parseDashboard = new ParseDashboard({
-        "apps": [{
-            "serverURL": "/parse",
-            "appId": process.env.APP_ID,
-            "masterKey": process.env.MASTER_KEY,
-            "appName": "TradeNote"
-        }],
-        "trustProxy": true
-    });*/
-
-
-
-    if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
-
-    //INIT
-    //console.log("\nInitializing ParseNode")
-    ParseNode.initialize(process.env.APP_ID)
-    ParseNode.serverURL = "http://localhost:" + port + "/parse"
-    ParseNode.masterKey = process.env.MASTER_KEY
-
-    //API
+const setupApiRoutes = (app) => {
 
     app.post("/api/parseAppId", (req, res) => {
         //console.log("\nAPI : post APP ID")
@@ -196,33 +87,33 @@ const startIndex = async () => {
      * CLOUD / STRIPE
      **********************************************/
 
-    app.post("/api/checkCloudPayment", async(req, res) => {
+    app.post("/api/checkCloudPayment", async (req, res) => {
         // Used for checking if can access add*, in case it's a paying user
         let currentUser = req.body.currentUser
         //console.log(" currentUser "+JSON.stringify(currentUser))
         //console.log(" current user " + JSON.stringify(req.body.currentUser))
         if (process.env.STRIPE_SK) {
-            console.log("\nAPI : checkCloudPayment")
+            //console.log("\nAPI : checkCloudPayment")
             // Check if user is stripe customer
-            
+
             // Check if user has paying customer 
             if (currentUser.hasOwnProperty("paymentService") && currentUser.paymentService.hasOwnProperty("subscriptionId")) {
                 /// if yes, let inn, status 200
                 const activeSubscription = ['active', 'trialing', 'past_due']
                 const subscription = await stripeSk.subscriptions.retrieve(currentUser.paymentService.subscriptionId)
-                if(activeSubscription.includes(subscription.status)){
+                if (activeSubscription.includes(subscription.status)) {
                     console.log(" -> User has valid subscription.");
                     res.status(200).send('OK');
-                }else{
+                } else {
                     console.log(" -> User has invalid subscription.");
                     res.status(403).send('Forbidden');
                 }
-                
+
             }
 
             /// If not, check if user is within trial period
             else {
-                
+
                 // Convert createdAt to a Date object
                 const createdAtDate = new Date(currentUser.createdAt);
 
@@ -239,8 +130,8 @@ const startIndex = async () => {
                 if (differenceInDays > stripeTrialPeriod) {
                     console.log(" -> User is past trial period.");
                     res.status(403).send('Forbidden');
-                } 
-                
+                }
+
                 //// else, let inn, status 200
                 else {
                     console.log(" -> User is within trial period.");
@@ -250,7 +141,7 @@ const startIndex = async () => {
 
 
 
-            
+
         } else {
             res.status(200).send('OK');
         }
@@ -530,7 +421,123 @@ const startIndex = async () => {
             res.status(500).send({ error: error });
         }
     })
+};
+
+
+const startIndex = async () => {
+
+    const startServer = async () => {
+        console.log("\nSTARTING NODEJS SERVER")
+        return new Promise(async (resolve, reject) => {
+            server = app.listen(port, function () {
+                console.log(' -> TradeNote server started on http://localhost:' + port)
+            });
+            resolve(server)
+        })
+    }
+
+    const runServer = async () => {
+        console.log("\nRUNNING SERVER");
+    
+        return new Promise(async (resolve, reject) => {
+            if (process.env.NODE_ENV == 'dev') {
+                // Set up proxy for development environment
+                const proxy = new Proxy.createProxyServer({
+                    target: { host: 'localhost', port: PROXY_PORT },
+                });
+    
+                // Middleware to handle API routes first (do not pass to Vite)
+                app.use('/api/*', (req, res, next) => {
+                    // Handle API routes here
+                    //console.log("Handling API route:", req.url);
+                    next(); // Continue processing the request for /api/* routes
+                });
+    
+                // Set up API routes for dev mode as well
+                setupApiRoutes(app);
+    
+                // Proxy all other routes (non-API) to Vite
+                app.use((req, res, next) => {
+                    if (req.url.startsWith('/api/')) {
+                        return next(); // Let the /api/* routes be handled by the previous middleware
+                    }
+                    proxy.web(req, res); // Proxy all other routes to Vite
+                });
+    
+                // Start Vite dev server
+                const vite = await Vite.createServer({ server: { port: PROXY_PORT } });
+                vite.listen();
+                console.log(" -> Running vite dev server");
+                resolve();
+            } else {
+                // In production, handle API routes normally
+                app.use('/api/*', express.json(), (req, res, next) => {
+                    //console.log(`Received API request: ${req.method} ${req.url}`);
+                    next(); // Pass control to specific API handlers
+                });
+    
+                // Set up API routes for production
+                setupApiRoutes(app);
+    
+                // Serve static files from 'dist' folder
+                app.use(express.static('dist'));
+    
+                // Fallback for SPA
+                app.get('*', (req, res) => {
+                    res.sendFile(path.resolve('dist', 'index.html'));
+                });
+                console.log(" -> Running prod server");
+                resolve();
+            }
+        });
+    };
+    
+
+    const setupParseServer = async () => {
+        console.log("\nSTARTING PARSE SERVER")
+        return new Promise(async (resolve, reject) => {
+            const serv = new ParseServer({
+                databaseURI: databaseURI,
+                appId: process.env.APP_ID,
+                masterKey: process.env.MASTER_KEY,
+                port: port,
+                masterKeyIps: ['0.0.0.0/0', '::/0'],
+                allowClientClassCreation: false,
+                allowExpiredAuthDataToken: false
+            });
+
+            // EXPRESS USE
+            await serv.start().then(() => {
+                app.use('/parse', serv.app);
+                console.log(" -> ParseNode server started")
+                resolve()
+            })
+        })
+    }
+
+    await startServer()
+    await setupParseServer()
+    await runServer()
+
+    /*var parseDashboard = new ParseDashboard({
+        "apps": [{
+            "serverURL": "/parse",
+            "appId": process.env.APP_ID,
+            "masterKey": process.env.MASTER_KEY,
+            "appName": "TradeNote"
+        }],
+        "trustProxy": true
+    });*/
+
+
+
+    if (process.env.PARSE_DASHBOARD) app.use('/parseDashboard', parseDashboard)
+
+    //INIT
+    //console.log("\nInitializing ParseNode")
+    ParseNode.initialize(process.env.APP_ID)
+    ParseNode.serverURL = "http://localhost:" + port + "/parse"
+    ParseNode.masterKey = process.env.MASTER_KEY
 
 }
-
 startIndex()
