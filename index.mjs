@@ -58,13 +58,13 @@ let server = null
 export let allowRegister = false
 
 
-//API
+/**************************** APIs ****************************/
 
 const setupApiRoutes = (app) => {
 
     app.post("/api/parseAppId", (req, res) => {
-        console.log("\nAPI : post APP ID")
-        console.log(process.env.APP_ID)
+        //console.log("\nAPI : post APP ID")
+        //console.log(process.env.APP_ID)
         res.send(process.env.APP_ID)
     });
 
@@ -149,6 +149,14 @@ const setupApiRoutes = (app) => {
     });
 
     app.post('/api/create-checkout-session', async (req, res) => {
+        
+        let return_url
+        if (process.env.NODE_ENV == 'dev') {
+            return_url = `http://localhost:${port}/checkoutSuccess?session_id={CHECKOUT_SESSION_ID}`
+        }else{
+            return_url = `https://app.tradenote.co/checkoutSuccess?session_id={CHECKOUT_SESSION_ID}`
+        }
+
         const session = await stripeSk.checkout.sessions.create({
             ui_mode: 'embedded',
             line_items: [
@@ -159,7 +167,7 @@ const setupApiRoutes = (app) => {
                 },
             ],
             mode: 'subscription',
-            return_url: `http://localhost:${port}/checkoutSuccess?session_id={CHECKOUT_SESSION_ID}`,
+            return_url: return_url,
             automatic_tax: { enabled: true },
         });
 
@@ -312,9 +320,9 @@ const setupApiRoutes = (app) => {
 
     })
 
-    /******************************************
-     * REST API
-     ******************************************/
+    
+
+    
     app.use(express.json());
 
     let allUsers
@@ -425,6 +433,7 @@ const setupApiRoutes = (app) => {
     })
 };
 
+/**************************** END APIs ****************************/
 
 const startIndex = async () => {
 
