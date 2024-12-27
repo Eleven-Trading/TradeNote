@@ -63,7 +63,8 @@ export let allowRegister = false
 const setupApiRoutes = (app) => {
 
     app.post("/api/parseAppId", (req, res) => {
-        //console.log("\nAPI : post APP ID")
+        console.log("\nAPI : post APP ID")
+        console.log(process.env.APP_ID)
         res.send(process.env.APP_ID)
     });
 

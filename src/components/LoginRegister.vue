@@ -459,5 +459,6 @@ const checkLegacy = async (param) => {
     </form>
     <div class="text-center mt-3" v-if="!registerOff"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :
       "Login" }}</a> page</div>
+      1
   </main>
 </template>
