@@ -157,6 +157,7 @@ const setupApiRoutes = (app) => {
             return_url = `https://app.tradenote.co/checkoutSuccess?session_id={CHECKOUT_SESSION_ID}`
         }
 
+        console.log(" -> return_url : "+return_url)
         const session = await stripeSk.checkout.sessions.create({
             ui_mode: 'embedded',
             line_items: [
