@@ -133,22 +133,37 @@ function logout() {
 
 function getLatestVersion() {
     return new Promise(async (resolve, reject) => {
+        await axios.get("/api/dockerVersion")
+    .then((response) => {
+        //console.log(" -> data " + JSON.stringify(response.data));
+        for (const element of response.data.results) { // Use for...of for iteration
+            console.log("name " + element.name);
+            if (element.name !== "latest") {
+                latestVersion.value.docker = element.name;
+                break; // Stop iterating after the first match
+            }
+        }
+    })
+    .catch((error) => {
+        console.error("Error: ", error);
+    })
+    .finally(function () {
+        // Always executed
+    });
+        
         await axios.get("https://raw.githubusercontent.com/Eleven-Trading/TradeNote/main/package.json")
             .then((response) => {
                 //console.log(" -> data " + JSON.stringify(response.data))
-                latestVersion.value = response.data.version
-                console.log(" -> Latest version " + latestVersion.value)
-                if (latestVersion.value == version) {
-                    console.log(" -> Running latest version")
-                } else {
-                    console.log(" -> New version is available")
-                }
+                latestVersion.value.gitHub = response.data.version
+                
             })
             .catch((error) => {
             })
             .finally(function () {
                 // always executed
             })
+
+            console.log(" -> Latest versions " + JSON.stringify(latestVersion.value))
         resolve()
     })
 }
@@ -242,6 +257,9 @@ const navAdd = async (param) => {
                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip" data-bs-html="true"
                                     v-bind:data-bs-title="'New version available<br>v' + latestVersion"></i>-->
                             </span>
+
+                            <div><span class="txt-x-small">DockerHub: v{{ latestVersion.docker }}</span></div>
+                            <div><span class="txt-x-small">GitHub: v{{ latestVersion.gitHub }}</span></div>
                         </li>
                         <!--<li class="text-center"><a class="txt-small blue-link" target="_blank"
                                 href="https://eleven.m-pages.com/tradenote">Get Updates</a></li>-->

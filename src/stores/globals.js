@@ -20,7 +20,7 @@ export const quill = ref()
 export const sideMenuMobileOut = ref(false)
 export const screenType = ref()
 export const saveButton = ref(false)
-export const latestVersion = ref()
+export const latestVersion = ref({})
 export const windowIsScrolled = ref()
 
 export const idCurrent = ref()

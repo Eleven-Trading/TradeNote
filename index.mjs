@@ -200,6 +200,21 @@ const setupApiRoutes = (app) => {
 
     /******************* END CLOUD ****************************/
 
+    app.get('/api/dockerVersion', async (req, res) => {
+            console.log("Getting Docker Version");
+            await axios.get("https://hub.docker.com/v2/namespaces/eleventrading/repositories/tradenote/tags")
+            .then((response) => {
+                //console.log(" -> data " + JSON.stringify(response.data))
+                res.status(200).send(response.data);
+            })
+            .catch((error) => {
+                res.status(500).send({ error: error.message });
+            })
+            .finally(function () {
+                // always executed
+            })
+    });
+
     app.post("/api/updateSchemas", async (req, res) => {
 
         if (!process.env.STRIPE_SK || process.env.UPSERT_SCHEMA) {

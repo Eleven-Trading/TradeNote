@@ -133,6 +133,10 @@ input[type="month"]::-webkit-calendar-picker-indicator {
     font-size: small;
 }
 
+.txt-x-small {
+    font-size: x-small;
+}
+
 .txt-xx-large {
     font-size: xx-large;
 }
