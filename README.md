@@ -65,7 +65,7 @@ Start by registering a user. Visit `http://localhost:8080/register` to register 
 - Choose your broker and/or account timezone.
 
 ## Importing Trades
-Please make sure to follow the instructions in the [brokers folder](https://github.com/Eleven-Trading/TradeNote/blob/main/brokers "brokers folder") for exporting and importing trades. 
+Please make sure to follow the instructions in the <a href="https://tradenote.co/brokers.html">brokers folder</a> for exporting and importing trades. 
 
 # Contribute
 I'm a trader and recreational developer. My days are very packed but I will do my best to answer your questions and update the code when needed. As such, do not hesitate to contact me if you would like to contribute and help improve this project. Things to work on and improve:
