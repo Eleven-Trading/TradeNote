@@ -37,7 +37,7 @@ onBeforeMount(async () => {
 
 })
 
-const selectedTab = "syncImpTab"
+const selectedTab = "manageTab"
 
 const tabs = [
     {
@@ -45,7 +45,7 @@ const tabs = [
         label: "Manage Imports",
         target: "#manageNav"
     },
-    {
+    /*{
         id: "syncImpTab",
         label: "Auto-Sync Imports",
         target: "#syncImpNav"
@@ -54,7 +54,7 @@ const tabs = [
         id: "syncExcTab",
         label: "Auto-Sync Excursions",
         target: "#syncExcNav"
-    }
+    }*/
 ]
 
 
@@ -100,9 +100,11 @@ function inputChooseBroker(param) {
                         </tbody>
                     </table>
                 </div>
+                
+                
                 <div v-bind:class="'tab-pane fade ' + (selectedTab == 'syncImpTab' ? 'active show' : '')"
                     id="syncImpNav">
-                    <!--DROPDOWN LIST-->
+                    Work in progress
                     <div class="form-floating">
                         <select v-on:input="inputChooseBroker($event.target.value)" class="form-select">
                             <option v-for="item in syncActiveBrokers" v-bind:value="item.value"
@@ -131,11 +133,13 @@ function inputChooseBroker(param) {
                         <label for="floatingInput">{{ input.label }}</label>
 
                     </div>
-
+                
                 </div>
+                               
+                
                 <div v-bind:class="'tab-pane fade ' + (selectedTab == 'syncExcTab' ? 'active show' : '')"
                     id="syncExcNav">
-                    TBD
+                    Work in progress
                 </div>
             </div>
         </div>

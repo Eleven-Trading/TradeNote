@@ -46,7 +46,7 @@ const ratioCompute = computed(() => {
         ratio.name = "Average Profit Factor per Security"
         ratio.shortName = "APPS"
         ratio.value = useXDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / (totals.quantity / 2), 4)
-        ratio.tooltipTitle = '<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'
+        ratio.tooltipTitle = '<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Acquired</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Securities Acquired: ' + useThousandFormat(totals.quantity / 2) + '</div>'
     }
     if (localStorage.getItem('selectedRatio') == 'profitFactor') {
         ratio.shortName = "Profit Factor"
