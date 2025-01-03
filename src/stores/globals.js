@@ -3264,13 +3264,13 @@ export const brokers = reactive([{
 {
     value: "tastyTrade",
     label: "TastyTrade",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 },
 {
     value: "topstepX",
     label: "TopstepX",
-    assetTypes: ["futures"]
-    assetTypes: ["stocks", "options", "futures"],
+    assetTypes: ["futures"],
     autoSync: false
 }
 ])
