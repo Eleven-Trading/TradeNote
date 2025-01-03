@@ -20,16 +20,6 @@ function inputChooseBroker(param) {
     localStorage.setItem('selectedBroker', param)
     selectedBroker.value = param
 }
-function stepperNext() {
-    stepper.value.next()
-    existingImports.length = 0
-}
-
-function stepperPrevious() {
-    stepper.value.previous()
-    existingImports.length = 0
-}
-
 
 </script>
 <template>

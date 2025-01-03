@@ -2218,15 +2218,30 @@ export async function useUploadTrades(param99, param0) {
 
 
     const loopOpenPositionsParse = async (param1, param2) => {
+        // here we flag position in Parse DB as open or closed
+        // when parsing currnt import, check if symbol is is Parse
+        // if yes, extract existing parse data, add to openPositionsParse array and compare to current import
+        // if still open, then it gets added to openPositionsFile. If not, then not added
+        // thereby, if openPositionsParse element is not in openPositionsFile that means the trade has been close
+        // But this has a flaw : if there are other symbols in parse that are not in the current import file, all these other symbols in Parse will get flagged as closed
+        // So trying to filter with exitTime
         return new Promise(async (resolve, reject) => {
             for (let index = 0; index < openPositionsParse.length; index++) {
                 const element = openPositionsParse[index];
-                //console.log(" element "+JSON.stringify(element))
-                let opIndex = openPositionsFile.findIndex(x => x.id == element.id)
+                console.log(" element id "+JSON.stringify(element.id))
+                console.log(" element exit time "+JSON.stringify(element.exitTime))
+                //console.log(" element exit price "+JSON.stringify(element.exitPrice))
+                //console.log(" element openPosition "+JSON.stringify(element.openPosition))
+                
+                if(element.exitTime != 0){
+                    await updateOpenPositions(element.id, element.td, element.exitTime)
+                }
+
+                /*let opIndex = openPositionsFile.findIndex(x => x.id == element.id)
                 if (opIndex == -1) {
                     //open positions parse element not anymore in openPositionsFile = trade is now closed
                     await updateOpenPositions(element.id, element.td, element.exitTime)
-                }
+                }*/
                 if ((index + 1) == openPositionsParse.length) {
                     resolve()
                 }

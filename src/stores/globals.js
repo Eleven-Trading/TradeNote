@@ -14,7 +14,7 @@ export const endOfList = ref(false) //infinite scroll
 export const noData = ref(false)
 export const stepper = ref()
 export const hasData = ref(false)
-export const itemToEditId = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('editItemId'): "")
+export const itemToEditId = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('editItemId') : "")
 export const currentDate = ref()
 export const quill = ref()
 export const sideMenuMobileOut = ref(false)
@@ -3183,57 +3183,83 @@ export const playbookButton = ref(false)
 export const brokers = reactive([{
     value: "template",
     label: "Template",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "tradeZero",
     label: "TradeZero",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: {
+        active: false,
+        inputs: []
+    }
 },
 {
     value: "interactiveBrokers",
     label: "Interactive Brokers",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: {
+        active: true,
+        instructions: ["Create an Activity Flex Query on your dashboard where you choose the desired Period, check the necessary values under the Trades section (Account ID, Currency, Symbol Underlying, Symbol, Multiplier, Put/Call, Quantity, Proceeds, Net Cash, Buy/Sell, Asset Class, Settle Date Target, TradePrice, IB Order ID, Notes/Codes, IB Commission, Date/Time) and get the Query Id.", "Enable Flex Web by following the <a target='_blank' href='https://www.ibkrguides.com/clientportal/performanceandstatements/flex-web-service.htm'>instructions</a> and get the Token"],
+        inputs: [
+            {
+                value: "token",
+                label: "Token"
+            }, {
+                value: "flexQueryId",
+                label: "Flex Query Id"
+            }
+        ]
+    }
 },
 {
     value: "tdAmeritrade",
     label: "TD Ameritrade",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 },
 {
     value: "tradeStation",
     label: "TradeStation",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 },
 {
     value: "tradovate",
     label: "Tradovate",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
 },
 {
     value: "metaTrader5",
     label: "MetaTrader 5",
-    assetTypes: ["forex"]
+    assetTypes: ["forex"],
+    autoSync: false
 },
 {
     value: "heldentrader",
     label: "Heldentrader",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "rithmic",
     label: "Rithmic",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
 },
 {
     value: "fundTraders",
     label: "FundTraders",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "ninjaTrader",
     label: "NinjaTrader",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
 },
 {
     value: "tastyTrade",
@@ -3244,6 +3270,8 @@ export const brokers = reactive([{
     value: "topstepX",
     label: "TopstepX",
     assetTypes: ["futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 }
 ])
 
