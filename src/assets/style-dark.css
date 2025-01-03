@@ -647,6 +647,16 @@ img.logo {
     height: 700px;
 }
 
+/* Default style for ol li[data-list="bullet"] */
+ol li[data-list="bullet"] {
+    list-style-type: disc;
+}
+
+/* Override style for ol li[data-list="bullet"] within .ql-editor */
+.ql-editor ol li[data-list="bullet"] {
+    list-style-type: none; /* or any other style you prefer */
+}
+
 /* STEPPER */
 
 .active .bs-stepper-circle {
