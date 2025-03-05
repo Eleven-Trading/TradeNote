@@ -605,7 +605,7 @@ export async function useBrokerTradeStation(param) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
 
         } catch (error) {
             console.log("  --> ERROR " + error)
@@ -706,7 +706,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     tradesData.push(temp)
                 }
             });
-            console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
+            //console.log(" -> Trades Data\n" + JSON.stringify(tradesData))
         } catch (error) {
             console.log("  --> ERROR " + error)
             reject(error)
