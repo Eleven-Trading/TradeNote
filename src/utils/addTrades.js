@@ -1,4 +1,4 @@
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, marketCloseTime } from '../stores/globals.js'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, queryLimitExistingTrades, marketCloseTime } from '../stores/globals.js'
 import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade, useTopstepX } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
@@ -61,8 +61,7 @@ export async function useGetExistingTradesArray(param99, param0) {
                 parseObject = Parse.Object.extend("trades");
                 query = new Parse.Query(parseObject);
             }
-
-            query.limit(queryLimit.value); // limit to at most 1M results
+            query.limit(queryLimitExistingTrades.value);
             const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
             for (let i = 0; i < results.length; i++) {
                 const object = results[i];

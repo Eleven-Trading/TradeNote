@@ -10,6 +10,7 @@ export const currentUser = ref()
 export const timeZones = ref(["America/New_York", "Asia/Shanghai", "Europe/Brussels", "Asia/Tokyo", "Asia/Hong_Kong", "Asia/Kolkata", "Europe/London", "Asia/Riyadh"])
 export const timeZoneTrade = ref()
 export const queryLimit = ref(10000000)
+export const queryLimitExistingTrades = ref(50)
 export const endOfList = ref(false) //infinite scroll
 export const noData = ref(false)
 export const stepper = ref()
