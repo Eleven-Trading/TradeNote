@@ -99,7 +99,19 @@ export const gotExistingTradesArray = ref(false)
 export const marketCloseTime = ref("16:00:00")
 
 export const futureContractsJson = ref(
-    [
+    [   
+        {
+            "name": "Micro Copper",
+            "symbol": "MHG",
+            "type": "Metals",
+            "exchange": "CME",
+            "unit": "USD",
+            "contractSize": 2500,
+            "contractSizeExpl": "2,500 lbs",
+            "months": "F,G,H,J,K,M,N,Q,U,V,X,Z",
+            "tick": 0.0005,
+            "value": 1.25
+        },
         {
             "name": "Micro E-mini S&P 500",
             "symbol": "MES",
