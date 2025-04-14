@@ -61,6 +61,7 @@ export async function useGetExistingTradesArray(param99, param0) {
                 parseObject = Parse.Object.extend("trades");
                 query = new Parse.Query(parseObject);
             }
+            query.descending("dateUnix");
             query.limit(queryLimitExistingTrades.value);
             const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
             for (let i = 0; i < results.length; i++) {
