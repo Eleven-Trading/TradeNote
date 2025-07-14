@@ -1,5 +1,5 @@
-import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit } from '../stores/globals.js'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders } from './brokers.js'
+import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, queryLimitExistingTrades, marketCloseTime } from '../stores/globals.js'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade, useTopstepX } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
@@ -21,6 +21,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import _ from 'lodash'
 import axios from 'axios'
+import Papa from 'papaparse';
 
 let openPosition = false
 let tradeAccounts = []
@@ -60,8 +61,8 @@ export async function useGetExistingTradesArray(param99, param0) {
                 parseObject = Parse.Object.extend("trades");
                 query = new Parse.Query(parseObject);
             }
-
-            query.limit(queryLimit.value); // limit to at most 1M results
+            query.descending("dateUnix");
+            query.limit(queryLimitExistingTrades.value);
             const results = await query.find(param99 === "api" ? { useMasterKey: true } : "");
             for (let i = 0; i < results.length; i++) {
                 const object = results[i];
@@ -83,7 +84,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
         //console.log("param1 " + param1)
         //console.log("param2 " + param2)
         //console.log("param3 " + param3)
-        console.log("IMPORTING FILE")
+        console.log("\nIMPORTING FILE")
         // Using Papa Parse : https://www.papaparse.com/docs
         spinnerLoadingPage.value = true
         //spinnerLoadingPageText.value = "Importing file ..."
@@ -133,7 +134,9 @@ export async function useImportTrades(param1, param2, param3, param0) {
             selectedBroker.value = param3
 
         }
-        if (selectedBroker.value == "tradeZero" || selectedBroker.value == "template" || selectedBroker.value == "tdAmeritrade" || selectedBroker.value == "interactiveBrokers" || selectedBroker.value == "tradovate" || selectedBroker.value == "ninjaTrader" || selectedBroker.value == "heldentrader" || selectedBroker.value == "rithmic" || selectedBroker.value == "fundTraders") {
+
+        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade", "topstepX"]
+        if (readAsTextArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
             } else {
@@ -141,7 +144,8 @@ export async function useImportTrades(param1, param2, param3, param0) {
             }
         }
 
-        if (selectedBroker.value == "metaTrader5") {
+        let readAsArrayBufferArray = ["metaTrader5"]
+        if (readAsArrayBufferArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
             } else {
@@ -259,30 +263,69 @@ export async function useImportTrades(param1, param2, param3, param0) {
             })
         }
 
+        /****************************
+         * TASTYTRADE
+         ****************************/
+        if (selectedBroker.value == "tastyTrade") {
+            console.log(" -> TastyTrade")
+            await useTastyTrade(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * TOPSTEPX
+         ****************************/
+        if (selectedBroker.value == "topstepX") {
+            console.log(" -> TopstepX")
+            await useTopstepX(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+
+        /****************************
+        * CREATE EXECUTIONS, TRADES
+        ****************************/
         const create = async () => {
             await createTempExecutions().catch((error) => {
-                alert("Error in upload file (" + error + ")")
+                if (param2 != "api") {
+                    alert("Error in upload file (" + error + ")")
+                }
             })
 
             await createExecutions()
 
-            if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value) {
-                await getOHLCV()
-            }
-            /*await createTrades().then(async () => {
-                //console.log(" -> Open posisitions: " + openPosition)
-                if (openPosition) {
-                    //console.log("You have one or more open positions. Please close all your positions before import.")
-                    alert("You have one or more open positions. Please close all your positions before import.")
-                    return
+            if (currentUser.value.hasOwnProperty('apis') && (currentUser.value.apis.findIndex(obj => obj.provider === 'polygon' || obj.provider === 'databento') > -1) && uploadMfePrices.value) {
+
+                let databentoIndex = currentUser.value.apis.findIndex(obj => obj.provider === "databento")
+                let polygonIndex = currentUser.value.apis.findIndex(obj => obj.provider === "polygon")
+
+                if (databentoIndex > -1 && currentUser.value.apis[databentoIndex].key != "") {
+                    try {
+                        await useGetOHLCV("databento", param2);
+                    } catch (error) {
+                        if (param2 != "api") {
+                            alert("Error getting OHLCV (" + error + ")")
+                        }
+                        reject("Error getting OHLCV (" + error + ")")
+                        return; // stop the function execution
+                    }
+                } else if (polygonIndex > -1 && currentUser.value.apis[polygonIndex].key != "") {
+                    try {
+                        await useGetOHLCV("polygon", param2);
+                    } catch (error) {
+                        if (param2 != "api") {
+                            alert("Error getting OHLCV (" + error + ")")
+                        }
+                        reject("Error getting OHLCV (" + error + ")")
+                        return; // stop the function execution
+                    }
                 } else {
-    
-                    await filterExisting("trades")
-                    await useCreateBlotter()
-                    await useCreatePnL()
+                    console.log(" -> No APIs stored for MFE and charts")
                 }
-    
-            })*/
+            }
+            
             await getOpenPositionsParse(param2, param0)
             await createTrades()
             await filterExisting("trades")
@@ -292,6 +335,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
             await (spinnerLoadingPage.value = false)
             resolve()
+
         }
 
         const retryFunction = (callback, delay, tries) => {
@@ -334,6 +378,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 async function createTempExecutions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nCREATING TEMP EXECUTION")
+
         //spinnerLoadingPageText.value = "Creating temp executions"
         const keys = Object.keys(tradesData);
         var temp = [];
@@ -341,6 +386,7 @@ async function createTempExecutions() {
 
         var lastId
         var x
+
 
         tempExecutions.length = 0 // reinitialize, for API
         tradedSymbols.length = 0 // reinitialize, for API
@@ -380,13 +426,13 @@ async function createTempExecutions() {
                 if (temp2.side == "SS") {
                     temp2.strategy = "short"
                 }
-
                 temp2.symbol = tradesData[key].Symbol.replace(".", "_")
+                temp2.symbolOriginal = tradesData[key].SymbolOriginal
                 temp2.quantity = parseFloat(tradesData[key].Qty);
                 temp2.price = parseFloat(tradesData[key].Price);
 
                 temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
-                let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.side;
+                let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.type + "_" + temp2.side;
                 // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                 if (tempId != lastId) {
                     x = 1
@@ -412,9 +458,15 @@ async function createTempExecutions() {
                 temp2.trade = null;
 
                 tempExecutions.push(temp2);
+                //console.log(" tempExecutions " + JSON.stringify(tempExecutions));
 
-                if (!tradedSymbols.includes(temp2.symbol)) {
-                    tradedSymbols.push(temp2.symbol)
+
+                let index = tradedSymbols.findIndex(obj => obj.symbol === temp2.symbol)
+                if (index === -1) {
+                    let temp = {}
+                    temp.symbol = temp2.symbol
+                    temp.secType = temp2.type
+                    tradedSymbols.push(temp)
                 }
 
                 if (tradedStartDate == null) {
@@ -430,18 +482,22 @@ async function createTempExecutions() {
                 } else if (temp2.execTime > tradedEndDate) {
                     tradedEndDate = temp2.execTime
                 }
+                //console.log(" tradedSymbols " + JSON.stringify(tradedSymbols));
 
                 //console.log(" -> Trade start date " + tradedStartDate)
                 //console.log(" -> Trade end date " + tradedEndDate)
                 //console.log("temp " + JSON.stringify(temp2))
-                //console.log(" -> Created temp executions");
+
             } catch (error) {
                 console.log("  --> ERROR " + error)
                 reject(error)
             }
         }
+        console.log(" -> Created temp executions");
+        console.log(" -> Created traded symbols");
         resolve()
     })
+
 }
 
 async function createExecutions() {
@@ -466,82 +522,384 @@ async function createExecutions() {
     })
 }
 
-async function getOHLCV() {
+export const useCreateOHLCV = (param, param2) => {
+    //console.log(" param "+JSON.stringify(param))
     return new Promise(async (resolve, reject) => {
-        console.log("\nGETTING OHLCV")
-        //spinnerLoadingPageText.value = "Getting OHLCV"
+        let papaParse = Papa.parse(param, { header: true })
+        let tempArray = papaParse.data
+        //console.log(' tempArray ' + JSON.stringify(tempArray))
+        for (let index = 0; index < tempArray.length; index++) {
+            const element = tempArray[index];
+            if (element.ts_event) {
 
-        ohlcv.length = 0 // reinitialize, for API
-        const asyncLoop = async () => {
-            for (let i = 0; i < tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
-                let temp = {}
-                temp.symbol = tradedSymbols[i]
-                //console.log(" -> From date " + tradedStartDate)
-                //console.log(" -> To " + tradedEndDate)
-                let toDate = dayjs(tradedEndDate * 1000).tz(timeZoneTrade.value).endOf('day').unix()
-                //console.log(" -> To date " + toDate)
+                //console.log(" ts_event " + element.ts_event)
+                let NYTime = dayjs.tz(element.ts_event, "UTC").tz(timeZoneTrade.value).unix() // telling it's UTC time and converting to trade TZ
 
-                axios.interceptors.response.use(undefined, (err) => {
-                    const { config, message } = err;
-                    if (err) {
-                        console.log(" -> Interceptors status " + err.response.status)
-                        console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
-                        console.log(" -> Interceptors message " + message)
-                        //spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
-                    }
-                    if (!config || !config.retry) {
-                        return Promise.reject(err);
-                    }
-
-                    // If there is an error and the status is not 429, we just alert (return rejection). Else we continue and retry
-                    if (err.response.status != 429) {
-                        alert("Error getting OHLCV with message: " + message)
-                        return Promise.reject(err);
-                    }
-
-                    config.retry -= 1;
-
-                    const delayRetryRequest = new Promise((resolve) => {
-                        setTimeout(() => {
-                            console.log(" -> Retrying the request ", config.url);
-                            resolve();
-                        }, config.retryDelay || 1000);
-                    });
-
-                    return delayRetryRequest.then(() => axios(config));
-                });
-
-                // when request, can set retry times and retry delay time
-                let index = currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')
-                await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.apis[index].key, { retry: 5, retryDelay: 60000 })
-                    .then((response) => {
-                        //console.log(" -> data " + JSON.stringify(response))
-                        //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
-                        temp.ohlcv = response.data.results
-                        ohlcv.push(temp)
-                        //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
-                    })
-                    .catch((error) => {
-
-                        console.log(" -> Polygon api get error " + error.status);
-                    })
-                    .finally(function () {
-                        // always executed
-                    })
-
+                let temp2 = {}
+                temp2.v = Number(element.volume)
+                temp2.o = Number(element.open)
+                temp2.c = Number(element.close)
+                temp2.h = Number(element.high)
+                temp2.l = Number(element.low)
+                temp2.t = NYTime * 1000
+                param2.ohlcv.push(temp2)
 
             }
+
+            if ((index + 1) === tempArray.length) {
+                ohlcv.push(param2) // this is used for when adding trades
+                //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
+                resolve(param2) // resolving only param2, used for daily.vue (because I just want to get back the created OHLC, not the full / existing ohlcv array)
+            }
+
         }
-        await asyncLoop()
-        resolve()
     })
 }
 
+export const useGetOHLCV = (param, param2, param3, param4, param5) => { //param=databento/polygon, param2=api or other, param3+ is used for AddExcursions: param3=tradedSymbols, param4=tradedStartDate, param5=tradedEndDate
+    return new Promise(async (resolve, reject) => {
+        console.log("\nGETTING OHLCV from " + param)
+        
+        if (param3) tradedSymbols = param3
+        if (param4) tradedStartDate = param4
+        if (param5) tradedEndDate = param5
+        
+        //spinnerLoadingPageText.value = "Getting OHLCV"
+        console.log(" Traded Symbols " + JSON.stringify(tradedSymbols))
+        ohlcv.length = 0 // reinitialize, for API
+
+        
+
+        const asyncLoop = async () => {
+            for (let i = 0; i < tradedSymbols.length; i++) { // I think that async needs to be for instead of foreach
+                let temp = {}
+                temp.symbol = tradedSymbols[i].symbol
+                let databentoSymbol = temp.symbol
+                let stype_in = "raw_symbol"
+
+                console.log(" -> From date " + tradedStartDate)
+                console.log(" -> To " + tradedEndDate)
+                //let currentDateYesterday = dayjs().tz(timeZoneTrade.value).subtract(1, 'day').unix()
+                //console.log(" currentDateYesterday "+currentDateYesterday)
+                let toDate = dayjs(tradedEndDate * 1000).endOf('day').unix()
+                //if (toDate > currentDateYesterday) toDate = dayjs(currentDateYesterday * 1000).subtract(7, 'hour').unix()
+                console.log(" -> To date " + toDate)
+
+                if (param === "databento") {
+                    let dataset
+                    temp.ohlcv = []
+
+                    if (tradedSymbols[i].secType === "future") {
+                        dataset = "GLBX.MDP3"
+                        databentoSymbol = temp.symbol + ".c.0"
+                        stype_in = "continuous"
+
+                    } else if (tradedSymbols[i].secType === "stock") {
+                        dataset = "XNAS.ITCH"
+
+                    } else if (tradedSymbols[i].secType === "call" || tradedSymbols[i].secType === "put") {
+
+                    } else if (tradedSymbols[i].secType === "forex") {
+
+                    }
+                    let index = currentUser.value.apis.findIndex(obj => obj.provider === 'databento')
+
+                    let data =
+                    {
+                        'dataset': dataset,
+                        'stype_in': stype_in,
+                        'symbols': databentoSymbol,
+                        'schema': 'ohlcv-1m',
+                        'start': tradedStartDate * 1000000000,
+                        'end': toDate * 1000000000,
+                        'encoding': 'csv',
+                        'pretty_px': 'true',
+                        'pretty_ts': 'true',
+                        'map_symbols': 'true',
+                        'username': currentUser.value.apis[index].key
+                    }
+
+                    //console.log(" data "+JSON.stringify(data))
+                    if (param2 === "api") {
+                        try {
+                            const username = currentUser.value.apis[index].key
+                            const password = '';
+
+
+                            let config = {
+                                method: 'post',
+                                maxBodyLength: Infinity,
+                                url: "https://hist.databento.com/v0/timeseries.get_range",
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64')
+                                },
+                                data: data
+                            };
+
+                            axios.request(config)
+                                .then(async (response) => {
+                                    await useCreateOHLCV(response.data, temp)
+                                    resolve()
+                                })
+                                .catch((error) => {
+                                    console.log(" -> Error in databento response " + error)
+                                    reject(error)
+                                });
+
+                        } catch (error) {
+                            console.log(" -> Error getting databento " + error)
+                            reject(error)
+                        }
+                    } else {
+                        axios.post('/api/databento', data)
+                            .then(async (response) => {
+                                await useCreateOHLCV(response.data, temp)
+                                resolve(ohlcv)
+                            })
+                            .catch((error) => {
+                                console.log(" -> Error in databento response " + error)
+                                reject(error)
+                            });
+                    }
+
+
+                } else if (param === "polygon") {
+                    axios.interceptors.response.use(undefined, (err) => {
+                        const { config, message } = err;
+                        if (err) {
+                            console.log(" -> Interceptors status " + err.response.status)
+                            console.log(" -> Interceptors data " + JSON.stringify(err.response.data))
+                            console.log(" -> Interceptors message " + message)
+                            //spinnerLoadingPageText.value = "Getting OHLCV - API limit reached - Retrying 60 seconds"
+                        }
+                        if (!config || !config.retry) {
+                            return Promise.reject(err);
+                        }
+
+                        // If there is an error and the status is not 429, we just alert (return rejection). Else we continue and retry
+                        if (err.response.status != 429) {
+                            alert("Error getting OHLCV with message: " + message)
+                            return Promise.reject(err);
+                        }
+
+                        config.retry -= 1;
+
+                        const delayRetryRequest = new Promise((resolve) => {
+                            setTimeout(() => {
+                                console.log(" -> Retrying the request ", config.url);
+                                resolve();
+                            }, config.retryDelay || 1000);
+                        });
+
+                        return delayRetryRequest.then(() => axios(config));
+                    });
+
+                    // when request, can set retry times and retry delay time
+                    let index = currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')
+                    await axios.get("https://api.polygon.io/v2/aggs/ticker/" + temp.symbol + "/range/1/minute/" + tradedStartDate * 1000 + "/" + toDate * 1000 + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.apis[index].key, { retry: 5, retryDelay: 60000 })
+                        .then((response) => {
+                            //console.log(" -> data " + JSON.stringify(response))
+                            //console.log(" -> ohlcvData " + JSON.stringify(ohlcvData))
+                            temp.ohlcv = response.data.results
+                            ohlcv.push(temp)
+                            //console.log(" -> ohlcv " + JSON.stringify(ohlcv))
+                            resolve(ohlcv)
+                        })
+                        .catch((error) => {
+
+                            console.log(" -> Polygon api get error " + error.status);
+                            reject(error)
+                        })
+                        .finally(function () {
+                            // always executed
+                        })
+                }
+
+            }
+
+        }
+        await asyncLoop()
+    })
+}
+
+export const useGetMFEPrices = (tempExec, initEntryTime, initEntryPrice, trde, ohlcvParam) => {
+    return new Promise(async (resolve, reject) => {
+        console.log("  --> Getting MFE Price")
+
+        if (ohlcvParam) {
+            ohlcv = ohlcvParam //case when we add MFE from daily
+        }
+
+        let ohlcvSymbol = ohlcv[ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
+        //todo exclude if trade in same minute timeframe
+
+        //console.log(" ohlcvSymbol " + JSON.stringify(ohlcvSymbol))
+
+        if (ohlcvSymbol != undefined) {
+            //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
+            let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
+            let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= trde.exitTime * 1000) //findIndex returns the first element
+            let tempStartTime = ohlcvSymbol[tempStartIndex]
+            let tempEndTime = ohlcvSymbol[tempEndIndex]
+
+            let startIndex
+            let endIndex
+            let startTime
+            let endTime
+
+            if (tempStartTime == initEntryTime) {
+                startIndex = tempStartIndex + 1
+                startTime = ohlcvSymbol[startIndex].t
+            } else {
+                startIndex = tempStartIndex
+                startTime = ohlcvSymbol[tempStartIndex].t
+            }
+
+            if (tempEndTime == trde.exitTime) {
+                endIndex = tempEndIndex
+                endTime = tempEndTime
+            } else {
+                endIndex = tempEndIndex - 1
+                endTime = ohlcvSymbol[tempEndIndex - 1].t
+            }
+
+            //console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
+            //console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
+            //console.log("   ----> ExitTime " + trde.exitTime + " and end time " + endTime)
+
+            //Get market close index
+            //iterate from exit time and check if same day and <= 4 hour
+            let endTimeDay = dayjs(endTime).tz(timeZoneTrade.value).get("date")
+            let endTimeMonth = dayjs(endTime).tz(timeZoneTrade.value).get("month") + 1
+            let endTimeYear = dayjs(endTime).tz(timeZoneTrade.value).get("year")
+            let endTimeDate = endTimeYear + "-" + endTimeMonth + "-" + endTimeDay + " "+ marketCloseTime.value //VERY IMPORTANT : if i want to apply US time, it needs to be in US format, that is YYYY-MM-DD
+            //console.log(" -> End time date "+endTimeDate)
+            //    
+            let marketCloseDateTime = dayjs.tz(endTimeDate, timeZoneTrade.value)
+
+            //console.log(" marketCloseDateTime "+marketCloseDateTime)
+
+            let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= marketCloseDateTime)
+            let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
+            //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
+
+            /*let timeDayOfWeek = dayjs(endTime * 1000).tz(timeZoneTrade.value).day()
+            console.log(" timeDayOfWeek "+timeDayOfWeek)
+            let timeHour = dayjs(endTime * 1000).tz(timeZoneTrade.value).get('hour')
+            let time
+            let i = tempEndIndex - 1;
+            while (i < ohlcvSymbol.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
+                time = ohlcvSymbol[i].t
+                timeDayOfWeek = dayjs(time * 1000).tz(timeZoneTrade.value).day()
+                timeHour = dayjs(time * 1000).tz(timeZoneTrade.value).get('hour')
+                    //console.log("time: "+time+", timeDayOfWeek "+timeDayOfWeek+" and hour "+timeHour)
+                i++;
+            }
+            console.log(" -> Time "+time)
+            //let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= time)
+            let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
+
+            //console.log(" -> End of day time " + endOfDayTime)
+            console.log(" -> end of day time index temp "+tempEndOfDayTimeIndex)
+            console.log(" -> end of day time index "+endOfDayTimeIndex+"+ and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))*/
+
+            let tempMfe = {}
+            //check is same timeframe
+            if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
+                console.log("   ---> Trade is in same 1mn timeframe")
+
+                tempMfe.tradeId = trde.id
+                tempMfe.dateUnix = tempExec.td
+                tempMfe.mfePrice = initEntryPrice
+                mfePrices.push(tempMfe)
+
+            } else {
+                //we get the MFE price by iterating between entry and exit and then between exit up until price hits / equals entryprice, and at the latest the endOfDayTime
+                let priceDifference
+                let mfePrice = initEntryPrice
+
+                if (trde.strategy == "long") {
+                    priceDifference = trde.exitPrice - initEntryPrice
+                }
+                if (trde.strategy == "short") {
+                    priceDifference = initEntryPrice - trde.exitPrice
+                }
+
+                console.log("   ---> Iterating between entry price and exit price")
+                //console.log(" mfePrice 1 "+mfePrice)
+                //console.log("priceDifference "+priceDifference)
+                //console.log("initEntryPrice "+initEntryPrice)
+                //console.log("trde.exitPrice "+trde.exitPrice)
+
+                //console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
+                for (let i = startIndex; i <= endIndex; i++) {
+                    //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
+                    if (trde.strategy == "long" && ohlcvSymbol[i].h > trde.exitPrice && ohlcvSymbol[i].h > mfePrice) mfePrice = ohlcvSymbol[i].h
+                    if (trde.strategy == "short" && ohlcvSymbol[i].l < trde.exitPrice && ohlcvSymbol[i].l < mfePrice) mfePrice = ohlcvSymbol[i].l
+
+                }
+                //console.log(" -> Price difference "+priceDifference)
+                if (initEntryPrice != trde.exitPrice && priceDifference > 0) { //case where stop or exit price loss above entryprice
+                    console.log("   ---> Iterating between exit price and up until price hits / equals entry price, and at the latest until market close")
+                    let i = endIndex
+                    let ohlcvSymbolPrice
+                    trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
+
+                    //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
+
+                    //we iterate until the end of trading day OR until is equal to the exitTrade time (endTime) or when the price move above or below the initEntryPrice
+                    /*console.log(" i "+i)
+                    console.log(" endOfDayTimeIndex "+endOfDayTimeIndex)
+                    console.log(" ohlcvSymbol[i] "+ JSON.stringify(ohlcvSymbol[i]))
+                    console.log(" ohlcvSymbol[endOfDayTimeIndex] "+ JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
+                    console.log(" ohlcvSymbol[i].t / 1000 "+ohlcvSymbol[i].t / 1000)
+                    console.log(" endTime / 1000 "+endTime / 1000)
+                    console.log(' ohlcvSymbolPrice '+ohlcvSymbolPrice)
+                    console.log(" initEntryPrice "+initEntryPrice)*/
+
+                    while ((trde.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice) && i <= endOfDayTimeIndex /*&& ((ohlcvSymbol[i].t / 1000) <= ((endTime / 1000)))*/) {
+                        trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
+                        //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+useDateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
+                        if (trde.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
+                        if (trde.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
+                        i++
+
+                    }
+                }
+
+                if (trde.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
+                if (trde.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
+
+                console.log("    ----> " + trde.strategy + " stratgy with entry at " + useDateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + useDateTimeFormat(trde.exitTime) + " @ " + trde.exitPrice + " and MFE price " + mfePrice)
+                //if short, MFE price = if price is lower than MFE
+                //if long, MFE = if price is higher than MFE
+
+
+
+
+                //add excursion to temp2
+                trde.excursions = {}
+                trde.excursions.stopLoss = null
+                trde.excursions.maePrice = null
+                trde.excursions.mfePrice = mfePrice
+
+                tempMfe.tradeId = trde.id
+                tempMfe.dateUnix = tempExec.td
+                tempMfe.mfePrice = mfePrice
+                mfePrices.push(tempMfe)
+            }
+        } else {
+            console.log("   ---> Cannot find symbol in market data provider")
+        }
+        resolve(mfePrices)
+    })
+}
 
 async function getOpenPositionsParse(param99, param0) {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING OPEN TRADES PARSE")
-        console.log(" param 99 "+param99)
+        //console.log(" param 99 " + param99)
         openPositionsParse.length = 0 // reinitialize, for API
         let parseObject
         let query
@@ -580,7 +938,7 @@ async function createTrades() {
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
-            .groupBy(item => `"${item.symbol}+${item.strategy}+${item.td}"`);
+            .groupBy(item => `"${item.symbol}+${item.type}+${item.strategy}+${item.td}"`);
 
         let objectB = JSON.parse(JSON.stringify(b))
         //console.log("object b "+JSON.stringify(objectB))
@@ -627,30 +985,29 @@ async function createTrades() {
                  * 4- It newTrade == false, the we check if we're in a classical process, in which case trde is derived from temp2, else it's
                  **/
 
-                //checking existing open position amongst Parse open positions
-                const existingOpenPositionParse = openPositionsParse.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy) // this will take the first/last open position (but there may be more) and that's why getOpenPositionsParse must be in descending order
+                
+                /* Checking existing open position amongst open positions stored IN PARSE / DATABASE */
+                const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
-                //console.log(" -> Open positions in Parse "+JSON.stringify(openPositionsParse))
-                //console.log(" -> Open positions in File "+JSON.stringify(openPositionsFile))
-                //console.log(" -> "+JSON.stringify(tempExec))
-
-                //checking existing open position amongst open positions stored locally
-                const existingOpenPositionFile = openPositionsFile.find(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
+                /* Checking existing open position amongst open positions stored LOCALLT */
+                const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
                 //checking existing open positions array when importing file
                 if (newTrade == true) {
                     //console.log("\n -> New trade for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                     console.log(" -> New trade from " + useTimeFormat(tempExec.execTime))
                     existingOpenPosition = {}
-                    if (existingOpenPositionParse) {
+
+                    if (existingOpenPositionParseIndex != -1) {
                         //console.log("  --> Open position already in Parse for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                         console.log("  --> Open position already in Parse")
                         //existingOpenPosition = existingOpenPositionParse
-                        Object.keys(existingOpenPositionParse).forEach((key) => {
+
+                        Object.keys(openPositionsParse[existingOpenPositionParseIndex]).forEach((key) => {
                             if (key == "td") {
                                 existingOpenPosition.td = tempExec.td
                             } else {
-                                existingOpenPosition[key] = existingOpenPositionParse[key]
+                                existingOpenPosition[key] = openPositionsParse[existingOpenPositionParseIndex][key]
                             }
                         })
                         currentTradeId = existingOpenPosition.id //here currentTradeId is at this state because we "jump" over newTrade as we are continuing an open / swing trade
@@ -659,18 +1016,21 @@ async function createTrades() {
 
                         //const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol)
                         //openPositionsParse.splice(existingOpenPositionParseIndex, 1)
-                        //console.log(" Open positions "+JSON.stringify(openPositionsFile))
-                        //console.log(" Open positions length "+openPositionsFile.length)
+                        //console.log(" Open positions "+JSON.stringify(openPositionsParse))
+                        //console.log(" Open positions length "+openPositionsParse.length)
                     }
-                    else if (existingOpenPositionFile) {
+                    else if (existingOpenPositionFileIndex != -1) {
                         //console.log("  --> Open position already in current file for symbol " + key2 + " on " + useChartFormat(tempExec.td) + " at " + useTimeFormat(tempExec.execTime))
                         console.log("  --> Open position already in current file")
-                        //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
-                        Object.keys(existingOpenPositionFile).forEach((key) => {
+                        //console.log(" existingOpenPositionFileIndex "+existingOpenPositionFileIndex)
+                        //console.log("openPositionsFile "+JSON.stringify(openPositionsFile[existingOpenPositionFileIndex]))
+                
+                        Object.keys(openPositionsFile[existingOpenPositionFileIndex]).forEach((key) => {
+                            //console.log(" key "+key)
                             if (key == "td") {
                                 existingOpenPosition.td = tempExec.td
                             } else {
-                                existingOpenPosition[key] = existingOpenPositionFile[key]
+                                existingOpenPosition[key] = openPositionsFile[existingOpenPositionFileIndex][key]
                             }
                         })
                         //existingOpenPosition = existingOpenPositionFile
@@ -681,10 +1041,12 @@ async function createTrades() {
                         temp2.push(existingOpenPosition)
                         newTrade = false
 
-                        //console.log(" existingOpenPositionFile "+JSON.stringify(existingOpenPositionFile))
-                        const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol)
+                        //const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol)
+                        
+                        // Here we remove the existingOpenPosition from openPositionsFile because we have pushed it and "consumed" it in temp2
+                        // we don'r remove / don't have the same logic above, for Parse, it's because openPositionsFile is a 'living' file that evolves but Parse is just you download and then you work with openPositionsFile
                         openPositionsFile.splice(existingOpenPositionFileIndex, 1)
-                        //console.log(" Open positions "+JSON.stringify(openPositionsFile))
+                        
                         //console.log(" Open positions length "+openPositionsFile.length)
                         //console.log(" temp 2 "+JSON.stringify(temp2))
                     } else {
@@ -709,7 +1071,7 @@ async function createTrades() {
                     //console.log(" -> exec id "+tempExec.id)
                     //tempExecIds.push(tempExec.id)
 
-                    temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.symbol + "_B" : "t" + tempExec.execTime + "_" + tempExec.symbol + "_SS"
+                    temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.symbol + "_" + tempExec.type + "_B" : "t" + tempExec.execTime + "_" + tempExec.symbol  + "_" + tempExec.type + "_SS"
                     console.log("  --> ID " + temp7.id)
                     currentTradeId = temp7.id
                     temp7.account = tempExec.account;
@@ -746,6 +1108,7 @@ async function createTrades() {
                         temp7.sellQuantity = 0
                     }
                     temp7.symbol = tempExec.symbol;
+                    temp7.symbolOriginal = tempExec.symbolOriginal;
                     temp7.entryTime = tempExec.execTime;
                     initEntryTime = tempExec.execTime
                     temp7.exitTime = 0
@@ -836,6 +1199,7 @@ async function createTrades() {
                     exec.trade = temp7.id;
 
                     console.log("  --> buy quantity " + temp7.buyQuantity + " and sell quantity " + temp7.sellQuantity)
+                    console.log("  --> grossProceeds " + temp7.grossProceedsOpen + " and netProceeds " + temp7.netProceedsOpen)
 
                     temp2.push(temp7)
                     //console.log(" temp2 "+JSON.stringify(temp2))
@@ -922,6 +1286,7 @@ async function createTrades() {
                     exec.trade = trde.id;
 
                     console.log("  --> buy quantity " + trde.buyQuantity + " and sell quantity " + trde.sellQuantity)
+                    console.log("  --> grossProceeds " + trde.grossProceedsOpen + " and netProceeds " + trde.netProceedsOpen)
                     //trde = temp2.find(x => x.id == trde.id)
 
                     /* 
@@ -1022,154 +1387,8 @@ async function createTrades() {
                          * GETTING MFE PRICE
                          *****/
 
-                        if ((currentUser.value.apis && currentUser.value.apis.length > 0 && currentUser.value.apis.findIndex(obj => obj.provider === 'polygon')) && uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
-                            console.log("  --> Getting MFE Price")
-                            let ohlcvSymbol = ohlcv[ohlcv.findIndex(f => f.symbol == tempExec.symbol)].ohlcv
-                            //todo exclude if trade in same minute timeframe
-
-                            //console.log(" ohlcvSymbol " + JSON.stringify(ohlcvSymbol))
-
-                            if (ohlcvSymbol != undefined) {
-                                //console.log(" initEntryTime " + initEntryTime * 1000)
-                                //findIndex gets the first value. So, for entry, if equal, we take next candle. For exit, if equal, we use that candle
-                                let tempStartIndex = ohlcvSymbol.findIndex(n => n.t >= initEntryTime * 1000)
-                                //console.log(" temp start index "+tempStartIndex)
-                                let tempEndIndex = ohlcvSymbol.findIndex(n => n.t >= trde.exitTime * 1000) //findIndex returns the first element
-                                let tempStartTime = ohlcvSymbol[tempStartIndex]
-                                let tempEndTime = ohlcvSymbol[tempEndIndex]
-
-                                let startIndex
-                                let endIndex
-                                let startTime
-                                let endTime
-
-                                if (tempStartTime == initEntryTime) {
-                                    startIndex = tempStartIndex + 1
-                                    startTime = ohlcvSymbol[startIndex].t
-                                } else {
-                                    startIndex = tempStartIndex
-                                    startTime = ohlcvSymbol[tempStartIndex].t
-                                }
-
-                                if (tempEndTime == trde.exitTime) {
-                                    endIndex = tempEndIndex
-                                    endTime = tempEndTime
-                                } else {
-                                    endIndex = tempEndIndex - 1
-                                    endTime = ohlcvSymbol[tempEndIndex - 1].t
-                                }
-
-                                //console.log("   ----> Temp Start index " + tempStartIndex + ", temp end index " + tempEndIndex)
-                                //console.log("   ----> EntryTime " + initEntryTime + " and start time " + startTime)
-                                //console.log("   ----> ExitTime " + trde.exitTime + " and end time " + endTime)
-
-                                //Get market close index
-                                //iterate from exit time and check if same day and <= 4 hour
-                                let endTimeDay = dayjs(endTime).tz(timeZoneTrade.value).get("date")
-                                let endTimeMonth = dayjs(endTime).tz(timeZoneTrade.value).get("month") + 1
-                                let endTimeYear = dayjs(endTime).tz(timeZoneTrade.value).get("year")
-                                let endTimeDate = endTimeYear + "-" + endTimeMonth + "-" + endTimeDay + " 16:00:00" //VERY IMPORTANT : if i want to apply US time, it needs to be in US format, that is YYYY-MM-DD
-                                //console.log(" -> End time date "+endTimeDate)
-                                //    
-                                let marketCloseTime = dayjs.tz(endTimeDate, timeZoneTrade.value)
-
-                                //console.log(" marketCloseTime "+marketCloseTime)
-
-                                let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= marketCloseTime)
-                                let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
-                                //console.log(" -> End of day time index "+endOfDayTimeIndex+" and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))
-
-                                /*let timeDayOfWeek = dayjs(endTime * 1000).tz(timeZoneTrade.value).day()
-                                console.log(" timeDayOfWeek "+timeDayOfWeek)
-                                let timeHour = dayjs(endTime * 1000).tz(timeZoneTrade.value).get('hour')
-                                let time
-                                let i = tempEndIndex - 1;
-                                while (i < ohlcvSymbol.length && endTimeOfWeek == timeDayOfWeek && timeHour < 17) {
-                                    time = ohlcvSymbol[i].t
-                                    timeDayOfWeek = dayjs(time * 1000).tz(timeZoneTrade.value).day()
-                                    timeHour = dayjs(time * 1000).tz(timeZoneTrade.value).get('hour')
-                                        //console.log("time: "+time+", timeDayOfWeek "+timeDayOfWeek+" and hour "+timeHour)
-                                    i++;
-                                }
-                                console.log(" -> Time "+time)
-                                //let tempEndOfDayTimeIndex = ohlcvSymbol.findIndex(f => f.t >= time)
-                                let endOfDayTimeIndex = tempEndOfDayTimeIndex - 1
-
-                                //console.log(" -> End of day time " + endOfDayTime)
-                                console.log(" -> end of day time index temp "+tempEndOfDayTimeIndex)
-                                console.log(" -> end of day time index "+endOfDayTimeIndex+"+ and values are "+JSON.stringify(ohlcvSymbol[endOfDayTimeIndex]))*/
-
-                                let tempMfe = {}
-                                //check is same timeframe
-                                if (endTime < startTime) { //entry and exit are in the same 1mn timeframe
-                                    console.log("   ---> Trade is in same 1mn timeframe")
-
-                                    tempMfe.tradeId = trde.id
-                                    tempMfe.dateUnix = tempExec.td
-                                    tempMfe.mfePrice = initEntryPrice
-                                    mfePrices.push(tempMfe)
-
-                                } else {
-                                    //we get the MFE price by iterating between entry and exit and then between exit up until price hits / equals entryprice, and at the latest the endOfDayTime
-                                    let priceDifference
-                                    let mfePrice = initEntryPrice
-
-                                    if (trde.strategy == "long") {
-                                        priceDifference = trde.exitPrice - initEntryPrice
-                                    }
-                                    if (trde.strategy == "short") {
-                                        priceDifference = initEntryPrice - trde.exitPrice
-                                    }
-
-                                    console.log("   ---> Iterating between entry price and exit price")
-                                    //console.log("    ----> Start index "+startIndex+ " and end index "+endIndex)
-                                    for (let i = startIndex; i <= endIndex; i++) {
-                                        //console.log(" Symbole price "+ohlcvSymbol.h[i]+" at time "+ohlcvSymbol.t[i]+" and MFE "+mfePrice)
-                                        if (trde.strategy == "long" && ohlcvSymbol[i].h > trde.exitPrice && ohlcvSymbol[i].h > mfePrice) mfePrice = ohlcvSymbol[i].h
-                                        if (trde.strategy == "short" && ohlcvSymbol[i].l < trde.exitPrice && ohlcvSymbol[i].l < mfePrice) mfePrice = ohlcvSymbol[i].l
-
-                                    }
-                                    //console.log(" -> Price difference "+priceDifference)
-                                    if (initEntryPrice != trde.exitPrice && priceDifference > 0) { //case where stop loss above entryprice
-                                        console.log("   ---> Iterating between exit price and up until price hits / equals entry price, and at the latest until market close")
-                                        let i = endIndex
-                                        let ohlcvSymbolPrice
-                                        trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[endIndex].h : ohlcvSymbolPrice = ohlcvSymbol[endIndex].l
-
-                                        //console.log(" -> endOfDayTimeIndex "+endOfDayTimeIndex)
-                                        while (i <= endOfDayTimeIndex && (trde.strategy == "long" ? ohlcvSymbolPrice > initEntryPrice : ohlcvSymbolPrice < initEntryPrice)) {
-                                            trde.strategy == "long" ? ohlcvSymbolPrice = ohlcvSymbol[i].h : ohlcvSymbolPrice = ohlcvSymbol[i].l
-                                            //console.log("  -> Symbol Price " + ohlcvSymbolPrice + " @ "+useDateTimeFormat(ohlcvSymbol[i].t/1000)+", init price " + initEntryPrice + " and mfe price " + mfePrice)
-                                            if (trde.strategy == "long" && ohlcvSymbolPrice > initEntryPrice && ohlcvSymbolPrice > mfePrice) mfePrice = ohlcvSymbolPrice
-                                            if (trde.strategy == "short" && ohlcvSymbolPrice < initEntryPrice && ohlcvSymbolPrice < mfePrice) mfePrice = ohlcvSymbolPrice
-                                            i++
-
-                                        }
-                                    }
-                                    if (trde.strategy == "long" && mfePrice < initEntryPrice) mfePrice = initEntryPrice
-                                    if (trde.strategy == "short" && mfePrice > initEntryPrice) mfePrice = initEntryPrice
-
-                                    console.log("    ----> " + trde.strategy + " stratgy with entry at " + useDateTimeFormat(initEntryTime) + " @ " + initEntryPrice + " -> exit at " + useDateTimeFormat(trde.exitTime) + " @ " + trde.exitPrice + " and MFE price " + mfePrice)
-                                    //if short, MFE price = if price is lower than MFE
-                                    //if long, MFE = if price is higher than MFE
-
-
-
-
-                                    //add excursion to temp2
-                                    trde.excursions = {}
-                                    trde.excursions.stopLoss = null
-                                    trde.excursions.maePrice = null
-                                    trde.excursions.mfePrice = mfePrice
-
-                                    tempMfe.tradeId = trde.id
-                                    tempMfe.dateUnix = tempExec.td
-                                    tempMfe.mfePrice = mfePrice
-                                    mfePrices.push(tempMfe)
-                                }
-                            } else {
-                                console.log("   ---> Cannot find symbol in market data provider")
-                            }
+                        if (uploadMfePrices.value && ohlcv.findIndex(f => f.symbol == tempExec.symbol) != -1) {
+                            await useGetMFEPrices(tempExec, initEntryTime, initEntryPrice, trde)
                         } // End MFE prices
                         /*****
                          * END GETTING MFE PRICE
@@ -1243,7 +1462,7 @@ async function createTrades() {
     })
 }
 
-async function updateMfePrices(param99, param0) {
+export const useUpdateMfePrices = async(param99, param0, param2) => {
     return new Promise(async (resolve, reject) => {
         console.log("  --> Updating excursion DB with MFE price")
         //spinnerLoadingPageText.value = "Updating MFE prices in excursions"
@@ -1999,15 +2218,30 @@ export async function useUploadTrades(param99, param0) {
 
 
     const loopOpenPositionsParse = async (param1, param2) => {
+        // here we flag position in Parse DB as open or closed
+        // when parsing currnt import, check if symbol is is Parse
+        // if yes, extract existing parse data, add to openPositionsParse array and compare to current import
+        // if still open, then it gets added to openPositionsFile. If not, then not added
+        // thereby, if openPositionsParse element is not in openPositionsFile that means the trade has been close
+        // But this has a flaw : if there are other symbols in parse that are not in the current import file, all these other symbols in Parse will get flagged as closed
+        // So trying to filter with exitTime
         return new Promise(async (resolve, reject) => {
             for (let index = 0; index < openPositionsParse.length; index++) {
                 const element = openPositionsParse[index];
-                //console.log(" element "+JSON.stringify(element))
-                let opIndex = openPositionsFile.findIndex(x => x.id == element.id)
+                console.log(" element id "+JSON.stringify(element.id))
+                console.log(" element exit time "+JSON.stringify(element.exitTime))
+                //console.log(" element exit price "+JSON.stringify(element.exitPrice))
+                //console.log(" element openPosition "+JSON.stringify(element.openPosition))
+                
+                if(element.exitTime != 0){
+                    await updateOpenPositions(element.id, element.td, element.exitTime)
+                }
+
+                /*let opIndex = openPositionsFile.findIndex(x => x.id == element.id)
                 if (opIndex == -1) {
                     //open positions parse element not anymore in openPositionsFile = trade is now closed
                     await updateOpenPositions(element.id, element.td, element.exitTime)
-                }
+                }*/
                 if ((index + 1) == openPositionsParse.length) {
                     resolve()
                 }
@@ -2016,7 +2250,7 @@ export async function useUploadTrades(param99, param0) {
     }
 
     if (Object.keys(executions).length > 0) await uploadFunction("trades")
-    if (Object.keys(executions).length > 0 && mfePrices.length > 0) await updateMfePrices(param99, param0)
+    if (Object.keys(executions).length > 0 && mfePrices.length > 0) await useUpdateMfePrices(param99, param0)
     if (openPositionsParse.length > 0) {
         await loopOpenPositionsParse()
     }

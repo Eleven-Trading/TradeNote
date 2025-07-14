@@ -18,11 +18,10 @@ useInitPostHog()
 async function getParseId() {
   return new Promise((resolve, reject) => {
     console.log("\nGETTING APP ID")
-    axios.post('/parseAppId')
+    axios.post('/api/parseAppId')
       .then((response) => {
-        //console.log(response);
         localStorage.setItem('parse_app_id', response.data)
-        console.log("  --> App id in localstorage "+localStorage.getItem('parse_app_id'))
+        //console.log("  --> App id in localstorage "+localStorage.getItem('parse_app_id'))
         resolve()
       })
       .catch((error) => {

@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, onMounted, reactive, ref } from 'vue';
-import { useCheckCurrentUser, useInitTooltip, useGetAPIS } from '../utils/utils';
-import { currentUser, renderProfile, availableTags, apis } from '../stores/globals';
+import { useCheckCurrentUser, useInitTooltip, useGetAPIS, useGetLayoutStyle, useExport } from '../utils/utils';
+import { currentUser, renderProfile, availableTags, apis, layoutStyle } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
 /* MODULES */
@@ -10,6 +10,8 @@ import Sortable from 'sortablejs';
 
 let profileAvatar = null
 let polygonKey = null
+let databentoKey = null
+let ibkrHost = null
 
 const newAvailableTags = reactive([])
 const availableTagsTags = reactive([])
@@ -17,11 +19,16 @@ const availableTagsTags = reactive([])
 let groupToDelete = ref(null)
 let tagToDelete = ref(null)
 
+let inputCount = ref(null)
+
 onBeforeMount(async () => {
     await useGetAvailableTags()
+    useGetAvailableTagsTags()
     await useGetAPIS()
+    //await useGetLayoutStyle()
     //newAvailableTags = JSON.parse(JSON.stringify(availableTags)) //JSON.parse(JSON.stringify avoids the two arrays to be linked !!
-    //console.log(" available tags "+JSON.stringify(availableTags))
+    //console.log(" available tags " + JSON.stringify(availableTags))
+    //console.log(" availableTagsTags "+JSON.stringify(availableTagsTags))
     for (let index = 0; index < availableTags.length; index++) {
         const element = JSON.parse(JSON.stringify(availableTags[index]))
         newAvailableTags.push(element)
@@ -81,6 +88,7 @@ const useGetAvailableTagsTags = () => {
         const element = availableTags[index];
         for (let index = 0; index < element.tags.length; index++) {
             const el = element.tags[index];
+            el.groupName = element.name
             availableTagsTags.push(el)
         }
 
@@ -143,20 +151,12 @@ const initSortable = (param1) => {
 
 }
 
-const getNewArray = () => {
-    var order = Sortable.toArray();
-    console.log("order " + order)
-}
-
-const sortAvailableTags = () => {
-
-}
 
 const addNewGroup = async () => {
     let temp = {}
     const addToAvailableTags = async () => {
         return new Promise(async (resolve, reject) => {
-            console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+            //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 
             if (newAvailableTags.length > 0) {
                 const highestId = newAvailableTags.reduce((max, obj) => Math.max(max, parseInt(obj.id.replace("group_", ""), 10)), -Infinity);
@@ -357,7 +357,7 @@ const inputGroupName = (param1, param2) => {
 
 const inputGroupColor = (param1, param2) => {
     newAvailableTags[param1].color = param2
-    console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
+    //console.log(" newAvailableTags " + JSON.stringify(newAvailableTags))
 }
 
 
@@ -430,6 +430,25 @@ const generateAPIKey = () => {
     //console.log(" APIS " + JSON.stringify(apis))
 }
 
+/*********************
+ * LAYOUT & SETUP
+ *********************/
+const inputDiaryTitles = (param1, param2) => {
+    console.log(" param 1 " + param1)
+    console.log(" param 2 " + param2)
+    if (layoutStyle.diaryTitles != undefined && layoutStyle.diaryTitles.length > 0) {
+        console.log("title exists")
+        layoutStyle.diaryTitles.splice(param1, 0, param2);
+        console.log(" Layout Style " + JSON.stringify(layoutStyle.diaryTitles))
+    } else {
+        console.log("title does not exists")
+        layoutStyle.diaryTitles = []
+        layoutStyle.diaryTitles.splice(param1, 0, param2);
+        console.log(" Layout Style " + JSON.stringify(layoutStyle))
+    }
+
+
+}
 const updateAPIS = async () => {
     return new Promise(async (resolve, reject) => {
         console.log("\nUPDATING APIS")
@@ -450,6 +469,35 @@ const updateAPIS = async () => {
                     apis.push(temp)
                 }
             }
+
+            if (databentoKey != null) {
+                let index = apis.findIndex(obj => obj.provider === "databento")
+                if (index != -1) {
+                    apis[index].key = databentoKey
+                } else {
+                    let temp = {}
+                    temp.provider = "databento"
+                    temp.label = "Databento"
+                    temp.key = databentoKey
+                    apis.push(temp)
+                }
+            }
+
+            // TODO: comprobar esto
+            if(ibkrHost != null){
+                let index = apis.findIndex(obj => obj.provider === "ibkr")
+                if (index != -1){
+                    apis[index].key = ibkrHost
+                }
+                else {
+                    let temp = {}
+                    temp.provider = "ibkr"
+                    temp.label = "IBKR"
+                    temp.key = ibkrHost
+                    apis.push(temp)
+                }
+            }
+
             results.set("apis", apis)
             console.log(" apis " + JSON.stringify(apis))
             await results.save().then(async () => {
@@ -468,15 +516,17 @@ const updateAPIS = async () => {
 <template>
     <div class="row mt-2">
         <div class="row justify-content-md-center">
-            <div class="col-12 col-md-9">
-                <!--=============== PROFILE ===============-->
-                <!-- Picture -->
+            <div class="col-12 col-md-8">
+                <!--=============== Layout & Style ===============-->
+
                 <div class="row align-items-center">
-                    <p class="fs-5 fw-bold">Profile</p>
-                    <div class="col-12 col-md-3">
-                        Your profile picture
+                    <p class="fs-5 fw-bold">Layout & Style</p>
+
+                    <!-- Prfile Picture -->
+                    <div class="col-12 col-md-4">
+                        Profile Picture
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
                         <input type="file" @change="uploadProfileAvatar" />
                     </div>
                 </div>
@@ -491,11 +541,11 @@ const updateAPIS = async () => {
                 <div class="mt-3 row align-items-center">
                     <p class="fs-5 fw-bold">API Keys</p>
                     <div class="row">
-                        <div class="col-12 col-md-3">TradeNote<i class="ps-1 uil uil-info-circle"
+                        <div class="col-12 col-md-4">TradeNote<i class="ps-1 uil uil-info-circle"
                                 data-bs-toggle="tooltip"
                                 data-bs-title="Your TradeNote API Key for using the TradeNote APIs."></i>
                         </div>
-                        <div class="col-12 col-md-9">
+                        <div class="col-12 col-md-8">
                             <div class="row">
                                 <div class="col-10">
                                     <input type="text" class="form-control"
@@ -511,13 +561,37 @@ const updateAPIS = async () => {
                     </div>
 
                     <div class="row mt-2">
-                        <div class="col-12 col-md-3">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
-                                data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page."></i>
+                        <div class="col-12 col-md-4">Polygon<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
+                                data-bs-title="Your Polygon API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Works with stocks and options."></i>
                         </div>
-                        <div class="col-12 col-md-9">
+                        <div class="col-12 col-md-8">
                             <input type="text" class="form-control"
                                 :value="apis.filter(obj => obj.provider === 'polygon').length > 0 && apis.filter(obj => obj.provider === 'polygon')[0].key ? apis.filter(obj => obj.provider === 'polygon')[0].key : ''"
                                 @input="polygonKey = $event.target.value" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12 col-md-4">Databento<i class="ps-1 uil uil-info-circle"
+                                data-bs-toggle="tooltip"
+                                data-bs-title="Your Datanento API Key will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Works with Futures."></i>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <input type="text" class="form-control"
+                                :value="apis.filter(obj => obj.provider === 'databento').length > 0 && apis.filter(obj => obj.provider === 'databento')[0].key ? apis.filter(obj => obj.provider === 'databento')[0].key : ''"
+                                @input="databentoKey = $event.target.value" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12 col-md-4">Interactive Brokers API<i class="ps-1 uil uil-info-circle"
+                                data-bs-toggle="tooltip"
+                                data-bs-title="Your Interactive Brokers Host will be used to fill out automatically MFE prices when you add new trades as well as provide you with charts for your trades on daily page. Make sure you have configured your TWS API and the port (e.g. http://localhost:7497/)"></i>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <input type="text" class="form-control"
+                                :value="apis.filter(obj => obj.provider === 'ibkr').length > 0 && apis.filter(obj => obj.provider === 'ibkr')[0].key ? apis.filter(obj => obj.provider === 'ibkr')[0].key : ''"
+                                @input="ibkrHost = $event.target.value" />
                         </div>
                     </div>
 
@@ -534,12 +608,26 @@ const updateAPIS = async () => {
                 <div class="mt-3 row">
                     <p class="fs-5 fw-bold">TAGS</p>
                     <p class="fw-lighter">Create tag groups and assign tags to your groups.</p>
-                    <div>
-
-                        <button type="button" v-on:click="addNewGroup" class="btn blueBtn btn-sm"><i
-                                class="uil uil-plus me-2"></i>Group</button>
-                        <button v-show="newAvailableTags.length > 0" type="button" v-on:click="addNewTag"
-                            class="btn blueBtn btn-sm ms-3"><i class="uil uil-plus me-2"></i>Tag</button>
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="button" v-on:click="addNewGroup" class="btn blueBtn btn-sm"><i
+                                    class="uil uil-plus me-2"></i>Group</button>
+                            <button v-show="newAvailableTags.length > 0" type="button" v-on:click="addNewTag"
+                                class="btn blueBtn btn-sm ms-3"><i class="uil uil-plus me-2"></i>Tag</button>
+                        </div>
+                        <div class="col-6 text-end">
+                            <button class="btn btn-secondary btn-sm mt-2 ms-4 dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                        v-on:click="useExport('json', 'tags', null, availableTagsTags)">JSON</a>
+                                </li>
+                                <li><a class="dropdown-item"
+                                        v-on:click="useExport('csv', 'tags', null, availableTagsTags)">CSV</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <div v-for="(group, groupIndex) in availableTags" class="col-12 col-md-6">
                         <div class="availableTagsCard mt-3">
@@ -557,7 +645,7 @@ const updateAPIS = async () => {
                                         :value="group.color">
                                 </div>
                             </div>
-                            <div :id="group.id">
+                            <div class="availableTagsCardInputs" :id="group.id">
                                 <div v-for="tag in group.tags">
                                     <input type="text" :style="{ backgroundColor: group.color }" class="availableTags"
                                         v-on:input="inputGroupTag(tag.id, $event.target.value)" :id="tag.id"
@@ -575,11 +663,11 @@ const updateAPIS = async () => {
 
                 <!-- Delete Group -->
                 <div class="mt-5 row align-items-center">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         Group to delete<i class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                             data-bs-title="Tags will be moved to Ungrouped."></i>
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
                         <select v-on:input="groupToDelete = $event.target.value" class="form-select">
                             <option selected></option>
                             <option v-for="item in availableTags.filter(obj => obj.id !== 'group_0')" :key="item.id"
@@ -594,10 +682,10 @@ const updateAPIS = async () => {
 
                 <!-- Delete Tag -->
                 <div class="mt-5 row align-items-center">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-4">
                         Tag to delete
                     </div>
-                    <div class="col-12 col-md-9">
+                    <div class="col-12 col-md-8">
 
                         <select v-on:input="tagToDelete = $event.target.value" class="form-select">
                             <option selected></option>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
-import { pageId, timeZones, availableTags, tradeTags, legacy } from '../stores/globals';
-import { getCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
+import { pageId, timeZones, availableTags, tradeTags, legacy, registerOff } from '../stores/globals';
+import { useGetCurrentUser, useGetPeriods, useGetTimeZone, useSetValues, useUpdateLegacy, useGetLegacy } from '../utils/utils';
 import { useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags } from '../utils/daily';
 
 /* MODULES */
@@ -11,6 +11,7 @@ import axios from 'axios'
 const loginForm = reactive({ username: null, password: null, timeZone: "America/New_York" })
 const signingUp = ref(false)
 let existingSchema = []
+
 
 async function login() {
   console.log("\nLOGIN")
@@ -27,7 +28,7 @@ async function login() {
     try {
       console.log(" -> Parse logIn")
       await Parse.User.logIn(loginForm.username, loginForm.password)
-      getCurrentUser()
+      useGetCurrentUser()
       useGetTimeZone()
       await useGetPeriods()
       await useSetValues()
@@ -66,7 +67,7 @@ async function register() {
 
     try {
       await user.signUp();
-      getCurrentUser()
+      useGetCurrentUser()
       useGetTimeZone()
       await useGetPeriods()
       await useSetValues()
@@ -85,7 +86,7 @@ async function register() {
 async function updateSchema() {
   return new Promise((resolve, reject) => {
     console.log(" -> Updating schema")
-    axios.post('/updateSchemas').then((response) => {
+    axios.post('/api/updateSchemas').then((response) => {
       //console.log("  --> Schema response "+JSON.stringify(response))
       existingSchema = response.data.existingSchema
       resolve(response)
@@ -342,6 +343,44 @@ const checkLegacy = async (param) => {
       })
     }
 
+    const copyDiary = async () => {
+      return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("diaries");
+        const query = new Parse.Query(parseObject);
+        const results = await query.findAll(); // findAll gets all (limited to 1000 instead of default 100)
+        if (results.length > 0) {
+          for (let i = 0; i < results.length; i++) {
+            let setupsArray = []
+            const object = results[i];
+            //console.log(" -> Object id " + object.id)
+
+
+            //Saving to notes
+            if (object.get('journal') != undefined && object.get('journal') != '') {
+
+              object.set("diary", Object.values(object.get('journal')).join(''))
+              object.save()
+                .then(async (object) => {
+                  console.log(' -> Updated diary with id ' + object.id)
+                }, (error) => {
+                  console.log('Failed to create new diary, with error code: ' + error.message);
+                })
+            }
+          }
+          resolve()
+
+        } else {
+          console.log(" -> No diary to copy")
+          resolve()
+        }
+      })
+    }
+
+    const updateDiary = async () => {
+      console.log("\n -> Handling diary legacy")
+      await copyDiary()
+      await useUpdateLegacy("updateDiary")
+    }
 
     await useGetLegacy()
 
@@ -350,6 +389,7 @@ const checkLegacy = async (param) => {
       await updateTags()
       await updateNotes()
       await updateTagsArray()
+      await updateDiary()
     }
 
     else if (legacy.length > 0) {
@@ -381,6 +421,13 @@ const checkLegacy = async (param) => {
         console.log("  --> Legacy 'updateTagsArray' done")
       }
 
+      let index5 = legacy.findIndex(obj => obj.name == "updateDiary")
+      if (index5 == -1) {
+        await updateDiary()
+      } else {
+        console.log("  --> Legacy 'updateDiary' done")
+      }
+
     } else {
       console.log(" -> There is an issue with legacy")
     }
@@ -410,7 +457,7 @@ const checkLegacy = async (param) => {
       "Log&nbsp;in" : "Register" }}<span v-if="signingUp" class="ms-2 spinner-border spinner-border-sm" role="status"
           aria-hidden="true"></span></button>
     </form>
-    <div class="text-center mt-3"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :
+    <div class="text-center mt-3" v-if="!registerOff"><a :href="pageId == 'login' ? '/register' : '/'">{{ pageId == 'login' ? "Register" :
       "Login" }}</a> page</div>
   </main>
 </template>

@@ -133,6 +133,10 @@ input[type="month"]::-webkit-calendar-picker-indicator {
     font-size: small;
 }
 
+.txt-x-small {
+    font-size: x-small;
+}
+
 .txt-xx-large {
     font-size: xx-large;
 }
@@ -297,7 +301,7 @@ input:checked+.slider:before {
 
 .dropdown-item:hover,
 .dropdown-item:active {
-    background-color: var(--blue-active-color);
+    background-color: var(--black-bg-7);
     color: var(--white-87);
 }
 
@@ -464,6 +468,17 @@ img.logo {
     color: var(--blue-active-color);
 }
 
+.blue-link {
+    color: var(--blue-color) !important;
+}
+
+.blue-link:hover {
+    color: var(--blue-color) !important;
+}
+
+.blue-link:active {
+    color: var(--blue-active-color);
+}
 
 /*=================== /END NAV BAR AND SIDE MENU/ ===================*/
 
@@ -632,6 +647,19 @@ img.logo {
     height: 150px;
 }
 
+#quillEditorDiary {
+    height: 700px;
+}
+
+/* Default style for ol li[data-list="bullet"] */
+ol li[data-list="bullet"] {
+    list-style-type: disc;
+}
+
+/* Override style for ol li[data-list="bullet"] within .ql-editor */
+.ql-editor ol li[data-list="bullet"] {
+    list-style-type: none; /* or any other style you prefer */
+}
 
 /* STEPPER */
 
@@ -701,7 +729,7 @@ img.logo {
     --bs-tooltip-max-width: 500px !important;
 }
 
-.tooltipLargeLeft > .tooltip-inner {
+.tooltipLargeLeft>.tooltip-inner {
     text-align: left;
 }
 
@@ -1140,7 +1168,6 @@ h4 {
     padding: 1px 10px;
     margin: 0px 3px;
     border-radius: 5px;
-    cursor: pointer;
 }
 
 .remove-tag {
@@ -1204,7 +1231,7 @@ h4 {
     padding: 3px;
     margin-bottom: 3px;
     border: transparent;
-    width: 94%;
+    width: 90%;
     color: var(--white-87);
 }
 
@@ -1215,6 +1242,29 @@ h4 {
     border: 1px solid var(--white-38);
     border-radius: 5px;
     padding: 5px;
+}
+
+.availableTagsCardInputs {
+    overflow-y: auto;
+    height: 150px;
+    /* adjust this value to your needs */
+}
+
+.availableTagsCardInputs::-webkit-scrollbar {
+    width: 10px;
+    background-color: #343a40;
+    /* dark background */
+}
+
+.availableTagsCardInputs::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
+    /* dark thumb */
+    border-radius: 10px;
+}
+
+.availableTagsCardInputs::-webkit-scrollbar-track {
+    background-color: #343a40;
+    /* dark track */
 }
 
 #colorPicker {
@@ -1247,6 +1297,46 @@ h4 {
     border: transparent;
 }
 
-.spinnerHeigth{
+.spinnerHeigth {
     height: 50px;
+}
+
+
+.buttonProgress {
+    font-weight: 400;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    background-color: #198754;
+    height: 31px;
+    width: 62.76px;
+    position: relative !important;
+}
+
+.buttonProgressBar {
+    background-color: #146c43;
+}
+
+.progress-bar-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+}
+
+.inputText {
+    width: 70px;
+    vertical-align: baseline;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* STRIPE */
+/* Variables */
+.form-control  {
+    color: var(--white-87) !important;
+}
+
+.InputElement.is-invalid {
+    color: blue !important
 }

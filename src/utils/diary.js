@@ -1,11 +1,11 @@
-import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData } from "../stores/globals.js"
+import { diaries, selectedMonth, endOfList, spinnerLoadingPage, spinnerLoadMore, pageId, diaryIdToEdit, diaryUpdate, selectedItem, renderData, diaryQueryLimit, diaryPagination } from "../stores/globals.js"
 import { usePageRedirect } from "./utils.js";
+import { useUpdateTags, useUpdateAvailableTags } from "./daily.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
 
-let diaryQueryLimit = 10
-let diaryPagination = 0
+
 
 export async function useGetDiaries(param1, param2) {
     //param1: true is diary page
@@ -19,8 +19,8 @@ export async function useGetDiaries(param1, param2) {
         query.equalTo("user", Parse.User.current());
         query.descending("dateUnix");
         if (param1) {
-            query.limit(diaryQueryLimit);
-            query.skip(diaryPagination)
+            query.limit(diaryQueryLimit.value);
+            query.skip(diaryPagination.value)
         } else {
             query.greaterThanOrEqualTo("dateUnix", selectedMonth.value.start)
             query.lessThanOrEqualTo("dateUnix", selectedMonth.value.end)
@@ -39,13 +39,13 @@ export async function useGetDiaries(param1, param2) {
                 });
             }
         } else {
-            if (pageId.value == "diary"){
+            if (pageId.value == "diary") {
                 endOfList.value = true
             }
         }
 
         //console.log(" -> Diaries " + JSON.stringify(diaries))
-        diaryPagination = diaryPagination + diaryQueryLimit
+        diaryPagination.value = diaryPagination.value + diaryQueryLimit.value
         if (pageId.value != "daily") spinnerLoadingPage.value = false //we remove it later
         spinnerLoadMore.value = false
         resolve()
@@ -54,57 +54,68 @@ export async function useGetDiaries(param1, param2) {
 
 
 
-export async function useUploadDiary() {
+export async function useUploadDiary(param) {
+    //console.log(" diaray param "+param)
+    return new Promise(async (resolve, reject) => {
 
-    const parseObject = Parse.Object.extend("diaries");
+        await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
 
-    if (diaryIdToEdit.value) {
-        console.log(" -> Updating diary")
-        console.log("diaryUpdate "+JSON.stringify(diaryUpdate))
-        const query = new Parse.Query(parseObject);
-        query.equalTo("objectId", diaryIdToEdit.value);
-        const results = await query.first();
-        if (results) {
-            results.set("date", diaryUpdate.dateDateFormat)
-            results.set("dateUnix", diaryUpdate.dateUnix)
-            results.set("journal", diaryUpdate.journal)
-            await results.save() //very important to have await or else too quick to update
-            usePageRedirect()
+        const parseObject = Parse.Object.extend("diaries");
+
+        if (diaryIdToEdit.value) {
+            console.log(" -> Updating diary")
+            //console.log("diaryUpdate " + JSON.stringify(diaryUpdate))
+            const query = new Parse.Query(parseObject);
+            query.equalTo("objectId", diaryIdToEdit.value);
+            const results = await query.first();
+            if (results) {
+                results.set("date", diaryUpdate.dateDateFormat)
+                results.set("dateUnix", diaryUpdate.dateUnix)
+                results.set("diary", diaryUpdate.diary)
+                await results.save() //very important to have await or else too quick to update
+                if (param != "autoSave") usePageRedirect()
 
 
+            } else {
+                alert("Update query did not return any results")
+            }
         } else {
-            alert("Update query did not return any results")
-        }
-    } else {
-        const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", diaryUpdate.dateUnix);
-        const results = await query.first();
-        if (results) {
-            alert("Diary with that date already exists")
-            return
-        }
+            const query = new Parse.Query(parseObject);
+            query.equalTo("dateUnix", diaryUpdate.dateUnix);
+            const results = await query.first();
+            if (results) {
+                alert("Diary with that date already exists")
+                return
+            }
 
-        console.log(" -> saving diary")
-        const object = new parseObject();
-        object.set("user", Parse.User.current())
-        object.set("date", diaryUpdate.dateDateFormat)
-        object.set("dateUnix", diaryUpdate.dateUnix)
-        object.set("journal", diaryUpdate.journal)
-        object.setACL(new Parse.ACL(Parse.User.current()));
-        object.save()
-            .then((object) => {
-                console.log(' -> Added new diary with id ' + object.id)
-                usePageRedirect()
+            console.log(" -> saving diary")
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("date", diaryUpdate.dateDateFormat)
+            object.set("dateUnix", diaryUpdate.dateUnix)
+            object.set("diary", diaryUpdate.diary)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then((object) => {
+                    console.log('  --> Added new diary with id ' + object.id)
+                    if (param != "autoSave") {
+                        usePageRedirect()
+                    }else{
+                        //in case we add diary for first time / not editing, as we're autosaving, we need to add the new id to diaryIdToEdit.value, else will get alert "Diary with that date already exists"
+                        diaryIdToEdit.value = object.id
+                    }
 
-            }, (error) => {
-                console.log('Failed to create new object, with error code: ' + error.message);
-            });
-    }
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                });
+        }
+        resolve()
+    })
 }
 
 export async function useDeleteDiary(param1, param2) {
     //console.log("selected item " + selectedItem.value)
-    console.log("\nDELETING JOURNAL ENTRY")
+    console.log("\nDELETING DIARY ENTRY")
     const parseObject = Parse.Object.extend("diaries");
     const query = new Parse.Query(parseObject);
     query.equalTo("objectId", selectedItem.value);
@@ -122,8 +133,8 @@ export async function useDeleteDiary(param1, param2) {
 async function refreshDiaries() {
     console.log(" -> Refreshing diary entries")
     return new Promise(async (resolve, reject) => {
-        diaryQueryLimit = 10
-        diaryPagination = 0
+        diaryQueryLimit.value = 10
+        diaryPagination.value = 0
         diaries.length = 0
         await useGetDiaries(true)
         //useInitPopover()

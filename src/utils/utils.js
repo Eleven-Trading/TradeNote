@@ -1,10 +1,10 @@
 import { useRoute } from "vue-router";
-import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis } from "../stores/globals.js"
+import { pageId, timeZoneTrade, currentUser, periodRange, selectedDashTab, renderData, selectedPeriodRange, selectedPositions, selectedTimeFrame, selectedRatio, selectedAccount, selectedGrossNet, selectedPlSatisfaction, selectedBroker, selectedDateRange, selectedMonth, selectedAccounts, amountCase, screenshotsPagination, diaryUpdate, diaryButton, selectedItem, playbookUpdate, playbookButton, sideMenuMobileOut, spinnerLoadingPage, dashboardChartsMounted, dashboardIdMounted, hasData, renderingCharts, screenType, selectedRange, dailyQueryLimit, dailyPagination, endOfList, spinnerLoadMore, windowIsScrolled, legacy, selectedTags, tags, filteredTrades, idCurrent, idPrevious, idCurrentType, idCurrentNumber, idPreviousType, idPreviousNumber, screenshots, screenshotsInfos, tabGettingScreenshots, apis, layoutStyle, countdownInterval, countdownSeconds, barChartNegativeTagGroups, availableTags, groups } from "../stores/globals.js"
 import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './charts.js';
-import { useDeleteDiary, useGetDiaries } from "./diary.js";
+import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
 import { useDeletePlaybook } from "./playbooks.js";
-import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades } from "./trades.js";
+import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades, useDeleteTrade, useDeleteExcursions } from "./trades.js";
 import { useLoadCalendar } from "./calendar.js";
 import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
 
@@ -61,7 +61,7 @@ export function useInitTab(param) {
                 triggerEl.addEventListener('shown.bs.tab', async (event) => {
                     //console.log("target " + event.target.getAttribute('id')) // newly activated tab
                     selectedDashTab.value = event.target.getAttribute('id')
-                    //console.log("selected tab " + selectedDashTab.value)
+                    console.log("selected tab " + selectedDashTab.value)
                     localStorage.setItem('selectedDashTab', event.target.getAttribute('id'))
                     await (renderData.value += 1)
                     await useECharts("init")
@@ -163,7 +163,7 @@ export function useInitParse() {
         let path = window.location.pathname
         let parse_app_id = localStorage.getItem('parse_app_id') ? localStorage.getItem('parse_app_id') : "";
         let parse_url = "/parse"
-        console.log(" -> Parse id " + parse_app_id)
+        //console.log(" -> Parse id " + parse_app_id)
 
         Parse.initialize(parse_app_id)
         Parse.serverURL = parse_url
@@ -178,7 +178,7 @@ export function useCheckCurrentUser() {
     console.log("\nCHECKING CURRENT USER")
     return new Promise((resolve, reject) => {
         var path = window.location.pathname
-        getCurrentUser()
+        useGetCurrentUser()
         //console.log(" -> parse user " + JSON.parse(JSON.stringify(Parse.User.current())))
         //console.log(" -> Current user " + JSON.stringify(currentUser.value))
         if (path != "/" && path != "/register") {
@@ -200,7 +200,7 @@ export function useCheckCurrentUser() {
 
 }
 
-export function getCurrentUser() {
+export const useGetCurrentUser = () => {
     currentUser.value = JSON.parse(JSON.stringify(Parse.User.current()))
     //console.log("currentUser " + JSON.stringify(currentUser.value))
 }
@@ -616,20 +616,19 @@ export async function useInitQuill(param) {
             }
 
             if (pageId.value == "addDiary") {
-                let elements = document.querySelectorAll(".ql-editor");
-                elements.forEach((input, index) => {
-                    if (index == 0) {
-                        diaryUpdate.journal.positive = input.innerHTML
-                    }
-                    if (index == 1) {
-                        diaryUpdate.journal.negative = input.innerHTML
-                    }
-                    if (index == 2) {
-                        diaryUpdate.journal.other = input.innerHTML
-                    }
-                })
-                //console.log(" -> diaryUpdate " + JSON.stringify(diaryUpdate))
+                diaryUpdate.diary = document.querySelector(".ql-editor").innerHTML
                 diaryButton.value = true
+
+                clearTimeout(countdownInterval.value);
+                countdownSeconds.value = 5; // reset countdown
+                countdownInterval.value = setInterval(function () {
+                    //console.log(`Countdown: ${countdownSeconds.value}`);
+                    countdownSeconds.value--;
+                    if (countdownSeconds.value === 0) {
+                        clearTimeout(countdownInterval.value);
+                        useUploadDiary("autoSave")
+                    }
+                }, 1000); // 1 second interval
             }
 
             if (pageId.value == "addPlaybook") {
@@ -641,73 +640,6 @@ export async function useInitQuill(param) {
     })
 }
 
-export function useInitWheelEvent() {
-    var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
-    var mouseDirection
-    if (document.attachEvent) //if IE (and Opera depending on user setting)
-        document.attachEvent("on" + mousewheelevt, e => {
-            //console.log('IE Case wheel  ' + e.wheelDelta)
-            if (e.wheelDelta > 0) {
-                mouseDirection = "forward"
-            } else {
-                mouseDirection = "backward"
-            }
-            videoSkip.value(mouseDirection)
-        })
-    else if (document.addEventListener) //WC3 browsers
-        document.addEventListener(mousewheelevt, e => {
-            //console.log('WC3 case Mouse ' + e.wheelDelta)
-            if (e.wheelDelta > 0) {
-                mouseDirection = "forward"
-                //console.log('Moving wheel ' + mouseDirection)
-            } else {
-                mouseDirection = "backward"
-                //console.log('Moving wheel ' + mouseDirection)
-            }
-            videoSkip.value(mouseDirection)
-        }, false)
-}
-
-/*export function useInitPopover() {
-    console.log(" -> Init Popover")
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl)
-    })
-    var popDel
-    
-    $(document).on('click', '.popoverDelete', (e) => {
-        popDel = $(e.currentTarget);
-        $('.popoverDelete').not(popDel.popover('hide'));
-    });
-
-    $(document).on('click', '.popoverYes', (e) => {
-        $('.popoverDelete').not(popDel.popover('hide'));
-        if (pageId.value == "notes") {
-            deleteNote.value()
-        }
-        if (pageId.value == "screenshots") {
-            useDeleteScreenshot()
-        }
-
-        if (pageId.value == "daily") {
-            useDeleteScreenshot()
-        }
-
-        if (pageId.value == "diary") {
-            useDeleteDiary(true)
-        }
-        if (pageId.value == "playbook") {
-            useDeletePlaybook()
-        }
-    });
-
-    $(document).on('click', '.popoverNo', (e) => {
-        $('.popoverDelete').not(popDel.popover('hide'));
-        selectedItem.value = null
-    });
-
-}*/
 
 export function useInitPopover() {
     console.log(" -> Init Popover");
@@ -717,6 +649,7 @@ export function useInitPopover() {
     const getTriggerList = () => {
         popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
         popoverTriggerList.forEach(function (popoverTriggerEl) {
+
             new bootstrap.Popover(popoverTriggerEl);
         });
     }
@@ -725,12 +658,15 @@ export function useInitPopover() {
 
     var popDel;
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', async function (e) {
         if (e.target.classList.contains('popoverDelete')) {
             popDel = e.target;
             document.querySelectorAll('.popoverDelete').forEach(function (popDelete) {
                 if (popDelete !== popDel) {
-                    bootstrap.Popover.getInstance(popDelete).hide();
+                    const popoverInstance = bootstrap.Popover.getInstance(popDelete);
+                    if (popoverInstance) {
+                        popoverInstance.hide();
+                    }
                 }
             });
         }
@@ -752,6 +688,11 @@ export function useInitPopover() {
             }
             if (pageId.value == "playbook") {
                 useDeletePlaybook();
+            }
+
+            if (pageId.value === "imports") {
+                await useDeleteTrade()
+                await useDeleteExcursions()
             }
         }
 
@@ -779,7 +720,7 @@ export function useInitTooltip() {
 
 export async function useInitPostHog() {
     return new Promise((resolve, reject) => {
-        axios.post('/posthog')
+        axios.post('/api/posthog')
             .then((response) => {
                 //console.log(response);
                 if (response.data != "off") {
@@ -846,8 +787,9 @@ export async function useMountDashboard() {
     spinnerLoadingPage.value = true
     dashboardChartsMounted.value = false
     dashboardIdMounted.value = false
+    barChartNegativeTagGroups.value = []
     await useGetSelectedRange()
-    useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()
+    await Promise.all([useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags()])
     await Promise.all([useGetFilteredTrades()])
     await useTotalTrades()
     await useGroupTrades()
@@ -856,6 +798,15 @@ export async function useMountDashboard() {
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")
     useInitTooltip()
+    await availableTags.forEach(element => {
+        let index = Object.keys(groups).indexOf(element.id);
+        if (index != -1) {
+            let temp = {}
+            temp.id = element.id
+            temp.name = element.name
+            barChartNegativeTagGroups.value.push(temp)
+        }
+    });
     await console.timeEnd("  --> Duration mount dashboard");
     if (hasData.value) {
         console.log("\nBUILDING CHARTS")
@@ -863,7 +814,6 @@ export async function useMountDashboard() {
         await (renderData.value += 1)
         await useECharts("init")
     }
-
 }
 
 export async function useMountDaily() {
@@ -874,7 +824,7 @@ export async function useMountDaily() {
     endOfList.value = false
     spinnerLoadingPage.value = true
     await useGetSelectedRange()
-    await Promise.all([useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes()])
+    await Promise.all([useGetExcursions(), useGetSatisfactions(), useGetTags(), useGetAvailableTags(), useGetNotes(), useGetAPIS()])
     await useGetFilteredTrades()
     spinnerLoadingPage.value = false
     await console.timeEnd("  --> Duration mount daily")
@@ -882,7 +832,6 @@ export async function useMountDaily() {
     useRenderDoubleLineChart()
     useRenderPieChart()
     useLoadCalendar()
-    useGetExcursions()
     useGetDiaries(false)
     useGetScreenshots(true)
     useInitPopover()
@@ -940,6 +889,11 @@ export async function useLoadMore() {
 
     if (pageId.value == "screenshots") {
         await useGetScreenshots(false)
+    }
+
+    if (pageId.value == "diary") {
+        await useGetDiaries(true)
+        await useGetSatisfactions()
     }
 
     spinnerLoadMore.value = false
@@ -1083,7 +1037,10 @@ export function useEditItem(param) {
     }
 }
 
-export function usePageRedirect() {
+export function usePageRedirect(param) {
+    if (param) {
+        window.location.href = "/" + param
+    }
     if (pageId.value == "daily") {
         window.location.href = "/daily"
     }
@@ -1219,7 +1176,81 @@ export const useGetAPIS = async () => {
     })
 }
 
+export const useGetLayoutStyle = async () => {
+    console.log("\n -> Getting Layout Style")
+    layoutStyle.length = 0
+    return new Promise(async (resolve, reject) => {
+        const parseObject = Parse.Object.extend("_User");
+        const query = new Parse.Query(parseObject);
+        const results = await query.first();
+        if (results) {
+            let parsedResults = JSON.parse(JSON.stringify(results))
 
+            if (parsedResults.layoutStyle != undefined) {
+                for (let index = 0; index < parsedResults.layoutStyle.length; index++) {
+                    const element = parsedResults.layoutStyle[index];
+                    layoutStyle.push(element)
+                }
+            }
+
+            resolve()
+
+        } else {
+            console.log(" -> NO USER !!!")
+            reject()
+        }
+    })
+}
+
+export const useExport = async (param1, param2, param3, param4) => {
+    // Convert the JSON object to a string
+    let blobData
+    let exportName = param2 
+    if (param3 != null){
+        exportName = exportName + "_" + param3
+    }
+    
+    let exportExt
+    let csvSeparation = ";"
+
+    if (param1 == "json") {
+        const jsonData = JSON.stringify(param4, null, 2);
+
+        // Create a blob from the JSON string
+        blobData = new Blob([jsonData], { type: "application/json" });
+        exportExt = ".json"
+
+    }
+    if (param1 == "csv") {
+        // Extract the header row from the JSON object
+        const headers = Object.keys(param4[0]);
+        const csvRows = [headers.join(csvSeparation)];
+
+        // Convert the JSON object to a CSV string
+        param4.forEach(row => {
+            const csvRow = headers.map(header => {
+                return row[header];
+            }).join(csvSeparation);
+            csvRows.push(csvRow);
+        });
+
+        // Create a blob from the CSV string
+        const csvString = csvRows.join("\n");
+        blobData = new Blob([csvString], { type: "text/csv" });
+        exportExt = ".csv"
+
+    }
+
+    // Create a link element to download the file
+    const url = URL.createObjectURL(blobData);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = exportName + "" + exportExt
+    a.click();
+
+    // Release the blob URL
+    URL.revokeObjectURL(url);
+}
 /**************************************
 * DATE FORMATS
 **************************************/
@@ -1245,6 +1276,10 @@ export function useTimeFormatFromDate(param) {
 
 export function useTimeDuration(param) {
     return dayjs.duration(param * 1000).format("HH:mm:ss")
+}
+
+export function useIBKREndDateTimeFormat(param) {
+    return dayjs.unix(param).tz(timeZoneTrade.value).format("YYYYMMDD HH:mm:ss")
 }
 
 export function useSwingDuration(param) {
@@ -1337,3 +1372,54 @@ export function useDecimalsArithmetic(param1, param2) {
     //https://flaviocopes.com/javascript-decimal-arithmetics/
     return ((param1.toFixed(6) * 100) + (param2.toFixed(6) * 100)) / 100
 }
+
+
+/**************************************
+* CLOUD
+**************************************/
+
+export const useCheckCloudPayment = (param1) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let currentUser = param1
+            // Make the API call
+            const response = await axios.post('/api/checkCloudPayment', {
+                currentUser: currentUser,
+            });
+
+            //console.log('Response:', JSON.stringify(response));
+
+            // Resolve or reject based on response
+            if (response.status === 200) {
+                resolve(response.data); // Resolve with response data
+            } else {
+                reject(new Error(' -> Payment check failed. Redirecting to payment page.'));
+            }
+        } catch (error) {
+            console.error(' -> Error during validation:', error);
+            reject(error); // Reject with the caught error
+        }
+    });
+};
+
+export const useGetStripePk = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const response = await axios.get('/api/getStripePk', {
+            });
+
+            //console.log('Response:', JSON.stringify(response));
+
+            // Resolve or reject based on response
+            if (response.status === 200) {
+                resolve(response.data); // Resolve with response data
+            } else {
+                reject(new Error(' -> Failed to get Stripe pk.'));
+            }
+        } catch (error) {
+            console.error(' -> Error getting Stripe pk:', error);
+            reject(error); // Reject with the caught error
+        }
+    });
+};
+

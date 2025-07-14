@@ -1,8 +1,8 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
-import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray } from '../stores/globals';
+import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray, availableTags, groups, barChartNegativeTagGroups } from '../stores/globals';
 import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat, useXDecFormat } from '../utils/utils';
 import NoData from '../components/NoData.vue';
 
@@ -46,7 +46,7 @@ const ratioCompute = computed(() => {
         ratio.name = "Average Profit Factor per Security"
         ratio.shortName = "APPS"
         ratio.value = useXDecCurrencyFormat(totals[amountCase.value + 'Proceeds'] / (totals.quantity / 2), 4)
-        ratio.tooltipTitle = '<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Traded</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Securities Traded: ' + useThousandFormat(totals.quantity / 2) + '</div>'
+        ratio.tooltipTitle = '<div>Average Profit Per Security</div><div> APPS = Proceeds &divide; Number of Securities Acquired</div><div>Proceeds: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Proceeds']) + '</div><div>Securities Acquired: ' + useThousandFormat(totals.quantity / 2) + '</div>'
     }
     if (localStorage.getItem('selectedRatio') == 'profitFactor') {
         ratio.shortName = "Profit Factor"
@@ -65,8 +65,17 @@ const ratioCompute = computed(() => {
     return ratio
 })
 
+onBeforeMount(async () => {
+    barChartNegativeTagGroups.length = 0
+    await useMountDashboard()
+    //console.log(" availableTags "+JSON.stringify(availableTags))
+    //console.log(" groups "+JSON.stringify(groups))
 
-useMountDashboard()
+    //getting the "id" of barChartNegative based on the tag groups
+    
+    //console.log(" barChartNegativeTagGroups "+JSON.stringify(barChartNegativeTagGroups.value))
+})
+
 
 </script>
 
@@ -280,7 +289,9 @@ useMountDashboard()
                                 <!-- APPT/APPS/PROFIT FACTOR CHART -->
                                 <div class="col-12 col-xl-6 mb-3">
                                     <div class="dailyCard">
-                                        <h6>{{ ratioCompute.name }} <span v-if="ratioCompute.name != 'Profit Factor'">({{ ratioCompute.shortName }})</span></h6>
+                                        <h6>{{ ratioCompute.name }} <span
+                                                v-if="ratioCompute.name != 'Profit Factor'">({{ ratioCompute.shortName
+                                                }})</span></h6>
                                         <div v-bind:key="renderData" id="barChart1" class="chartClass"></div>
                                     </div>
                                 </div>
@@ -423,10 +434,26 @@ useMountDashboard()
                                 </div>
 
                                 <!-- GROUP BY TAGS -->
-
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Group by Tag ({{ ratioCompute.shortName }})</h6>
+                                        <div class="text-center" v-if="!dashboardChartsMounted">
+                                            <div class="spinner-border text-blue" role="status"></div>
+                                        </div>
+                                        <div v-bind:key="renderData" id="barChartNegative18" class="chartClass"></div>
+                                    </div>
+                                </div>
 
                                 <!-- GROUP BY TAG COMBINATION -->
-
+                                <div class="col-12 col-xl-6 mb-3" v-for="obj in barChartNegativeTagGroups">
+                                    <div class="dailyCard">
+                                        <h6>Group by Tag Group - {{ obj.name }} ({{ ratioCompute.shortName }})</h6>
+                                        <div class="text-center" v-if="!dashboardChartsMounted">
+                                            <div class="spinner-border text-blue" role="status"></div>
+                                        </div>
+                                        <div v-bind:key="renderData" :id="'barChartNegative'+obj.id" class="chartClass"></div>
+                                    </div>
+                                </div>
 
                             </div>
                         </div>

@@ -1,12 +1,16 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onBeforeMount, onMounted } from 'vue';
 import { selectedBroker, spinnerLoadingPage, brokers, stepper, executions, currentUser, uploadMfePrices, existingImports, queryLimit, blotter, pAndL, gotExistingTradesArray, existingTradesArray, brokerData, tradovateTiers, selectedTradovateTier } from '../stores/globals';
-import { useDecimalsArithmetic } from '../utils/utils';
+import { useCheckCloudPayment, useDecimalsArithmetic } from '../utils/utils';
 import { useImportTrades, useUploadTrades, useGetExistingTradesArray } from '../utils/addTrades'
-import { useCreatedDateFormat, useDateCalFormat } from '../utils/utils';
+import { useCreatedDateFormat, useDateCalFormat, useGetCurrentUser } from '../utils/utils';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 
 spinnerLoadingPage.value = false
+
+onBeforeMount(async () => {
+        
+})
 
 onMounted(async () => {
     await useGetExistingTradesArray()
@@ -16,23 +20,13 @@ function inputChooseBroker(param) {
     localStorage.setItem('selectedBroker', param)
     selectedBroker.value = param
 }
-function stepperNext() {
-    stepper.value.next()
-    existingImports.length = 0
-}
-
-function stepperPrevious() {
-    stepper.value.previous()
-    existingImports.length = 0
-}
-
 
 </script>
 <template>
     <SpinnerLoadingPage />
     {{ currentUser.value }}
     <p class="txt-small">See export instructions for your broker on <a
-            href="https://github.com/Eleven-Trading/TradeNote/tree/main/brokers" target="_blank">GitHub</a>. <span v-if="!(currentUser.hasOwnProperty('apis')&& currentUser.apis.length>0 && currentUser.apis.findIndex(obj => obj.provider === 'polygon') !=-1)">To add MFE prices automatically (stocks only), insert your API key in <a href="/settings">settings</a>.</span>
+            href="https://tradenote.co/brokers.html" target="_blank">Brokers Page</a>. <span v-if="!(currentUser.hasOwnProperty('apis') && currentUser.apis.length>0 && currentUser.apis.findIndex(obj => obj.provider === 'polygon' || obj.provider === 'databento') !=-1)">To add MFE prices automatically, insert your API key in <a href="/settings">settings</a>.</span>
     </p>
     <!--DROPDOWN LIST-->
     <div class="form-floating">
@@ -59,10 +53,9 @@ function stepperPrevious() {
     </p>
 
     <!--MFE-->
-    <div class="mt-4" v-if="currentUser.marketDataApiKey">
+    <div class="mt-4" v-if="currentUser.hasOwnProperty('apis') && (currentUser.apis.findIndex(obj => obj.provider === 'polygon' || obj.provider === 'databento') > -1)">
         <div class="form-check form-switch">
-            <label>Add MFE prices automatically (<a href="https://polygon.io/system" target="_blank">system
-                    status</a>)</label>
+            <label>Add MFE prices automatically</label>
             <input class="form-check-input" type="checkbox" role="switch" v-model="uploadMfePrices"
                 v-on:click="uploadMfePrices = !uploadMfePrices">
         </div>

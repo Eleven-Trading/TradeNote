@@ -50,6 +50,9 @@
             },
             "legacy": {
                 "type": "Array"
+            },
+            "layoutStyle": {
+                "type": "Array"
             }
         },
         "classLevelPermissions": {
@@ -429,8 +432,8 @@
                 "targetClass": "_User",
                 "required": false
             },
-            "journal": {
-                "type": "Object",
+            "diary": {
+                "type": "String",
                 "required": false
             }
         },

@@ -1,21 +1,50 @@
-import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit } from "../stores/globals.js";
+import { excursions, queryLimit, satisfactionArray, satisfactionTradeArray, tags, selectedRange, availableTags, currentUser, tradeTags, tradeTagsDateUnix, tradeTagsId, newTradeTags, pageId, notes, tradeNote, tradeNoteDateUnix, tradeNoteId, spinnerSetups, spinnerSetupsText, availableTagsArray, tagInput, selectedTagIndex, showTagsList, tradeTagsChanged, filteredTrades, itemTradeIndex, tradeIndex, saveButton, screenshot, screenshotsPagination, screenshotsQueryLimit, diaryUpdate, diaryQueryLimit, diaryPagination } from "../stores/globals.js";
+import { daysBack } from "../stores/globals.js";
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js'
+dayjs.extend(utc)
+import isoWeek from 'dayjs/plugin/isoWeek.js'
+dayjs.extend(isoWeek)
+import timezone from 'dayjs/plugin/timezone.js'
+dayjs.extend(timezone)
+import duration from 'dayjs/plugin/duration.js'
+dayjs.extend(duration)
+import updateLocale from 'dayjs/plugin/updateLocale.js'
+dayjs.extend(updateLocale)
+import localizedFormat from 'dayjs/plugin/localizedFormat.js'
+dayjs.extend(localizedFormat)
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
+dayjs.extend(customParseFormat)
+
+//query limit must be same as diary limit
+let satisfactionPagination = 0
 
 export async function useGetSatisfactions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING SATISFACTIONS");
-        satisfactionTradeArray.length = 0
-        satisfactionArray.length = 0
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
         const parseObject = Parse.Object.extend("satisfactions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value); // limit to at most 10 results
+        query.descending("dateUnix")
+        if (pageId.value == "diary") {
+            //console.log(" diaryQueryLimit.value " + diaryQueryLimit.value)
+            //console.log(" satisfactionPagination " + satisfactionPagination)
+            //Here we do not do .length = 0 because we want it to remember the satisfaction array
+            query.equalTo("tradeId", undefined)
+            query.limit(diaryQueryLimit.value);
+            query.skip(satisfactionPagination)
+        } else {
+            satisfactionTradeArray.length = 0
+            satisfactionArray.length = 0
+            let startD = selectedRange.value.start
+            let endD = selectedRange.value.end
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.limit(queryLimit.value); // limit to at most 10 results
+        }
 
         const results = await query.find();
         for (let i = 0; i < results.length; i++) {
@@ -31,7 +60,69 @@ export async function useGetSatisfactions() {
             }
 
         }
-        //console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        console.log(" -> Trades satisfaction " + JSON.stringify(satisfactionArray))
+        satisfactionPagination = satisfactionPagination + diaryQueryLimit.value
+
+        resolve()
+
+    })
+}
+
+export const useDailySatisfactionChange = async (param1, param2, param3) => {
+    console.log("\nDAILY SATISFACTION CHANGE")
+    //console.time("  --> Duration daily satisfaction change")
+    if (param3) {
+        param3.satisfaction = param2
+    } else {
+        let index = satisfactionArray.findIndex(obj => obj.dateUnix == param1)
+        if (index != -1) {
+            satisfactionArray[index].satisfaction = param2
+        } else {
+            let temp = {}
+            temp.dateUnix = param1
+            temp.satisfaction = param2
+            satisfactionArray.push(temp)
+        }
+    }
+    await useUpdateDailySatisfaction(param1, param2)
+    //await console.timeEnd("  --> Duration daily satisfaction change")
+}
+
+export const useUpdateDailySatisfaction = async (param1, param2) => { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
+    //console.log(" param 1 " + param1)
+    console.log(" -> updating satisfactions")
+    return new Promise(async (resolve, reject) => {
+
+        const parseObject = Parse.Object.extend("satisfactions");
+        const query = new Parse.Query(parseObject);
+        query.equalTo("dateUnix", param1)
+        query.doesNotExist("tradeId") /// this is how we differentiate daily from trades satisfaction records
+        const results = await query.first();
+        if (results) {
+            console.log(" -> Updating satisfaction")
+            results.set("satisfaction", param2)
+
+            results.save()
+                .then(async () => {
+                    console.log(' -> Updated satisfaction with id ' + results.id)
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        } else {
+            console.log(" -> Saving satisfaction")
+
+            const object = new parseObject();
+            object.set("user", Parse.User.current())
+            object.set("dateUnix", param1)
+            object.set("satisfaction", param2)
+            object.setACL(new Parse.ACL(Parse.User.current()));
+            object.save()
+                .then(async (object) => {
+                    console.log(' -> Added new satisfaction with id ' + object.id)
+                }, (error) => {
+                    console.log('Failed to create new object, with error code: ' + error.message);
+                })
+        }
         resolve()
 
     })
@@ -41,15 +132,25 @@ export async function useGetSatisfactions() {
 export async function useGetExcursions() {
     return new Promise(async (resolve, reject) => {
         console.log("\nGETTING EXCURSIONS")
-        let startD = selectedRange.value.start
-        let endD = selectedRange.value.end
+        
         const parseObject = Parse.Object.extend("excursions");
         const query = new Parse.Query(parseObject);
         query.equalTo("user", Parse.User.current());
         query.ascending("order");
-        query.greaterThanOrEqualTo("dateUnix", startD)
-        query.lessThan("dateUnix", endD)
-        query.limit(queryLimit.value); // limit to at most 10 results
+        if (pageId.value === "addExcursions") {
+            let startD = dayjs().subtract(daysBack.value, 'days').unix()
+            let endD = dayjs().unix()
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.ascending("dateUnix");
+        }
+        else {
+            let startD = selectedRange.value.start
+        let endD = selectedRange.value.end
+            query.greaterThanOrEqualTo("dateUnix", startD)
+            query.lessThan("dateUnix", endD)
+            query.limit(queryLimit.value); // limit to at most 10 results
+        }
         excursions.length = 0
         const results = await query.find();
         results.forEach(element => {
@@ -66,13 +167,16 @@ export async function useGetExcursions() {
  * TAGS 
  ****************************************/
 export const useGetTagInfo = (param) => {
-
+    //console.log("param "+JSON.stringify(param))
+    //console.log(" available tags "+JSON.stringify(availableTags))
     const findTagInfo = (tagId) => {
         let temp = {}
         //check if tag id exists then return color
         for (let obj of availableTags) {
             for (let tag of obj.tags) {
                 if (tag.id === tagId) {
+                    temp.tagGroupId = obj.id
+                    temp.tagGroupName = obj.name
                     temp.groupColor = obj.color
                     temp.tagName = tag.name
                     return temp
@@ -194,7 +298,7 @@ export const useCreateAvailableTagsArray = () => {
 
 let filteredSuggestions = []
 export const useFilterSuggestions = (param) => {
-    
+
     //console.log(" availableTagsArray " + JSON.stringify(availableTagsArray))
     //console.log(" filtered suggestion param " + param)
     let index = availableTags.findIndex(obj => obj.id == param)
@@ -315,8 +419,15 @@ export const useTradeTagsChange = async (param1, param2) => {
 
 
     if (pageId.value == "daily") {
+        //console.log(" itemTradeIndex.value " + itemTradeIndex.value)
+        //console.log(" tradeIndex.value " + tradeIndex.value)
         tradeTagsDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
-        tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        console.log(" tradeIndex.value " + tradeIndex.value)
+        if (tradeIndex.value != undefined) {
+            tradeTagsId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+        } else {
+            tradeTagsId.value = null // setting null so that when in useUpdateTags tradeTagsId is null / we're updating daily tags
+        }
     }
 
 };
@@ -413,14 +524,26 @@ export const useUpdateTags = async () => {
         let tagsArray = []
         for (let index = 0; index < tradeTags.length; index++) {
             const element = tradeTags[index];
-            tagsArray.push(element.id)            
+            tagsArray.push(element.id)
         }
         const parseObject = Parse.Object.extend("tags");
         const query = new Parse.Query(parseObject);
+
         if (pageId.value == "addScreenshot") {
             query.equalTo("tradeId", screenshot.name)
-        } else {
-            query.equalTo("tradeId", tradeTagsId.value)
+        }
+
+        else if (pageId.value == "addDiary") {
+            query.equalTo("tradeId", diaryUpdate.dateUnix.toString())
+        }
+
+        else {
+            if (tradeTagsId.value) {
+                query.equalTo("tradeId", tradeTagsId.value)
+            } else {
+                //it's the case when changing daily tags, tradeTagsId.value is null (see useTradeTagsChange)
+                query.equalTo("tradeId", tradeTagsDateUnix.value.toString())
+            }
         }
         const results = await query.first();
         if (results) {
@@ -448,9 +571,21 @@ export const useUpdateTags = async () => {
             if (pageId.value == "addScreenshot") {
                 object.set("dateUnix", screenshot.dateUnix)
                 object.set("tradeId", screenshot.name)
-            } else {
-                object.set("dateUnix", tradeTagsDateUnix.value)
-                object.set("tradeId", tradeTagsId.value)
+            }
+            else if (pageId.value == "addDiary") {
+                object.set("dateUnix", diaryUpdate.dateUnix)
+                object.set("tradeId", diaryUpdate.dateUnix.toString())
+            }
+            else {
+                if (tradeTagsId.value) {
+                    object.set("dateUnix", tradeTagsDateUnix.value)
+                    object.set("tradeId", tradeTagsId.value)
+                } else {
+                    //it's the case when changing daily tags, tradeTagsId.value is null
+                    object.set("dateUnix", tradeTagsDateUnix.value)
+                    object.set("tradeId", tradeTagsDateUnix.value.toString())
+                }
+
             }
             object.setACL(new Parse.ACL(Parse.User.current()));
             object.save()
@@ -507,10 +642,10 @@ export const useUpdateAvailableTags = async () => {
                 let ungroupedIndex = currentTags.findIndex(obj => obj.id == "group_0")
 
                 let tempArray = []
-                if (pageId.value == "daily") {
-                    tempArray = newTradeTags
-                } else {
+                if (pageId.value == "registerSignup") {
                     tempArray = tradeTags
+                } else {
+                    tempArray = newTradeTags
                 }
 
                 for (let index = 0; index < tempArray.length; index++) {
@@ -576,7 +711,7 @@ export async function useGetNotes() {
 
             }
         }
-        console.log("  --> notes " + JSON.stringify(notes))
+        //console.log("  --> notes " + JSON.stringify(notes))
         resolve()
 
     })

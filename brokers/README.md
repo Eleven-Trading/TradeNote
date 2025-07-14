@@ -13,7 +13,7 @@ Note : make sure to input one execution per line, not aggregated trade. So one l
 - T/D: trade date in MM/DD/YYYY format
 - S/D: same as T/D, trade date in MM/DD/YYYY format
 - Currency: currency applied to the price of symbol
-- Type: not relevant. Put 0
+- Type: must be of type stock, future, forex, call or put
 - Side: side of the execution
     - B: Buy
     - S: Sell
@@ -51,10 +51,10 @@ Note : make sure to input one execution per line, not aggregated trade. So one l
     2. Sections
         1. Click Trade Confirmation and only select Executions
         2. From there, you can either
-            1. Check the following boxes manually: Account ID, Trade Date, Settle Date, Currency, Underlying Symbol, Symbol, Buy/Sell, Quantity, Price, Order Time, Commission, Code, Broker Execution Commission, Broker Clearing Commission, Third-Party Execution Commission, Thirs-Party Clearing Commission, Other Commissions, Proceeds, Net Cash, Trade ID, Order ID, AssetClass, Multiplier, Put/Call
+            1. Check the following boxes manually: Account ID, Date/Time, Settle Date, Currency, Underlying Symbol, Symbol, Buy/Sell, Quantity, Price, Commission, Code, Broker Execution Commission, Broker Clearing Commission, Third-Party Execution Commission, Third-Party Clearing Commission, Other Commission, Proceeds, Net Cash, Trade ID, Order ID, Asset Class, Multiplier, Put/Call
            2. Or execute the following script using your browser's DevTools console:
             ```js
-            const fields=["Account ID","Trade Date","Settle Date","Currency","Underlying Symbol","Symbol","Buy/Sell","Quantity","Price","Order Time","Commission", "Code", "Broker Execution Commission","Broker Clearing Commission","Third-Party Execution Commission","Thirs-Party Clearing Commission","Other Commissions","Proceeds","Net Cash","Trade ID","Order ID","AssetClass","Multiplier","Put/Call"],container=document.querySelector('tbody[class="ui-sortable"]'),trs=container.querySelectorAll("tr");trs.forEach(e=>{let r=e.querySelectorAll("td"),t=r[1].childNodes[0].textContent;if(fields.includes(t)){let i=e.querySelector('input[type="checkbox"]');i.click()}});
+            const fields=["Account ID","Date/Time","Settle Date","Currency","Underlying Symbol","Symbol","Buy/Sell","Quantity","Price","Commission", "Code", "Broker Execution Commission","Broker Clearing Commission","Third-Party Execution Commission","Third-Party Clearing Commission","Other Commission","Proceeds","Net Cash","Trade ID","Order ID","Asset Class","Multiplier","Put/Call"],container=document.querySelector('tbody[class="ui-sortable"]'),trs=container.querySelectorAll("tr");trs.forEach(e=>{let r=e.querySelectorAll("td"),t=r[1].childNodes[0].textContent;if(fields.includes(t)){let i=e.querySelector('input[type="checkbox"]');i.click()}});
             ```
         4. Scroll to the bottom of the dialog and select Save
     3. Delivery Configuration
@@ -107,6 +107,15 @@ Please use the standalone thinkorswim application and follow the steps below.
 <div style="text-align: center;"><img style="margin-right:30px" src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD1.png" width="200">
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/TD2.png" width="200"></div>
 
+
+
+In some cases you may see the following message on import
+
+>ERROR IN UPLOAD FILE
+No matching execution in Account Trade History for execution in Cash Balance on xx/xx/xx xx:xx:xx. Please correct your file manually and upload it again.
+
+The way the import code works is that it looks for matching executions in two tables : Account Trade History and Cash Balance. The code matches these executions by date and time. However, there is a bug in TD where certain matching executions have one or two seconds time difference. You need to look for those time differences and change them manually.
+
 # TradeStation
 1. Select the "Orders" tab at the bottom of the TradeManager window in TradeStation.
 2. Choose "Filled Orders" from the "Status" drop-down menu at the top of the screen.
@@ -124,7 +133,7 @@ Note: currently, TradeNote does not take into account ECN fees (available soon).
 4. Download as CSV.
 
 # MetaTrader 5 (MT 5)
-Please use the standalone MT5 windows application and follow the steps below. 
+Please use the standalone MT5 windows application and follow the steps below. Also, make sure to set the MT5 language to English before exporting the trades. In the MT5 main menu at the top go to View -> Languages and select English.
 
 1. In the MetaTrader Terminal window, select the History tab.
 2. Right-click on any order in the account history, and select the time period you want to export.
@@ -178,3 +187,18 @@ Please note that trades need to be ordered in ascending order
 6. Right-click anywhere in the output window, and choose "Export".
 7. Next, change the "Save as type" field to "CSV (*.csv).
 8. Finally, click "Save".  Your exported file will save to the location specified
+
+# TopstepX
+1.	Login to TopstepX account.
+2.	Click the Orders component.
+
+ <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx1.png" width="400">
+
+3.	Click export.
+
+ <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx2.png" width="400">
+
+4.	Select date range and click Export.
+
+<img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx3.png" width="250">
+ 

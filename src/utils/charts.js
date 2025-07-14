@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray } from "../stores/globals.js"
+import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom, barChartNegativeTagGroups } from "../stores/globals.js"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat, useXDecFormat } from "./utils.js"
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
@@ -29,9 +29,7 @@ const white38 = "hsla(0, 0%, 100%, 0.38)"
 const maxChartValues = 20
 
 
-export function useECharts(param) {
-    //console.log(" -> eCharts " + param)
-
+export async function useECharts(param) {
     for (let index = 1; index <= 2; index++) {
         var chartId = 'pieChart' + index
         //console.log("chartId " + chartId)
@@ -47,76 +45,41 @@ export function useECharts(param) {
                 //red = probLoss
                 green = (totals[amountCase.value + 'WinsCount'] / totals.trades)
                 red = (totals[amountCase.value + 'LossCount'] / totals.trades)
+                await usePieChart(chartId, green, red)
 
             }
-            if (index == 2) {
+            if (index == 2 && satisfactionArray.length > 0) {
                 //green = satisfied
                 //red = dissatisfied
+                //console.log(" satisfactionArray " + JSON.stringify(satisfactionArray))
                 let satisfied = satisfactionArray.filter(obj => obj.satisfaction == true).length
                 let dissatisfied = satisfactionArray.filter(obj => obj.satisfaction == false).length
                 if (satisfactionArray.length > 0) {
                     green = satisfied / satisfactionArray.length
                     red = dissatisfied / satisfactionArray.length
                 }
+                await usePieChart(chartId, green, red)
             }
-            usePieChart(chartId, green, red)
         }
     }
 
-    /*for (let index = 1; index <= 1; index++) {
-        var chartId = 'lineChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init") {
-            useLineChart(chartId)
-        }
-    }*/
-
-    for (let index = 1; index <= 1; index++) {
-        var chartId = 'lineBarChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "lineBarChart") {
-            useLineBarChart(chartId)
-        }
+    function handleCharts(prefix, useChartFunction) {
+        let elements = document.querySelectorAll(`[id^="${prefix}"]`);
+        elements.forEach(element => {
+            if (param == "clear") {
+                echarts.init(element).clear();
+            }
+            if (param == "init" || param == prefix) {
+                useChartFunction(element.id);
+            }
+        });
     }
 
-    for (let index = 1; index <= 2; index++) {
-        var chartId = 'barChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "barChart") {
-            useBarChart(chartId)
-        }
-    }
+    // Call the function for each chart type
+    handleCharts('lineBarChart', useLineBarChart);
+    handleCharts('barChart', useBarChart);
+    handleCharts('barChartNegative', useBarChartNegative);
 
-    let indexes = [1, 2, 3, 4, 7, 13, 16, 17] // This way.value here because I took out some charts
-    indexes.forEach(index => {
-        var chartId = 'barChartNegative' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "barChartNegative") {
-            useBarChartNegative(chartId)
-        }
-    });
-
-    /*for (let index = 1; index <= 2; index++) {
-        var chartId = 'scatterChart' + index
-        if (param == "clear") {
-            echarts.init(document.getElementById(chartId)).clear()
-        }
-        if (param == "init" || param == "scatterChart") {
-            useScatterChart(chartId)
-        }
-    }*/
-
-    /*for (let index = 1; index <= 1; index++) {
-        echarts.init(document.getElementById('boxPlotChart' + index)).clear()
-    }*/
 }
 
 export function useRenderDoubleLineChart() {
@@ -167,7 +130,7 @@ export function useRenderPieChart() {
 }
 
 export function useLineChart(param) { //chartID, chartDataGross, chartDataNet, chartCategories
-    //console.log("  --> " + param)
+    console.log("  --> " + param)
     return new Promise((resolve, reject) => {
         var myChart = echarts.init(document.getElementById(param));
         var chartData = []
@@ -1124,50 +1087,62 @@ export function useBarChartNegative(param1) {
     return new Promise((resolve, reject) => {
         var yAxis = []
         var series = []
+        let yName = []
+        var keyObject
         if (param1 == "barChartNegative1") {
-            var keyObject = groups.timeframe
+            keyObject = groups.timeframe
         }
         if (param1 == "barChartNegative2") {
-            var keyObject = groups.duration
+            keyObject = groups.duration
         }
         if (param1 == "barChartNegative3") {
-            var keyObject = groups.day
+            keyObject = groups.day
         }
         if (param1 == "barChartNegative4") {
-            var keyObject = groups.trades
+            keyObject = groups.trades
         }
         if (param1 == "barChartNegative7") {
-            var keyObject = groups.executions
+            keyObject = groups.executions
         }
 
         if (param1 == "barChartNegative12") {
-            var keyObject = groups.shareFloat
+            keyObject = groups.shareFloat
         }
 
         if (param1 == "barChartNegative13") {
-            var keyObject = groups.entryPrice
+            keyObject = groups.entryPrice
         }
 
         if (param1 == "barChartNegative14") {
-            var keyObject = groups.mktCap
+            keyObject = groups.mktCap
         }
 
         if (param1 == "barChartNegative16") {
-            var keyObject = groups.symbols
+            keyObject = groups.symbols
         }
 
         if (param1 == "barChartNegative7") {
-            var keyObject = groups.executions
+            keyObject = groups.executions
         }
 
         if (param1 == "barChartNegative17") {
-            var keyObject = groups.position
+            keyObject = groups.position
         }
 
-        const keys = Object.keys(keyObject);
+        if (param1 == "barChartNegative18") {
+            keyObject = groups.tags
+        }
 
+        //case for group tags
+        let obj = barChartNegativeTagGroups.value.find(obj => param1.includes(obj.id));
+        if (obj != undefined) {
+            keyObject = groups[obj.id]
+        }
+
+        // KEYS are the different array of groups: so long/short, array of symbols, etc.
+        const keys = Object.keys(keyObject);
         //console.log("object " + JSON.stringify(keyObject))
-        //console.log("keys " + JSON.stringify(keys))
+
         for (const key of keys) {
 
             yAxis.unshift(key) // unshift because I'm only able to sort timeframe ascending
@@ -1180,14 +1155,18 @@ export function useBarChartNegative(param1) {
             let quantities = 0
             var profitFactor = 0
             var numElements = keyObject[key].length
+
             //console.log("num elemnets " + numElements)
+
+            //console.log(" key "+key)
             keyObject[key].forEach((element, index) => {
                 //console.log("index " + index)
-                //console.log("element " + JSON.stringify(element))
-
                 sumWins += element[amountCase.value + 'Wins']
                 sumLoss += element[amountCase.value + 'Loss']
 
+                //console.log(" symbol "+element.symbol)
+                //console.log(" element "+JSON.stringify(element))
+                //console.log(" proceeds "+element[amountCase.value + 'Proceeds'])
                 sumProceeds += element[amountCase.value + 'Proceeds']
 
                 if (param1 == "barChartNegative4") {
@@ -1197,12 +1176,17 @@ export function useBarChartNegative(param1) {
                 }
                 quantities += element.buyQuantity
 
+
+                //console.log(" sumProceeds "+sumProceeds)
+                //console.log(" trades "+trades)
+
                 //console.log("wins count "+element.sumWinsCount+", loss count "+element.sumLossCount+", wins "+element.wins+", loss "+element.netLoss+", trades "+element.tradesCount)
                 if (numElements == (index + 1)) {
 
-                    appt = sumProceeds / trades
+                    appt = sumProceeds == 0 && trades == 0 ? null : sumProceeds / trades
 
-                    apps = sumProceeds / quantities
+
+                    apps = sumProceeds == 0 && quantities == 0 ? null : sumProceeds / quantities
 
                     sumWins > 0 ? profitFactor = sumWins / -sumLoss : profitFactor = 0
 
@@ -1219,16 +1203,68 @@ export function useBarChartNegative(param1) {
                         ratio = profitFactor
                     }
 
-                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17") {
+                    //console.log(" ratio "+ratio)
+
+                    if (param1 == "barChartNegative1" || param1 == "barChartNegative2" || param1 == "barChartNegative3" || param1 == "barChartNegative4" || param1 == "barChartNegative7" || param1 == "barChartNegative12" || param1 == "barChartNegative13" || param1 == "barChartNegative14" || param1 == "barChartNegative16" || param1 == "barChartNegative17" || param1 == "barChartNegative18" || obj != undefined) {
                         series.unshift(ratio)
                     }
 
+                    if (param1 == "barChartNegative18" || obj != undefined) {
+                        let temp = {}
+                        temp.tagId = key
+                        temp.tagName = element.tagName
+                        yName.push(temp)
+                    }
                 }
             })
         }
 
         if (param1 == "barChartNegative16" || param1 == "barChartNegative17") {
             //1) combine the arrays:
+            var list = [];
+            for (var j = 0; j < series.length; j++) {
+
+                //for group by Symbol, if open trade then ratio will be null, so no need to show on group by symbol chart
+                if (series[j] != null) {
+                    list.push({ 'ratio': series[j], 'name': yAxis[j] });
+                    
+                }
+            }
+            //2) sort:
+            list.sort(function (a, b) {
+                return ((a.ratio < b.ratio) ? -1 : ((a.ratio == b.ratio) ? 0 : 1));
+                //Sort could be modified to, for example, sort on the age 
+                // if the name is the same.
+            });
+
+            //console.log(" list " + JSON.stringify(list))
+            //console.log(" series "+JSON.stringify(series))
+            //3) separate them back out:
+            // reinit arrays because in case of null, I have not included in list and I would sort series and yAxid but still leave space and leave some other values in place of the removed null
+            series = []
+            yAxis = []
+            for (var k = 0; k < list.length; k++) {
+                series[k] = list[k].ratio;
+                //console.log(" series k "+JSON.stringify(series[k]))
+                yAxis[k] = list[k].name;
+                //console.log(" yAxis k "+JSON.stringify(yAxis[k]))
+            }
+            
+
+            /*var indices = Array.from(series.keys()).sort((a, b) => series[a] > series[b])
+
+            var sortedAPPT = indices.map(i => series[i])
+            var sortedName = indices.map(i => yAxis[i])*/
+            //console.log("Sorted ratio " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
+
+        }
+
+        if (param1 == "barChartNegative18" || obj != undefined) {
+            //1) combine the arrays:
+            /*for (var k = 0; k < yName.length; k++) {
+                yAxis[k] = yName[k];
+            }*/
+            //console.log(" yName "+JSON.stringify(yName))
             var list = [];
             for (var j = 0; j < series.length; j++)
                 list.push({ 'ratio': series[j], 'name': yAxis[j] });
@@ -1241,18 +1277,15 @@ export function useBarChartNegative(param1) {
             //3) separate them back out:
             for (var k = 0; k < list.length; k++) {
                 series[k] = list[k].ratio;
-                yAxis[k] = list[k].name;
+                let index = yName.findIndex(obj => obj.tagId == list[k].name)
+                if (index != -1) {
+                    yAxis[k] = yName[index].tagName
+                } else {
+                    console.log(" -> Index / tag name does not exist")
+                }
             }
 
-
-            /*var indices = Array.from(series.keys()).sort((a, b) => series[a] > series[b])
-
-            var sortedAPPT = indices.map(i => series[i])
-            var sortedName = indices.map(i => yAxis[i])*/
-            //console.log("Sorted ratio " + JSON.stringify(series)+" and names "+JSON.stringify(yAxis))
-
         }
-
         const option = {
             tooltip: {
                 trigger: 'axis',
@@ -1265,7 +1298,11 @@ export function useBarChartNegative(param1) {
                     type: 'shadow'
                 },
                 formatter: (params) => {
-                    return useTwoDecCurrencyFormat(params[0].value)
+                    if (param1 == "barChartNegative16"){
+                        return params[0].name + " " + useTwoDecCurrencyFormat(params[0].value)
+                    }else{
+                        return useTwoDecCurrencyFormat(params[0].value)
+                    }
                 }
             },
             grid: {
@@ -1390,7 +1427,8 @@ export function useBarChartNegative(param1) {
                             }
                         } else if (param1 == "barChartNegative17") {
                             return (useCapitalizeFirstLetter(params))
-                        } else {
+                        }
+                        else {
                             return params
                         }
                     }
@@ -1719,9 +1757,12 @@ export function useScatterChart(param1) { //chart ID, green, red, page
         resolve()
     })
 }
+let candlestickChart
+let currentTD
 
-export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade) {
-    //console.log(" trade "+JSON.stringify(trade))
+export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, trade, initCandleChart) {
+    console.log(" -> creating candlestick chart")
+    //console.log(" trade " + JSON.stringify(trade))
     let green = '#26a69a'
     let red = '#FF6960'
     let exitMarkerColor
@@ -1735,20 +1776,49 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
     }
 
 
-    const initialDataZoomPadding = dayjs(0).minute(5).unix()
-    const minimumDataZoomLevel = dayjs(0).minute(30).unix()
+    const maxZoomStartUnix = dayjs(trade.entryTime * 1000).tz(timeZoneTrade.value).startOf('day').unix()
+    const maxZoomEndUnix = dayjs(trade.exitTime * 1000).tz(timeZoneTrade.value).endOf('day').unix()
 
-    const timeZone = timeZoneTrade.value;
-    const tradeEntryTime = trade.entryTime
-    const tradeExitTime = trade.exitTime
-    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs.unix(trade.exitTime).tz(timeZone), 'day')
-    const spreadTime = tradeIsIntraday ? Math.abs(tradeExitTime - tradeEntryTime) : 0
-    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + 2 * initialDataZoomPadding)
+
+    let dataZoomStartUnix
+    let dataZoomEndUnix
+
+    const startOfMinute = (param) => {
+        return dayjs(param * 1000).tz(timeZoneTrade.value).startOf('minute').unix()
+    }
+
+    const endOfMinute = (param) => {
+        return dayjs(param * 1000).tz(timeZoneTrade.value).endOf('minute').unix()
+    }
+
+    if (dailyChartZoom.value === 1) {
+        dataZoomStartUnix = startOfMinute(trade.entryTime)
+        dataZoomEndUnix = endOfMinute(trade.exitTime)
+    }
+
+    if (dailyChartZoom.value === 2) {
+        dataZoomStartUnix = startOfMinute((maxZoomStartUnix - trade.entryTime) / 2)
+        dataZoomEndUnix = endOfMinute((maxZoomEndUnix - trade.exitTime) / 2)
+    }
+
+    if (dailyChartZoom.value === 3) {
+        dataZoomStartUnix = startOfMinute(maxZoomStartUnix)
+        dataZoomEndUnix = endOfMinute(maxZoomEndUnix)
+    }
+
+    /*
+    const initialDataZoomPadding = dayjs(0).minute(dailyChartZoom.value).unix()
+    const minimumDataZoomLevel = dayjs.unix(0).tz(timeZoneTrade.value).minute(30).unix() // if trading near start of day, needs to be at least minimumDataZoomLevel
+    console.log(" initialDataZoomPadding "+initialDataZoomPadding)
+    console.log(" minimumDataZoomLevel "+minimumDataZoomLevel)
+    const tradeIsIntraday = dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs.unix(trade.exitTime).tz(timeZoneTrade.value), 'day')
+    const spreadTime = tradeIsIntraday ? Math.abs(trade.exitTime - trade.entryTime) : 0
+    const dataZoomLevel = Math.max(minimumDataZoomLevel, spreadTime + (2 * initialDataZoomPadding))
+    console.log(" dataZoomLevel "+dataZoomLevel)
 
     const findDataZoomStartUnix = () => {
-        const tradeEntryTimeUnix = trade.entryTime
-        let dataZoomStartUnix = tradeEntryTimeUnix - dataZoomLevel / 2 - spreadTime / 2
-
+        let dataZoomStartUnix = trade.entryTime - (dataZoomLevel / 2) - (spreadTime / 2)
+        console.log("dataZoomStartUnix1 "+dataZoomStartUnix)
         for (let i = ohlcTimestamps.length - 1; i >= 0; i--) {
             const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
             if (ohlcTimestampUnix <= dataZoomStartUnix) {
@@ -1756,13 +1826,12 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 break
             }
         }
-
+        console.log("dataZoomStartUnix2 "+dataZoomStartUnix)
         return dataZoomStartUnix
     }
 
     const findDataZoomEndUnix = () => {
-        const tradeExitTimeUnix = trade.exitTime
-        let dataZoomEndUnix = tradeExitTimeUnix + dataZoomLevel / 2 + spreadTime / 2
+        let dataZoomEndUnix = trade.exitTime + dataZoomLevel / 2 + spreadTime / 2
 
         for (let i = 0; i < ohlcTimestamps.length; i++) {
             const ohlcTimestampUnix = ohlcTimestamps[i] / 1000;
@@ -1771,24 +1840,44 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 break
             }
         }
-
+        console.log(" dataZoomEndUnix "+dataZoomEndUnix)
         return dataZoomEndUnix
     }
-
+    */
 
     return new Promise((resolve, reject) => {
-        let myChart = echarts.init(document.getElementById("candlestickChart"));
+        //console.log(" currentTD "+currentTD)
+        //console.log(" trade.td "+trade.td)
+        if (initCandleChart) {
+            //console.log(" init new candlestickChart")
+            candlestickChart = echarts.init(document.getElementById("candlestickChart"));
+            //currentTD = trade.td
+        }
+
+        let decimals = 2
         const option = {
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
                     type: 'cross'
                 },
+                backgroundColor: "rgba(255, 255, 255, 0)",
+                borderColor: "rgba(255, 255, 255, 0)",
+                textStyle: {
+                    color: "rgba(255, 255, 255, 1)"
+                },
+                formatter: function (param) {
+                    //console.log(" param "+JSON.stringify(param[0]))
+                    // ?, close, open, low, high
+                    let color
+                    param[0].data[1] >= param[0].data[2] ? color = "#47b262" : color = "#eb5454"
+                    return param[0].name + " - O <span style='color: " + color + "'>" + useXDecFormat(param[0].data[2], decimals) + "</span> H <span style='color: " + color + "'>" + useXDecFormat(param[0].data[4], decimals) + "</span> L <span style='color: " + color + "'>" + useXDecFormat(param[0].data[3], decimals) + "</span> C <span style='color: " + color + "'>" + useXDecFormat(param[0].data[1], decimals)
+                },
                 position: function (pos, params, el, elRect, size) {
-                    var obj = { top: 10 };
-                    obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+                    var obj = { top: 5 };
+                    obj[['left'][+(pos[10] < size.viewSize[0] / 2)]] = 5;
                     return obj;
-                  }
+                }
             },
             dataZoom: [
                 {
@@ -1803,10 +1892,18 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                     return useHourMinuteFormat(dateInMilliseconds / 1000)
                 }),
                 min: 'dataMin',
-                max: 'dataMax'
+                max: 'dataMax',
+
             },
             yAxis: {
-                scale: true
+                scale: true,
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#333', // dark grey
+                        width: 0.5 // thinner line
+                    }
+                }
             },
             series: [
                 {
@@ -1829,7 +1926,8 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
             ]
         };
 
-        if (dayjs.unix(trade.entryTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+        if (dayjs.unix(trade.entryTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+            //console.log(" trade.entryPrice " + trade.entryPrice)
             option.series[0].markPoint.data.push({
                 name: 'entryMark',
                 symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
@@ -1848,10 +1946,10 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 }
             })
 
-            option.dataZoom[0].startValue = useHourMinuteFormat(findDataZoomStartUnix())
+            option.dataZoom[0].startValue = useHourMinuteFormat(dataZoomStartUnix)
         }
 
-        if (dayjs.unix(trade.exitTime).tz(timeZone).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
+        if (dayjs.unix(trade.exitTime).tz(timeZoneTrade.value).isSame(dayjs(ohlcTimestamps[0]), 'day')) {
             option.series[0].markPoint.data.push({
                 name: 'exitMark',
                 symbol: 'path://M17.92,11.62a1,1,0,0,0-.21-.33l-5-5a1,1,0,0,0-1.42,1.42L14.59,11H7a1,1,0,0,0,0,2h7.59l-3.3,3.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0l5-5a1,1,0,0,0,.21-.33A1,1,0,0,0,17.92,11.62Z',
@@ -1870,10 +1968,9 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
                 }
             })
 
-            option.dataZoom[0].endValue = useHourMinuteFormat(findDataZoomEndUnix())
+            option.dataZoom[0].endValue = useHourMinuteFormat(dataZoomEndUnix)
         }
-
-        myChart.setOption(option);
+        candlestickChart.setOption(option);
         resolve()
     })
 }

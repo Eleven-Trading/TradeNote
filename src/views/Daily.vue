@@ -1,20 +1,22 @@
 <script setup>
-import { onBeforeMount, onMounted, computed, reactive } from 'vue';
+import { onBeforeMount, onMounted, computed, reactive, ref } from 'vue';
 import Filters from '../components/Filters.vue'
 import NoData from '../components/NoData.vue';
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Calendar from '../components/Calendar.vue';
 import Screenshot from '../components/Screenshot.vue'
 
-import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser } from '../stores/globals';
+import { spinnerLoadingPage, calendarData, filteredTrades, screenshots, diaries, modalDailyTradeOpen, amountCase, markerAreaOpen, screenshot, tradeScreenshotChanged, excursion, tradeExcursionChanged, spinnerSetups, spinnerSetupsText, tradeExcursionId, tradeExcursionDateUnix, hasData, tradeId, excursions, saveButton, itemTradeIndex, tradeIndex, tradeIndexPrevious, spinnerLoadMore, endOfList, selectedGrossNet, availableTags, tradeTagsChanged, tagInput, tags, tradeTags, showTagsList, selectedTagIndex, tradeTagsId, tradeTagsDateUnix, newTradeTags, notes, tradeNote, tradeNoteChanged, tradeNoteDateUnix, tradeNoteId, availableTagsArray, timeZoneTrade, screenshotsInfos, idCurrentType, idCurrentNumber, tabGettingScreenshots, currentUser, apis, satisfactionTradeArray, satisfactionArray } from '../stores/globals';
 
-import { useCreatedDateFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
+import { useCreatedDateFormat, useIBKREndDateTimeFormat, useTwoDecCurrencyFormat, useTimeFormat, useTimeDuration, useMountDaily, useGetSelectedRange, useLoadMore, useCheckVisibleScreen, useDecimalsArithmetic, useInitTooltip, useDateCalFormat, useSwingDuration, useStartOfDay, useInitTab } from '../utils/utils';
 
 import { useSetupImageUpload, useSaveScreenshot, useGetScreenshots } from '../utils/screenshots';
 
-import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags } from '../utils/daily';
+import { useGetExcursions, useGetTags, useGetAvailableTags, useUpdateAvailableTags, useUpdateTags, useFindHighestIdNumber, useFindHighestIdNumberTradeTags, useUpdateNote, useGetNotes, useGetTagInfo, useCreateAvailableTagsArray, useFilterSuggestions, useTradeTagsChange, useFilterTags, useToggleTagsDropdown, useResetTags, useDailySatisfactionChange } from '../utils/daily';
 
 import { useCandlestickChart } from '../utils/charts';
+
+import { useGetMFEPrices } from '../utils/addTrades';
 
 /* MODULES */
 import Parse from 'parse/dist/parse.min.js'
@@ -34,6 +36,7 @@ dayjs.extend(localizedFormat)
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 dayjs.extend(customParseFormat)
 import axios from 'axios'
+import { useCreateOHLCV } from '../utils/addTrades';
 
 
 const dailyTabs = [{
@@ -59,16 +62,21 @@ const dailyTabs = [{
 ]
 
 let tradesModal = null
+let tagsModal = null
 
 let tradeSatisfactionId
 let tradeSatisfaction
 let tradeSatisfactionDateUnix
 
 
-let ohlcArray = []
+let ohlcArray = [] // array used for charts
+let ohlcv = [] // array used for MFE / excursion calculation (same as in addTrades.js)
 
 
-let candlestickChartFailureMessage
+const candlestickChartFailureMessage = ref(null)
+const apiIndex = ref(-1)
+const apiKey = ref(null)
+const apiSource = ref(null)
 
 onBeforeMount(async () => {
 
@@ -85,6 +93,13 @@ onMounted(async () => {
         const index2 = caller.dataset.indextwo
         clickTradesModal(index, index2, index2)
     })
+
+    tagsModal = new bootstrap.Modal("#tagsModal")
+    document.getElementById("tagsModal").addEventListener('shown.bs.modal', async (event) => {
+        const caller = event.relatedTarget
+        const index = caller.dataset.index
+        clickTagsModal(index)
+    })
 })
 
 
@@ -92,6 +107,7 @@ onMounted(async () => {
  * MODAL INTERACTION
  ***************/
 let loadScreenshots = false
+let initCandleChart = true // needed to init or not candlestickCharts in useCandlestickChart
 
 async function clickTradesModal(param1, param2, param3) {
     //param1 : itemTradeIndex : index inside filteredtrades. This is only defined on first click/when we open modal and not on next or previous
@@ -140,17 +156,45 @@ async function clickTradesModal(param1, param2, param3) {
         if (param1 === undefined && param2 === undefined && param3 === undefined) {
             //console.log(" -> Closing Modal")
             await (spinnerSetups.value = false)
+
+            itemTradeIndex.value = undefined
+            tradeIndexPrevious.value = undefined
+            tradeIndex.value = undefined
+
+            tradeNoteChanged.value = false
+            tradeExcursionChanged.value = false
+            tradeScreenshotChanged.value = false
+            tradeTagsChanged.value = false
+
+            showTagsList.value = false
+
             tradesModal.hide()
             await (modalDailyTradeOpen.value = false) //this is important because we use itemTradeIndex on filteredTrades and if change month, this causes problems. So only show modal content when clicked on open modal/v-if
             await useInitTab("daily")
             loadScreenshots = false
+            initCandleChart = true
         }
         else {
             //console.log(" -> Opening Modal or clicking next/back")
-
             itemTradeIndex.value = Number(param1)
             tradeIndexPrevious.value = Number(param2)
             tradeIndex.value = Number(param3)
+
+            apiIndex.value = -1
+            let databentoIndex = apis.findIndex(obj => obj.provider === "databento")
+            let polygonIndex = apis.findIndex(obj => obj.provider === "polygon")
+            let ibIndex = apis.findIndex(obj => obj.provider === "ibkr")
+
+            if (databentoIndex > -1 && apis[databentoIndex].key != "") {
+                apiIndex.value = databentoIndex
+                apiSource.value = "databento"
+            } else if (polygonIndex > -1 && apis[polygonIndex].key != "") {
+                apiIndex.value = polygonIndex
+                apiSource.value = "polygon"
+            } else if(ibIndex > -1 && apis[ibIndex].key != "") {
+                apiIndex.value = ibIndex
+                apiSource.value = "ibkr"
+            } 
 
             let awaitClick = async () => {
 
@@ -173,66 +217,85 @@ async function clickTradesModal(param1, param2, param3) {
 
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
                 let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                for (let key in screenshot) delete screenshot[key]
+                candlestickChartFailureMessage.value = null // to avoid message when screenshot is present
+
                 if (findScreenshot) {
-                    for (let key in screenshot) delete screenshot[key]
+                    //console.log(" found screenshot")
                     for (let key in findScreenshot) {
                         screenshot[key] = findScreenshot[key]
                     }
                 } else {
-                    for (let key in screenshot) delete screenshot[key]
+                    //console.log(" did not find any screenshot")
                     screenshot.side = null
                     screenshot.type = null
 
-                    try {
-                        candlestickChartFailureMessage = null
-                        let ohlcTimestamps
-                        let ohlcPrices
-                        let ohlcVolumes
+                    /* GET OHLC / CANDLESTICK CHARTS */
 
-                        if (ohlcArray.length == 0) {
-                            console.log(" -> No symbole/date in ohlcArray")
-                            await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
-                            ohlcTimestamps = ohlcArray[0].ohlcTimestamps
-                            ohlcPrices = ohlcArray[0].ohlcPrices
-                            ohlcVolumes = ohlcArray[0].ohlcVolumes
 
-                        } else {
-                            let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
-
-                            if (index != -1) {
-                                console.log(" -> Symbol and/or date exists in ohlcArray")
-                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                ohlcPrices = ohlcArray[index].ohlcPrices
-                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                    if (apiIndex.value != -1) {
+                        apiKey.value = apis[apiIndex.value].key
+                        let filteredTradesObject = filteredTrades[itemTradeIndex.value].trades[param3]
+                        if (apiKey.value) {
+                            if (filteredTradesObject.type == "future" && (databentoIndex === -1 || apis[databentoIndex].key === "")) {
+                                candlestickChartFailureMessage.value = "You need a Databento API for Futures."
                             } else {
-                                console.log(" -> Symbol and/or date does not exist in ohlcArray")
-                                await getOHLC(filteredTrades[itemTradeIndex.value].trades[param3].td, filteredTrades[itemTradeIndex.value].trades[param3].symbol, filteredTrades[itemTradeIndex.value].trades[param3].entryTime, filteredTrades[itemTradeIndex.value].trades[param3].exitTime)
-                                
-                                let index = ohlcArray.findIndex(obj => obj.date == filteredTrades[itemTradeIndex.value].trades[param3].td && obj.symbol == filteredTrades[itemTradeIndex.value].trades[param3].symbol)
-                                
-                                if (index != -1) {
-                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
-                                ohlcPrices = ohlcArray[index].ohlcPrices
-                                ohlcVolumes = ohlcArray[index].ohlcVolumes
-                                }else{
-                                    console.log(" -> there's an issues with OHLC")
+                                try {
+                                    candlestickChartFailureMessage.value = null
+                                    let ohlcTimestamps
+                                    let ohlcPrices
+                                    let ohlcVolumes
+                                    if (ohlcArray.length == 0) {
+                                        console.log(" -> No symbol/date in ohlcArray")
+                                        await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type)
+                                        ohlcTimestamps = ohlcArray[0].ohlcTimestamps
+                                        ohlcPrices = ohlcArray[0].ohlcPrices
+                                        ohlcVolumes = ohlcArray[0].ohlcVolumes
+
+                                    } else {
+                                        let index = ohlcArray.findIndex(obj => obj.date == filteredTradesObject.td && obj.symbol == filteredTradesObject.symbol)
+
+                                        if (index != -1) {
+                                            console.log(" -> Symbol and/or date exists in ohlcArray")
+                                            ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                            ohlcPrices = ohlcArray[index].ohlcPrices
+                                            ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                        } else {
+                                            console.log(" -> Symbol and/or date does not exist in ohlcArray")
+                                            await getOHLC(filteredTradesObject.td, filteredTradesObject.symbol, filteredTradesObject.type)
+                                            //console.log("ohlcArray "+JSON.stringify(ohlcArray))
+                                            let index = ohlcArray.findIndex(obj => obj.date === filteredTradesObject.td && obj.symbol === filteredTradesObject.symbol)
+                                            //console.log("index "+index)
+                                            if (index != -1) {
+                                                ohlcTimestamps = ohlcArray[index].ohlcTimestamps
+                                                ohlcPrices = ohlcArray[index].ohlcPrices
+                                                ohlcVolumes = ohlcArray[index].ohlcVolumes
+                                            } else {
+                                                console.log(" -> there's an issues with OHLC")
+                                            }
+                                        }
+                                    }
+                                    await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTradesObject, initCandleChart)
+                                    initCandleChart = false
+
+                                } catch (error) {
+                                    if (error.response && error.response.status === 429) {
+                                        candlestickChartFailureMessage.value = "Too many requests, try again later"
+                                    }
+                                    else if (error.response) {
+                                        candlestickChartFailureMessage.value = error.response.statusText
+                                    }
+                                    else {
+                                        candlestickChartFailureMessage.value = error
+                                    }
+                                    console.error(error)
                                 }
                             }
+                        } else {
+                            candlestickChartFailureMessage.value = "Missing API Key. To see your entry and exist on a chart, insert your API key in settings."
                         }
-
-                        await useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, filteredTrades[itemTradeIndex.value].trades[param3])
-
-                    } catch (error) {
-                        if (error.response && error.response.status === 429) {
-                            candlestickChartFailureMessage = "Too many requests, try again later"
-                        }
-                        else if (error.response) {
-                            candlestickChartFailureMessage = error.response.statusText
-                        }
-                        else {
-                            candlestickChartFailureMessage = error
-                        }
-                        console.error(error)
+                    } else {
+                        candlestickChartFailureMessage.value = "Missing API Key. To see your entry and exist on a chart, insert your API key in settings."
                     }
                 }
 
@@ -269,6 +332,16 @@ async function clickTradesModal(param1, param2, param3) {
                     //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
                 }
 
+                //let findSatisfaction = excursions.filter(obj => obj.tradeId == filteredTradeId)
+                console.log(" satisfactionTradeArray "+JSON.stringify(satisfactionArray))
+                if (findExcursion.length) {
+                    findExcursion[0].stopLoss != null ? excursion.stopLoss = findExcursion[0].stopLoss : null
+                    findExcursion[0].maePrice != null ? excursion.maePrice = findExcursion[0].maePrice : null
+                    findExcursion[0].mfePrice != null ? excursion.mfePrice = findExcursion[0].mfePrice : null
+                    //console.log(" tradeExcursion "+JSON.stringify(tradeExcursion))
+                }
+
+                //if (firstTimeOpen) firstTimeOpen = false
             }
             await awaitClick()
             await (spinnerSetups.value = false)
@@ -281,6 +354,39 @@ async function clickTradesModal(param1, param2, param3) {
 
 }
 
+const clickTagsModal = (param1) => {
+    itemTradeIndex.value = Number(param1)
+    tradeTags.length = 0
+    let findTags = tags.find(obj => obj.tradeId == filteredTrades[itemTradeIndex.value].dateUnix)
+    if (findTags) {
+        findTags.tags.forEach(element => {
+            for (let obj of availableTags) {
+                for (let tag of obj.tags) {
+                    if (tag.id === element) {
+                        let temp = {}
+                        temp.id = tag.id
+                        temp.name = tag.name
+                        tradeTags.push(temp)
+                    }
+                }
+            }
+        });
+    }
+}
+
+const saveDailyTags = async () => {
+    if (tradeTagsChanged.value) {
+        await Promise.all([useUpdateAvailableTags(), useUpdateTags()])
+        await Promise.all([useGetTags(), useGetAvailableTags()])
+    }
+    tradeTagsChanged.value = false
+    closeTagsModal()
+}
+
+const closeTagsModal = async () => {
+    tradeTags.length = 0
+    tagsModal.hide()
+}
 
 const checkDate = ((param1, param2) => {
     //console.log("param 1 "+param1)
@@ -294,60 +400,12 @@ const checkDate = ((param1, param2) => {
 /**************
  * SATISFACTION
  ***************/
-async function dailySatisfactionChange(param1, param2, param3) {
-    console.log("\nDAILY SATISFACTION CHANGE")
-    //console.time("  --> Duration daily satisfaction change")
-    param3.satisfaction = param2
-    await updateDailySatisfaction(param1, param2)
-    //await console.timeEnd("  --> Duration daily satisfaction change")
-}
 
-async function updateDailySatisfaction(param1, param2) { //param1 : daily unixDate ; param2 : true / false ; param3: dateUnixDay ; param4: tradeId
-    //console.log(" param 1 " + param1)
-    console.log(" -> updating satisfactions")
-    return new Promise(async (resolve, reject) => {
-
-        const parseObject = Parse.Object.extend("satisfactions");
-        const query = new Parse.Query(parseObject);
-        query.equalTo("dateUnix", param1)
-        query.doesNotExist("tradeId") /// this is how we differentiate daily from trades satisfaction records
-        const results = await query.first();
-        if (results) {
-            console.log(" -> Updating satisfaction")
-            results.set("satisfaction", param2)
-
-            results.save()
-                .then(async () => {
-                    console.log(' -> Updated satisfaction with id ' + results.id)
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        } else {
-            console.log(" -> Saving satisfaction")
-
-            const object = new parseObject();
-            object.set("user", Parse.User.current())
-            object.set("dateUnix", param1)
-            object.set("satisfaction", param2)
-            object.setACL(new Parse.ACL(Parse.User.current()));
-            object.save()
-                .then(async (object) => {
-                    console.log(' -> Added new satisfaction with id ' + object.id)
-                }, (error) => {
-                    console.log('Failed to create new object, with error code: ' + error.message);
-                })
-        }
-        resolve()
-
-
-    })
-}
 
 
 async function tradeSatisfactionChange(param1, param2) {
-
     tradeSatisfactionId = param1.id
-    tradeSatisfactionDateUnix = param1.dateUnix
+    tradeSatisfactionDateUnix = param1.td
     tradeSatisfaction = param2
     param1.satisfaction = tradeSatisfaction
     await updateTradeSatisfaction()
@@ -507,17 +565,15 @@ function resetExcursion() {
 /**************
  * NOTES
  ***************/
-function noteClicked() {
-    //console.log("click")
-    tradeNoteChanged.value = true
-    saveButton.value = true
-}
 
 const tradeNoteChange = (param) => {
     tradeNote.value = param
     //console.log(" -> New note " + tradeNote.value)
     tradeNoteDateUnix.value = filteredTrades[itemTradeIndex.value].dateUnix
     tradeNoteId.value = filteredTrades[itemTradeIndex.value].trades[tradeIndex.value].id
+    //console.log(" tradeNoteId.value " + tradeNoteId.value)
+    tradeNoteChanged.value = true
+    saveButton.value = true
 
 }
 
@@ -564,45 +620,216 @@ const filterDiary = (param) => {
     return diaries.filter(obj => obj.dateUnix == param)
 }
 
-function getOHLC(date, symbol, entryTime, exitTime) {
-    console.log("  --> Getting OHLC for " + symbol + " on " + date)
-    return new Promise(async (resolve, reject) => {
-        await axios.get("https://api.polygon.io/v2/aggs/ticker/" + symbol + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + currentUser.value.marketDataApiKey)
 
-            .then((response) => {
-                let tempArray = {}
-                tempArray.date = date
-                tempArray.symbol = symbol
-                tempArray.ohlcTimestamps = []
-                tempArray.ohlcPrices = []
-                tempArray.ohlcVolumes = []
 
-                for (let index = 0; index < response.data.results.length; index++) {
-                    const element = response.data.results[index];
+function getOHLC(date, symbol, type) {
+    if (apiSource.value === "databento") {
+        console.log(" -> getting OHLC from " + apiSource.value + " for date " + useDateCalFormat(date))
 
-                    let temp = []
+        return new Promise(async (resolve, reject) => {
+            let temp = {}
+            temp.symbol = symbol
 
-                    tempArray.ohlcTimestamps.push(element.t)
-                    temp.push(element.c)
-                    temp.push(element.o)
-                    temp.push(element.l)
-                    temp.push(element.h)
-                    tempArray.ohlcPrices.push(temp)
-                    tempArray.ohlcVolumes.push(element.v)
+            let databentoSymbol = temp.symbol
+            let stype_in = "raw_symbol"
+            let toDate = dayjs(date * 1000).tz(timeZoneTrade.value).endOf('day').unix()
+            let dataset
+            //console.log("toDate "+toDate)
+            temp.ohlcv = []
+
+            if (type === "future") {
+                dataset = "GLBX.MDP3"
+                databentoSymbol = temp.symbol + ".c.0"
+                stype_in = "continuous"
+
+            } else if (type === "stock") {
+                dataset = "XNAS.ITCH"
+
+            } else if (tradedSymbols[i].secType === "call" || tradedSymbols[i].secType === "put") {
+
+            } else if (tradedSymbols[i].secType === "forex") {
+
+            }
+
+            let data =
+            {
+                'dataset': dataset,
+                'stype_in': stype_in,
+                'symbols': databentoSymbol,
+                'schema': 'ohlcv-1m',
+                'start': date * 1000000000,
+                'end': toDate * 1000000000,
+                'encoding': 'csv',
+                'pretty_px': 'true',
+                'pretty_ts': 'true',
+                'map_symbols': 'true',
+                'username': apiKey.value
+            }
+
+            axios.post('/api/databento', data)
+                .then(async (response) => {
+                    //console.log(" response "+JSON.stringify(response.data))
+
+                    let res = await useCreateOHLCV(response.data, temp)
+                    ohlcv.push(res) // used for MFE calculation (same as in addTrades.js)
+
+                    let tempArray = {}
+                    tempArray.date = date
+                    tempArray.symbol = symbol
+                    tempArray.ohlcTimestamps = []
+                    tempArray.ohlcPrices = []
+                    tempArray.ohlcVolumes = []
+
+                    for (let index = 0; index < res.ohlcv.length; index++) {
+                        const element = res.ohlcv[index];
+
+                        let temp = []
+
+                        tempArray.ohlcTimestamps.push(element.t)
+                        temp.push(element.c)
+                        temp.push(element.o)
+                        temp.push(element.l)
+                        temp.push(element.h)
+                        tempArray.ohlcPrices.push(temp)
+                        tempArray.ohlcVolumes.push(element.v)
+                    }
+
+                    ohlcArray.push(tempArray)
+                    //console.log("ohlcArray "+JSON.stringify(ohlcArray))
+                    resolve()
+                })
+                .catch((error) => {
+                    console.log(" -> Error in databento response " + error)
+                    reject(error)
+                });
+        })
+
+    }
+    else if (apiSource.value === "polygon") {
+
+        let ticker
+        if (type === "put" || type === "call" || type === "option") {
+            ticker = "O:" + symbol
+        } else if (type === "future") {
+            ticker = "I:" + symbol
+        } else if (type === "forex") {
+            ticker = "C:" + symbol
+        } else if (type === "crypto") {
+            ticker = "X:" + symbol
+        } else {
+            ticker = symbol
+        }
+        console.log("  --> Getting OHLC for ticker " + ticker + " on " + date)
+
+        return new Promise(async (resolve, reject) => {
+            await axios.get("https://api.polygon.io/v2/aggs/ticker/" + ticker + "/range/1/minute/" + useDateCalFormat(date) + "/" + useDateCalFormat(date) + "?adjusted=true&sort=asc&limit=50000&apiKey=" + apiKey.value)
+
+                .then((response) => {
+                    let tempArray = {}
+                    tempArray.date = date
+                    tempArray.symbol = symbol
+                    tempArray.ohlcTimestamps = []
+                    tempArray.ohlcPrices = []
+                    tempArray.ohlcVolumes = []
+
+                    let temp = {}
+                    temp.symbol = symbol
+                    temp.ohlcv = response.data.results
+                    ohlcv.push(temp) // used for MFE calculation (same as in addTrades.js)
+
+                    for (let index = 0; index < response.data.results.length; index++) {
+                        const element = response.data.results[index];
+
+                        let temp = []
+
+                        tempArray.ohlcTimestamps.push(element.t)
+                        temp.push(element.c)
+                        temp.push(element.o)
+                        temp.push(element.l)
+                        temp.push(element.h)
+                        tempArray.ohlcPrices.push(temp)
+                        tempArray.ohlcVolumes.push(element.v)
+                    }
+
+                    ohlcArray.push(tempArray)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+                .finally(function () {
+                    // always executed
+                })
+
+            resolve()
+
+        })
+   } else if (apiSource.value === "ibkr") {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // We add +1 day as we need to pass to the API the end datetime.
+                const nextDayTimestamp = dayjs.unix(date).add(1, 'day').startOf('day').unix();
+                // IB format: 'YYYYMMDD HH:mm:ss'
+                const endDateTime = useIBKREndDateTimeFormat(nextDayTimestamp); 
+
+                const response = await axios.get(`${apiKey.value}/histMktData/`, {
+                    params: {
+                        symbol: symbol,
+                        duration: "1 D",
+                        bar_size: "1 min",
+                        what_to_show: "TRADES",
+                        use_rth: false,
+                        end_datetime: endDateTime,
+                        format_date: 1,
+                    },
+                });
+
+                const data = response.data;
+
+                if (!data || data.length === 0) {
+                    console.warn("⚠️ No historical data returned.");
+                    return reject("No historical data.");
                 }
 
-                ohlcArray.push(tempArray)
-            })
-            .catch((error) => {
-                reject(error)
-            })
-            .finally(function () {
-                // always executed
-            })
+                let tempArray = {
+                    date: date,
+                    symbol: symbol,
+                    ohlcTimestamps: [],
+                    ohlcPrices: [],
+                    ohlcVolumes: [],
+                };
 
+                let ohlcvEntry = {
+                    symbol: symbol,
+                    ohlcv: data,
+                };
 
-        resolve()
-    })
+                ohlcv.push(ohlcvEntry);
+
+                for (const bar of data) {
+                    const timestamp = dayjs(bar.date).valueOf();
+
+                    const price = [
+                        bar.close, // C
+                        bar.open,  // O
+                        bar.low,   // L
+                        bar.high   // H
+                    ];
+
+                    tempArray.ohlcTimestamps.push(timestamp);
+                    tempArray.ohlcPrices.push(price);
+                    tempArray.ohlcVolumes.push(bar.volume);
+                }
+
+                ohlcArray.push(tempArray);
+
+                console.log("✅ IBKR candle data retrieved via Flask backend.");
+                resolve();
+            } catch (error) {
+                console.error("❌ Error fetching IBKR data:", error.response?.data || error.message || error);
+                reject(error);
+            }
+        });
+    }
 }
 
 </script>
@@ -633,19 +860,40 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                         <div class="row">
                                             <div class="col-12 col-lg-auto">{{ useCreatedDateFormat(itemTrade.dateUnix)
                                                 }}
-                                                <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
+                                                <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, true, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == true ? 'greenTrade' : '', 'uil', 'uil-thumbs-up', 'ms-2', 'me-1', 'pointerClass']"></i>
-                                                <i v-on:click="dailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
+                                                <i v-on:click="useDailySatisfactionChange(itemTrade.dateUnix, false, itemTrade)"
                                                     v-bind:class="[itemTrade.satisfaction == false ? 'redTrade' : '', , 'uil', 'uil-thumbs-down', 'pointerClass']"></i>
+
+                                                <i v-show="tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length == 0 || (tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString()).length > 0 && tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())[0].tags.length === 0)"
+                                                    data-bs-toggle="modal" data-bs-target="#tagsModal"
+                                                    :data-index="index" class="ms-2 uil uil-tag-alt pointerClass"></i>
+
                                             </div>
                                             <div class="col-12 col-lg-auto ms-auto">P&L({{ selectedGrossNet.charAt(0)
                                                 }}):
                                                 <span
                                                     v-bind:class="[itemTrade.pAndL[amountCase + 'Proceeds'] > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
-    }}</span>
+                                                        useTwoDecCurrencyFormat(itemTrade.pAndL[amountCase + 'Proceeds'])
+                                                    }}</span>
                                             </div>
 
+                                        </div>
+                                        <div>
+                                            <span
+                                                v-for="tags in tags.filter(obj => obj.tradeId == itemTrade.dateUnix.toString())">
+                                                <span v-for="tag in tags.tags.slice(0, 7)"
+                                                    class="tag txt-small pointerClass"
+                                                    :style="{ 'background-color': useGetTagInfo(tag).groupColor }"
+                                                    data-bs-toggle="modal" data-bs-target="#tagsModal"
+                                                    :data-index="index">{{
+                                                        useGetTagInfo(tag).tagName
+                                                    }}
+                                                </span>
+                                                <span v-show="tags.tags.length > 7">+{{
+                                                    tags.tags.length
+                                                    - 7 }}</span>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -801,9 +1049,9 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                                             <!--Position-->
                                                             <td>
                                                                 {{
-        trade.strategy.charAt(0).toUpperCase() +
-        trade.strategy.slice(1)
-    }}
+                                                                    trade.strategy.charAt(0).toUpperCase() +
+                                                                    trade.strategy.slice(1)
+                                                                }}
                                                             </td>
 
                                                             <!--Entry-->
@@ -829,8 +1077,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                                                     v-else-if="trade.type == 'forex'">-</span><span
                                                                     v-else
                                                                     v-bind:class="[trade.grossSharePL > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(trade.grossSharePL)
-    }}</span>
+                                                                        useTwoDecCurrencyFormat(trade.grossSharePL)
+                                                                    }}</span>
                                                             </td>
 
                                                             <!--P&L-->
@@ -848,18 +1096,18 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                                                     <span v-for="tag in tags.tags.slice(0, 2)"
                                                                         class="tag txt-small"
                                                                         :style="{ 'background-color': useGetTagInfo(tag).groupColor }">{{
-        useGetTagInfo(tag).tagName }}
+                                                                            useGetTagInfo(tag).tagName }}
                                                                     </span>
                                                                     <span v-show="tags.tags.length > 2">+{{
-        tags.tags.length
-        - 2 }}</span>
+                                                                        tags.tags.length
+                                                                        - 2 }}</span>
                                                                 </span>
                                                             </td>
                                                             <td>
                                                                 <span
                                                                     v-for="note in notes.filter(obj => obj.tradeId == trade.id)">
                                                                     <span v-if="note.note.length > 12">{{
-        note.note.substring(0, 12) }}...</span><span
+                                                                        note.note.substring(0, 12) }}...</span><span
                                                                         v-else>{{ note.note }}</span>
                                                                 </span>
                                                             </td>
@@ -906,7 +1154,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
 
                                                             <td>{{ blot.symbol }}</td>
                                                             <td>{{ useDecimalsArithmetic(blot.buyQuantity,
-        blot.sellQuantity) }}</td>
+                                                                blot.sellQuantity) }}</td>
                                                             <td
                                                                 v-bind:class="[blot.grossProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                                                 {{ useTwoDecCurrencyFormat(blot.grossProceeds) }}</td>
@@ -944,18 +1192,7 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                                 aria-labelledby="nav-overview-tab">
                                                 <div
                                                     v-for="itemDiary in diaries.filter(obj => obj.dateUnix == itemTrade.dateUnix)">
-                                                    <p v-if="itemDiary.journal.positive != '<p><br></p>'">
-                                                        <span class="dashInfoTitle col mb-2">Positive aspect</span>
-                                                        <span v-html="itemDiary.journal.positive"></span>
-                                                    </p>
-                                                    <p v-if="itemDiary.journal.negative != '<p><br></p>'">
-                                                        <span class="dashInfoTitle">Negative aspect</span>
-                                                        <span v-html="itemDiary.journal.negative"></span>
-                                                    </p>
-                                                    <p v-if="itemDiary.journal.other != '<p><br></p>'">
-                                                        <span class="dashInfoTitle">Observations</span>
-                                                        <span v-html="itemDiary.journal.other"></span>
-                                                    </p>
+                                                    <p v-html="itemDiary.diary"></p>
                                                 </div>
                                             </div>
 
@@ -997,11 +1234,12 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                     <div v-if="screenshot.originalBase64">
                         <Screenshot :screenshot-data="screenshot" source="dailyModal" />
                     </div>
-                    <div v-else>
-                        <div v-show="!candlestickChartFailureMessage" id="candlestickChart" class="candlestickClass">
-                        </div>
-                        <div v-show="candlestickChartFailureMessage">{{ candlestickChartFailureMessage }}</div>
+                    <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart"
+                        class="candlestickClass">
                     </div>
+                    <div class="container mt-2 text-center" v-show="candlestickChartFailureMessage">{{
+                        candlestickChartFailureMessage }}</div>
+
                     <!-- *** Table *** -->
                     <div class="mt-3 table-responsive">
                         <table class="table">
@@ -1024,10 +1262,10 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                 <tr>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].symbol }}</td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].buyQuantity +
-        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
+                                        filteredTrades[itemTradeIndex].trades[tradeIndex].sellQuantity }}
                                     </td>
                                     <td>{{ filteredTrades[itemTradeIndex].trades[tradeIndex].side == 'B' ? 'Long' :
-        'Short'
+                                        'Short'
                                         }}</td>
 
                                     <td>
@@ -1041,8 +1279,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                                     data-bs-toggle="tooltip" data-bs-html="true"
                                                     v-bind:data-bs-title="'Swing trade closed on ' + useDateCalFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)"></i></span></span><span
                                             v-else>{{
-        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-    }}<span
+                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                            }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1053,10 +1291,10 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-        (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
-    }}</span><span v-else>{{
-            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
-        }}<span
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice).toFixed(5)
+                                            }}</span><span v-else>{{
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].entryPrice)
+                                            }}<span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false"><i
                                                     class="ps-1 uil uil-info-circle" data-bs-toggle="tooltip"
                                                     data-bs-html="true"
@@ -1067,32 +1305,32 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else>{{
-        useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
-    }}</span></td>
+                                                useTimeFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime)
+                                            }}</span></td>
 
 
                                     <!--Exit Price-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'">{{
-        (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
-    }}</span><span v-else>{{
-            useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
-        }}</span></td>
+                                                (filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice).toFixed(5)
+                                            }}</span><span v-else>{{
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].exitPrice)
+                                            }}</span></td>
 
                                     <!--Duration-->
                                     <td><span
                                             v-if="filteredTrades[itemTradeIndex].trades[tradeIndex].tradesCount == 0"></span><span
                                             v-else><span
                                                 v-if="checkDate(filteredTrades[itemTradeIndex].trades[tradeIndex].td, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime) == false">{{
-        useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-            -
-            filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-    }}</span><span v-else>{{
-            useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
-                -
-                filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
-        }}</span></span>
+                                                    useSwingDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                                                        -
+                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                }}</span><span v-else>{{
+                                                    useTimeDuration(filteredTrades[itemTradeIndex].trades[tradeIndex].exitTime
+                                                        -
+                                                        filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime)
+                                                }}</span></span>
                                     </td>
 
                                     <!--P&L/Vol-->
@@ -1102,8 +1340,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                             v-else-if="filteredTrades[itemTradeIndex].trades[tradeIndex].type == 'forex'"></span><span
                                             v-else
                                             v-bind:class="[(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL) > 0 ? 'greenTrade' : 'redTrade']">{{
-        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
-    }}</span>
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].grossSharePL)
+                                            }}</span>
                                     </td>
 
                                     <!--P&L-->
@@ -1112,8 +1350,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                             v-else
                                             v-bind:class="[filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds > 0 ? 'greenTrade' : 'redTrade']">
                                             {{
-        useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
-    }}</span>
+                                                useTwoDecCurrencyFormat(filteredTrades[itemTradeIndex].trades[tradeIndex].netProceeds)
+                                            }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1177,9 +1415,9 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                         <!-- MFE -->
                                         <div class="col-3">
                                             <input type="number" class="form-control" placeholder="MFE Price"
-                                                style="font-size: small;" v-bind:value="excursion.mfePrice"
-                                                v-on:click="tradeExcursionClicked"
-                                                v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
+                                                        style="font-size: small;" v-bind:value="excursion.mfePrice"
+                                                        v-on:click="tradeExcursionClicked"
+                                                        v-on:change="tradeExcursionChange($event.target.value, 'mfePrice')">
                                         </div>
                                         <!-- Delete
                                         <div class="col-1">
@@ -1192,8 +1430,8 @@ function getOHLC(date, symbol, entryTime, exitTime) {
                                 <!-- Second line -->
                                 <div class="col-12 mt-2" v-show="!spinnerSetups">
                                     <textarea class="form-control" placeholder="note" id="floatingTextarea"
-                                        v-bind:value="tradeNote" v-on:change="tradeNoteChange($event.target.value)"
-                                        v-on:click="noteClicked"></textarea>
+                                        v-bind:value="tradeNote"
+                                        @input="tradeNoteChange($event.target.value)"></textarea>
                                 </div>
 
                                 <!-- Forth line -->
@@ -1245,4 +1483,52 @@ function getOHLC(date, symbol, entryTime, exitTime) {
             </div>
         </div>
     </div>
+
+    <!-- ============ TAGS MODAL ============ -->
+    <div class="modal fade" id="tagsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <!-- Tags -->
+                <div class="container col mt-4">
+                    <div class="form-control dropdown form-select" style="height: auto;">
+                        <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                            <span v-for="(tag, index) in tradeTags" :key="index" class="tag txt-small"
+                                :style="{ 'background-color': useGetTagInfo(tag.id).groupColor }"
+                                @click="useTradeTagsChange('remove', index)">
+                                {{ tag.name }}<span class="remove-tag">×</span>
+                            </span>
+
+                            <input type="text" v-model="tagInput" @input="useFilterTags"
+                                @keydown.enter.prevent="useTradeTagsChange('add', tagInput)"
+                                @keydown.tab.prevent="useTradeTagsChange('add', tagInput)"
+                                class="form-control tag-input" placeholder="Add a tag">
+                            <div class="clickable-area" v-on:click="useToggleTagsDropdown">
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul id="dropdown-menu-tags" class="dropdown-menu-tags"
+                        :style="[!showTagsList ? 'border: none;' : '']">
+                        <span v-show="showTagsList" v-for="group in availableTags">
+                            <h6 class="p-1 mb-0" :style="'background-color: ' + group.color + ';'"
+                                v-show="useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags.length > 0">
+                                {{ group.name }}</h6>
+                            <li v-for="(suggestion, index) in useFilterSuggestions(group.id).filter(obj => obj.id == group.id)[0].tags"
+                                :key="index" :class="{ active: index === selectedTagIndex }"
+                                @click="useTradeTagsChange('addFromDropdownMenu', suggestion)"
+                                class="dropdown-item dropdown-item-tags">
+                                <span class="ms-2">{{ suggestion.name }}</span>
+                            </li>
+                        </span>
+                    </ul>
+                </div>
+                <div class="col text-center mt-4 mb-4">
+                    <button class="btn btn-outline-primary btn-sm" v-on:click="closeTagsModal">Close</button>
+                    <button class="btn btn-outline-success btn-sm ms-4" v-on:click="saveDailyTags()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </template>

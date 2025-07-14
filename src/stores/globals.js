@@ -3,23 +3,25 @@ import { ref, reactive } from "vue";
 /**************************************
 * GENERAL
 **************************************/
+export const registerOff = ref(false)
 export const parseId = ref()
 export const pageId = ref()
 export const currentUser = ref()
 export const timeZones = ref(["America/New_York", "Asia/Shanghai", "Europe/Brussels", "Asia/Tokyo", "Asia/Hong_Kong", "Asia/Kolkata", "Europe/London", "Asia/Riyadh"])
 export const timeZoneTrade = ref()
 export const queryLimit = ref(10000000)
+export const queryLimitExistingTrades = ref(50)
 export const endOfList = ref(false) //infinite scroll
 export const noData = ref(false)
 export const stepper = ref()
 export const hasData = ref(false)
-export const itemToEditId = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('editItemId'): "")
+export const itemToEditId = ref(typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('editItemId') : "")
 export const currentDate = ref()
 export const quill = ref()
 export const sideMenuMobileOut = ref(false)
 export const screenType = ref()
 export const saveButton = ref(false)
-export const latestVersion = ref()
+export const latestVersion = ref({})
 export const windowIsScrolled = ref()
 
 export const idCurrent = ref()
@@ -28,6 +30,12 @@ export const idCurrentType = ref()
 export const idCurrentNumber = ref()
 export const idPreviousType = ref()
 export const idPreviousNumber = ref()
+
+export const countdownInterval = ref(null)
+export const countdownSeconds = ref(5)
+
+/* Layout & Style */
+export const dailyChartZoom = ref(3) //1: zoom inn 2: medium zoom 3: fully/max zoom out
 
 
 /**************************************
@@ -45,6 +53,7 @@ export const tabGettingScreenshots = ref(false)
 //Dashboard
 export const dashboardChartsMounted = ref()
 export const dashboardIdMounted = ref(false)
+export const barChartNegativeTagGroups = ref([])
 
 //Charts
 export const renderingCharts = ref(true) // this is for spinner
@@ -73,6 +82,7 @@ export const totalsByDate = reactive({})
 export const groups = reactive({})
 export const profitAnalysis = reactive({})
 export const timeFrame = ref(15)
+export const imports = ref([])
 
 /**************************************
 * ADD TRADES
@@ -86,9 +96,22 @@ export const tradeId = ref()
 export const existingImports = reactive([])
 export const existingTradesArray = reactive([])
 export const gotExistingTradesArray = ref(false)
+export const marketCloseTime = ref("16:00:00")
 
 export const futureContractsJson = ref(
-    [
+    [   
+        {
+            "name": "Micro Copper",
+            "symbol": "MHG",
+            "type": "Metals",
+            "exchange": "CME",
+            "unit": "USD",
+            "contractSize": 2500,
+            "contractSizeExpl": "2,500 lbs",
+            "months": "F,G,H,J,K,M,N,Q,U,V,X,Z",
+            "tick": 0.0005,
+            "value": 1.25
+        },
         {
             "name": "Micro E-mini S&P 500",
             "symbol": "MES",
@@ -1730,8 +1753,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1741,8 +1764,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1752,8 +1775,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.09
+            "apex": 1.55,
+            "topstep": 2.09
         }
     },
     {
@@ -1763,8 +1786,8 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5,
-            "Topstep": 2.29
+            "apex": 1.55,
+            "topstep": 2.29
         }
     },
     {
@@ -1774,8 +1797,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1785,8 +1808,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1796,8 +1819,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1807,8 +1830,8 @@ export const futuresTradovateFees = ref([
             "free": 0.87,
             "monthly": 0.77,
             "lifetime": 0.61,
-            "Apex": 0.52,
-            "Topstep": 0.67
+            "apex": 0.52,
+            "topstep": 0.67
         }
     },
     {
@@ -1818,7 +1841,7 @@ export const futuresTradovateFees = ref([
             "free": 2.79,
             "monthly": 2.49,
             "lifetime": 2.09,
-            "Apex": 1.5
+            "apex": 1.5
         }
     },
     {
@@ -1837,8 +1860,8 @@ export const futuresTradovateFees = ref([
             "free": 3.61,
             "monthly": 3.31,
             "lifetime": 2.91,
-            "Apex": 2.32,
-            "Topstep": 2.91
+            "apex": 2.32,
+            "topstep": 2.91
         }
     },
     {
@@ -1866,8 +1889,8 @@ export const futuresTradovateFees = ref([
             "free": 3.02,
             "monthly": 2.92,
             "lifetime": 2.76,
-            "Apex": 2.67,
-            "Topstep": 1.32
+            "apex": 2.67,
+            "topstep": 1.32
         }
     },
     {
@@ -1877,8 +1900,8 @@ export const futuresTradovateFees = ref([
             "free": 0.72,
             "monthly": 0.62,
             "lifetime": 0.46,
-            "Apex": 0.37,
-            "Topstep": 0.42
+            "apex": 0.37,
+            "topstep": 0.42
         }
     },
     {
@@ -1888,7 +1911,7 @@ export const futuresTradovateFees = ref([
             "free": 2.72,
             "monthly": 2.46,
             "lifetime": 2.06,
-            "Apex": 1.46
+            "apex": 1.46
         }
     },
     {
@@ -1898,7 +1921,7 @@ export const futuresTradovateFees = ref([
             "free": 1.75,
             "monthly": 1.45,
             "lifetime": 1.05,
-            "Apex": 0.46
+            "apex": 0.46
         }
     },
     {
@@ -1908,7 +1931,7 @@ export const futuresTradovateFees = ref([
             "free": 1.87,
             "monthly": 1.59,
             "lifetime": 1.19,
-            "Apex": 0.59
+            "apex": 0.59
         }
     },
     {
@@ -1918,7 +1941,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.68,
             "lifetime": 1.28,
-            "Apex": 0.68
+            "apex": 0.68
         }
     },
     {
@@ -1928,7 +1951,7 @@ export const futuresTradovateFees = ref([
             "free": 1.67,
             "monthly": 1.38,
             "lifetime": 0.98,
-            "Apex": 0.39
+            "apex": 0.39
         }
     },
     {
@@ -1938,7 +1961,7 @@ export const futuresTradovateFees = ref([
             "free": 0.69,
             "monthly": 0.59,
             "lifetime": 0.43,
-            "Apex": 0.34
+            "apex": 0.34
         }
     },
     {
@@ -1948,7 +1971,7 @@ export const futuresTradovateFees = ref([
             "free": 0.65,
             "monthly": 0.55,
             "lifetime": 0.39,
-            "Apex": 0.30
+            "apex": 0.30
         }
     },
     {
@@ -1958,7 +1981,7 @@ export const futuresTradovateFees = ref([
             "free": 2.62,
             "monthly": 2.32,
             "lifetime": 1.92,
-            "Apex": 1.33
+            "apex": 1.33
         }
     },
     {
@@ -1968,7 +1991,7 @@ export const futuresTradovateFees = ref([
             "free": 2.62,
             "monthly": 2.32,
             "lifetime": 1.92,
-            "Apex": 1.33
+            "apex": 1.33
         }
     },
     {
@@ -1987,8 +2010,8 @@ export const futuresTradovateFees = ref([
             "free": 2.11,
             "monthly": 1.81,
             "lifetime": 1.41,
-            "Apex": 0.82,
-            "Topstep": 1.41
+            "apex": 0.82,
+            "topstep": 1.41
         }
     },
     {
@@ -1998,8 +2021,8 @@ export const futuresTradovateFees = ref([
             "free": 2.11,
             "monthly": 1.81,
             "lifetime": 1.41,
-            "Apex": 0.82,
-            "Topstep": 1.41
+            "apex": 0.82,
+            "topstep": 1.41
         }
     },
     {
@@ -2009,8 +2032,8 @@ export const futuresTradovateFees = ref([
             "free": 2.41,
             "monthly": 2.11,
             "lifetime": 1.71,
-            "Apex": 1.12,
-            "Topstep": 1.71
+            "apex": 1.12,
+            "topstep": 1.71
         }
     },
     {
@@ -2020,8 +2043,8 @@ export const futuresTradovateFees = ref([
             "free": 2.26,
             "monthly": 1.96,
             "lifetime": 1.56,
-            "Apex": 0.97,
-            "Topstep": 1.65
+            "apex": 0.97,
+            "topstep": 1.65
         }
     },
     {
@@ -2031,8 +2054,8 @@ export const futuresTradovateFees = ref([
             "free": 2.33,
             "monthly": 2.03,
             "lifetime": 1.63,
-            "Apex": 1.04,
-            "Topstep": 1.63
+            "apex": 1.04,
+            "topstep": 1.63
         }
     },
     {
@@ -2042,7 +2065,7 @@ export const futuresTradovateFees = ref([
             "free": 2.26,
             "monthly": 1.96,
             "lifetime": 1.56,
-            "Topstep": 1.56
+            "topstep": 1.56
         }
     },
     {
@@ -2061,7 +2084,7 @@ export const futuresTradovateFees = ref([
             "free": 2.71,
             "monthly": 2.41,
             "lifetime": 2.01,
-            "Topstep": 2.01
+            "topstep": 2.01
         }
     },
     {
@@ -2080,7 +2103,7 @@ export const futuresTradovateFees = ref([
             "free": 0.82,
             "monthly": 0.72,
             "lifetime": 0.56,
-            "Apex": 0.47
+            "apex": 0.47
         }
     },
     {
@@ -2117,7 +2140,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2127,7 +2150,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2137,7 +2160,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2147,7 +2170,7 @@ export const futuresTradovateFees = ref([
             "free": 1.74,
             "monthly": 1.44,
             "lifetime": 1.04,
-            "Apex": 0.45
+            "apex": 0.45
         }
     },
     {
@@ -2157,8 +2180,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2168,8 +2191,8 @@ export const futuresTradovateFees = ref([
             "free": 1.02,
             "monthly": 0.92,
             "lifetime": 0.76,
-            "Apex": 0.67,
-            "Topstep": 0.82
+            "apex": 0.67,
+            "topstep": 0.82
         }
     },
     {
@@ -2179,8 +2202,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2199,8 +2222,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 2.31
+            "apex": 1.77,
+            "topstep": 2.31
         }
     },
     {
@@ -2210,7 +2233,7 @@ export const futuresTradovateFees = ref([
             "free": 1.52,
             "monthly": 1.42,
             "lifetime": 1.26,
-            "Topstep": 1.32
+            "topstep": 1.32
         }
     },
     {
@@ -2229,7 +2252,7 @@ export const futuresTradovateFees = ref([
             "free": 2.21,
             "monthly": 1.91,
             "lifetime": 1.51,
-            "Apex": 0.92
+            "apex": 0.92
         }
     },
     {
@@ -2239,7 +2262,7 @@ export const futuresTradovateFees = ref([
             "free": 2.21,
             "monthly": 1.91,
             "lifetime": 1.51,
-            "Apex": 0.92
+            "apex": 1.17
         }
     },
     {
@@ -2249,7 +2272,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67
+            "apex": 0.67
         }
     },
     {
@@ -2259,7 +2282,7 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67
+            "apex": 0.67
         }
     },
     {
@@ -2269,8 +2292,8 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72,
-            "Topstep": 1.81
+            "apex": 1.77,
+            "topstep": 1.81
         }
     },
     {
@@ -2280,7 +2303,7 @@ export const futuresTradovateFees = ref([
             "free": 3.01,
             "monthly": 2.71,
             "lifetime": 2.31,
-            "Apex": 1.72
+            "apex": 1.77
         }
     },
     {
@@ -2299,8 +2322,8 @@ export const futuresTradovateFees = ref([
             "free": 2.66,
             "monthly": 2.36,
             "lifetime": 1.96,
-            "Apex": 1.37,
-            "Topstep": 1.96
+            "apex": 1.37,
+            "topstep": 1.96
         }
     },
     {
@@ -2310,8 +2333,8 @@ export const futuresTradovateFees = ref([
             "free": 1.96,
             "monthly": 1.66,
             "lifetime": 1.26,
-            "Apex": 0.67,
-            "Topstep": 1.26
+            "apex": 0.67,
+            "topstep": 1.26
         }
     },
     {
@@ -2330,8 +2353,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2341,8 +2364,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2352,8 +2375,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.67,
+            "topstep": 2.26
         }
     },
     {
@@ -2363,8 +2386,8 @@ export const futuresTradovateFees = ref([
             "free": 1.02,
             "monthly": 0.92,
             "lifetime": 0.76,
-            "Apex": 0.67,
-            "Topstep": 0.82
+            "apex": 0.67,
+            "topstep": 0.82
         }
     },
     {
@@ -2374,8 +2397,8 @@ export const futuresTradovateFees = ref([
             "free": 2.96,
             "monthly": 2.66,
             "lifetime": 2.26,
-            "Apex": 1.67,
-            "Topstep": 2.26
+            "apex": 1.77,
+            "topstep": 2.26
         }
     },
     {
@@ -2385,7 +2408,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2395,7 +2418,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2405,7 +2428,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2415,7 +2438,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2425,8 +2448,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2436,8 +2459,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2447,8 +2470,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2458,8 +2481,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2469,8 +2492,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2480,7 +2503,7 @@ export const futuresTradovateFees = ref([
             "free": 2.49,
             "monthly": 2.19,
             "lifetime": 1.79,
-            "Apex": 1.2
+            "apex": 1.2
         }
     },
     {
@@ -2490,7 +2513,7 @@ export const futuresTradovateFees = ref([
             "free": 2.31,
             "monthly": 2.01,
             "lifetime": 1.61,
-            "Apex": 1.02
+            "apex": 1.02
         }
     },
     {
@@ -2500,8 +2523,8 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41,
-            "Topstep": 0.56
+            "apex": 0.41,
+            "topstep": 0.56
         }
     },
     {
@@ -2511,8 +2534,8 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41,
-            "Topstep": 0.56
+            "apex": 0.41,
+            "topstep": 0.56
         }
     },
     {
@@ -2522,7 +2545,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2532,7 +2555,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2542,7 +2565,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2552,7 +2575,7 @@ export const futuresTradovateFees = ref([
             "free": 0.76,
             "monthly": 0.66,
             "lifetime": 0.5,
-            "Apex": 0.41
+            "apex": 0.41
         }
     },
     {
@@ -2562,8 +2585,8 @@ export const futuresTradovateFees = ref([
             "free": 2.31,
             "monthly": 2.01,
             "lifetime": 1.61,
-            "Apex": 1.02,
-            "Topstep": 1.61
+            "apex": 1.02,
+            "topstep": 1.61
         }
     },
     {
@@ -2573,8 +2596,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2584,8 +2607,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2595,8 +2618,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2606,8 +2629,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2617,8 +2640,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2628,8 +2651,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2639,8 +2662,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2650,8 +2673,8 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77,
-            "Topstep": 2.36
+            "apex": 1.77,
+            "topstep": 2.36
         }
     },
     {
@@ -2661,7 +2684,7 @@ export const futuresTradovateFees = ref([
             "free": 3.06,
             "monthly": 2.76,
             "lifetime": 2.36,
-            "Apex": 1.77
+            "apex": 1.77
         }
     },
     {
@@ -2671,7 +2694,7 @@ export const futuresTradovateFees = ref([
             "free": 2.81,
             "monthly": 2.51,
             "lifetime": 2.11,
-            "Apex": 1.52
+            "apex": 1.52
         }
     },
     {
@@ -2680,7 +2703,8 @@ export const futuresTradovateFees = ref([
         "fee": {
             "free": 3.56,
             "monthly": 3.26,
-            "lifetime": 2.86
+            "lifetime": 2.86,
+            "apex": 2.27
         }
     },
     {
@@ -2690,8 +2714,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2701,8 +2725,8 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27,
-            "Topstep": 2.86
+            "apex": 2.27,
+            "topstep": 2.86
         }
     },
     {
@@ -2712,7 +2736,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2722,7 +2746,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2732,7 +2756,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2742,7 +2766,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2752,7 +2776,7 @@ export const futuresTradovateFees = ref([
             "free": 3.56,
             "monthly": 3.26,
             "lifetime": 2.86,
-            "Apex": 2.27
+            "apex": 2.27
         }
     },
     {
@@ -2764,7 +2788,266 @@ export const futuresTradovateFees = ref([
             "lifetime": 2.86
         }
     }
-]
+])
+
+export const futuresTopstepXFees = ref(
+    [
+        {
+            "name": "E-mini S&P 500",
+            "symbol": "ES",
+            "fee": 1.40
+        },
+        {
+            "name": "Micro E-mini S&P",
+            "symbol": "MES",
+            "fee": 0.37
+        },
+        {
+            "name": "E-mini NASDAQ 100",
+            "symbol": "NQ",
+            "fee": 1.40
+        },
+        {
+            "name": "Micro E-mini NASDAQ 100",
+            "symbol": "MNQ",
+            "fee": 0.37
+        },
+        {
+            "name": "E-mini Russell 2000",
+            "symbol": "RTY",
+            "fee": 1.40
+        },
+        {
+            "name": "Micro E-mini Russell 2000",
+            "symbol": "M2K",
+            "fee": 0.37
+        },
+        {
+            "name": "Nikkei",
+            "symbol": "NKD",
+            "fee": 2.17
+        },
+        {
+            "name": "Micro E-mini Bitcoin",
+            "symbol": "MBT",
+            "fee": 1.02
+        },
+        {
+            "name": "Micro E-mini Ether",
+            "symbol": "MET",
+            "fee": 0.12
+        },
+        {
+            "name": "Crude Oil",
+            "symbol": "CL",
+            "fee": 1.52
+        },
+        {
+            "name": "Micro Crude Oil",
+            "symbol": "MCL",
+            "fee": 0.52
+        },
+        {
+            "name": "E-mini Crude Oil",
+            "symbol": "QM",
+            "fee": 1.22
+        },
+        {
+            "name": "Platinum",
+            "symbol": "PL",
+            "fee": 1.62
+        },
+        {
+            "name": "E-mini Natural Gas",
+            "symbol": "QG",
+            "fee": 0.52
+        },
+        {
+            "name": "RBOB Gasoline",
+            "symbol": "RB",
+            "fee": 1.52
+        },
+        {
+            "name": "Heating Oil",
+            "symbol": "HO",
+            "fee": 1.52
+        },
+        {
+            "name": "Natural Gas",
+            "symbol": "NG",
+            "fee": 1.60
+        },
+        {
+            "name": "Micro Henry Hub Natural Gas",
+            "symbol": "MNG",
+            "fee": 0.62
+        },
+        {
+            "name": "Mini-DOW",
+            "symbol": "YM",
+            "fee": 1.40
+        },
+        {
+            "name": "Micro Mini-DOW",
+            "symbol": "MYM",
+            "fee": 0.37
+        },
+        {
+            "name": "Australian $",
+            "symbol": "6A",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro AUD/USD",
+            "symbol": "M6A",
+            "fee": 0.26
+        },
+        {
+            "name": "British Pound",
+            "symbol": "6B",
+            "fee": 1.62
+        },
+        {
+            "name": "Canadian $",
+            "symbol": "6C",
+            "fee": 1.62
+        },
+        {
+            "name": "Euro FX",
+            "symbol": "6E",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro EUD/USD",
+            "symbol": "M6E",
+            "fee": 0.26
+        },
+        {
+            "name": "Japanese Yen",
+            "symbol": "6J",
+            "fee": 1.62
+        },
+        {
+            "name": "Swiss Franc",
+            "symbol": "6S",
+            "fee": 1.62
+        },
+        {
+            "name": "E-mini Euro FX",
+            "symbol": "E7",
+            "fee": 0.87
+        },
+        {
+            "name": "Mexican Peso",
+            "symbol": "6M",
+            "fee": 1.62
+        },
+        {
+            "name": "New Zealand $",
+            "symbol": "6N",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro GBP/USD",
+            "symbol": "M6B",
+            "fee": 0.26
+        },
+        {
+            "name": "2-Year Note",
+            "symbol": "ZT",
+            "fee": 0.67
+        },
+        {
+            "name": "5-Year Note",
+            "symbol": "ZF",
+            "fee": 0.67
+        },
+        {
+            "name": "10-Year Note",
+            "symbol": "ZN",
+            "fee": 0.80
+        },
+        {
+            "name": "30-Year Bond",
+            "symbol": "ZB",
+            "fee": 0.89
+        },
+        {
+            "name": "Ultra-Bond",
+            "symbol": "UB",
+            "fee": 1.94
+        },
+        {
+            "name": "Ultra-Note",
+            "symbol": "TN",
+            "fee": 0.82
+        },
+        {
+            "name": "Gold",
+            "symbol": "GC",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro Gold",
+            "symbol": "MGC",
+            "fee": 0.52
+        },
+        {
+            "name": "Silver",
+            "symbol": "SI",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro Silver",
+            "symbol": "SIL",
+            "fee": 1.02
+        },
+        {
+            "name": "Copper",
+            "symbol": "HG",
+            "fee": 1.62
+        },
+        {
+            "name": "Micro Copper",
+            "symbol": "MHG",
+            "fee": 0.62
+        },
+        {
+            "name": "Lean Hogs",
+            "symbol": "HE",
+            "fee": 2.12
+        },
+        {
+            "name": "Lean Cattle",
+            "symbol": "LE",
+            "fee": 2.12
+        },
+        {
+            "name": "Corn",
+            "symbol": "ZC",
+            "fee": 2.12
+        },
+        {
+            "name": "Wheat",
+            "symbol": "ZW",
+            "fee": 2.12
+        },
+        {
+            "name": "Soybean",
+            "symbol": "ZS",
+            "fee": 2.12
+        },
+        {
+            "name": "Soybean Meal",
+            "symbol": "ZM",
+            "fee": 2.12
+        },
+        {
+            "name": "Soybean Oil",
+            "symbol": "ZL",
+            "fee": 2.12
+        }
+    ]
 )
 
 export const tradovateTiers = reactive([{
@@ -2778,10 +3061,26 @@ export const tradovateTiers = reactive([{
 {
     value: "lifetime",
     label: "Lifetime"
+},
+{
+    value: "apex",
+    label: "Apex"
+},
+{
+    value: "topstep",
+    label: "Topstep"
 }
+
 ])
 
 export const selectedTradovateTier = ref()
+
+/**************************************
+* ADD EXCURSIONS
+**************************************/
+export const daysBack = ref(30)
+export const daysMargin = ref(2)
+
 /**************************************
 * CHARTS
 **************************************/
@@ -2880,6 +3179,8 @@ export const diaries = reactive([])
 export const diaryUpdate = reactive({})
 export const diaryIdToEdit = ref()
 export const diaryButton = ref(false)
+export const diaryQueryLimit = ref(10)
+export const diaryPagination = ref(0)
 
 /**************************************
 * PLAYBOOKS
@@ -2895,57 +3196,95 @@ export const playbookButton = ref(false)
 export const brokers = reactive([{
     value: "template",
     label: "Template",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "tradeZero",
     label: "TradeZero",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: {
+        active: false,
+        inputs: []
+    }
 },
 {
     value: "interactiveBrokers",
     label: "Interactive Brokers",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: {
+        active: true,
+        instructions: ["Create an Activity Flex Query on your dashboard where you choose the desired Period, check the necessary values under the Trades section (Account ID, Currency, Symbol Underlying, Symbol, Multiplier, Put/Call, Quantity, Proceeds, Net Cash, Buy/Sell, Asset Class, Settle Date Target, TradePrice, IB Order ID, Notes/Codes, IB Commission, Date/Time) and get the Query Id.", "Enable Flex Web by following the <a target='_blank' href='https://www.ibkrguides.com/clientportal/performanceandstatements/flex-web-service.htm'>instructions</a> and get the Token"],
+        inputs: [
+            {
+                value: "token",
+                label: "Token"
+            }, {
+                value: "flexQueryId",
+                label: "Flex Query Id"
+            }
+        ]
+    }
 },
 {
     value: "tdAmeritrade",
     label: "TD Ameritrade",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 },
 {
     value: "tradeStation",
     label: "TradeStation",
-    assetTypes: ["stocks", "options", "futures"]
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
 },
 {
     value: "tradovate",
     label: "Tradovate",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
 },
 {
     value: "metaTrader5",
     label: "MetaTrader 5",
-    assetTypes: ["forex"]
+    assetTypes: ["forex"],
+    autoSync: false
 },
 {
     value: "heldentrader",
     label: "Heldentrader",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "rithmic",
     label: "Rithmic",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
 },
 {
     value: "fundTraders",
     label: "FundTraders",
-    assetTypes: ["stocks"]
+    assetTypes: ["stocks"],
+    autoSync: false
 },
 {
     value: "ninjaTrader",
     label: "NinjaTrader",
-    assetTypes: ["futures"]
+    assetTypes: ["futures"],
+    autoSync: false
+},
+{
+    value: "tastyTrade",
+    label: "TastyTrade",
+    assetTypes: ["stocks", "options", "futures"],
+    autoSync: false
+},
+{
+    value: "topstepX",
+    label: "TopstepX",
+    assetTypes: ["futures"],
+    autoSync: false
 }
 ])
 
@@ -2956,6 +3295,7 @@ export const brokerData = ref()
 **************************************/
 export const renderProfile = ref(0)
 export const apis = reactive([])
+export const layoutStyle = reactive([])
 
 /**************************************
 * SELECTED & FILTERS
