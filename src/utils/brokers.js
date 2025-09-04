@@ -672,12 +672,7 @@ export async function useBrokerInteractiveBrokers(param, param2) {
                     }
 
                     temp.SymbolOriginal = element["Symbol"]
-
-                    if (temp.Type == "stock") {
-                        temp.Symbol = element["Symbol"]
-                    } else {
-                        temp.Symbol = element["UnderlyingSymbol"]
-                    }
+                    temp.Symbol = element["Symbol"].replace(/\s+/g, "")
 
                     temp.Qty = Number(element.Quantity) < 0 ? (-Number(element.Quantity)).toString() : element.Quantity
                     temp.Price = element.Price
