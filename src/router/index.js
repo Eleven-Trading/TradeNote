@@ -83,6 +83,22 @@ const router = createRouter({
             import('../views/Daily.vue')
     },
     {
+    	path: '/goalDefinitions',
+    	name: 'goalDefinitions',
+    	meta: {
+            title: "Goal Definitions",
+            layout: DashboardLayout
+    	},
+    	component: () =>
+            import('../views/GoalDefinitions.vue')
+    },
+    {
+        path: '/goalRecords',
+        name: 'goalRecords',
+        meta: { title: 'Goals', layout: DashboardLayout },
+        component: () => import('../views/GoalRecords.vue')
+    },
+    {
         path: '/diary',
         name: 'diary',
         meta: {
@@ -133,6 +149,16 @@ const router = createRouter({
         component: () =>
             import('../views/AddDiary.vue')
     },
+    {       
+        path: '/addGoalDefinition',
+        name: 'addGoalDefinition',
+        meta: {
+            title: "Add Goal Definition",
+            layout: DashboardLayout
+        },
+        component: () =>
+            import('../views/AddGoalDefinition.vue')
+    }, 
     {
         path: '/addPlaybook',
         name: 'addPlaybook',

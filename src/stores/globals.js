@@ -71,9 +71,24 @@ export const legacy = reactive([])
 export const modalDailyTradeOpen = ref(false)
 
 /**************************************
+* GOALS
+**************************************/
+export const goals = ref([])
+export const goalQueryLimit = ref(10)
+export const goalPagination = ref(0)
+export const goalIdToEdit = ref(null)
+export const selectedGoal = ref(null)
+// Global reactive state for Goals
+export const goalUpdate = reactive({})
+export const goalButton = ref(false)
+export const dailyGoals = ref([])
+export const dailyRecord = ref(null)
+export const goalRecords = ref([])
+
+/**************************************
 * TRADES
 **************************************/
-export const selectedRange = ref()
+export const selectedRange = ref({ start: 0, end: Date.now() })
 export const filteredTrades = reactive([])
 export const filteredTradesDaily = reactive([])
 export const filteredTradesTrades = reactive([])

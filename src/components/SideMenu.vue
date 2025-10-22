@@ -21,6 +21,9 @@ import { useToggleMobileMenu } from "../utils/utils";
                 <a id="step4" v-bind:class="[pageId === 'daily' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/daily">
                     <i class="uil uil-signal-alt-3 me-2"></i>Daily
                 </a>
+                <a  v-bind:class="[pageId === 'goalRecords' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/goalRecords">
+                    <i class="uil uil-bullseye"></i>Goals
+                </a>
                 <a id="step5" v-bind:class="[pageId === 'calendar' ? 'activeNavCss' : '', 'nav-link', 'mb-2']"
                     href="/calendar">
                     <i class="uil uil-calendar-alt me-2"></i>Calendar</a>
@@ -33,6 +36,9 @@ import { useToggleMobileMenu } from "../utils/utils";
                 <a id="step6" v-bind:class="[pageId === 'diary' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/diary">
                     <i class="uil uil-diary me-2"></i>Diary
                 </a>
+		<a v-bind:class="[pageId === 'goalDefinitions' ? 'activeNavCss' : '', 'nav-link', 'mb-2']" href="/goalDefinitions">
+    		    <i class="uil uil-bullseye me-2"></i>Goal Definitions
+		</a>
                 <a id="step7" v-bind:class="[pageId === 'screenshots' ? 'activeNavCss' : '', 'nav-link', 'mb-2']"
                     href="/screenshots">
                     <i class="uil uil-image-v me-2"></i>Screenshots

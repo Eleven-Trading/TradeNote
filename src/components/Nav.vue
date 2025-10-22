@@ -45,6 +45,16 @@ const pages = [{
     icon: "uil uil-diary"
 },
 {
+    id: "goalRecords",
+    name: "Goals",
+    icon: "uil uil-bullseye"
+},
+{
+    id: "goalDefinitions",
+    name: "Goal Definitions",
+    icon: "uil uil-bullseye"
+},
+{
     id: "notes",
     name: "Notes",
     icon: "uil uil-diary"
@@ -73,6 +83,11 @@ const pages = [{
     id: "addDiary",
     name: "Add Diary",
     icon: "uil uil-plus-circle"
+},
+{
+    id: "addGoalDefinition",
+    name: "Add Goal Definition",
+    icon: "uil uil-bullseye"
 },
 {
     id: "settings",
@@ -208,6 +223,9 @@ const navAdd = async (param) => {
                         </li>
                         <li>
                             <a class="dropdown-item" @click="navAdd('addDiary')">Diary Entry</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" @click="navAdd('addGoalDefinition')">Goal Definition</a>
                         </li>
                         <li>
                             <a class="dropdown-item" @click="navAdd('addScreenshot')">Screenshot</a>
