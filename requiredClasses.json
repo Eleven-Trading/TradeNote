@@ -469,6 +469,114 @@
             }
         }
     },
+{
+  "className": "goalRecords",
+  "fields": {
+    "objectId": { "type": "String" },
+    "createdAt": { "type": "Date" },
+    "updatedAt": { "type": "Date" },
+    "ACL": { "type": "ACL" },
+    "user": { "type": "Pointer", "targetClass": "_User", "required": true },
+    "goal": { "type": "Pointer", "targetClass": "goals", "required": true },
+    "dateUnix": { "type": "Number", "required": true },
+    "done": { "type": "Boolean", "required": false },
+    "notes": { "type": "String", "required": false },
+    "periodStartUnix": { "type": "Number", "required": true},
+    "period": {"type": "String","required": true, "enum": ["Daily", "Weekly", "Monthly"]}
+  },
+  "classLevelPermissions": {
+    "find": { "*": true },
+    "count": { "*": true },
+    "get": { "*": true },
+    "create": { "*": true },
+    "update": { "*": true },
+    "delete": { "*": true },
+    "addField": { "*": true },
+    "protectedFields": { "*": [] }
+  },
+  "indexes": {
+    "_id_": { "_id": 1 },
+    "user_index": { "user": 1 },
+    "dateUnix_index": { "dateUnix": 1 },
+    "goal_index": { "goal": 1 },
+    "user_period_goal": { "user": 1, "periodStartUnix": 1, "goal": 1 }
+  }
+},
+    {
+    "className": "goals",
+    "fields": {
+        "objectId": {
+            "type": "String"
+        },
+        "createdAt": {
+            "type": "Date"
+        },
+        "updatedAt": {
+            "type": "Date"
+        },
+        "ACL": {
+            "type": "ACL"
+        },
+        "title": {
+            "type": "String",
+            "required": true
+        },
+        "criteria": {
+            "type": "String",
+            "required": false
+        },
+	"period": {
+  	   "type": "String",
+  	   "required": true,
+  	   "default": "Daily",
+  	   "enum": ["Daily", "Weekly", "Monthly"]
+	},
+        "successRate": {
+            "type": "Number",
+            "required": false
+        },
+        "completed": {
+            "type": "Boolean",
+            "required": false
+        },
+        "user": {
+            "type": "Pointer",
+            "targetClass": "_User",
+            "required": true
+        }
+    },
+    "classLevelPermissions": {
+        "find": {
+            "*": true
+        },
+        "count": {
+            "*": true
+        },
+        "get": {
+            "*": true
+        },
+        "create": {
+            "*": true
+        },
+        "update": {
+            "*": true
+        },
+        "delete": {
+            "*": true
+        },
+        "addField": {
+            "*": true
+        },
+        "protectedFields": {
+            "*": []
+        }
+    },
+    "indexes": {
+        "_id_": {
+            "_id": 1
+        }
+    }
+    },
     {
         "className": "scenarios",
         "fields": {

@@ -5,6 +5,7 @@ import Filters from '../components/Filters.vue'
 import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray, availableTags, groups, barChartNegativeTagGroups } from '../stores/globals';
 import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat, useXDecFormat } from '../utils/utils';
 import NoData from '../components/NoData.vue';
+import GoalsOverview from './GoalsOverview.vue';
 
 const dashTabs = [{
     id: "overviewTab",
@@ -321,6 +322,11 @@ onBeforeMount(async () => {
                             </div>
                         </div>
 
+                    </div>
+
+                    <!-- ===== GOALS OVERVIEW COMPONENT ===== -->
+                    <div class="col-12 mt-3">
+                      <GoalsOverview />
                     </div>
 
                     <!-- ============ TIME ============ -->

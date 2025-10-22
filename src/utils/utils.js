@@ -1044,6 +1044,9 @@ export function usePageRedirect(param) {
     if (pageId.value == "daily") {
         window.location.href = "/daily"
     }
+    if (pageId.value == "goals") {
+        window.location.href = "/goals"
+    }
     if (pageId.value == "addDiary") {
         window.location.href = "/diary"
     }
