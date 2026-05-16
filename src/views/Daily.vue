@@ -948,6 +948,9 @@ function getOHLC(date, symbol, type) {
                                                             </th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
+                                                            <th scope="col">Entry Price</th>
+                                                            <th scope="col">Exit</th>
+                                                            <th scope="col">Exit Price</th>
                                                             <th scope="col">P&L/Sec<i class="ps-1 uil uil-info-circle"
                                                                     data-bs-toggle="tooltip"
                                                                     data-bs-title="Profit&Loss per unit of security traded (baught or shorted)"></i>
@@ -1001,6 +1004,31 @@ function getOHLC(date, symbol, type) {
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
+
+                                                            <!--Entry Price-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else-if="trade.type == 'forex'">{{
+                                                                        (trade.entryPrice).toFixed(5)
+                                                                    }}</span><span v-else>{{
+                                                                        useTwoDecCurrencyFormat(trade.entryPrice)
+                                                                    }}<span
+                                                                        v-if="checkDate(trade.td, trade.entryTime) == false"><i
+                                                                            class="ps-1 uil uil-info-circle"
+                                                                            data-bs-toggle="tooltip" data-bs-html="true"
+                                                                            v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
+                                                            </td>
+
+                                                            <!--Exit-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else>{{ useTimeFormat(trade.exitTime) }}</span></td>
+
+                                                            <!--Exit Price-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else-if="trade.type == 'forex'">{{
+                                                                        (trade.exitPrice).toFixed(5)
+                                                                    }}</span><span v-else>{{
+                                                                        useTwoDecCurrencyFormat(trade.exitPrice)
+                                                                    }}</span></td>
 
                                                             <!--P&L/Vol-->
                                                             <td>
