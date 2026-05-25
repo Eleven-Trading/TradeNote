@@ -182,7 +182,7 @@ async function imgFileReader(param) {
     })
 }
 
-export async function useSetupImageUpload(event, param1, param2, param3) {
+export async function useSetupImageUpload(event, param1, param2, param3, tradeId = null) {
     tradeScreenshotChanged.value = true
     if (pageId.value == "daily") {
         saveButton.value = true
@@ -191,6 +191,8 @@ export async function useSetupImageUpload(event, param1, param2, param3) {
         screenshot.dateUnix = param1
         screenshot.symbol = param2
         screenshot.side = param3
+        screenshot.tradeId = tradeId
+        screenshot.objectId = undefined
 
     }
     const file = event.target.files[0];
@@ -429,7 +431,7 @@ export async function useSaveScreenshot() {
         //console.log(" -> dateUnix " + screenshot.dateUnix)
 
 
-        screenshot.side ? screenshot.name = "t" + screenshot.dateUnix + "_" + screenshot.symbol + "_" + screenshot.side : screenshot.name = screenshot.dateUnix + "_" + screenshot.symbol
+        screenshot.tradeId ? screenshot.name = screenshot.tradeId : (screenshot.side ? screenshot.name = "t" + screenshot.dateUnix + "_" + screenshot.symbol + "_" + screenshot.side : screenshot.name = screenshot.dateUnix + "_" + screenshot.symbol)
         //console.log("name " + screenshot.name)
 
 
