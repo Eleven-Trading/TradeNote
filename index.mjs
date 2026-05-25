@@ -46,7 +46,8 @@ console.log(' -> Database URI ' + hiddenDatabaseURI)
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
 var app = express();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const port = process.env.TRADENOTE_PORT;
 const PROXY_PORT = 39482;
@@ -339,7 +340,8 @@ const setupApiRoutes = (app) => {
     
 
     
-    app.use(express.json());
+    app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
     let allUsers
     const getAllUsers = async () => {
@@ -498,7 +500,7 @@ const startIndex = async () => {
                 resolve();
             } else {
                 // In production, handle API routes normally
-                app.use('/api/*', express.json(), (req, res, next) => {
+                app.use('/api/*', express.json({ limit: '50mb' }), express.urlencoded({ limit: '50mb', extended: true }), (req, res, next) => {
                     //console.log(`Received API request: ${req.method} ${req.url}`);
                     next(); // Pass control to specific API handlers
                 });

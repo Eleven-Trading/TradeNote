@@ -542,7 +542,7 @@ export const useUpdateTags = async () => {
                 query.equalTo("tradeId", tradeTagsId.value)
             } else {
                 //it's the case when changing daily tags, tradeTagsId.value is null (see useTradeTagsChange)
-                query.equalTo("tradeId", tradeTagsDateUnix.value.toString())
+                query.equalTo("tradeId", (tradeTagsDateUnix.value || screenshot.dateUnix || screenshot.dateUnixDay || screenshot.name || Date.now()).toString())
             }
         }
         const results = await query.first();
@@ -578,12 +578,12 @@ export const useUpdateTags = async () => {
             }
             else {
                 if (tradeTagsId.value) {
-                    object.set("dateUnix", tradeTagsDateUnix.value)
+                    object.set("dateUnix", tradeTagsDateUnix.value || screenshot.dateUnix || screenshot.dateUnixDay || Date.now())
                     object.set("tradeId", tradeTagsId.value)
                 } else {
                     //it's the case when changing daily tags, tradeTagsId.value is null
-                    object.set("dateUnix", tradeTagsDateUnix.value)
-                    object.set("tradeId", tradeTagsDateUnix.value.toString())
+                    object.set("dateUnix", tradeTagsDateUnix.value || screenshot.dateUnix || screenshot.dateUnixDay || Date.now())
+                    object.set("tradeId", (tradeTagsDateUnix.value || screenshot.dateUnix || screenshot.dateUnixDay || screenshot.name || Date.now()).toString())
                 }
 
             }

@@ -212,19 +212,21 @@ async function clickTradesModal(param1, param2, param3) {
                 await Promise.all([resetExcursion(), useResetTags()])
 
                 //For setups I have added setups into filteredTrades. For screenshots and excursions I need to find so I create on each modal page a screenshot and excursion object
-                let findScreenshot = screenshots.find(obj => obj.name == filteredTradeId)
+                let findScreenshots = screenshots.filter(obj => obj.name == filteredTradeId)
                 for (let key in screenshot) delete screenshot[key]
                 candlestickChartFailureMessage.value = null // to avoid message when screenshot is present
 
-                if (findScreenshot) {
+                if (findScreenshots.length > 0) {
                     //console.log(" found screenshot")
-                    for (let key in findScreenshot) {
-                        screenshot[key] = findScreenshot[key]
+                    screenshot.multiple = findScreenshots
+                    for (let key in findScreenshots[0]) {
+                        screenshot[key] = findScreenshots[0][key]
                     }
                 } else {
                     //console.log(" did not find any screenshot")
                     screenshot.side = null
                     screenshot.type = null
+                    screenshot.multiple = []
 
                     /* GET OHLC / CANDLESTICK CHARTS */
 
@@ -948,6 +950,9 @@ function getOHLC(date, symbol, type) {
                                                             </th>
                                                             <th scope="col">Position</th>
                                                             <th scope="col">Entry</th>
+                                                            <th scope="col">Entry Price</th>
+                                                            <th scope="col">Exit</th>
+                                                            <th scope="col">Exit Price</th>
                                                             <th scope="col">P&L/Sec<i class="ps-1 uil uil-info-circle"
                                                                     data-bs-toggle="tooltip"
                                                                     data-bs-title="Profit&Loss per unit of security traded (baught or shorted)"></i>
@@ -1001,6 +1006,31 @@ function getOHLC(date, symbol, type) {
                                                                             data-bs-toggle="tooltip" data-bs-html="true"
                                                                             v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
                                                             </td>
+
+                                                            <!--Entry Price-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else-if="trade.type == 'forex'">{{
+                                                                        (trade.entryPrice).toFixed(5)
+                                                                    }}</span><span v-else>{{
+                                                                        useTwoDecCurrencyFormat(trade.entryPrice)
+                                                                    }}<span
+                                                                        v-if="checkDate(trade.td, trade.entryTime) == false"><i
+                                                                            class="ps-1 uil uil-info-circle"
+                                                                            data-bs-toggle="tooltip" data-bs-html="true"
+                                                                            v-bind:data-bs-title="'Swing trade from ' + useDateCalFormat(trade.entryTime)"></i></span></span>
+                                                            </td>
+
+                                                            <!--Exit-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else>{{ useTimeFormat(trade.exitTime) }}</span></td>
+
+                                                            <!--Exit Price-->
+                                                            <td><span v-if="trade.tradesCount == 0"></span><span
+                                                                    v-else-if="trade.type == 'forex'">{{
+                                                                        (trade.exitPrice).toFixed(5)
+                                                                    }}</span><span v-else>{{
+                                                                        useTwoDecCurrencyFormat(trade.exitPrice)
+                                                                    }}</span></td>
 
                                                             <!--P&L/Vol-->
                                                             <td>
@@ -1162,8 +1192,10 @@ function getOHLC(date, symbol, type) {
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div v-if="modalDailyTradeOpen">
-                    <div v-if="screenshot.originalBase64">
-                        <Screenshot :screenshot-data="screenshot" source="dailyModal" />
+                    <div v-if="screenshot.multiple && screenshot.multiple.length > 0">
+                        <div v-for="itemScreenshot in screenshot.multiple" :key="itemScreenshot.objectId">
+                            <Screenshot :screenshot-data="itemScreenshot" source="dailyModal" />
+                        </div>
                     </div>
                     <div v-show="!candlestickChartFailureMessage && !screenshot.originalBase64" id="candlestickChart"
                         class="candlestickClass">
@@ -1368,7 +1400,7 @@ function getOHLC(date, symbol, type) {
                                 <!-- Forth line -->
                                 <div class="col-12 mt-3" v-show="!spinnerSetups">
                                     <input class="screenshotFile" type="file"
-                                        @change="useSetupImageUpload($event, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime, filteredTrades[itemTradeIndex].trades[tradeIndex].symbol, filteredTrades[itemTradeIndex].trades[tradeIndex].side)" />
+                                        @change="useSetupImageUpload($event, filteredTrades[itemTradeIndex].trades[tradeIndex].entryTime, filteredTrades[itemTradeIndex].trades[tradeIndex].symbol, filteredTrades[itemTradeIndex].trades[tradeIndex].side, filteredTrades[itemTradeIndex].trades[tradeIndex].id)" />
                                 </div>
 
 

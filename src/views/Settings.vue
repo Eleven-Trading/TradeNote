@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount, onMounted, reactive, ref } from 'vue';
 import { useCheckCurrentUser, useInitTooltip, useGetAPIS, useGetLayoutStyle, useExport } from '../utils/utils';
-import { currentUser, renderProfile, availableTags, apis, layoutStyle } from '../stores/globals';
+import { currentUser, renderProfile, availableTags, apis, layoutStyle, timeZones } from '../stores/globals';
 import { useGetAvailableTags } from '../utils/daily';
 
 /* MODULES */
@@ -58,17 +58,20 @@ async function updateProfile() {
         const query = new Parse.Query(parseObject);
         query.equalTo("objectId", currentUser.value.objectId);
         const results = await query.first();
+
         if (results) {
             if (profileAvatar != null) {
                 const parseFile = new Parse.File("avatar", profileAvatar);
                 results.set("avatar", parseFile)
             }
-            await results.save().then(async () => { //very important to have await or else too quick to update
+
+            results.set("timeZone", currentUser.value.timeZone)
+
+            await results.save().then(async () => {
                 await useCheckCurrentUser()
                 await (renderProfile.value += 1)
                 console.log(" -> Profile updated")
             })
-            //
         } else {
             alert("Update query did not return any results")
         }
@@ -511,6 +514,19 @@ const updateAPIS = async () => {
                     </div>
                     <div class="col-12 col-md-8">
                         <input type="file" @change="uploadProfileAvatar" />
+                    </div>
+                </div>
+
+                <div class="row align-items-center mt-3">
+                    <div class="col-12 col-md-4">
+                        Timezone
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <select v-model="currentUser.timeZone" class="form-select">
+                            <option v-for="item in timeZones" :key="item" :value="item">
+                                {{ item }}
+                            </option>
+                        </select>
                     </div>
                 </div>
 
