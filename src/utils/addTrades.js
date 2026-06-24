@@ -1,5 +1,5 @@
 import { filteredTradesTrades, blotter, pAndL, tradeExcursionId, spinnerLoadingPage, currentUser, selectedBroker, tradesData, timeZoneTrade, uploadMfePrices, executions, tradeId, existingImports, trades, gotExistingTradesArray, existingTradesArray, brokerData, selectedTradovateTier, queryLimit, queryLimitExistingTrades, marketCloseTime } from '../stores/globals.js'
-import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade, useTopstepX } from './brokers.js'
+import { useBrokerHeldentrader, useBrokerInteractiveBrokers, useBrokerMetaTrader5, useBrokerTdAmeritrade, useBrokerTradeStation, useBrokerTradeZero, useTradovate, useNinjaTrader, useRithmic, useFundTraders, useTastyTrade, useTopstepX, useBrokerZerodha } from './brokers.js'
 import { useChartFormat, useDateTimeFormat, useDecimalsArithmetic, useInitParse, useTimeFormat } from './utils.js'
 
 /* MODULES */
@@ -135,7 +135,7 @@ export async function useImportTrades(param1, param2, param3, param0) {
 
         }
 
-        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade", "topstepX"]
+        let readAsTextArray = ["tradeZero", "template", "tdAmeritrade", "interactiveBrokers" , "tradovate", "ninjaTrader", "heldentrader", "rithmic", "fundTraders", "tastyTrade", "topstepX", "zerodha"]
         if (readAsTextArray.includes(selectedBroker.value)) {
             if (param2 == "api") {
                 fileInput = param1
@@ -279,6 +279,16 @@ export async function useImportTrades(param1, param2, param3, param0) {
         if (selectedBroker.value == "topstepX") {
             console.log(" -> TopstepX")
             await useTopstepX(fileInput).catch(error => {
+                importFileErrorFunction(error)
+            })
+        }
+
+        /****************************
+         * ZERODHA
+         ****************************/
+        if (selectedBroker.value == "zerodha") {
+            console.log(" -> Zerodha")
+            await useBrokerZerodha(fileInput).catch(error => {
                 importFileErrorFunction(error)
             })
         }
