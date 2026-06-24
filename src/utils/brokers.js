@@ -66,6 +66,156 @@ export async function useBrokerTradeZero(param) {
 }
 
 /****************************
+ * ZERODHA
+ ****************************
+ * Equity (EQ) only, INR only, long-only (no short-selling support).
+ * Input is Zerodha Kite's "tradebook" CSV export (one row per execution).
+ * Fees are not provided by the broker file - they're computed here from
+ * Zerodha's published equity fee schedule, since brokerage/STT/exchange
+ * charges/GST are all formulaic, not broker-discretionary. Approximate by
+ * design (e.g. brokerage cap is applied per matched lot rather than per
+ * original order) - acceptable for journaling purposes.
+ ****************************/
+const zerodhaFeeRates = {
+    gst: 0.18,
+    sttDelivery: 0.001, //both legs
+    sttIntradaySell: 0.00025, //sell leg only
+    exchangeTxn: 0.0000297,
+    sebi: 0.000001,
+    stampDuty: 0.00015, //buy leg only
+    intradayBrokerageRate: 0.0003,
+    intradayBrokerageCap: 20
+}
+
+const useZerodhaApplyChunkFees = (sellExec, buyPrice, qty, isIntraday) => {
+    const buyTurnover = qty * buyPrice
+    const sellTurnover = qty * sellExec.price
+
+    const brokerageBuy = isIntraday ? Math.min(zerodhaFeeRates.intradayBrokerageCap, zerodhaFeeRates.intradayBrokerageRate * buyTurnover) : 0
+    const brokerageSell = isIntraday ? Math.min(zerodhaFeeRates.intradayBrokerageCap, zerodhaFeeRates.intradayBrokerageRate * sellTurnover) : 0
+    const brokerage = brokerageBuy + brokerageSell
+
+    const sttBuy = isIntraday ? 0 : zerodhaFeeRates.sttDelivery * buyTurnover
+    const sttSell = isIntraday ? zerodhaFeeRates.sttIntradaySell * sellTurnover : zerodhaFeeRates.sttDelivery * sellTurnover
+    const stt = sttBuy + sttSell
+
+    const exchangeTxn = zerodhaFeeRates.exchangeTxn * (buyTurnover + sellTurnover)
+    const sebi = zerodhaFeeRates.sebi * (buyTurnover + sellTurnover)
+    const stampDuty = zerodhaFeeRates.stampDuty * buyTurnover
+    const gst = zerodhaFeeRates.gst * (brokerage + exchangeTxn + sebi)
+
+    //all charges for the matched chunk are attributed to the closing (sell) execution; doesn't affect net totals
+    sellExec.comm += brokerage
+    sellExec.sec += stt + exchangeTxn + sebi + stampDuty + gst
+}
+
+export async function useBrokerZerodha(param) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let tempArray = []
+            if (typeof param === "string") {
+                let papaParse = Papa.parse(param, { header: true, skipEmptyLines: true })
+                tempArray = papaParse.data
+            } else {
+                tempArray = param
+            }
+
+            let executionsBySymbol = {}
+            tempArray.forEach(row => {
+                if (!row.symbol || !row.trade_type || !row.order_execution_time) return
+
+                let side = row.trade_type.trim().toLowerCase() === "buy" ? "B" : "S"
+                let execTimeOnly = row.order_execution_time.split('T')[1] || "00:00:00"
+
+                let exec = {
+                    symbol: row.symbol,
+                    side,
+                    qty: parseFloat(row.quantity),
+                    price: parseFloat(row.price),
+                    tradeDate: row.trade_date, //YYYY-MM-DD
+                    execTimeOnly,
+                    sortKey: row.order_execution_time,
+                    comm: 0,
+                    sec: 0
+                }
+                if (!executionsBySymbol[exec.symbol]) executionsBySymbol[exec.symbol] = []
+                executionsBySymbol[exec.symbol].push(exec)
+            })
+
+            //FIFO match per symbol, long-only, to classify each matched quantity chunk as intraday vs delivery and apply fees accordingly
+            Object.keys(executionsBySymbol).forEach(symbol => {
+                let execs = executionsBySymbol[symbol].slice().sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+                let openLots = [] //FIFO queue of { remainingQty, price, tradeDate }
+
+                execs.forEach(exec => {
+                    if (exec.side === "B") {
+                        openLots.push({ remainingQty: exec.qty, price: exec.price, tradeDate: exec.tradeDate })
+                    } else {
+                        let qtyToMatch = exec.qty
+                        while (qtyToMatch > 0.000001) {
+                            if (openLots.length === 0) {
+                                throw new Error("Sell of " + exec.qty + " " + symbol + " on " + exec.tradeDate + " exceeds open long quantity - short-selling is not supported for Zerodha imports")
+                            }
+                            let lot = openLots[0]
+                            let matchedQty = Math.min(lot.remainingQty, qtyToMatch)
+                            let isIntraday = lot.tradeDate === exec.tradeDate
+                            useZerodhaApplyChunkFees(exec, lot.price, matchedQty, isIntraday)
+                            lot.remainingQty -= matchedQty
+                            qtyToMatch -= matchedQty
+                            if (lot.remainingQty <= 0.000001) openLots.shift()
+                        }
+                    }
+                })
+            })
+
+            //build rows in the shape the rest of the import pipeline expects (Template.csv columns)
+            Object.keys(executionsBySymbol).forEach(symbol => {
+                executionsBySymbol[symbol].forEach(exec => {
+                    let qtyNumberSide = exec.side === "B" ? -exec.qty : exec.qty
+                    let grossProceeds = qtyNumberSide * exec.price
+                    let netProceeds = grossProceeds - exec.comm - exec.sec
+
+                    let dateArray = exec.tradeDate.split('-') //YYYY-MM-DD
+                    let formattedDate = dateArray[1] + "/" + dateArray[2] + "/" + dateArray[0] //MM/DD/YYYY
+
+                    let temp = {}
+                    temp.Account = "Zerodha"
+                    temp["T/D"] = formattedDate
+                    temp["S/D"] = formattedDate
+                    temp.Currency = "INR"
+                    temp.Type = "stock"
+                    temp.Side = exec.side
+                    temp.Symbol = exec.symbol
+                    temp.SymbolOriginal = exec.symbol
+                    temp.Qty = exec.qty.toString()
+                    temp.Price = exec.price.toString()
+                    temp["Exec Time"] = exec.execTimeOnly
+                    temp.Comm = exec.comm.toString()
+                    temp.SEC = exec.sec.toString()
+                    temp.TAF = "0"
+                    temp.NSCC = "0"
+                    temp.Nasdaq = "0"
+                    temp["ECN Remove"] = "0"
+                    temp["ECN Add"] = "0"
+                    temp["Gross Proceeds"] = grossProceeds.toString()
+                    temp["Net Proceeds"] = netProceeds.toString()
+                    temp["Clr Broker"] = ""
+                    temp.Liq = ""
+                    temp.Note = ""
+
+                    tradesData.push(temp)
+                })
+            })
+        } catch (error) {
+            reject(error)
+            return
+        }
+
+        resolve()
+    })
+}
+
+/****************************
  * METATRADER 5
  ****************************/
 export async function useBrokerMetaTrader5(param) {

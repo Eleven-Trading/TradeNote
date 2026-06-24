@@ -201,4 +201,16 @@ Please note that trades need to be ordered in ascending order
 4.	Select date range and click Export.
 
 <img src="https://f003.backblazeb2.com/file/7ak-public/tradenote/topstepx3.png" width="250">
- 
+
+# Zerodha
+Current scope (v1):
+- Only the **Equity (EQ)** segment is supported (no F&O, currency or commodity).
+- **Long positions only.** Any sell that would require a short position is rejected with an error rather than imported incorrectly.
+- One account per import - if you trade from multiple Zerodha accounts, import each account's tradebook separately.
+
+1. Login to Kite (Zerodha's trading platform).
+2. Go to Console > Reports > Tradebook.
+3. Select segment "Equity", choose your date range, and click "Download" to get a CSV file named `tradebook-<client-id>-EQ.csv`.
+4. Upload that CSV file as-is in TradeNote's import page.
+
+**Fees are estimated, not exact.** Zerodha's tradebook export doesn't include brokerage, STT, exchange charges, stamp duty or GST, and it doesn't say whether an order was placed as intraday (MIS) or delivery (CNC) - the actual basis Zerodha uses to bill those charges. TradeNote estimates this by checking whether a matched buy/sell pair happened on the same day, and applies Zerodha's published equity fee schedule accordingly. This is a reasonable approximation for journaling purposes, but it can diverge meaningfully from your real ledger (for example, a position held overnight that was originally placed as an intraday order will be billed by Zerodha at intraday rates, but TradeNote will estimate it at delivery rates). Don't rely on these figures for tax or accounting purposes - cross-check against Zerodha's own P&L/tax P&L reports for that.
