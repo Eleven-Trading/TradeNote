@@ -46,7 +46,11 @@ console.log(' -> Database URI ' + hiddenDatabaseURI)
 let tradenoteDatabase = process.env.TRADENOTE_DATABASE
 
 var app = express();
-app.use(express.json());
+// Default body-parser limit is 100 kB. One account's busy day already runs ~92 kB
+// compactly encoded, and a day CANNOT be split (dedupe omits whole days that
+// already hold trades), so consolidating a second account into one user pushes
+// ordinary days past the ceiling and they 413.
+app.use(express.json({ limit: '25mb' }));
 
 const port = process.env.TRADENOTE_PORT;
 const PROXY_PORT = 39482;
@@ -339,7 +343,7 @@ const setupApiRoutes = (app) => {
     
 
     
-    app.use(express.json());
+    app.use(express.json({ limit: '25mb' }));
 
     let allUsers
     const getAllUsers = async () => {
@@ -498,7 +502,7 @@ const startIndex = async () => {
                 resolve();
             } else {
                 // In production, handle API routes normally
-                app.use('/api/*', express.json(), (req, res, next) => {
+                app.use('/api/*', express.json({ limit: '25mb' }), (req, res, next) => {
                     //console.log(`Received API request: ${req.method} ${req.url}`);
                     next(); // Pass control to specific API handlers
                 });

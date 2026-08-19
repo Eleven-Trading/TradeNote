@@ -432,7 +432,7 @@ async function createTempExecutions() {
                 temp2.price = parseFloat(tradesData[key].Price);
 
                 temp2.execTime = dayjs.tz(formatedDateTD + " " + tradesData[key]['Exec Time'], timeZoneTrade.value).unix()
-                let tempId = "e" + temp2.execTime + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.type + "_" + temp2.side;
+                let tempId = "e" + temp2.execTime + "_" + temp2.account + "_" + temp2.symbol.replace(".", "_") + "_" + temp2.type + "_" + temp2.side;
                 // It happens that two or more trades happen at the same (second) time. So we need to differentiated them
                 if (tempId != lastId) {
                     x = 1
@@ -938,7 +938,7 @@ async function createTrades() {
         var b = _
             .chain(tempExecutions)
             .orderBy(["execTime"], ["asc"])
-            .groupBy(item => `"${item.symbol}+${item.type}+${item.strategy}+${item.td}"`);
+            .groupBy(item => `"${item.account}+${item.symbol}+${item.type}+${item.strategy}+${item.td}"`);
 
         let objectB = JSON.parse(JSON.stringify(b))
         //console.log("object b "+JSON.stringify(objectB))
@@ -987,10 +987,10 @@ async function createTrades() {
 
                 
                 /* Checking existing open position amongst open positions stored IN PARSE / DATABASE */
-                const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
+                const existingOpenPositionParseIndex = openPositionsParse.findIndex(x => x.account == tempExec.account && x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
                 /* Checking existing open position amongst open positions stored LOCALLT */
-                const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
+                const existingOpenPositionFileIndex = openPositionsFile.findIndex(x => x.account == tempExec.account && x.symbol == tempExec.symbol && x.type == tempExec.type && x.strategy == tempExec.strategy)
 
                 //checking existing open positions array when importing file
                 if (newTrade == true) {
@@ -1071,7 +1071,7 @@ async function createTrades() {
                     //console.log(" -> exec id "+tempExec.id)
                     //tempExecIds.push(tempExec.id)
 
-                    temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.symbol + "_" + tempExec.type + "_B" : "t" + tempExec.execTime + "_" + tempExec.symbol  + "_" + tempExec.type + "_SS"
+                    temp7.id = tempExec.side == "B" || tempExec.side == "S" ? "t" + tempExec.execTime + "_" + tempExec.account + "_" + tempExec.symbol + "_" + tempExec.type + "_B" : "t" + tempExec.execTime + "_" + tempExec.account + "_" + tempExec.symbol  + "_" + tempExec.type + "_SS"
                     console.log("  --> ID " + temp7.id)
                     currentTradeId = temp7.id
                     temp7.account = tempExec.account;
@@ -2101,6 +2101,16 @@ export async function useUploadTrades(param99, param0) {
                 const results = await query.first(param99 === "api" ? { useMasterKey: true } : undefined);
                 //console.log(" results "+JSON.stringify(results))
                 if (results) {
+                    // Dedupe on write. The list is append-only and a journal that
+                    // was imported before the fix above already carries repeats;
+                    // without this it would keep saving them back.
+                    const seenAccounts = new Set()
+                    param = (param || []).filter(a => {
+                        const v = a && a.value
+                        if (v == null || seenAccounts.has(v)) return false
+                        seenAccounts.add(v)
+                        return true
+                    })
                     results.set("accounts", param)
                     //console.log("param 2" + JSON.stringify(param2))
                     if (param99 === "api") {
@@ -2140,8 +2150,14 @@ export async function useUploadTrades(param99, param0) {
                     if (!check) {
                         let tempArray = currentUser.value.accounts
                         let temp = {}
-                        temp.value = tradeAccounts[0]
-                        temp.label = tradeAccounts[0]
+                        // Was tradeAccounts[0], which is the account being
+                        // iterated ONLY when there is one of them. With two
+                        // accounts in a journal every import re-added the first
+                        // and never added the second, so the filter accumulated
+                        // one duplicate per import and the second account was
+                        // never selectable.
+                        temp.value = element
+                        temp.label = element
                         tempArray.push(temp)
                         updateTradeAccounts(tempArray, temp.value)
                     }
