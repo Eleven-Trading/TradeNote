@@ -1,4 +1,4 @@
-import { totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom, barChartNegativeTagGroups } from "../stores/globals.js"
+import { advancedStats, totals, amountCase, totalsByDate, pageId, selectedTimeFrame, groups, timeZoneTrade, selectedRatio, filteredTrades, selectedGrossNet, satisfactionArray, dailyChartZoom, barChartNegativeTagGroups } from "../stores/globals.js"
 import { useOneDecPercentFormat, useChartFormat, useThousandCurrencyFormat, useTwoDecCurrencyFormat, useTimeFormat, useHourMinuteFormat, useCapitalizeFirstLetter, useXDecCurrencyFormat, useXDecFormat } from "./utils.js"
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js'
@@ -79,6 +79,9 @@ export async function useECharts(param) {
     handleCharts('lineBarChart', useLineBarChart);
     handleCharts('barChart', useBarChart);
     handleCharts('barChartNegative', useBarChartNegative);
+
+    // Personal fork: charts of the "Advanced" dashboard tab
+    useAdvancedCharts(param)
 
 }
 
@@ -1973,4 +1976,122 @@ export function useCandlestickChart(ohlcTimestamps, ohlcPrices, ohlcVolumes, tra
         candlestickChart.setOption(option);
         resolve()
     })
+}
+
+/***************************************
+ * ADVANCED TAB CHARTS (personal fork)
+ * Data comes from advancedStats (see utils/advancedStats.js). Same colors/tooltips as the other charts.
+ * ids: advChartDrawdown, advChartHeatmap, advChartDistribution
+ ***************************************/
+const advGreen = '#26a69a'
+const advRed = '#FF6960'
+const advTooltip = {
+    backgroundColor: blackbg7,
+    borderColor: blackbg7,
+    textStyle: { color: white87 },
+}
+const advCompact = (v) => {
+    const a = Math.abs(v)
+    if (a >= 1000000) return (v / 1000000).toFixed(1) + 'M'
+    if (a >= 1000) return (v / 1000).toFixed(1) + 'k'
+    return Math.round(v).toString()
+}
+
+export function useAdvancedCharts(param) {
+    const ids = ['advChartDrawdown', 'advChartHeatmap', 'advChartDistribution']
+    ids.forEach(id => {
+        const el = document.getElementById(id)
+        if (!el) return
+        if (param == "clear") {
+            (echarts.getInstanceByDom(el) || echarts.init(el)).clear()
+            return
+        }
+        if (param != "init" || !advancedStats.n) return
+        const data = JSON.parse(JSON.stringify(advancedStats)) // plain copy, like the other charts do
+        let option
+        if (id == 'advChartDrawdown') option = advDrawdownOption(data)
+        if (id == 'advChartHeatmap') option = advHeatmapOption(data)
+        if (id == 'advChartDistribution') option = advDistributionOption(data)
+        const chart = echarts.getInstanceByDom(el) || echarts.init(el)
+        chart.setOption(option, true)
+        chart.resize()
+    })
+}
+
+function advDrawdownOption(data) {
+    const labels = data.drawdownChart.dates.map(d => useChartFormat(d))
+    return {
+        tooltip: {
+            ...advTooltip,
+            trigger: 'axis',
+            formatter: (params) => {
+                let html = params[0].name
+                params.forEach(p => { html += '<br>' + p.seriesName + ': ' + useThousandCurrencyFormat(p.value) })
+                return html
+            }
+        },
+        legend: { textStyle: { color: cssColor60 }, data: ['Cumulated', 'Drawdown'] },
+        xAxis: { type: 'category', data: labels },
+        yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { type: 'solid', color: cssColor38 } },
+            axisLabel: { formatter: (v) => useThousandCurrencyFormat(v) },
+        },
+        series: [
+            { name: 'Cumulated', type: 'line', data: data.drawdownChart.equity, showSymbol: false, itemStyle: { color: '#35C4FE' } },
+            { name: 'Drawdown', type: 'line', data: data.drawdownChart.drawdown, showSymbol: false, itemStyle: { color: advRed }, areaStyle: { color: advRed, opacity: 0.25 } },
+        ],
+    }
+}
+
+function advHeatmapOption(data) {
+    const hm = data.heatmap
+    const usedDays = [...new Set(hm.cells.map(c => c.weekday))].sort((a, b) => a - b)
+    const dayLabels = usedDays.map(i => hm.weekdays[i])
+    const hourLabels = hm.hours.map(h => String(h).padStart(2, '0') + ':00')
+    const cells = hm.cells.map(c => ({
+        value: [hm.hours.indexOf(c.hour), usedDays.indexOf(c.weekday), c.pnl],
+        count: c.count,
+    }))
+    const maxAbs = hm.maxAbs || 1
+    return {
+        tooltip: {
+            ...advTooltip,
+            formatter: (p) => dayLabels[p.value[1]] + ' ' + hourLabels[p.value[0]] + '<br>P&L: ' + useThousandCurrencyFormat(p.value[2]) + '<br>Trades: ' + p.data.count
+        },
+        grid: { left: 50, right: 20, top: 20, bottom: 70 },
+        xAxis: { type: 'category', data: hourLabels, splitArea: { show: false } },
+        yAxis: { type: 'category', data: dayLabels, inverse: true, splitArea: { show: false } },
+        visualMap: {
+            min: -maxAbs, max: maxAbs, calculable: false, orient: 'horizontal', left: 'center', bottom: 5,
+            textStyle: { color: cssColor60 },
+            formatter: (v) => advCompact(v),
+            inRange: { color: [advRed, '#2b3036', advGreen] },
+        },
+        series: [{
+            type: 'heatmap',
+            data: cells,
+            label: { show: cells.length <= 120, color: cssColor87, fontSize: 9, formatter: (p) => advCompact(p.value[2]) },
+            itemStyle: { borderColor: blackbg5, borderWidth: 1 },
+        }],
+    }
+}
+
+function advDistributionOption(data) {
+    const d = data.distribution
+    return {
+        tooltip: {
+            ...advTooltip,
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            formatter: (params) => params[0].name + '<br>Trades: ' + params[0].value
+        },
+        grid: { left: 50, right: 20, top: 20, bottom: 70 },
+        xAxis: { type: 'category', data: d.labels, axisLabel: { rotate: 35, fontSize: 10 } },
+        yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { type: 'solid', color: cssColor38 } } },
+        series: [{
+            type: 'bar',
+            data: d.counts.map((c, i) => ({ value: c, itemStyle: { color: d.centers[i] >= 0 ? advGreen : advRed } })),
+        }],
+    }
 }

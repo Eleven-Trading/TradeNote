@@ -4,7 +4,7 @@ import { useECharts, useRenderDoubleLineChart, useRenderPieChart } from './chart
 import { useDeleteDiary, useGetDiaries, useUploadDiary } from "./diary.js";
 import { useDeleteScreenshot, useGetScreenshots, useGetScreenshotsPagination } from '../utils/screenshots.js'
 import { useDeletePlaybook } from "./playbooks.js";
-import { useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades, useDeleteTrade, useDeleteExcursions } from "./trades.js";
+import { useCalculateAdvancedStats, useCalculateProfitAnalysis, useGetFilteredTrades, useGetFilteredTradesForDaily, useGroupTrades, useTotalTrades, useDeleteTrade, useDeleteExcursions } from "./trades.js";
 import { useLoadCalendar } from "./calendar.js";
 import { useGetAvailableTags, useGetExcursions, useGetSatisfactions, useGetTags, useGetNotes } from "./daily.js";
 
@@ -794,6 +794,7 @@ export async function useMountDashboard() {
     await useTotalTrades()
     await useGroupTrades()
     await useCalculateProfitAnalysis()
+    await useCalculateAdvancedStats()
     await (spinnerLoadingPage.value = false)
     await (dashboardIdMounted.value = true)
     useInitTab("dashboard")

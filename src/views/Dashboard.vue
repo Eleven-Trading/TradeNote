@@ -2,7 +2,7 @@
 import { computed, onBeforeMount, ref } from 'vue'
 import SpinnerLoadingPage from '../components/SpinnerLoadingPage.vue';
 import Filters from '../components/Filters.vue'
-import { selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray, availableTags, groups, barChartNegativeTagGroups } from '../stores/globals';
+import { advancedStats, selectedDashTab, spinnerLoadingPage, dashboardIdMounted, totals, amountCase, amountCapital, profitAnalysis, renderData, selectedRatio, dashboardChartsMounted, hasData, satisfactionArray, availableTags, groups, barChartNegativeTagGroups } from '../stores/globals';
 import { useThousandCurrencyFormat, useTwoDecCurrencyFormat, useXDecCurrencyFormat, useMountDashboard, useThousandFormat, useXDecFormat } from '../utils/utils';
 import NoData from '../components/NoData.vue';
 
@@ -30,6 +30,11 @@ const dashTabs = [{
     id: "financialsTab",
     label: "Financials",
     target: "#financialsNav"
+},
+{
+    id: "advancedTab",
+    label: "Advanced",
+    target: "#advancedNav"
 }
 ]
 amountCapital.value = amountCase.value ? amountCase.value.charAt(0).toUpperCase() + amountCase.value.slice(1) : ''
@@ -63,6 +68,69 @@ const ratioCompute = computed(() => {
         ratio.tooltipTitle = '<div> Profit Factor = Wins &divide; Losses</div><div>Wins: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Wins']) + '</div><div>Losses: ' + useThousandCurrencyFormat(totals[amountCase.value + 'Loss']) + '</div>'
     }
     return ratio
+})
+
+/* ============ ADVANCED TAB (personal fork) ============ */
+const advEmpty = (v) => v === null || v === undefined || (typeof v === 'number' && !isFinite(v))
+const advCur = (v) => advEmpty(v) ? '-' : useTwoDecCurrencyFormat(v)
+const advNum = (v, d = 2) => advEmpty(v) ? '-' : useXDecFormat(v, d)
+const advPct = (v, d = 1) => advEmpty(v) ? '-' : (v * 100).toFixed(d) + '%'
+const advDur = (s) => {
+    if (advEmpty(s)) return '-'
+    if (s < 60) return Math.round(s) + 's'
+    if (s < 3600) return Math.floor(s / 60) + 'm ' + Math.round(s % 60) + 's'
+    if (s < 86400) return Math.floor(s / 3600) + 'h ' + Math.round((s % 3600) / 60) + 'm'
+    return (s / 86400).toFixed(1) + 'd'
+}
+const advPnlClass = (v) => (v > 0 ? 'greenTrade' : v < 0 ? 'redTrade' : '')
+
+const advancedGroups = computed(() => {
+    const a = advancedStats
+    if (!a.n) return []
+    const streakNow = a.currentStreakType
+        ? a.currentStreakLength + ' ' + (a.currentStreakType == 'win' ? 'win' : 'loss') + (a.currentStreakLength > 1 ? (a.currentStreakType == 'win' ? 's' : 'es') : '')
+        : '-'
+    return [
+        {
+            title: 'Edge', cards: [
+                { label: 'Expectancy', value: advCur(a.expectancy), tip: 'Average P&L per closed trade' },
+                { label: 'Expectancy (R)', value: advNum(a.expectancyInLossUnits) + (advEmpty(a.expectancyInLossUnits) ? '' : 'R'), tip: 'Expectancy &divide; average loss. Your average loss counts as 1R (not a planned stop-loss).' },
+                { label: 'Payoff Ratio', value: advNum(a.payoffRatio), tip: 'Average win &divide; average loss' },
+                { label: 'Profit Factor', value: advNum(a.profitFactor), tip: 'Total winning P&L &divide; absolute total losing P&L' },
+                { label: 'Kelly', value: advPct(a.kelly), tip: 'Win rate - (1 - win rate) &divide; payoff ratio. Win rate ignores break-even trades. A negative value means no edge. Never size a position with the full number.' },
+                { label: 'Median Trade', value: advCur(a.medianTrade), tip: 'The middle trade. Less distorted by one big winner or loser than the average.' },
+                { label: 'Std Dev (trade)', value: advCur(a.stdDevTrade), tip: 'How much trade results vary around the average' },
+                { label: 'Best Trade', value: advCur(a.bestTrade), tip: 'Largest single winning trade' },
+                { label: 'Worst Trade', value: advCur(a.worstTrade), tip: 'Largest single losing trade' },
+            ]
+        },
+        {
+            title: 'Drawdown & Streaks', cards: [
+                { label: 'Max Drawdown', value: advCur(a.maxDrawdown) + (advEmpty(a.maxDrawdownPctOfPeak) ? '' : ' (' + advPct(a.maxDrawdownPctOfPeak, 0) + ')'), tip: 'Biggest fall from a cumulated P&L peak, trade by trade. The percentage is relative to that peak.' },
+                { label: 'Current Drawdown', value: advCur(a.currentDrawdown), tip: 'Distance of the cumulated P&L from its highest point in this period' },
+                { label: 'Max Daily Drawdown', value: advCur(a.maxDailyDrawdown), tip: 'Same as max drawdown but using daily P&L' },
+                { label: 'Max Recovery', value: a.maxRecoveryTrades + ' trades / ' + a.maxRecoveryDays + ' days', tip: 'Longest recovery to a previous cumulative P&L high, measured in trades and distinct trading days' },
+                { label: 'Current Recovery', value: a.currentRecoveryTrades + ' trades / ' + a.currentRecoveryDays + ' days', tip: 'Current time below the latest cumulative P&L high, measured in trades and distinct trading days; zero means the equity is at a new high' },
+                { label: 'Current Streak', value: streakNow, tip: 'Consecutive wins or losses at the end of the period' },
+                { label: 'Longest Win Streak', value: a.maxWinStreak, tip: 'Most consecutive winning trades' },
+                { label: 'Longest Loss Streak', value: a.maxLossStreak, tip: 'Most consecutive losing trades' },
+            ]
+        },
+        {
+            title: 'Days & Costs', cards: [
+                { label: 'Trading Days', value: a.tradingDays, tip: 'Days with at least one closed trade' },
+                { label: 'Profitable Days', value: advPct(a.profitableDaysPct), tip: 'Share of trading days that ended positive' },
+                { label: 'Avg Day', value: advCur(a.avgDay), tip: 'Average P&L per trading day' },
+                { label: 'Best / Worst Day', value: advCur(a.bestDay) + ' / ' + advCur(a.worstDay), tip: 'Best and worst day by P&L' },
+                { label: 'Sharpe (annualized)', value: advNum(a.sharpeAnnualized), tip: 'Average daily P&L &divide; standard deviation of daily P&L, multiplied by &radic;252. Based on dollar P&L, not account returns, with no risk-free rate.' },
+                { label: 'Sortino (annualized)', value: advNum(a.sortinoAnnualized), tip: 'Like Sharpe but only penalizes losing days. Based on dollar P&L.' },
+                { label: 'Avg Hold (winners)', value: advDur(a.avgHoldWinSeconds), tip: 'Average time between entry and exit for winning trades' },
+                { label: 'Avg Hold (losers)', value: advDur(a.avgHoldLossSeconds), tip: 'Average time between entry and exit for losing trades. Much longer than winners can mean you hold losers too long.' },
+                { label: 'Total Fees', value: advCur(a.totalFees), tip: 'Commission + SEC + TAF + NSCC + Nasdaq on the closed trades' },
+                { label: 'Fees / Gross Wins', value: advPct(a.feesPctOfGrossWins), tip: 'Fees as a share of the gross profit of winning trades' },
+            ]
+        },
+    ]
 })
 
 onBeforeMount(async () => {
@@ -509,6 +577,185 @@ onBeforeMount(async () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- ============ ADVANCED (personal fork) ============ -->
+                    <div v-bind:class="'tab-pane fade ' + (selectedDashTab == 'advancedTab' ? 'active show' : '')"
+                        id="advancedNav" role="tabpanel" aria-labelledby="nav-advanced-tab">
+                        <div v-if="advancedStats.n" class="col-12">
+
+                            <!-- STAT CARDS -->
+                            <div class="col-12 text-center">
+                                <div v-for="group in advancedGroups" :key="group.title" class="mb-3">
+                                    <h6 class="text-start">{{ group.title }}</h6>
+                                    <div class="row">
+                                        <div v-for="card in group.cards" :key="card.label" class="col-6 col-lg-3 mb-2">
+                                            <div class="dailyCard">
+                                                <h5 class="titleWithDesc">{{ card.value }}</h5>
+                                                <span class="dashInfoTitle">{{ card.label }}<i class="ps-1 uil uil-info-circle"
+                                                        data-bs-custom-class="tooltipLargeLeft" data-bs-toggle="tooltip"
+                                                        data-bs-html="true" :data-bs-title="card.tip"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CHARTS -->
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Cumulated P&L and Drawdown (daily)</h6>
+                                        <div v-bind:key="renderData" id="advChartDrawdown" class="chartClass"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>P&L by Entry Hour and Weekday</h6>
+                                        <div v-bind:key="renderData" id="advChartHeatmap" class="chartClass"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>P&L Distribution (per trade)</h6>
+                                        <div v-bind:key="renderData" id="advChartDistribution" class="chartClass"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TABLES -->
+                            <div class="row">
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Performance by Weekday</h6>
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Day</th>
+                                                        <th scope="col">P&amp;L</th>
+                                                        <th scope="col">Days</th>
+                                                        <th scope="col">Trades</th>
+                                                        <th scope="col">Win rate</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="row in advancedStats.weekdayPerformance" :key="row.label">
+                                                        <td>{{ row.label }}</td>
+                                                        <td :class="advPnlClass(row.pnl)">{{ advCur(row.pnl) }}</td>
+                                                        <td>{{ row.tradingDays }}</td>
+                                                        <td>{{ row.tradeCount }}</td>
+                                                        <td>{{ advPct(row.winRate, 0) }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <small class="text-muted">Win rate = winning closed trades / all closed trades, including breakevens. Dates use the selected timezone.</small>
+                                    </div>
+                                </div>
+                                <div v-if="advancedStats.tagPerformance.length" class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Performance by Tag</h6>
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Tag</th>
+                                                        <th scope="col">Trades</th>
+                                                        <th scope="col">Win rate</th>
+                                                        <th scope="col">P&amp;L</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="row in advancedStats.tagPerformance" :key="row.tagId">
+                                                        <td>{{ row.label }}</td>
+                                                        <td>{{ row.tradeCount }}</td>
+                                                        <td>{{ advPct(row.winRate, 0) }}</td>
+                                                        <td :class="advPnlClass(row.totalPnl)">{{ advCur(row.totalPnl) }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <small class="text-muted">A trade with multiple tags appears in each matching row; totals can overlap and do not prove causation.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Monthly</h6>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Month</th>
+                                                    <th scope="col">Trades</th>
+                                                    <th scope="col">Win rate</th>
+                                                    <th scope="col">Avg / trade</th>
+                                                    <th scope="col">P&L</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="row in advancedStats.monthly" :key="row.month">
+                                                    <td>{{ row.month }}</td>
+                                                    <td>{{ row.count }}</td>
+                                                    <td>{{ advPct(row.winRate, 0) }}</td>
+                                                    <td>{{ advCur(row.avgPnl) }}</td>
+                                                    <td :class="advPnlClass(row.totalPnl)">{{ advCur(row.totalPnl) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-xl-6 mb-3">
+                                    <div class="dailyCard">
+                                        <h6>Behavior</h6>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Trade</th>
+                                                    <th scope="col">Trades</th>
+                                                    <th scope="col">Win rate</th>
+                                                    <th scope="col">Avg P&L</th>
+                                                    <th scope="col">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="row in [
+                                                    { label: 'First of the day', s: advancedStats.behavior.firstOfDay },
+                                                    { label: 'After a win (same day)', s: advancedStats.behavior.afterWin },
+                                                    { label: 'After a loss (same day)', s: advancedStats.behavior.afterLoss }]"
+                                                    :key="row.label">
+                                                    <td>{{ row.label }}</td>
+                                                    <td>{{ row.s.count }}</td>
+                                                    <td>{{ advPct(row.s.winRate, 0) }}</td>
+                                                    <td :class="advPnlClass(row.s.avgPnl)">{{ advCur(row.s.avgPnl) }}</td>
+                                                    <td :class="advPnlClass(row.s.totalPnl)">{{ advCur(row.s.totalPnl) }}</td>
+                                                </tr>
+                                                <tr v-for="row in advancedStats.behavior.byTradeNumber"
+                                                    :key="'n' + row.label">
+                                                    <td>Trade #{{ row.label }} of the day</td>
+                                                    <td>{{ row.count }}</td>
+                                                    <td>{{ advPct(row.winRate, 0) }}</td>
+                                                    <td :class="advPnlClass(row.avgPnl)">{{ advCur(row.avgPnl) }}</td>
+                                                    <td :class="advPnlClass(row.totalPnl)">{{ advCur(row.totalPnl) }}</td>
+                                                </tr>
+                                                <tr v-for="row in (advancedStats.behavior.bySize || [])"
+                                                    :key="'s' + row.label">
+                                                    <td>{{ row.label }} size ({{ useThousandFormat(row.minSize) }}-{{
+                                                        useThousandFormat(row.maxSize) }})</td>
+                                                    <td>{{ row.count }}</td>
+                                                    <td>{{ advPct(row.winRate, 0) }}</td>
+                                                    <td :class="advPnlClass(row.avgPnl)">{{ advCur(row.avgPnl) }}</td>
+                                                    <td :class="advPnlClass(row.totalPnl)">{{ advCur(row.totalPnl) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <NoData />
                         </div>
                     </div>
 

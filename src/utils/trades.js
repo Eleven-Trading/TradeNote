@@ -1,4 +1,5 @@
-import { pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags, selectedItem, imports, daysBack } from "../stores/globals.js"
+import { amountCase, advancedStats, pageId, spinnerLoadingPage, selectedRange, selectedDateRange, filteredTrades, filteredTradesTrades, selectedPositions, selectedAccounts, pAndL, queryLimit, blotter, totals, totalsByDate, groups, profitAnalysis, timeFrame, timeZoneTrade, hasData, satisfactionArray, satisfactionTradeArray, tags, filteredTradesDaily, dailyPagination, dailyQueryLimit, endOfList, excursions, selectedTags, availableTags, selectedItem, imports, daysBack } from "../stores/globals.js"
+import { computeAdvancedStats } from "./advancedStats.js"
 import { useMountDashboard, useMountDaily, useMountCalendar, useDateTimeFormat } from "./utils.js";
 import { useCreateBlotter, useCreatePnL } from "./addTrades.js"
 
@@ -1255,6 +1256,35 @@ export async function useCalculateProfitAnalysis(param) {
             //console.log("  --> Profit analysis " + JSON.stringify(profitAnalysis))
         }
 
+        resolve()
+    })
+}
+
+/***************************************
+ * ADVANCED STATS (personal fork)
+ * Uses temp1 (flat list of filtered trades built in useTotalTrades) so it MUST run after useTotalTrades.
+ ***************************************/
+export async function useCalculateAdvancedStats() {
+    console.log("\nCALCULATING ADVANCED STATS")
+    return new Promise((resolve) => {
+        try {
+            const result = computeAdvancedStats(temp1, {
+                amountCase: amountCase.value,
+                timeZone: timeZoneTrade.value,
+                tags,
+                tagDefinitions: availableTags,
+            })
+            for (let key in advancedStats) delete advancedStats[key]
+            Object.assign(advancedStats, result)
+            // Sanity check against the original totals: both should be the same number
+            if (result.n > 0 && totals[amountCase.value + 'Proceeds'] !== undefined) {
+                const diff = Math.abs(result.totalPnl - totals[amountCase.value + 'Proceeds'])
+                if (diff > 0.01) console.warn("  --> Advanced stats P&L (" + result.totalPnl + ") differs from totals (" + totals[amountCase.value + 'Proceeds'] + ")")
+            }
+        } catch (e) {
+            console.error("  --> Advanced stats failed (dashboard keeps working)", e)
+            for (let key in advancedStats) delete advancedStats[key]
+        }
         resolve()
     })
 }

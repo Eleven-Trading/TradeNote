@@ -81,6 +81,7 @@ export const totals = reactive({})
 export const totalsByDate = reactive({})
 export const groups = reactive({})
 export const profitAnalysis = reactive({})
+export const advancedStats = reactive({}) // personal fork: extra stats, filled by useCalculateAdvancedStats() in trades.js
 export const timeFrame = ref(15)
 export const imports = ref([])
 
